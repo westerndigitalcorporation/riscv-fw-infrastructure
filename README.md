@@ -20,9 +20,9 @@ This repo is WD RISC-V Firmware pacakge, holds:
     
     $  git clone https://github.com/westerndigitalcorporation/riscv-fw-infrastructure.git
   
-[comment]:  This repository uses submodules..... 
+[comment]:  [] (This repository uses submodules..... )
   
-[comment]:  $ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git
+[comment]:  [] ($ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git)
 
 # Code Convention 
 See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
