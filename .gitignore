@@ -1,0 +1,7 @@
+**/output*
+*.pyc
+*.elf
+*.o
+lto1
+
+/.metadata/

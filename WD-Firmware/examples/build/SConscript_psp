@@ -1,0 +1,61 @@
+'''
+ SPDX-License-Identifier: Apache-2.0
+ Copyright 2019 Western Digital Corporation or its affiliates.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http:www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+'''
+import os
+Import('Env')
+
+out_dir = os.path.join(Env['OUT_DIR_PATH'], 'psp')
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
+
+list_files_c=[
+   [os.path.join('psp', 'psp.c'), os.path.join(out_dir, 'psp.o')],
+]
+
+list_files_a=[]
+
+# compiler flags
+c_flags = [] + Env['C_FLAGS']
+a_flags = [] + Env['A_FLAGS']
+
+# defines
+c_defines = []
+
+# include paths
+local_includes  = []
+public_includes = [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
+  os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
+]
+include_paths = public_includes + local_includes
+
+# linker flags
+Env['LINKFLAGS'] += []
+
+# for objects
+objects = []
+for list_file in list_files_c:
+  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+
+# asm file objects
+for list_file in list_files_a:
+  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+
+# for libraries
+psp_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'psp.a'), source=objects)
+
+# return the psp lib
+Return('psp_lib')
