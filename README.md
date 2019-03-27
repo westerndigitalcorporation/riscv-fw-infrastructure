@@ -3,7 +3,7 @@
 ![N|Solid](http://riscv.net/wp-content/uploads/2015/01/riscv-logo-retina.png)
 
 # WD RISC-V Firmware Package 
-This repo is WD RISC-V Firmware pacakge, holds:
+This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
   - GCC 8.2 Toolchain for RISC-V
