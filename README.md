@@ -121,4 +121,4 @@ WD-Firmware
 
 ### Adding new source modules
 
-The folder WD-Firmware/examples/build/ contains a template file (SConscript_template) which can be used
+The folder WD-Firmware/examples/build/ contains a template file (SConscript_template) which can be used.
