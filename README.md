@@ -11,10 +11,18 @@ This repo is WD RISC-V Firmware pacakge, holds:
 
 
 # Getting the sources
-
-  This repository uses submodules..... 
+  If you dont have git lfs installed, please do the following steps:
   
-    $ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git
+    $ curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+    $ sudo apt-get install git-lfs
+  
+  Getting the repository 
+    
+    $  git clone https://github.com/westerndigitalcorporation/riscv-fw-infrastructure.git
+  
+[comment]:  This repository uses submodules..... 
+  
+[comment]:  $ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git
 
 # Code Convention 
 See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
