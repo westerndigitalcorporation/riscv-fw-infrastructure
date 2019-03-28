@@ -115,7 +115,7 @@ WD-Firmware
 
                 -f [WD-firmware-root]/WD-Firmware/board/hifive-1/wd-freedom-e300-hifive1.cfg 
             
-             - Under *'Debugger tab'* under the 'GDB Client Setup' section, set the following on the *'Commands'* window:
+	    - Under *'Debugger tab'* under the 'GDB Client Setup' section, set the following on the *'Commands'* window:
 
                 set mem inaccessible-by-default off
                 set arch riscv:rv32
