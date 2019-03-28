@@ -28,6 +28,12 @@ This repo is WD RISC-V Firmware package, holds:
 See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
 
 # WD Firmware     
+The “WD Firmware package” contains an Abstraction Layer (AL) on embedded small footprint real time operation systems (RTOS). The target is to provide homogenies API for the developer usage, so the kernel can be replaced for several different RTOS’s, without any need from the developer to change its application code.
+
+Currently this AL supports FreeRTOS and ThreadX (only API's, without core) with a real running demo for FreeRTOS. 
+The structure of WD Firmware package allows quick and easy integration for more RTOS’s, Platforms, boards and new firmware features. 
+
+Coming soon: more FW features and more Platform supports 
 
 The following README file describes how to setup a build environment for the WD RISC-V firmware with HiFive1 board; It will build an example application - FreeRTOS demo and describe how to download and debug it. The flow was verified with VMWare player v. 15 hosting Debian 9.6. This demo is based on the work done here https://github.com/sifive/freedom-e-sdk/tree/FreeRTOS/software/FreeRTOSv9.0.0
 
@@ -109,7 +115,7 @@ WD-Firmware
 
                 -f [WD-firmware-root]/WD-Firmware/board/hifive-1/wd-freedom-e300-hifive1.cfg 
             
-    	 - Under *'Debugger tab'* under the 'GDB Client Setup' section, set the following on the *'Commands'* window:
+             - Under *'Debugger tab'* under the 'GDB Client Setup' section, set the following on the *'Commands'* window:
 
                 set mem inaccessible-by-default off
                 set arch riscv:rv32
