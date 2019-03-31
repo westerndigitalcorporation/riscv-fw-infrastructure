@@ -66,7 +66,9 @@ WD-Firmware
 - Standard packages that are required can be installed by the following command:
 
       $ sudo apt-get install scons libftdi1-2 libmpfr4
-      
+    NOTE: If libmpfr4 can not be installed, in cases of newer versions '6', on the host machine, you can create a symbolic link to libmpfr.so.6
+    
+      $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
 - Download and install Java SE Runtime Environment
 
 ### Building for source
@@ -106,7 +108,6 @@ WD-Firmware
     
 - #### Eclipse MCU configuration:
 	- From the 'Eclipse MCU' menu bar press File->Properties->C/C++ Build->Settings, select the *Toolchain path* with bin folder: [Toolchain-root]/bin
-	- From the 'Eclipse MCU' menu bar press File->Properties->C/C++ Build->Environment, add new varible RISCV_TC_ROOT with path to [Toolchain-root]
     - From the Eclipse MCU menu bar select *'Run'* -> *'Debug Configuration'*
 	- Create a New launch configuration for 'GDB OpenOCD Debugging', now on this configuration do the following:
         - Under *'Main tab'* Verify that the selected project is set to *WD-Firmware* if not, click the *'Browse...'* button and select it
