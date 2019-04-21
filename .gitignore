@@ -1,0 +1,14 @@
+**/output*
+*.pyc
+*.elf
+*.o
+*.settings
+*.sconsign.dblite
+*.org.eclipse.cdt.core.prefs
+*.language.settings.xml
+
+
+
+lto1
+
+/.metadata/
