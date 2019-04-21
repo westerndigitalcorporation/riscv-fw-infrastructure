@@ -108,7 +108,7 @@
    #define D_RTOSAL_NOT_DONE                     TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_CEILING_EXCEEDED             TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_INVALID_CEILING              TBD_TAKE_VAL_FROM_TX
-   #define D_RTOSAL_FAIL                         TBD_TAKE_VAL_FROM_TX-1
+   #define D_RTOSAL_FAIL                         TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_FEATURE_NOT_ENABLED          TBD_TAKE_VAL_FROM_TX
 #endif /* #ifdef D_USE_FREERTOS */
 

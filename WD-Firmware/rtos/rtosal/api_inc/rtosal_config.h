@@ -33,7 +33,7 @@
    #error *** please set configSUPPORT_STATIC_ALLOCATION to 1 and configSUPPORT_DYNAMIC_ALLOCATION to 0 in FreeRTOSConfig.h ***
 #endif /* #if (configSUPPORT_STATIC_ALLOCATION!=1) || (configSUPPORT_DYNAMIC_ALLOCATION!=0) */
 #elif D_USE_THREADX
-   #include "TBD"
+   #include "TBD: the root api"
 #else
    #error *** RTOSAL: undefined RTOS core (use D_USE_THREADX/D_USE_THREADX) ***
 #endif /* #ifdef D_USE_FREERTOS */
