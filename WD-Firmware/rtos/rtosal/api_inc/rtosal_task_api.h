@@ -128,6 +128,7 @@ typedef enum rtosalPriority
    E_RTOSAL_PRIO_30 = 30,
    E_RTOSAL_PRIO_31 = 31,
 #endif /* #ifdef D_USE_FREERTOS */
+   E_RTOSAL_PRIO_MAX = E_RTOSAL_PRIO_31
 } rtosalPriority_t;
 
 typedef struct rtosalTask
