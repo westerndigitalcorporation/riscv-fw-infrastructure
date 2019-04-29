@@ -50,9 +50,8 @@
 /**
 * local prototypes
 */
-D_ALWAYS_INLINE
-D_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
-                   u32_t uiWaitTimeoutTicks, u32_t uiSendToFront);
+D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+                                       u32_t uiWaitTimeoutTicks, u32_t uiSendToFront);
 
 /**
 * external prototypes
@@ -66,24 +65,25 @@ D_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRt
 /**
 * Create a message queue
 *
-* @param pRtosalMsgQueueCb      - pointer to queue control block to be created
-* @param pRtosMsgQueueBuffer    -
-* @param uiRtosMsgQueueSize     -
-* @param uiRtosMsgQueueItemSize -
-* @param pRtosalMsgQueueName    -
+* @param pRtosalMsgQueueCb      - Pointer to queue control block to be created
+* @param pRtosMsgQueueBuffer    - Poiter to the queue buffer (its size must be
+*                                 uiRtosMsgQueueSize * uiRtosMsgQueueItemSize)
+* @param uiRtosMsgQueueSize     - Maximum number of items ( queue deep )
+* @param uiRtosMsgQueueItemSize - Queue message-item size in bytes
+* @param pRtosalMsgQueueName    - String of the queue name (for debuging)
 *
 * @return u32_t               - D_RTOSAL_SUCCESS
-*                             - D_RTOSAL_QUEUE_ERROR
-*                             - D_RTOSAL_PTR_ERROR
-*                             - D_RTOSAL_SIZE_ERROR
-*                             - D_RTOSAL_CALLER_ERROR
+*                             - D_RTOSAL_QUEUE_ERROR  - The pRtosalMsgQueueCb is invalid or been used
+*                             - D_RTOSAL_PTR_ERROR    - Invalid pRtosMsgQueueBuffer 
+*                             - D_RTOSAL_SIZE_ERROR   - Invalid uiRtosMsgQueueSize
+*                             - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosMsgQueueBuffer,
                            u32_t uiRtosMsgQueueSize, u32_t uiRtosMsgQueueItemSize,
                            s08_t* pRtosalMsgQueueName)
 {
    u32_t uiRes;
-
+   // Todo: we can only allow message size of min 4bytes . we need to reutrn error otherwise 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueCb, pRtosalMsgQueueCb == NULL, D_RTOSAL_QUEUE_ERROR);
 
 #ifdef D_USE_FREERTOS
@@ -104,7 +104,9 @@ u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosMsgQu
       uiRes = D_RTOSAL_QUEUE_ERROR;
    }
 #elif D_USE_THREADX
-   // TODO:
+   // TODO: ?????
+   // for thread, on uiRtosMsgQueueItemSize we need to translate bytes to numerical values: 1-16 where each idx is 32bit word
+   // and on uiRtosMsgQueueSize we need to trans to bytes
    //uiRes = add a call to ThreadX queue create API
 #endif /* #ifdef D_USE_FREERTOS */
 
@@ -117,8 +119,8 @@ u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosMsgQu
 * @param pRtosalMsgQueueCb - pointer to queue control block to be destroyed
 *
 * @return u32_t          - D_RTOSAL_SUCCESS
-*                        - D_RTOSAL_QUEUE_ERROR
-*                        - D_RTOSAL_CALLER_ERROR
+*                        - D_RTOSAL_QUEUE_ERROR - the ptr, MsgQueueCB, in the pRtosalMsgQueueCb is invalid
+*                        - D_RTOSAL_CALLER_ERROR - the caller can not call this function
 */
 u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
 {
@@ -140,19 +142,22 @@ u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
 /**
 * Add an item to the queue front/back
 *
-* @param pRtosalMsgQueueCb   - pointer to queue control block to add the item to
-* @param pRtosalMsgQueueItem -
-* @param uiWaitTimeoutTicks  -
+* @param pRtosalMsgQueueCb   - Pointer to queue control block to add the item to
+* @param pRtosalMsgQueueItem - Pointer to a memory containing the item to add (to be copy)
+* @param uiWaitTimeoutTicks  - In case queue is full, how many ticks to wait until
+*                              the queue can accommodate a new item: 
+*                              D_RTOSAL_NO_WAIT, D_RTOSAL_WAIT_FOREVER or timer ticks value
 * @param uiSendToFront       - D_RTOSAL_TRUE:
 *                              D_RTOSAL_FALSE:
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_DELETED
-*                          - D_RTOSAL_QUEUE_FULL
-*                          - D_RTOSAL_WAIT_ABORTED
-*                          - D_RTOSAL_QUEUE_ERROR
-*                          - D_RTOSAL_PTR_ERROR
-*                          - D_RTOSAL_WAIT_ERROR
+*                          - D_RTOSAL_DELETED - The message queue was already deleted when this api was called 
+*                          - D_RTOSAL_QUEUE_FULL - Queue is full for the provided window time  
+*                          - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
+*                          - D_RTOSAL_QUEUE_ERROR - the ptr, MsgQueueCB, in the pRtosalMsgQueueCb is invalid
+*                          - D_RTOSAL_PTR_ERROR  - invalid pRtosalMsgQueueItem 
+*                          - D_RTOSAL_WAIT_ERROR - invalide uiWaitTimeoutTicks: if caller is not a thread it 
+*                                                   must use "NO WAIT"
 */
 u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
                        u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
@@ -162,9 +167,8 @@ u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosa
 }
 
 #ifdef D_USE_FREERTOS
-D_ALWAYS_INLINE
-D_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
-                       u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
+D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+                                    u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
@@ -221,9 +225,8 @@ D_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRt
    return uiRes;
 }
 #elif D_USE_THREADX
-D_ALWAYS_INLINE
-D_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
-                       u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
+D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem, 
+                                    u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
 
@@ -248,19 +251,22 @@ D_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
 /**
 * Retrieve an item from the queue.
 *
-* @param pRtosalMsgQueueCb   - pointer to queue control block to get the item from
-* @param pRtosalMsgQueueItem -
-* @param uiWaitTimeoutTicks  -
+* @param pRtosalMsgQueueCb     - Pointer to queue control block to get the item from
+* @param pRtosalMsgQueueDstBuf - Pointer to a memory destination for which the item shall be copied to
+* @param uiWaitTimeoutTicks    - in case queue is empty, how many ticks to wait until
+*                                the queue becomes non-empty.
+*                                Provide: D_RTOSAL_NO_WAIT, D_RTOSAL_WAIT_FOREVER or timer ticks value
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_DELETED
-*                          - D_RTOSAL_QUEUE_EMPTY
-*                          - D_RTOSAL_WAIT_ABORTED
-*                          - D_RTOSAL_QUEUE_ERROR
-*                          - D_RTOSAL_PTR_ERROR
-*                          - D_RTOSAL_WAIT_ERROR
+*                          - D_RTOSAL_DELETED - The message queue was already deleted when this api was called 
+*                          - D_RTOSAL_QUEUE_EMPTY - The queue is empty for the giving window time
+*                          - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
+*                          - D_RTOSAL_QUEUE_ERROR - The ptr, MsgQueueCB, in the pRtosalMsgQueueCb is invalid
+*                          - D_RTOSAL_PTR_ERROR   - invalid pRtosalMsgQueueItem 
+*                          - D_RTOSAL_WAIT_ERROR  - invalide uiWaitTimeoutTicks: if caller is not thread he 
+*                                                   must used "NO WAIT"
 */
-u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
+u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueDstBuf,
                             u32_t uiWaitTimeoutTicks)
 {
    u32_t uiRes;
@@ -276,11 +282,11 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
    /* rtosalMsgQueueRecieve invoked from an ISR context */
    if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
-      uiRes = xQueueReceiveFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
+      uiRes = xQueueReceiveFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, &xHigherPriorityTaskWoken);
    }
    else
    {
-      uiRes = xQueueReceive(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, uiWaitTimeoutTicks);
+      uiRes = xQueueReceive(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, uiWaitTimeoutTicks);
    }
 
    /* message sent successfuly */
