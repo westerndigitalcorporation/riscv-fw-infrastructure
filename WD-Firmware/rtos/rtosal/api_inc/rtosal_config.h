@@ -26,12 +26,16 @@
 /**
 * include files
 */
+
+//[OS]: TODO: need to add the min stack size for both RTOS
+   
 #ifdef D_USE_FREERTOS
    #include "FreeRTOS.h"
 #if (configSUPPORT_STATIC_ALLOCATION!=1) || (configSUPPORT_DYNAMIC_ALLOCATION!=0)
    #error *** RTOSAL port to FreeRTOS supports only static allocation ***
    #error *** please set configSUPPORT_STATIC_ALLOCATION to 1 and configSUPPORT_DYNAMIC_ALLOCATION to 0 in FreeRTOSConfig.h ***
 #endif /* #if (configSUPPORT_STATIC_ALLOCATION!=1) || (configSUPPORT_DYNAMIC_ALLOCATION!=0) */
+
 #elif D_USE_THREADX
    #include "TBD: the root api"
 #else

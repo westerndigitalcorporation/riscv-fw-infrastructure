@@ -59,7 +59,7 @@
    #define D_RTOSAL_TICK_ERROR                   0x17
    #define D_RTOSAL_ACTIVATE_ERROR               0x18
    #define D_RTOSAL_THRESH_ERROR                 0x19
-   #define D_RTOSAL_SUSPEND_LIFTED               0x1A
+   #define D_RTOSAL_SUSPEND_REMOVED              0x1A
    #define D_RTOSAL_WAIT_ABORTED                 0x1B
    #define D_RTOSAL_WAIT_ABORT_ERROR             0x1C
    #define D_RTOSAL_MUTEX_ERROR                  0x1D
@@ -98,7 +98,7 @@
    #define D_RTOSAL_TICK_ERROR                   TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_ACTIVATE_ERROR               TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_THRESH_ERROR                 TBD_TAKE_VAL_FROM_TX
-   #define D_RTOSAL_SUSPEND_LIFTED               TBD_TAKE_VAL_FROM_TX
+   #define D_RTOSAL_SUSPEND_REMOVED              TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_WAIT_ABORTED                 TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_WAIT_ABORT_ERROR             TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_MUTEX_ERROR                  TBD_TAKE_VAL_FROM_TX
