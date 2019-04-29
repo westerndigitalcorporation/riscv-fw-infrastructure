@@ -83,6 +83,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+/* [OS] TOOD: need to think if we want to thread port.c with rtosal ??? */
+//#include "rtosal_interrupt_api.h"
+extern void rtosalTick(void);
 
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
