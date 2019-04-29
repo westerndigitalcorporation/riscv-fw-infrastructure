@@ -91,7 +91,7 @@ u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
    /* for one time timer */
    uiAutoReload = (uiRescheduleTicks != 0) ? (pdTRUE) : (pdFALSE);
    pRtosalTimerCb->timerHandle = xTimerCreateStatic((const char *)pRtosTimerName, uiTicks, uiAutoReload,
-                                     (void*)uiTimeCallbackParam, fptrRtosTimerCallcabk,
+                                     (void*)uiTimeCallbackParam, (TimerCallbackFunction_t)fptrRtosTimerCallcabk,
                                      (StaticTimer_t*)pRtosalTimerCb->cTimerCB);
    /* failed to create the timer */
    if (pRtosalTimerCb->timerHandle == NULL)
