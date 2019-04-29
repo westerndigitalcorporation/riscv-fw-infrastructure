@@ -50,7 +50,7 @@
 /**
 * local prototypes
 */
-D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
                                        u32_t uiWaitTimeoutTicks, u32_t uiSendToFront);
 
 /**
@@ -167,7 +167,7 @@ u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosa
 }
 
 #ifdef D_USE_FREERTOS
-D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
                                     u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
@@ -225,7 +225,7 @@ D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const vo
    return uiRes;
 }
 #elif D_USE_THREADX
-D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem, 
+D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
                                     u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
@@ -278,7 +278,7 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueCb, pRtosalMsgQueueCb == NULL, D_RTOSAL_QUEUE_ERROR);
 
 #ifdef D_USE_FREERTOS
-   M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueItem, pRtosalMsgQueueItem == NULL, D_RTOSAL_PTR_ERROR);
+   M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueDstBuf, pRtosalMsgQueueDstBuf == NULL, D_RTOSAL_PTR_ERROR);
    /* rtosalMsgQueueRecieve invoked from an ISR context */
    if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
