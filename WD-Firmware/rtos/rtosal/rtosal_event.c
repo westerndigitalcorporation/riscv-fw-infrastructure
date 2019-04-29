@@ -208,7 +208,7 @@ u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb,
 *                             or timer ticks value
 *
 * @return u32_t          - D_RTOSAL_SUCCESS
-*                        - D_RTOSAL_DELETED - The event was deleted when this api was called 
+*                        - D_RTOSAL_DELETED - The event was already deleted when this api was called 
 *                        - D_RTOSAL_NO_EVENTS - time out while waiting for the event 
 *                        - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
 *                        - D_RTOSAL_GROUP_ERROR - the ptr in the group CB is invalid
