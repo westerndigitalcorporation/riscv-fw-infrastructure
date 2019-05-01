@@ -40,13 +40,13 @@
 #ifdef D_USE_FREERTOS
    #define M_TASK_CB_SIZE_IN_BYTES        sizeof(StaticTask_t)
 #elif D_USE_THREADX
-   #define M_TASK_CB_SIZE_IN_BYTES        sizeof(TBD)
+   #define M_TASK_CB_SIZE_IN_BYTES        sizeof(TBD)  // size of the CB struct 
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
    #define D_MAX_PRIORITY                 (configMAX_PRIORITIES-1)
 #elif D_USE_THREADX
-   #define D_MAX_PRIORITY                 (TBD)
+   #define D_MAX_PRIORITY                 (TBD)  // size of the CB struct 
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -128,6 +128,7 @@ typedef enum rtosalPriority
    E_RTOSAL_PRIO_30 = 30,
    E_RTOSAL_PRIO_31 = 31,
 #endif /* #ifdef D_USE_FREERTOS */
+   E_RTOSAL_PRIO_MAX = E_RTOSAL_PRIO_31
 } rtosalPriority_t;
 
 typedef struct rtosalTask

@@ -31,7 +31,7 @@
 * definitions
 */
 #define D_INLINE        inline
-#define D_ALWAYS_INLINE __attribute__((always_inline))
+#define D_ALWAYS_INLINE   __attribute__((always_inline))
 
 /**
 * macros

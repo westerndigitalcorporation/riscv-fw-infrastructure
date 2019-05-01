@@ -61,25 +61,30 @@
 /**
 * Task creation function
 *
-* @param  pRtosalTaskCb             - pointer to the task control block to be created
-* @param  pTaskName                 -
-* @param  uiPriority                -
-* @param  fptrRtosalTaskEntryPoint  -
-* @param  uiTaskEntryPointParameter -
-* @param  uiStackSize               -
-* @param  pStackBuffer              -
-* @param  uiTimeSliceTicks          -
-* @param  uiAutoStart               -
-* @param  uiPreemptThuiReshold      -
+* @param  pRtosalTaskCb             - Pointer to the task control block to be created
+* @param  pTaskName                 - String of the Task name (for debuging)
+* @param  uiPriority                - Task priority E_RTOSAL_PRIO_0 (highest) to E_RTOSAL_PRIO_31 (lowest)
+* @param  fptrRtosalTaskEntryPoint  - Task function handler
+* @param  uiTaskEntryPointParameter - Task function handler input parameter
+* @param  uiStackSize               - Task stack size in bytes
+* @param  pStackBuffer              - Pointer to the stack buffer
+* @param  uiTimeSliceTicks          - Ticks widnow time for time slice usage. Use D_RTOSAL_NO_TIME_SLICE 
+*                                     for no time slicing 
+* @param  uiAutoStart               - D_RTOSAL_AUTO_START: start run
+*                                     D_RTOSAL_DONT_START: task will be suspend. rtosalTaskResume() 
+*									  must be invoked to run the task
+* @param  uiPreemptThuiReshold      - Priority threshold, any priority which is higher then uiPreemptThuiReshold
+*                                     will cause preemprion to this task. (value must be below or equal to uiPriority value)
+*                                     If uiPreemptThuiReshold = uiPriority then this task will never be preempted  
 *
 * @return u32_t                    - D_RTOSAL_SUCCESS
-*                                  - D_RTOSAL_TASK_ERROR
-*                                  - D_RTOSAL_PTR_ERROR
-*                                  - D_RTOSAL_SIZE_ERROR
-*                                  - D_RTOSAL_PRIORITY_ERROR
-*                                  - D_RTOSAL_THuiResH_ERROR
-*                                  - D_RTOSAL_START_ERROR
-*                                  - D_RTOSAL_CALLER_ERROR
+*                                  - D_RTOSAL_TASK_ERROR - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
+*                                  - D_RTOSAL_PTR_ERROR - Invalid fptrRtosalTaskEntryPoint or pStackBuffer
+*                                  - D_RTOSAL_SIZE_ERROR - Invalid uiStackSize (must be at lest D_RTOSAL_MIN_STACK_SIZE) 
+*                                  - D_RTOSAL_PRIORITY_ERROR - Invalid uiPriority (must be E_RTOSAL_PRIO_0 to E_RTOSAL_PRIO_MAX)
+*                                  - D_RTOSAL_THRESH_ERROR - Invalid uiPreemptThuiReshold. uiPreemptThuiReshold <= uiPriority
+*                                  - D_RTOSAL_START_ERROR - Invalid uiAutoStart
+*                                  - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtosalPriority_t uiPriority,
                      rtosalTaskHandler_t fptrRtosTaskEntryPoint, u32_t uiTaskEntryPointParameter,
@@ -125,9 +130,10 @@ u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtos
 * @param  pRtosalTaskCb - pointer to the task control block to be destroyed
 *
 * @return u32_t      - D_RTOSAL_SUCCESS
-*                    - D_RTOSAL_TASK_ERROR
-*                    - D_RTOSAL_DELETE_ERROR
-*                    - D_RTOSAL_CALLER_ERROR
+*                    - D_RTOSAL_TASK_ERROR   - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
+*                    - D_RTOSAL_DELETE_ERROR - The caller is a task that try to delete itself or the 
+*                                              the task is not idle
+*                    - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 {
@@ -140,6 +146,7 @@ u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
    // TODO:
+   //we should terminate thread before deleting it on ThreadX
    //uiRes = add a call to ThreadX task delete API
 #endif /* #ifdef D_USE_FREERTOS */
 
@@ -150,14 +157,14 @@ u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 /**
 * Change the priority of a specific task
 *
-* @param  pRtosalTaskCb - pointer to the task control block its priority will be modified
-* @param  uiNewPriority -
-*
+* @param  pRtosalTaskCb - Pointer to the task control block its priority will be modified
+* @param  uiNewPriority - New task priority
+* @param  pOldPriority  - Output value via pointer to the old priority
 * @return u32_t        - D_RTOSAL_SUCCESS
-*                      - D_RTOSAL_TASK_ERROR
-*                      - D_RTOSAL_PRIORITY_ERROR
-*                      - D_RTOSAL_PTR_ERROR
-*                      - D_RTOSAL_CALLER_ERROR
+*                      - D_RTOSAL_TASK_ERROR     - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
+*                      - D_RTOSAL_PRIORITY_ERROR - Invalid uiPriority (must be max E_RTOSAL_PRIO_0 to E_RTOSAL_PRIO_MAX)
+*                      - D_RTOSAL_PTR_ERROR      - Invalid pOldPriority
+*                      - D_RTOSAL_CALLER_ERROR   - The caller can not call this function
 */
 u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
                                u32_t *pOldPriority)
@@ -199,14 +206,14 @@ void rtosalTaskYield(void)
 }
 
 /**
-* uiResume a suspended task
+* Resume a suspended task
 *
 * @param  pRtosalTaskCb - pointer to the task control block to be uiResumed
 *
 * @return u32_t       - D_RTOSAL_SUCCESS
-*                     - D_RTOSAL_SUSPEND_LIFTED
-*                     - D_RTOSAL_TASK_ERROR
-*                     - D_RTOSAL_RESUME_ERROR
+*                     - D_RTOSAL_SUSPEND_REMOVED - Task suspend by time was removed 
+*                     - D_RTOSAL_TASK_ERROR      - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
+*                     - D_RTOSAL_RESUME_ERROR    - The task is not suspended 
 */
 u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 {
@@ -257,11 +264,11 @@ u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 /**
 * Suspend the execution of a current task for a specific time
 *
-* @param  uiTimerTicks -
+* @param  uiTimerTicks - amount of time ticks to delay the task execution
 *
 * @return u32_t        - D_RTOSAL_SUCCESS
-*                      - D_RTOSAL_WAIT_ABORTED
-*                      - D_RTOSAL_CALLER_ERROR
+*                      - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
+*                      - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosalTaskSleep(u32_t uiTimerTicks)
 {
@@ -284,9 +291,9 @@ u32_t rtosalTaskSleep(u32_t uiTimerTicks)
 * @param  pRtosalTaskCb - pointer to the task control block its execution will be suspended
 *
 * @return u32_t       - D_RTOSAL_SUCCESS
-*                     - D_RTOSAL_TASK_ERROR
-*                     - D_RTOSAL_SUSPEND_ERROR
-*                     - D_RTOSAL_CALLER_ERROR
+*                     - D_RTOSAL_TASK_ERROR - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
+*                     - D_RTOSAL_SUSPEND_ERROR - The task is "done state" like terminated
+*                     - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
 {
@@ -311,8 +318,8 @@ u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
 * @param  pRtosalTaskCb - pointer to the task control block to be aborted
 *
 * @return u32_t      - D_RTOSAL_SUCCESS
-*                    - D_RTOSAL_TASK_ERROR
-*                    - D_RTOSAL_WAIT_ABORT_ERROR
+*                    - D_RTOSAL_TASK_ERROR - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
+*                    - D_RTOSAL_WAIT_ABORT_ERROR - The task is not in a block/wait state
 */
 u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 {
