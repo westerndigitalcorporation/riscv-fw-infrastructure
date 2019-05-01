@@ -66,3 +66,60 @@ void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode)
    (void)pParam;
    (void)uiErrorCode;
 }
+
+/**
+* default exception interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+unsigned long rtosalDefaultExceptionIntHandler(unsigned long mcause, unsigned long sp, unsigned long ecallArg)
+{
+	return 0;
+}
+
+/**
+* default machine software interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+void rtosalDefaultMSoftIntHandler(void)
+{
+}
+
+/**
+* default machine timer interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+void rtosalDefaultMTimerIntHandler(void)
+{
+}
+
+/**
+* default machine external interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+void rtosalDefaultMExternIntHandler(void)
+{
+}
+
+/**
+* default empty interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+void rtosalDefaultEmptyIntHandler(void)
+{
+}
+

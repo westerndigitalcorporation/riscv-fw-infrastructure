@@ -35,7 +35,9 @@ list_files_c=[
 #   [os.path.join(rtosal_base,'rtosal_memory.c'), os.path.join(out_dir, 'rtosal_memory.o')],
 ]
 
-list_files_a=[]
+list_files_a=[
+   [os.path.join(rtosal_base,'rtosal_asm.S'), os.path.join(out_dir, 'rtosal_asm.o')],
+]
 
 rtos_core_define = {
   'freertos' :  ['D_USE_FREERTOS'],
@@ -47,7 +49,8 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-Env['RTOSAL_DEF'] = [] + rtos_core_define[Env['RTOS_CORE']]
+Env['RTOSAL_DEF'] = [] + rtos_core_define[Env['RTOS_CORE']] + Env['BSP_DEF']
+c_defines = Env['RTOSAL_DEF']
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
@@ -63,14 +66,14 @@ Env['LINKFLAGS'] += []
 # for objects
 objects = []
 for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=Env['RTOSAL_DEF']))
+  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
 
 # asm file objects
 for list_file in list_files_a:
   objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
 # for libraries
-rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'],'libs', 'rtosal.a'), source=objects)
+rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'rtosal.a'), source=objects)
 
 #print Env.Dump()
 

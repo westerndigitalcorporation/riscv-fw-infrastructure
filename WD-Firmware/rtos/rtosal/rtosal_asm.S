@@ -1,4 +1,3 @@
-
 /*
     FreeRTOS V8.2.3 - Copyright (C) 2015 Real Time Engineers Ltd.
     All rights reserved
@@ -70,36 +69,43 @@
 
     1 tab == 4 spaces!
 */
+#if __riscv_xlen == 64
+#define STORE    sd
+#define LOAD     ld
+#define LOG_REGBYTES 3
+#define ADDI     addiw
+#else
+#define STORE    sw
+#define LOAD     lw
+#define LOG_REGBYTES 2
+#define ADDI     addi
+#endif
+#define REGBYTES (1 << LOG_REGBYTES)
 
-#include "encoding.h"
-#include "sifive/bits.h"
-
-//#if __riscv_xlen == 64
-//# define STORE    sd
-//# define LOAD     ld
-//# define REGBYTES 8
-//#else
-//# define STORE    sw
-//# define LOAD     lw
-//# define REGBYTES 4
-//#endif
-
-#define INT_MASK 0x7FFFFFFF
-
-.section      .text.entry
-.align 4
-
-.global portSAVE_CONTEXT
-.global portRESTORE_CONTEXT
-.global portMTIME_INT
-.global portSAVE_RA
-.global xPortStartScheduler
-.global vPortYield
-.global vTaskIncrementTick
-.global vPortEndScheduler
-.global xExitStack
-.global trap_entry
+.global exceptions_int
+.global s_soft_int
+.global m_soft_int
+.global u_timer_int
+.global s_timer_int
+.global m_timer_int
+.global u_external_int
+.global s_external_int
+.global m_external_int
+.global reserved_int
+.global fptrIntExceptionIntHandler
+.global fptrIntMSoftIntHandler
+.global fptrIntMTimerIntHandler
+.global fptrIntMExternIntHandler
 .global g_uiIsInterruptContext
+
+.macro CALL_INT_HANDLER fptIntHandler
+    /* load the address of provided fptIntHandler */
+    la t0, \fptIntHandler
+    /* load the actual handler address */
+    LOAD t0, 0x0(t0)
+    /* invoker the interrupt handler */
+    jalr t0
+.endm
 
 .macro SET_INT_CONTEXT
 	/* save address of g_uiIsInterruptContext -> t0 */
@@ -127,7 +133,6 @@
 .macro pushREGFILE
 	/* make room in stack */
 	addi	sp, sp, -REGBYTES * 34
-
 	/* Save Context */
 	STORE	x1, 1 * REGBYTES(sp)
 	STORE	x2, 2 * REGBYTES(sp)
@@ -160,41 +165,36 @@
 	STORE	x29, 29 * REGBYTES(sp)
 	STORE	x30, 30 * REGBYTES(sp)
 	STORE	x31, 31 * REGBYTES(sp)
-	
 .endm
 
 /*saves mstatus and tcb	*/
 .macro portSAVE_CONTEXT
 	.global	pxCurrentTCB
-		/* Store mstatus */
+	/* Store mstatus */
 	csrr	t0, mstatus	//pointer
 	STORE	t0, 32 * REGBYTES(sp)
-
 	/* Store current stackpointer in task control block (TCB) */
 	LOAD	t0, pxCurrentTCB	//pointer
 	STORE	sp, 0x0(t0)
 .endm
 
-
 /* Saves current error program counter (EPC) as task program counter */
 .macro portSAVE_EPC
   	csrr	t0, mepc
 	STORE	t0, 33 * REGBYTES(sp)
-
 .endm
 
 /* Saves current return adress (RA) as task program counter */
 .macro portSAVE_RA
 	LOAD	t0, 1 * REGBYTES(sp)
 	STORE	t0, 33 * REGBYTES(sp)
-
 .endm
 
-//not called on a context switch
+/*/not called on a context switch*/
 .macro portRESTORE_X2
 	LOAD 	x2, 2 * REGBYTES(sp)
 	//LOAD 	x3, 3 * REGBYTES(sp)
- .endm
+.endm
 
  /*restore mstatus and tcb	*/
 .macro portRESTORE_CONTEXT
@@ -210,10 +210,8 @@
   	csrw	mstatus, t0
 .endm
 
-
 /* Macro for restoring task context */
 .macro popREGFILE
-
 	/* Restore registers,
 	Skip global pointer because that does not change */
 	LOAD	x1, 1 * REGBYTES(sp)
@@ -246,82 +244,133 @@
 	LOAD	x29, 29 * REGBYTES(sp)
 	LOAD	x30, 30 * REGBYTES(sp)
 	LOAD	x31, 31 * REGBYTES(sp)
-
 	addi	sp, sp, REGBYTES * 34
 .endm
 
-#if 0
-/* Interrupt entry point */
-trap_entry:
-	/* Check for interrupt */
+.section  .text.entry
+.align 4
+.global   vect_table_
+
+#if D_VECT_TABLE == 0
+.global   vect_table
+vect_table:
 	pushREGFILE
 	SET_INT_CONTEXT
-	csrr	a0, mcause
-	blt		a0,zero,interrupt
+	csrr  t0, mcause
+	bge	  t0, zero, vect_table_
+	slli  t0, t0, 2
+	la    t1, vect_table_
+	add   t0, t0, t1
+	jr    t0
+#endif /* #if D_VECT_TABLE == 0 */
 
-	/* synchronous interrupt*/
+#if D_VECT_TABLE == 0
+vect_table_:
+#elif D_VECT_TABLE == 1
+vect_table:
+#endif
+	j exceptions_int
+	.align 2
+	j s_soft_int
+	.align 2
+	j reserved_int
+	.align 2
+    j m_soft_int
+	.align 2
+    j u_timer_int
+	.align 2
+    j s_timer_int
+	.align 2
+    j reserved_int
+	.align 2
+    j m_timer_int
+	.align 2
+    j u_external_int
+	.align 2
+    j s_external_int
+	.align 2
+    j reserved_int
+	.align 2
+    j m_external_int
+
+exceptions_int:
+#if D_VECT_TABLE == 1
+	pushREGFILE
+	SET_INT_CONTEXT
+#endif /* D_VECT_TABLE == 1 */
+	/* pass mcause in a0 */
+	csrr a0, mcause
 	/* pass sp in a1 */
-	mv a1,sp
-	jal ulSynchTrap
-/*  adjust stack pointer back to where it was prior to ulSynchTrap  */
-	mv		sp,a0
+	mv   a1,sp
+	/* call the exception handler */
+	CALL_INT_HANDLER fptrIntExceptionIntHandler
+    /* adjust stack pointer back to
+       where it was prior to ulSynchTrap  */
+	mv	sp,a0
 	CLEAR_INT_CONTEXT
 	popREGFILE
 	mret
 
-/* async interrupt, this function is called */
-interrupt:
-	li      t0,INT_MASK
-	and     a0,a0,t0
-	li      t0, 0x7
-	beq     a0,t0, MTIME_IRQ
-	/* Interupt not m-time interrupt */
-	/* pass the exception code in a0 */
-	jal 	handle_interrupt
-	portRESTORE_X2
+.weak s_soft_int
+s_soft_int:
+1:
+  j 1b
+
+m_soft_int:
+#if D_VECT_TABLE == 1
+	pushREGFILE
+	SET_INT_CONTEXT
+#endif /* D_VECT_TABLE == 1 */
+    CALL_INT_HANDLER fptrIntMSoftIntHandler
 	CLEAR_INT_CONTEXT
 	popREGFILE
 	mret
 
-	/* Interupt is m-time  */
-MTIME_IRQ:
+.weak u_timer_int
+u_timer_int:
+1:
+  j 1b
+
+.weak s_timer_int
+s_timer_int:
+1:
+  j 1b
+
+m_timer_int:
+#if D_VECT_TABLE == 1
+	pushREGFILE
+	SET_INT_CONTEXT
+#endif /* D_VECT_TABLE == 1 */
 	portSAVE_CONTEXT
 	portSAVE_EPC
-	jal		vPortSysTickHandler
+    CALL_INT_HANDLER fptrIntMTimerIntHandler
 	portRESTORE_CONTEXT
 	CLEAR_INT_CONTEXT
 	popREGFILE
 	mret
 
-#endif /* 0 */
-
-xPortStartScheduler:
-	jal		vPortSetup
-	portRESTORE_CONTEXT
-	popREGFILE
-	mret
-
-
-vPortYield:
-/*  adjust stack pointer back to where it was prior to ulSynchTrap  */
-	mv		sp,a0
-	portSAVE_CONTEXT
-
-/* context return point was passed back to this function in a1 */
-	STORE	a1, 33 * REGBYTES(sp)
-    /* switch context */
-	jal		vTaskSwitchContext
-	portRESTORE_CONTEXT
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-vPortEndScheduler:
+.weak u_external_int
+u_external_int:
 1:
-	j		1b
+  j 1b
 
+.weak s_external_int
+s_external_int:
+1:
+  j 1b
 
-.weak handle_interrupt
-handle_interrupt:
+m_external_int:
+#if D_VECT_TABLE == 1
+	pushREGFILE
+	SET_INT_CONTEXT
+#endif /* D_VECT_TABLE == 1 */
+    CALL_INT_HANDLER fptrIntMExternIntHandler
+    portRESTORE_X2
+	CLEAR_INT_CONTEXT
+	popREGFILE
+	mret
+
+.weak reserved_int
+reserved_int:
 1:
   j 1b

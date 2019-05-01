@@ -200,7 +200,7 @@ StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t px
 	/* Simulate the stack frame as it would be created by a context switch
 	interrupt. */
 
-	register int *tp asm("x3");
+	//register int *tp asm("x3");
 	pxTopOfStack--;
 	*pxTopOfStack = (portSTACK_TYPE)pxCode;			/* Start address */
 
