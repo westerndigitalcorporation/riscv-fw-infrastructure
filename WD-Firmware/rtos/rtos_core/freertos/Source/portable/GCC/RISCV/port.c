@@ -83,6 +83,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+/* [OS] TOOD: need to think if we want to thread port.c with rtosal ??? */
+//#include "rtosal_interrupt_api.h"
+extern void rtosalTick(void);
 
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
@@ -200,7 +203,7 @@ StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t px
 	/* Simulate the stack frame as it would be created by a context switch
 	interrupt. */
 
-	register int *tp asm("x3");
+	//[OS]not in used ... register int *tp asm("x3");
 	pxTopOfStack--;
 	*pxTopOfStack = (portSTACK_TYPE)pxCode;			/* Start address */
 

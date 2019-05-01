@@ -61,19 +61,26 @@
 /**
 * @brief Timer creation function
 *
-* @param pRtosalTimerCb    - pointer to the timer control block to be created
-* @param pTimerName        -
-* @param fptrTimerCallcabk -
-* @param pTimeParam        -
-* @param uiAutoActivate    -
-* @param uiTicks           -
-* @param uiRescheduleTicks -
+* @param pRtosalTimerCb    - Pointer to the timer control block to be created
+* @param pTimerName        - String of the timer name (for debuging)
+* @param fptrTimerCallcabk - Function handler for timer expiration processing
+* @param pTimeParam        - A parameter to pass to the timer expiration function
+*                            handler
+* @param uiAutoActivate    - Auto start timer after creation, Usage: 
+*                            D_RTOSAL_AUTO_START timer shall be activated when created
+*                            D_RTOSAL_NO_ACTIVATE dont start timer on creation 
+*                            created; otherwise D_RTOSAL_NO_ACTIVATE
+* @param uiTicks           - Timer expiration period
+* @param uiRescheduleTicks - Timer period after first expiration; used for
+*                            periodic timer, meaning after expiration of uiTicks,
+*                            how many ticks to wait before activating again 
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_TIMER_ERROR
-*                          - D_RTOSAL_TICK_ERROR
-*                          - D_RTOSAL_ACTIVATE_ERROR
-*                          - D_RTOSAL_CALLER_ERROR
+*                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
+*                                                   or fptrTimerCallcabk is inavlid
+*                          - D_RTOSAL_TICK_ERROR - Invalid uiTicks
+*                          - D_RTOSAL_ACTIVATE_ERROR - Invalid uiAutoActivate
+*                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
                      rtosalTimerHandler_t fptrRtosTimerCallcabk,
@@ -91,7 +98,7 @@ u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
    /* for one time timer */
    uiAutoReload = (uiRescheduleTicks != 0) ? (pdTRUE) : (pdFALSE);
    pRtosalTimerCb->timerHandle = xTimerCreateStatic((const char *)pRtosTimerName, uiTicks, uiAutoReload,
-                                     (void*)uiTimeCallbackParam, fptrRtosTimerCallcabk,
+                                     (void*)uiTimeCallbackParam, (TimerCallbackFunction_t)fptrRtosTimerCallcabk,
                                      (StaticTimer_t*)pRtosalTimerCb->cTimerCB);
    /* failed to create the timer */
    if (pRtosalTimerCb->timerHandle == NULL)
@@ -127,11 +134,11 @@ u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
 /**
 * @brief Destroy a timer
 *
-* @param pRtosalTimerCb    - pointer to the timer control block to be destroyed
+* @param pRtosalTimerCb    - Pointer to the timer control block to be destroyed
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_TIMER_ERROR
-*                          - D_RTOSAL_CALLER_ERROR
+*                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
+*                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 u32_t rtosTimerDestroy(rtosalTimer_t* pRtosalTimerCb)
 {
@@ -160,12 +167,12 @@ u32_t rtosTimerDestroy(rtosalTimer_t* pRtosalTimerCb)
 /**
 * @brief Start a timer
 *
-* @param pRtosalTimerCb    - pointer to the timer control block to be started
+* @param pRtosalTimerCb    - Pointer to the timer control block to be started
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_TIMER_ERROR
-*                          - D_RTOSAL_ACTIVATE_ERROR
-*                          - D_RTOSAL_FAIL
+*                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
+*                          - D_RTOSAL_ACTIVATE_ERROR - Timer is already running or already expried
+*                          - D_RTOSAL_FAIL - Timers was not activated, request to active was rejected
 */
 u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 {
@@ -214,11 +221,11 @@ u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 /**
 * @brief Stop a timer
 *
-* @param pRtosalTimerCb    - pointer to the timer control block to be started
+* @param pRtosalTimerCb    - Pointer to the timer control block to be started
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_TIMER_ERROR
-*                          - D_RTOSAL_FAIL
+*                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
+*                          - D_RTOSAL_FAIL - Timers was not Stopped, request to stop was rejected
 */
 u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 {
@@ -267,14 +274,17 @@ u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 /**
 * @brief Modify the timer expiration value
 *
-* @param pRtosalTimerCb    - pointer to the timer control block to be modified
-* @param uiTicks           -
-* @param uiRescheduleTicks -
+* @param pRtosalTimerCb    - Pointer to the timer control block to be modified
+* @param uiTicks           - Timer expiration period
+* @param uiRescheduleTicks - Timer period after first expiration; used for
+*                            periodic timer, meaning after expiration of uiTicks,
+*                            how many ticks to wait before activating again
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_TIMER_ERROR
-*                          - D_RTOSAL_TICK_ERROR
-*                          - D_RTOSAL_CALLER_ERROR
+*                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
+*                          - D_RTOSAL_TICK_ERROR - Invalid uiTicks
+*                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
+*                          - D_RTOSAL_ACTIVATE_ERROR - Timer is already running or already expried
 */
 u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t uiTicks, u32_t uiRescheduleTicks)
 {
