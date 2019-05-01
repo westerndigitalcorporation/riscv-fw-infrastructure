@@ -42,14 +42,26 @@
 * types
 */
 /* */
-typedef enum rtosalInterruptCause
+typedef enum rtosalInterruptSource
 {
-   userSoftwareInterrupt = 0,
-} rtosalInterruptCause_t;
+   E_USER_SOFTWARE_SOURCE_INT = 0,
+   E_SUPERVISOR_SOFTWARE_SOURCE_INT = 1,
+   E_RESERVED_SOFTWARE_SOURCE_INT = 2,
+   E_MACHINE_SOFTWARE_SOURCE_INT = 3,
+   E_USER_TIMER_SOURCE_INT = 4,
+   E_SUPERVISOR_TIMER_SOURCE_INT = 5,
+   E_RESERVED_TIMER_SOURCE_INT = 6,
+   E_MACHINE_TIMER_SOURCE_INT = 7,
+   E_USER_EXTERNAL_SOURCE_INT = 8,
+   E_SUPERVISOR_EXTERNAL_SOURCE_INT = 9,
+   E_RESERVED_EXTERNAL_SOURCE_INT = 10,
+   E_MACHINE_EXTERNAL_SOURCE_INT = 11,
+   E_LAST_SOURCE_INT
+} rtosalInterruptSource_t;
 
 /* interrupt handler definition */
 typedef void (*rtosalInterruptHandler_t)(void);
-
+typedef unsigned long (*rtosalExceptionHandler_t)(unsigned long mcause, unsigned long sp, unsigned long ecallArg);
 
 /**
 * local prototypes
@@ -67,29 +79,9 @@ typedef void (*rtosalInterruptHandler_t)(void);
 * APIs
 */
 
-/**
-* This function is invoked by the system timer interrupt
-*
-* @param  none
-*
-* @return none
-*/
 void rtosalTick(void);
 
-/**
-* The function installs an interrupt service routine per risc-v cuase
-*
-* @param fptrRtosalInterruptHandler – function pointer to the interrupt
-*                                   service routine
-* @param uiInterruptId             – interrupt ID number
-* @param uiInterruptPriority       – interrupt priority
-* @param stCauseIndex               – value of the mcuase register this
-*                                   interrupt is assigned to
-* @return u32_t                   - D_RTOSAL_SUCCESS
-*                                 - D_RTOSAL_CALLER_ERROR
-*/
-u32_t rtosalInstallIsr(rtosalInterruptHandler_t fptrRtosalInterruptHandler,
-                       u32_t uiInterruptId , u32_t uiInterruptPriority,
-                       rtosalInterruptCause_t stCauseIndex);
+u32_t rtosalInstallIsr(rtosalInterruptHandler_t fptrRtosalInterruptHandler, rtosalInterruptSource_t eSourceInt);
+u32_t rtosalInstallExceptionIsr(rtosalExceptionHandler_t fptrRtosalExceptionHandler);
 
 #endif /* __RTOSAL_INTERRUPT_API_H__ */

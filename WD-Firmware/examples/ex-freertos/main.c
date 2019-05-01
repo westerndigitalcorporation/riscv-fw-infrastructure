@@ -73,6 +73,7 @@
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
 #include "rtosal_util_api.h"
+#include "rtosal_interrupt_api.h"
 #include "task.h"     /* for tskIDLE_PRIORITY */
 #else
 /* Kernel includes. */
@@ -193,6 +194,9 @@ static StaticTask_t xIdleTaskTCBBuffer;
 static StackType_t xIdleStack[D_IDLE_TASK_SIZE];
 static StaticTask_t xTimerTaskTCBBuffer;
 static StackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
+void handle_interrupt(void);
+extern void vPortSysTickHandler();
+extern unsigned long ulSynchTrap(unsigned long mcause, unsigned long sp, unsigned long arg1);
 #endif /* D_USE_RTOSAL */
 
 void demo_init(void* pMem);
@@ -226,6 +230,15 @@ void demo_init(void *pMem)
     /* Configure the system ready to run the demo.  The clock configuration
     can be done here if it was not done before main() was called. */
     prvSetupHardware();
+
+#ifdef D_USE_RTOSAL
+    /* install exception handler */
+    rtosalInstallExceptionIsr(ulSynchTrap);
+    /* install timer interrupt handler */
+    rtosalInstallIsr(vPortSysTickHandler, E_MACHINE_TIMER_SOURCE_INT);
+    /* install timer interrupt handler */
+    rtosalInstallIsr(handle_interrupt, E_MACHINE_EXTERNAL_SOURCE_INT);
+#endif /* D_USE_RTOSAL */
 
     /* Create the queue used by the queue send and queue receive tasks. */
 #ifndef D_USE_RTOSAL
@@ -606,7 +619,7 @@ void wake_ISR( )    {
     GPIO_REG(GPIO_FALL_IP) |= (1<<PIN_2_OFFSET);
 }
 /*-----------------------------------------------------------*/
-
+#ifndef D_USE_RTOSAL
 /*Entry Point for Interrupt Handler*/
 void handle_interrupt(unsigned long mcause){
 
@@ -618,6 +631,14 @@ void handle_interrupt(unsigned long mcause){
   }
 
 }
+#else
+void handle_interrupt(void)
+{
+    plic_source int_num  = PLIC_claim_interrupt(&g_plic);
+    g_ext_interrupt_handlers[int_num]();
+    PLIC_complete_interrupt(&g_plic, int_num);
+}
+#endif /* #ifndef D_USE_RTOSAL */
 
 /*-----------------------------------------------------------*/
 //enables interrupt and assigns handler
