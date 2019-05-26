@@ -6,11 +6,11 @@
 #include "platform.h"
 #include "encoding.h"
 
-#ifndef D_USE_RTOSAL
+#if 0
 extern void trap_entry();
 #else
 extern void vect_table();
-#endif /* #ifndef D_USE_RTOSAL */
+#endif
 
 static unsigned long mtime_lo(void)
 {
@@ -233,11 +233,11 @@ void _init()
  write(1, freq_string, 9);
  write(1, "Hz\n",3);
 
-#ifndef D_USE_RTOSAL
+#if 0
   write_csr(mtvec, &trap_entry);
 #else
   write_csr(mtvec, &vect_table);
-#endif /* #ifndef D_USE_RTOSAL */
+#endif
 
   if (read_csr(misa) & (1 << ('F' - 'A'))) { // if F extension is present
     write_csr(mstatus, MSTATUS_FS); // allow FPU instructions without trapping

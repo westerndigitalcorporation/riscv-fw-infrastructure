@@ -24,7 +24,6 @@ if not os.path.exists(out_dir):
 rtosal_base = os.path.join('rtos', 'rtosal')
 list_files_c=[
    [os.path.join(rtosal_base,'rtosal_event.c'), os.path.join(out_dir, 'rtosal_event.o')],
-   [os.path.join(rtosal_base,'rtosal_interrupt.c'), os.path.join(out_dir, 'rtosal_interrupt.o')],
    [os.path.join(rtosal_base,'rtosal_util.c'), os.path.join(out_dir, 'rtosal_util.o')],
    [os.path.join(rtosal_base,'rtosal_mutex.c'), os.path.join(out_dir, 'rtosal_mutex.o')],
    [os.path.join(rtosal_base,'rtosal_queue.c'), os.path.join(out_dir, 'rtosal_queue.o')],
@@ -49,7 +48,7 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-Env['RTOSAL_DEF'] = [] + rtos_core_define[Env['RTOS_CORE']] + Env['BSP_DEF']
+Env['RTOSAL_DEF'] = ['D_USE_RTOSAL'] + Env['BSP_DEF'] + rtos_core_define[Env['RTOS_CORE']]
 c_defines = Env['RTOSAL_DEF']
 
 # include paths

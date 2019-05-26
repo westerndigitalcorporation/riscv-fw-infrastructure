@@ -102,10 +102,10 @@ static void prvTaskExitError( void );
 
 
 /*-----------------------------------------------------------*/
-
 /* System Call Trap */
 //ECALL macro stores argument in a2
-unsigned long ulSynchTrap(unsigned long mcause, unsigned long sp, unsigned long arg1)	{
+unsigned long ulSynchTrap(unsigned long mcause, unsigned long sp, unsigned long arg1)
+{
 
 	switch(mcause)	{
 		//on User and Machine ECALL, handler the request
@@ -142,6 +142,16 @@ unsigned long ulSynchTrap(unsigned long mcause, unsigned long sp, unsigned long 
 	return sp;
 }
 
+void vSynchTrap(void)
+{
+	vPortYield();
+}
+
+void vSynchTrapUnhandled(void)
+{
+	write(1, "trap\n", 5);
+	_exit(read_csr(mcause));
+}
 
 void vPortEnterCritical( void )
 {
@@ -254,7 +264,7 @@ void vPortSysTickHandler(){
 	*mtimecmp = then;
 
    /* Increment the RTOS tick. */
-#if 0
+#ifndef D_USE_RTOSAL
 	if( xTaskIncrementTick() != pdFALSE )
 	{
 		vTaskSwitchContext();

@@ -29,6 +29,7 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
+#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "semphr.h"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -69,7 +70,7 @@
 *                                - D_RTOSAL_SEMAPHORE_ERROR
 *                                - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb, s08_t *pRtosalSemaphoreName,
+RTOSAL_SECTION u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb, s08_t *pRtosalSemaphoreName,
                             s32_t iSemaphoreInitialCount, u32_t uiSemaphoreMaxCount)
 {
    u32_t uiRes;
@@ -109,7 +110,7 @@ u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb, s08_t *pRtosa
 *                         - D_RTOSAL_SEMAPHORE_ERROR
 *                         - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreCb)
+RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreCb)
 {
    u32_t uiRes;
 
@@ -139,7 +140,7 @@ u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreCb)
 *                          - D_RTOSAL_SEMAPHORE_ERROR
 *                          - D_RTOSAL_WAIT_ERROR
 */
-u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, u32_t uiWaitTimeoutTicks)
+RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, u32_t uiWaitTimeoutTicks)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -151,7 +152,7 @@ u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, u32_t uiWaitTim
 
 #ifdef D_USE_FREERTOS
    /* rtosalSemaphoreWait invoked from an ISR context */
-   if (pspIsInterruptContext() == D_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
    {
       uiRes = xSemaphoreTakeFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
    }
@@ -190,7 +191,7 @@ u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, u32_t uiWaitTim
 * @return u32_t           - D_RTOSAL_SUCCESS
 *                         - D_RTOSAL_SEMAPHORE_ERROR
 */
-u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreCb)
+RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreCb)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -202,7 +203,7 @@ u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosalSemaphoreRelease invoked from an ISR context */
-   if (pspIsInterruptContext() == D_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
    {
       uiRes = xSemaphoreGiveFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
    }

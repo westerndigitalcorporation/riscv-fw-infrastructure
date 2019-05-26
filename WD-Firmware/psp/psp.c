@@ -39,21 +39,4 @@
 /**
 * types
 */
-u32_t g_uiIsInterruptContext = D_NON_INT_CONTEXT;
 
-/**
-* local prototypes
-*/
-
-/**
-* @brief check if in ISR context
-*
-* @param None
-*
-* @return u32_t            - D_NON_INT_CONTEXT
-*                          - non zero value - interrupt context
-*/
-u32_t pspIsInterruptContext(void)
-{
-   return (g_uiIsInterruptContext > 0);
-}

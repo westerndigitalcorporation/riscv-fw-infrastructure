@@ -143,24 +143,4 @@
    #define D_RTOSAL_NO_TIME_SLICE                TBD_TAKE_VAL_FROM_TX
 #endif /* #ifdef D_USE_FREERTOS */
 
-/**
-* macros
-*/
-
-/**
-* types
-*/
-
-/**
-* local prototypes
-*/
-
-/**
-* external prototypes
-*/
-
-/**
-* global variables
-*/
-
 #endif /* __RTOSAL_DEFINES_H__ */

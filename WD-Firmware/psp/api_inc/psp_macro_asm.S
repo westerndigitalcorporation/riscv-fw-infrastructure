@@ -1,4 +1,3 @@
-
 /*
     FreeRTOS V8.2.3 - Copyright (C) 2015 Real Time Engineers Ltd.
     All rights reserved
@@ -70,64 +69,32 @@
 
     1 tab == 4 spaces!
 */
+#if __riscv_xlen == 64
+#define STORE    sd
+#define LOAD     ld
+#define LOG_REGBYTES 3
+#define ADDI     addiw
+#else
+#define STORE    sw
+#define LOAD     lw
+#define LOG_REGBYTES 2
+#define ADDI     addi
+#endif
+#define REGBYTES (1 << LOG_REGBYTES)
 
-#include "encoding.h"
-#include "sifive/bits.h"
-
-//#if __riscv_xlen == 64
-//# define STORE    sd
-//# define LOAD     ld
-//# define REGBYTES 8
-//#else
-//# define STORE    sw
-//# define LOAD     lw
-//# define REGBYTES 4
-//#endif
-
-#define INT_MASK 0x7FFFFFFF
-
-.section      .text.entry
-.align 4
-
-.global portSAVE_CONTEXT
-.global portRESTORE_CONTEXT
-.global portMTIME_INT
-.global portSAVE_RA
-.global xPortStartScheduler
-.global vPortYield
-.global vTaskIncrementTick
-.global vPortEndScheduler
-.global xExitStack
-.global trap_entry
-.global vPortYieldFromInterrupt
-
-.macro SET_INT_CONTEXT
-	/* save address of g_uiIsInterruptContext -> t0 */
-	la   	t0, g_uiIsInterruptContext
-	/* load the value g_uiIsInterruptContext -> t1 */
-	LOAD	t1, 0x0(t0)
-	/* increment t1 by 1 */
-	ADDI    t1, t1, 1
-	/* store new value to g_uiIsInterruptContext */
-	STORE	t1, 0x0(t0)
-.endm
-
-.macro CLEAR_INT_CONTEXT
-	/* save address of g_uiIsInterruptContext -> t0 */
-	la      t0, g_uiIsInterruptContext
-	/* load the value g_uiIsInterruptContext -> t1 */
-	LOAD	t1, 0x0(t0)
-	/* decrement t1 by 1 */
-	ADDI    t1, t1, -1
-	/* store new value to g_uiIsInterruptContext */
-	STORE	t1, 0x0(t0)
+.macro CALL_INT_HANDLER fptIntHandler
+    /* load the address of provided fptIntHandler */
+    la t0, \fptIntHandler
+    /* load the actual handler address */
+    LOAD t0, 0x0(t0)
+    /* invoker the interrupt handler */
+    jalr t0
 .endm
 
 /* Macro for saving task context */
 .macro pushREGFILE
 	/* make room in stack */
 	addi	sp, sp, -REGBYTES * 34
-
 	/* Save Context */
 	STORE	x1, 1 * REGBYTES(sp)
 	STORE	x2, 2 * REGBYTES(sp)
@@ -160,60 +127,27 @@
 	STORE	x29, 29 * REGBYTES(sp)
 	STORE	x30, 30 * REGBYTES(sp)
 	STORE	x31, 31 * REGBYTES(sp)
-	
 .endm
-
-/*saves mstatus and tcb	*/
-.macro portSAVE_CONTEXT
-	.global	pxCurrentTCB
-		/* Store mstatus */
-	csrr	t0, mstatus	//pointer
-	STORE	t0, 32 * REGBYTES(sp)
-
-	/* Store current stackpointer in task control block (TCB) */
-	LOAD	t0, pxCurrentTCB	//pointer
-	STORE	sp, 0x0(t0)
-.endm
-
 
 /* Saves current error program counter (EPC) as task program counter */
 .macro portSAVE_EPC
   	csrr	t0, mepc
 	STORE	t0, 33 * REGBYTES(sp)
-
 .endm
 
 /* Saves current return adress (RA) as task program counter */
 .macro portSAVE_RA
 	LOAD	t0, 1 * REGBYTES(sp)
 	STORE	t0, 33 * REGBYTES(sp)
-
 .endm
 
-//not called on a context switch
+/*/not called on a context switch*/
 .macro portRESTORE_X2
 	LOAD 	x2, 2 * REGBYTES(sp)
 	//LOAD 	x3, 3 * REGBYTES(sp)
- .endm
-
- /*restore mstatus and tcb	*/
-.macro portRESTORE_CONTEXT
-	.global	pxCurrentTCB
-	/* Load stack pointer from the current TCB */
-	LOAD	sp, pxCurrentTCB
-	LOAD	sp, 0x0(sp)
-	/* Load task program counter */
-	LOAD	t0, 33 * REGBYTES(sp)
-  	csrw	mepc, t0
-	/* Load saved mstatus */
-	LOAD	t0, 32 * REGBYTES(sp)
-  	csrw	mstatus, t0
 .endm
-
-
 /* Macro for restoring task context */
 .macro popREGFILE
-
 	/* Restore registers,
 	Skip global pointer because that does not change */
 	LOAD	x1, 1 * REGBYTES(sp)
@@ -246,81 +180,5 @@
 	LOAD	x29, 29 * REGBYTES(sp)
 	LOAD	x30, 30 * REGBYTES(sp)
 	LOAD	x31, 31 * REGBYTES(sp)
-
 	addi	sp, sp, REGBYTES * 34
 .endm
-
-#if 0
-/* Interrupt entry point */
-trap_entry:
-	/* Check for interrupt */
-	pushREGFILE
-	SET_INT_CONTEXT
-	csrr	a0, mcause
-	blt		a0,zero,interrupt
-
-	/* synchronous interrupt*/
-	/* pass sp in a1 */
-	mv a1,sp
-	jal ulSynchTrap
-/*  adjust stack pointer back to where it was prior to ulSynchTrap  */
-	mv		sp,a0
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-/* async interrupt, this function is called */
-interrupt:
-	li      t0,INT_MASK
-	and     a0,a0,t0
-	li      t0, 0x7
-	beq     a0,t0, MTIME_IRQ
-	/* Interupt not m-time interrupt */
-	/* pass the exception code in a0 */
-	jal 	handle_interrupt
-	portRESTORE_X2
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-	/* Interupt is m-time  */
-MTIME_IRQ:
-	portSAVE_CONTEXT
-	portSAVE_EPC
-	jal		vPortSysTickHandler
-	portRESTORE_CONTEXT
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-#endif /* 0 */
-
-xPortStartScheduler:
-	jal		vPortSetup
-	portRESTORE_CONTEXT
-	popREGFILE
-	mret
-
-
-vPortYield:
-    csrr  a0, mepc
-    ADDI  a0, a0, 4
-	STORE a0, 33 * REGBYTES(sp)
-
-vPortYieldFromInterrupt:
-	portSAVE_CONTEXT
-	jal		vTaskSwitchContext
-	portRESTORE_CONTEXT
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-vPortEndScheduler:
-1:
-	j		1b
-
-
-.weak handle_interrupt
-handle_interrupt:
-1:
-  j 1b

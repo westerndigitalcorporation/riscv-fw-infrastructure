@@ -71,167 +71,90 @@
 */
 #include "psp_macro_asm.S"
 
-.macro SET_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
-    la      t0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
-    LOAD    t1, 0x0(t0)
-    /* increment t1 by 1 */
-    ADDI    t1, t1, 1
-    /* store new value to g_uiIsInterruptContext */
-    STORE   t1, 0x0(t0)
-.endm
-
-.macro CLEAR_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
-    la      t0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
-    LOAD    t1, 0x0(t0)
-    /* decrement t1 by 1 */
-    ADDI    t1, t1, -1
-    /* store new value to g_uiIsInterruptContext */
-    STORE   t1, 0x0(t0)
-.endm
-
-/*saves mstatus and tcb    */
-.macro portSAVE_CONTEXT
-    .global    pxCurrentTCB
-    /* Store mstatus */
-    csrr    t0, mstatus    //pointer
-    STORE   t0, 32 * REGBYTES(sp)
-    /* Store current stackpointer in task control block (TCB) */
-    LOAD    t0, pxCurrentTCB    //pointer
-    STORE   sp, 0x0(t0)
-.endm
-
- /*restore mstatus and tcb    */
-.macro portRESTORE_CONTEXT
-    .global    pxCurrentTCB
-    /* Load stack pointer from the current TCB */
-    LOAD    sp, pxCurrentTCB
-    LOAD    sp, 0x0(sp)
-    /* Load task program counter */
-    LOAD    t0, 33 * REGBYTES(sp)
-    csrw    mepc, t0
-    /* Load saved mstatus */
-    LOAD    t0, 32 * REGBYTES(sp)
-      csrw    mstatus, t0
-.endm
-
-.macro portEND_SWITCHING_ISR brunch_label
-    /* save address of g_rtosalContextSwitch -> t0 */
-    la      t0, g_rtosalContextSwitch
-    /* load the value g_rtosalContextSwitch -> t1 */
-    LOAD    t1, 0x0(t0)
-    /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz    t1, \brunch_label
-    /* clear g_rtosalContextSwitch */
-    STORE   zero, 0x0(t0)
-    /* perform context switch */
-    j       vPortYieldFromInterrupt
-.endm
-
 .section  .text.entry
 .align 4
 .global   vect_table_
 
-#if D_RTOSAL_VECT_TABLE == 0
+#if D_PSP_VECT_TABLE == 0
 .global   vect_table
 vect_table:
-    pushREGFILE
-    SET_INT_CONTEXT
-    csrr  t0, mcause
-    bge      t0, zero, vect_table_
-    slli  t0, t0, 2
-    la    t1, vect_table_
-    add   t0, t0, t1
-    jr    t0
-#endif /* #if D_RTOSAL_VECT_TABLE == 0 */
+	pushREGFILE
+	csrr  t0, mcause
+	bge	  t0, zero, vect_table_
+	slli  t0, t0, 2
+	la    t1, vect_table_
+	add   t0, t0, t1
+	jr    t0
+#endif /* #if D_PSP_VECT_TABLE == 0 */
 
-#if D_RTOSAL_VECT_TABLE == 0
+#if D_PSP_VECT_TABLE == 0
 vect_table_:
-#elif D_RTOSAL_VECT_TABLE == 1
+#elif D_PSP_VECT_TABLE == 1
 vect_table:
-#endif
-    j exceptions_int
-    .align 2
-    j reserved_int
-    .align 2
-    j reserved_int
-    .align 2
+#endife
+	j exceptions_int
+	.align 2
+	j reserved_int
+	.align 2
+	j reserved_int
+	.align 2
     j m_soft_int
-    .align 2
+	.align 2
     j reserved_int
-    .align 2
+	.align 2
     j reserved_int
-    .align 2
+	.align 2
     j reserved_int
-    .align 2
+	.align 2
     j m_timer_int
-    .align 2
+	.align 2
     j reserved_int
-    .align 2
+	.align 2
     j reserved_int
-    .align 2
+	.align 2
     j reserved_int
-    .align 2
+	.align 2
     j m_external_int
 
 exceptions_int:
-#if D_RTOSAL_VECT_TABLE == 1
-    pushREGFILE
-    SET_INT_CONTEXT
-#endif /* D_RTOSAL_VECT_TABLE == 1 */
-    /* pass mcause in a0 */
-    /* csrr a0, mcause */
-    /* pass sp in a1 */
-    /* mv   a1,sp */
-    /* call the exception handler */
-    CALL_INT_HANDLER fptrIntExceptionIntHandler
+#if D_PSP_VECT_TABLE == 1
+	pushREGFILE
+#endif /* D_PSP_VECT_TABLE == 1 */
+	/* pass mcause in a0 */
+	/* csrr a0, mcause */
+	/* pass sp in a1 */
+	/* mv   a1,sp */
+	/* call the exception handler */
+	CALL_INT_HANDLER fptrIntExceptionIntHandler
     /* adjust stack pointer back to
        where it was prior to ulSynchTrap  */
-    /*mv    sp,a0*/
-    CLEAR_INT_CONTEXT
-    popREGFILE
-    mret
+	/*mv	sp,a0*/
+	popREGFILE
+	mret
 
 m_soft_int:
-#if D_RTOSAL_VECT_TABLE == 1
-    pushREGFILE
-    SET_INT_CONTEXT
-#endif /* D_RTOSAL_VECT_TABLE == 1 */
+#if D_PSP_VECT_TABLE == 1
+	pushREGFILE
+#endif /* D_PSP_VECT_TABLE == 1 */
     CALL_INT_HANDLER fptrIntMSoftIntHandler
-    portEND_SWITCHING_ISR m_soft_int_no_cs
-m_soft_int_no_cs:
-    CLEAR_INT_CONTEXT
-    popREGFILE
-    mret
+	popREGFILE
+	mret
 
 m_timer_int:
-#if D_RTOSAL_VECT_TABLE == 1
-    pushREGFILE
-    SET_INT_CONTEXT
-#endif /* D_RTOSAL_VECT_TABLE == 1 */
-    portSAVE_CONTEXT
-    portSAVE_EPC
+#if D_PSP_VECT_TABLE == 1
+	pushREGFILE
+#endif /* D_PSP_VECT_TABLE == 1 */
     CALL_INT_HANDLER fptrIntMTimerIntHandler
-    portRESTORE_CONTEXT
-    CLEAR_INT_CONTEXT
-    popREGFILE
-    mret
+	popREGFILE
+	mret
 
 m_external_int:
-#if D_RTOSAL_VECT_TABLE == 1
-    pushREGFILE
-    SET_INT_CONTEXT
-#endif /* D_RTOSAL_VECT_TABLE == 1 */
+#if D_PSP_VECT_TABLE == 1
+	pushREGFILE
+#endif /* D_PSP_VECT_TABLE == 1 */
     CALL_INT_HANDLER fptrIntMExternIntHandler
-    portRESTORE_X2
-    portEND_SWITCHING_ISR m_external_int_no_cs
-m_external_int_no_cs:
-    CLEAR_INT_CONTEXT
-    popREGFILE
-    mret
+	popREGFILE
+	mret
 
 .weak reserved_int
 reserved_int:
