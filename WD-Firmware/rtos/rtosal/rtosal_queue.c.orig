@@ -267,7 +267,11 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
 *                          - D_RTOSAL_WAIT_ERROR  - invalide uiWaitTimeoutTicks: if caller is not thread he 
 *                                                   must used "NO WAIT"
 */
+<<<<<<< HEAD
+RTOSAL_SECTION u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
+=======
 u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueDstBuf,
+>>>>>>> origin/master
                             u32_t uiWaitTimeoutTicks)
 {
    u32_t uiRes;

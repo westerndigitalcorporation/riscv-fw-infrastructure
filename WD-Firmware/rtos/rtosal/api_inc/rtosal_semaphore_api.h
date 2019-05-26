@@ -40,7 +40,7 @@
 #ifdef D_USE_FREERTOS
    #define M_SEMAPHORE_CB_SIZE_IN_BYTES   sizeof(StaticSemaphore_t)
 #elif D_USE_THREADX
-   #define M_SEMAPHORE_CB_SIZE_IN_BYTES   sizeof(TBD)
+   #define M_SEMAPHORE_CB_SIZE_IN_BYTES   sizeof(TBD)  // size of the CB struct 
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
