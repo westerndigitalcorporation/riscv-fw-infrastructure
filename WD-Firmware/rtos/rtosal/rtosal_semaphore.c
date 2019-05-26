@@ -61,14 +61,14 @@
 /**
 * Create a semaphore
 *
-* @param  pRtosalSemaphoreCb     - pointer to semaphore control block to be created
-* @param  pRtosalSemaphoreName   -
-* @param  iSemaphoreInitialCount -
-* @param  uiSemaphoreMaxCount    -
+* @param  pRtosalSemaphoreCb     - Pointer to semaphore control block to be created
+* @param  pRtosalSemaphoreName   - String of the Semaphore name (for debuging)
+* @param  iSemaphoreInitialCount - Semaphore initial count value
+* @param  uiSemaphoreMaxCount    - Maximum semaphore count value that can be reached
 *
 * @return u32_t                  - D_RTOSAL_SUCCESS
-*                                - D_RTOSAL_SEMAPHORE_ERROR
-*                                - D_RTOSAL_CALLER_ERROR
+*                                - D_RTOSAL_SEMAPHORE_ERROR - The ptr, cMsgQueueCB, in the pRtosalSemaphoreCb is invalid
+*                                - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 RTOSAL_SECTION u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb, s08_t *pRtosalSemaphoreName,
                             s32_t iSemaphoreInitialCount, u32_t uiSemaphoreMaxCount)
@@ -107,8 +107,8 @@ RTOSAL_SECTION u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb
 * @param  pRtosalSemaphoreCb - pointer to semaphore control block to be destroyed
 *
 * @return u32_t           - D_RTOSAL_SUCCESS
-*                         - D_RTOSAL_SEMAPHORE_ERROR
-*                         - D_RTOSAL_CALLER_ERROR
+*                         - D_RTOSAL_SEMAPHORE_ERROR - The ptr, cMsgQueueCB, in the pRtosalSemaphoreCb is invalid
+*                         - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreCb)
 {
@@ -130,15 +130,18 @@ RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreC
 /**
 * Wait for a semaphore to become available
 *
-* @param  pRtosalSemaphoreCb - pointer to semaphore control block to wait for
-* @param  uiWaitTimeoutTicks -
+* @param  pRtosalSemaphoreCb - Pointer to semaphore control block to wait for
+* @param  uiWaitTimeoutTicks - Define how many ticks to wait in case the
+*                             semaphore isn’t available: D_RTOSAL_NO_WAIT,
+*                             D_RTOSAL_WAIT_FOREVER or timer ticks value
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_DELETED
-*                          - D_RTOSAL_NO_INSTANCE
-*                          - D_RTOSAL_WAIT_ABORTED
-*                          - D_RTOSAL_SEMAPHORE_ERROR
-*                          - D_RTOSAL_WAIT_ERROR
+*                          - D_RTOSAL_DELETED  - The semaphore was already deleted when this api was called 
+*                          - D_RTOSAL_NO_INSTANCE - Counting is zero, can not get lock on the giving window time
+*                          - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
+*                          - D_RTOSAL_SEMAPHORE_ERROR - The ptr, cMsgQueueCB, in the pRtosalSemaphoreCb is invalid
+*                          - D_RTOSAL_WAIT_ERROR - Invalide uiWaitTimeoutTicks: if caller is not a thread it 
+*                                                   must use "NO WAIT"
 */
 RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, u32_t uiWaitTimeoutTicks)
 {
@@ -189,7 +192,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, 
 * @param  pRtosalSemaphoreCb - pointer to semaphore control block to be released
 *
 * @return u32_t           - D_RTOSAL_SUCCESS
-*                         - D_RTOSAL_SEMAPHORE_ERROR
+*                         - D_RTOSAL_SEMAPHORE_ERROR - The ptr, cMsgQueueCB, in the pRtosalSemaphoreCb is invalid
 */
 RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreCb)
 {

@@ -41,7 +41,7 @@
 #ifdef D_USE_FREERTOS
    #define M_EVENT_GROUP_CB_SIZE_IN_BYTES sizeof(StaticEventGroup_t)
 #elif D_USE_THREADX
-   #define M_EVENT_GROUP_CB_SIZE_IN_BYTES sizeof(TBD)
+   #define M_EVENT_GROUP_CB_SIZE_IN_BYTES sizeof(TBD)  // size of the CB struct 
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**

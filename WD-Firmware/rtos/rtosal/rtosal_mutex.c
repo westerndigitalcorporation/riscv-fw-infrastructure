@@ -60,13 +60,14 @@
 * Mutex creation function
 *
 * @param  pRtosalMutexCb    - pointer to the mutex control block to be created
-* @param  pRtosalMutexName  -
-* @param  uiPriorityInherit -
+* @param  pRtosalMutexName  - string of the mutex name (for debuging)
+* @param  uiPriorityInherit - this mutex can be inherit or not
+*                             values: D_RTOSAL_INHERIT or D_RTOSAL_NO_INHERIT
 *
 * @return u32_t          - D_RTOSAL_SUCCESS
-*                        - D_RTOSAL_MUTEX_ERROR
-*                        - D_RTOSAL_CALLER_ERROR
-*                        - D_RTOSAL_INHERIT_ERROR
+*                        - D_RTOSAL_MUTEX_ERROR - the group pRtosalMutexCb is invalid or been used
+*                        - D_RTOSAL_CALLER_ERROR - the caller can not call this function 
+*                        - D_RTOSAL_INHERIT_ERROR - bad parm on uiPriorityInherit
 */
 RTOSAL_SECTION u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRtosalMutexName, u32_t uiPriorityInherit)
 {
@@ -104,8 +105,8 @@ RTOSAL_SECTION u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRt
 * @param  pRtosalMutexCb - pointer to the mutex control block to be deleted
 *
 * @return u32_t      - D_RTOSAL_SUCCESS
-*                    - D_RTOSAL_MUTEX_ERROR
-*                    - D_RTOSAL_CALLER_ERROR
+*                    - D_RTOSAL_MUTEX_ERROR - the group pRtosalMutexCb is invalid or been used
+*                    - D_RTOSAL_CALLER_ERROR - the caller can not call this function
 */
 RTOSAL_SECTION u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
 {
@@ -128,15 +129,17 @@ RTOSAL_SECTION u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
 * Obtain ownership of a mutex
 *
 * @param  pRtosalMutexCb     - pointer to the mutex control block to be locked
-* @param  uiWaitTimeoutTicks -
+* @param  uiWaitTimeoutTicks - define how many ticks to wait in case the mutex
+*                              is not available.
+*                              Parms: D_RTOSAL_NO_WAIT, D_RTOSAL_WAIT_FOREVER, 32bit timer ticks value
 *
 * @return u32_t           - D_RTOSAL_SUCCESS
-*                         - D_RTOSAL_DELETED
-*                         - D_RTOSAL_NOT_AVAILABLE
-*                         - D_RTOSAL_WAIT_ABORTED
-*                         - D_RTOSAL_MUTEX_ERROR
-*                         - D_RTOSAL_WAIT_ERROR
-*                         - D_RTOSAL_CALLER_ERROR
+*                         - D_RTOSAL_DELETED - the mutex was deleted when this api was called
+*                         - D_RTOSAL_NOT_AVAILABLE - time out while waiting for the mutex 
+*                         - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
+*                         - D_RTOSAL_MUTEX_ERROR - the ptr in the mutex CB is invalid
+*                         - D_RTOSAL_WAIT_ERROR - illegal use of wait (wait can be used only from thread)
+*                         - D_RTOSAL_CALLER_ERROR - the caller can not call this function 
 */
 RTOSAL_SECTION u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWaitTimeoutTicks)
 {
@@ -168,9 +171,9 @@ RTOSAL_SECTION u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWait
 * @param  pRtosalMutexCb - pointer to the mutex control block to be unlocked
 *
 * @return u32_t      - D_RTOSAL_SUCCESS
-*                    - D_RTOSAL_NOT_OWNED
-*                    - D_RTOSAL_MUTEX_ERROR
-*                    - D_RTOSAL_CALLER_ERROR
+*                    - D_RTOSAL_NOT_OWNED - mutex is already taken by different consumer
+*                    - D_RTOSAL_MUTEX_ERROR - the ptr in the mutex CB is invalid
+*                    - D_RTOSAL_CALLER_ERROR - the caller can not call this function 
 */
 RTOSAL_SECTION u32_t rtosalMutexRelease(rtosalMutex_t* pRtosalMutexCb)
 {

@@ -63,11 +63,11 @@
 * Create an event group
 *
 * @param pRtosalEventGroupCb   - pointer to event group control block
-* @param pRtosalEventGroupName -
+* @param pRtosalEventGroupName - string of the group name (for debuging)
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_GROUP_ERROR
-*                          - D_RTOSAL_CALLER_ERR
+*                          - D_RTOSAL_GROUP_ERROR - the group CB is invalid or been used
+*                          - D_RTOSAL_CALLER_ERR - the caller can not call this function 
 */
 RTOSAL_SECTION u32_t rtosalEventGroupCreate(rtosalEventGroup_t* pRtosalEventGroupCb, s08_t* pRtosalEventGroupName)
 {
@@ -107,8 +107,8 @@ RTOSAL_SECTION u32_t rtosalEventGroupCreate(rtosalEventGroup_t* pRtosalEventGrou
 * @param pRtosalEventGroupCb - pointer to event group control block to be deleted
 *
 * @return u32_t           - D_RTOSAL_SUCCESS
-*                         - D_RTOSAL_GROUP_ERROR
-*                         - D_RTOSAL_CALLER_ERR
+*                         - D_RTOSAL_GROUP_ERROR - the group CB is invalid or been used
+*                         - D_RTOSAL_CALLER_ERR - the caller can not call this function 
 */
 RTOSAL_SECTION u32_t rtosalEventGroupDestroy(rtosalEventGroup_t* pRtosalEventGroupCb)
 {
@@ -130,15 +130,15 @@ RTOSAL_SECTION u32_t rtosalEventGroupDestroy(rtosalEventGroup_t* pRtosalEventGro
 /**
 * Set the event bits of a specific event group
 *
-* @param pRtosalEventGroupCb  -
-* @param stSetRtosalEventBits -
-* @param uiSetOption          -
-* @param pRtosalEventBits     -
+* @param pRtosalEventGroupCb  - pointer to event group control block to set the event bits
+* @param stSetRtosalEventBits - value of the event bits vector to set
+* @param uiSetOption          - one of the values: D_RTOSAL_AND or D_RTOSAL_OR
+* @param pRtosalEventBits     - pointer to the value of the event bits vector
 *
 * @return u32_t          - D_RTOSAL_SUCCESS
-*                        - D_RTOSAL_GROUP_ERROR
-*                        - D_RTOSAL_OPTION_ERROR
-*                        - D_RTOSAL_FAIL
+*                        - D_RTOSAL_GROUP_ERROR - the group CB is invalid or been used 
+*                        - D_RTOSAL_OPTION_ERROR - bad param on uiSetOption
+*                        - D_RTOSAL_FAIL - fail to set event
 */
 RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb,
                           rtosalEventBits_t stSetRtosalEventBits,
@@ -198,20 +198,24 @@ RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb
 *
 * @param pRtosalEventGroupCb - pointer to event group control block to retrieve
 *                              the bits from
-* @param pRtosalEventBits    -
-* @param uiRetrieveEvents    -
-* @param uiRetrieveOption    -
-* @param uiWaitTimeoutTicks  -
+* @param pRtosalEventBits    - pointer to the value of the RTOS event bits vector
+* @param uiRetrieveEvents    - event bits vector to retrieve
+* @param uiRetrieveOption    - one of the values: D_RTOSAL_AND, D_RTOSAL_AND_CLEAR,
+*                              D_RTOSAL_OR or D_RTOSAL_OR_CLEAR; using the 'AND' will wait for all bits;
+*                              using the 'OR' will wait for at least one bit to be set;
+*                              using the 'CLEAR' will clear the bit when read.
+* @param uiWaitTimeoutTicks - wait value if event vector bits are not set;
+*                             can be one of the values: D_RTOSAL_NO_WAIT, D_RTOSAL_WAIT_FOREVER
+*                             or timer ticks value
 *
 * @return u32_t          - D_RTOSAL_SUCCESS
-*                        - D_RTOSAL_DELETED
-*                        - D_RTOSAL_NO_EVENTS
-*                        - D_RTOSAL_WAIT_ABORTED
-*                        - D_RTOSAL_GROUP_ERROR
-*                        - D_RTOSAL_PTR_ERROR
-*                        - D_RTOSAL_WAIT_ERROR
-*                        - D_RTOSAL_NO_WAIT
-*                        - D_RTOSAL_OPTION_ERROR
+*                        - D_RTOSAL_DELETED - The event was already deleted when this api was called 
+*                        - D_RTOSAL_NO_EVENTS - time out while waiting for the event 
+*                        - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
+*                        - D_RTOSAL_GROUP_ERROR - the ptr in the group CB is invalid
+*                        - D_RTOSAL_PTR_ERROR - bad pRtosalEventBits
+*                        - D_RTOSAL_WAIT_ERROR - illegal use of wait (wait can be used only from thread)
+*                        - D_RTOSAL_OPTION_ERROR - bad uiRetrieveOption
 */
 RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb, u32_t uiRetrieveEvents,
                           rtosalEventBits_t* pRtosalEventBits, u32_t uiRetrieveOption,
