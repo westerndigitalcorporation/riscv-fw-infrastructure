@@ -27,7 +27,7 @@
 /**
 * include files
 */
-#include "rtosal_interrupt_api.h"
+#include "psp_interrupt_api.h"
 
 /**
 * definitions
@@ -50,19 +50,6 @@ void rtosalContextSwitchIndicationSet(void);
 * external prototypes
 */
 extern void (*fptrParamErrorNotification)(const void *pParam, u32_t uErrorCode);
-extern rtosalExceptionHandler_t fptrIntExceptionIntHandler;
-extern rtosalInterruptHandler_t fptrIntSSoftIntHandler;
-extern rtosalInterruptHandler_t fptrIntRsrvdSoftIntHandler;
-extern rtosalInterruptHandler_t fptrIntMSoftIntHandler;
-extern rtosalInterruptHandler_t fptrIntUTimerIntHandler;
-extern rtosalInterruptHandler_t fptrIntSTimerIntHandler;
-extern rtosalInterruptHandler_t fptrIntRsrvdTimerIntHandler;
-extern rtosalInterruptHandler_t fptrIntMTimerIntHandler;
-extern rtosalInterruptHandler_t fptrIntUExternIntHandler;
-extern rtosalInterruptHandler_t fptrIntSExternIntHandler;
-extern rtosalInterruptHandler_t fptrIntRsrvdExternIntHandler;
-extern rtosalInterruptHandler_t fptrIntMExternIntHandler;
-extern rtosalInterruptHandler_t fptrIntUSoftIntHandler;
 
 /**
 * global variables

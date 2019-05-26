@@ -67,13 +67,14 @@
     1 tab == 4 spaces!
 */
 #ifdef D_USE_RTOSAL
+#include "rtosal_types.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_mutex_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
 #include "rtosal_util_api.h"
-#include "rtosal_interrupt_api.h"
+#include "psp_interrupt_api.h"
 #include "task.h"     /* for tskIDLE_PRIORITY */
 #else
 /* Kernel includes. */
@@ -186,17 +187,18 @@ static rtosalTask_t rxTask;
 static rtosalTask_t txTask;
 static rtosalTask_t semTask;
 static rtosalTimer_t ledTimer;
-static StackType_t rxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
-static StackType_t txTaskStackBuffer[D_TX_TASK_STACK_SIZE];
-static StackType_t semTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
+static rtosalStackType_t rxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
+static rtosalStackType_t txTaskStackBuffer[D_TX_TASK_STACK_SIZE];
+static rtosalStackType_t semTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
 static s08_t queueBuffer[mainQUEUE_LENGTH * sizeof(uint32_t)];
-static StaticTask_t xIdleTaskTCBBuffer;
-static StackType_t xIdleStack[D_IDLE_TASK_SIZE];
-static StaticTask_t xTimerTaskTCBBuffer;
-static StackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
+static rtosalTask_t xIdleTaskTCBBuffer;
+static rtosalStackType_t xIdleStack[D_IDLE_TASK_SIZE];
+static rtosalTask_t xTimerTaskTCBBuffer;
+static rtosalStackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
 void handle_interrupt(void);
-extern void vPortSysTickHandler();
-extern unsigned long ulSynchTrap(unsigned long mcause, unsigned long sp, unsigned long arg1);
+extern void vPortSysTickHandler(void);
+extern void vSynchTrap(void);
+extern void vSynchTrapUnhandled(void);
 #endif /* D_USE_RTOSAL */
 
 void demo_init(void* pMem);
@@ -225,6 +227,7 @@ void demo_init(void *pMem)
 	TimerHandle_t xExampleSoftwareTimer = NULL;
 #else
 	u32_t res;
+	pspExceptionCause_t cause;
 #endif /* D_USE_RTOSAL */
 
     /* Configure the system ready to run the demo.  The clock configuration
@@ -232,12 +235,16 @@ void demo_init(void *pMem)
     prvSetupHardware();
 
 #ifdef D_USE_RTOSAL
-    /* install exception handler */
-    rtosalInstallExceptionIsr(ulSynchTrap);
+    /* register exception handlers */
+    for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
+    {
+        pspRegisterIsrExceptionHandler(vSynchTrapUnhandled, cause);
+    }
+    pspRegisterIsrExceptionHandler(vSynchTrap, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
     /* install timer interrupt handler */
-    rtosalInstallIsr(vPortSysTickHandler, E_MACHINE_TIMER_SOURCE_INT);
-    /* install timer interrupt handler */
-    rtosalInstallIsr(handle_interrupt, E_MACHINE_EXTERNAL_SOURCE_INT);
+    pspRegisterIsrCauseHandler(vPortSysTickHandler, E_MACHINE_TIMER_CAUSE);
+    /* install external interrupt handler */
+    pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE);
 #endif /* D_USE_RTOSAL */
 
     /* Create the queue used by the queue send and queue receive tasks. */
@@ -598,7 +605,6 @@ volatile size_t xFreeStackSpace;
         the value of configTOTAL_HEAP_SIZE in FreeRTOSConfig.h can be
         reduced accordingly. */
     }
-#else
 #endif /* USE_FREERTOS */
 
 }
@@ -700,7 +706,6 @@ void wake_irq_init()  {
     GPIO_REG(GPIO_FALL_IE)    |= (1<<PIN_2_OFFSET);
 
     enable_interrupt(INT_GPIO_BASE+PIN_2_OFFSET, 2, &wake_ISR);
-
 }
 /*-----------------------------------------------------------*/
 
@@ -716,8 +721,8 @@ static void prvSetupHardware( void )
 #ifdef D_USE_RTOSAL
 void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
 {
-  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
-  *ppxIdleTaskStackBuffer = &xIdleStack[0];
+  *ppxIdleTaskTCBBuffer = (StaticTask_t*)&xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = (StackType_t*)&xIdleStack[0];
   *pulIdleTaskStackSize = D_IDLE_TASK_SIZE;
 }
 
@@ -727,8 +732,8 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackTyp
    and TCB. */
 void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
 {
-  *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
-  *ppxTimerTaskStackBuffer = &xTimerStack[0];
+  *ppxTimerTaskTCBBuffer = (StaticTask_t*)&xTimerTaskTCBBuffer;
+  *ppxTimerTaskStackBuffer = (StackType_t*)&xTimerStack[0];
   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 #endif /* #ifdef D_USE_RTOSAL */

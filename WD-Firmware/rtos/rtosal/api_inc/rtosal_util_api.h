@@ -62,22 +62,20 @@ typedef void (*rtosalParamErrorNotification_t)(const void *pParam, u32_t uiError
 /**
 * APIs
 */
+
 /**
 * This API initializes the RTOS and triggers the scheduler operation
-*
-* @param None
-*
-* @return calling this function will never return
 */
 void rtosalStart(rtosalApplicationInit_t fptrInit);
 
 /**
 * Set param error notification function
-*
-* @param fptrRtosalParamErrorNotification - notification function
-*
-* @return none
 */
 void rtosalParamErrorNotifyFuncSet(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification);
+
+/**
+* This function is invoked by the system timer interrupt
+*/
+void rtosalTick(void);
 
 #endif /* __RTOSAL_UTIL_API_H__ */

@@ -25,8 +25,6 @@
 /**
 * include files
 */
-#include "rtosal_api.h"
-#include "rtosal_interrupt_cfg.h"
 
 /**
 * definitions

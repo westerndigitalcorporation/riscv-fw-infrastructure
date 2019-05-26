@@ -29,6 +29,7 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
+#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -81,7 +82,7 @@
 *                                  - D_RTOSAL_START_ERROR
 *                                  - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtosalPriority_t uiPriority,
+RTOSAL_SECTION u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtosalPriority_t uiPriority,
                      rtosalTaskHandler_t fptrRtosTaskEntryPoint, u32_t uiTaskEntryPointParameter,
                      u32_t uiStackSize, void * pStackBuffer, u32_t uiTimeSliceTicks,
                      u32_t uiAutoStart, u32_t uiPreemptThuiReshold)
@@ -129,7 +130,7 @@ u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtos
 *                    - D_RTOSAL_DELETE_ERROR
 *                    - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
+RTOSAL_SECTION u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 
@@ -159,7 +160,7 @@ u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 *                      - D_RTOSAL_PTR_ERROR
 *                      - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
+RTOSAL_SECTION u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
                                u32_t *pOldPriority)
 {
    u32_t uiRes;
@@ -189,7 +190,7 @@ u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
 *
 * @return None
 */
-void rtosalTaskYield(void)
+RTOSAL_SECTION void rtosalTaskYield(void)
 {
 #ifdef D_USE_FREERTOS
    taskYIELD();
@@ -208,7 +209,7 @@ void rtosalTaskYield(void)
 *                     - D_RTOSAL_TASK_ERROR
 *                     - D_RTOSAL_RESUME_ERROR
 */
-u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
+RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -220,7 +221,7 @@ u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosalTaskResume invoked from an ISR context */
-   if (pspIsInterruptContext() == D_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
    {
       /* if we uiResume from an ISR */
       uiRes = xTaskResumeFromISR(pRtosalTaskCb->taskHandle);
@@ -263,7 +264,7 @@ u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 *                      - D_RTOSAL_WAIT_ABORTED
 *                      - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalTaskSleep(u32_t uiTimerTicks)
+RTOSAL_SECTION u32_t rtosalTaskSleep(u32_t uiTimerTicks)
 {
    u32_t uiRes;
 
@@ -288,7 +289,7 @@ u32_t rtosalTaskSleep(u32_t uiTimerTicks)
 *                     - D_RTOSAL_SUSPEND_ERROR
 *                     - D_RTOSAL_CALLER_ERROR
 */
-u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
+RTOSAL_SECTION u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 
@@ -314,7 +315,7 @@ u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
 *                    - D_RTOSAL_TASK_ERROR
 *                    - D_RTOSAL_WAIT_ABORT_ERROR
 */
-u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
+RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 

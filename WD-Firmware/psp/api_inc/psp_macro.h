@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_macro.h
+* @file   psp_macro.h
 * @author Ronen Haen
-* @date   07.02.2019
-* @brief  The file defines the RTOS AL macros
+* @date   20.05.2019
+* @brief  The file defines the psp macros
 */
-#ifndef __RTOSAL_MACRO_H__
-#define __RTOSAL_MACRO_H__
+#ifndef __PSP_MACRO_H__
+#define __PSP_MACRO_H__
 
 /**
 * include files
@@ -30,7 +30,7 @@
 /**
 * macros
 */
-#if (D_RTOSAL_ERROR_CHECK==1)
+#if (D_PSP_ERROR_CHECK==1)
    #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
       if (conditionMet) \
       { \
@@ -38,9 +38,19 @@
          return (returnCode); \
       }
 #else
-   #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode)
-#endif /* #if (D_RTOSAL_ERROR_CHECK==1) */
+   #define M_PSP_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode)
+#endif /* #if (D_PSP_ERROR_CHECK==1) */
 
-#define RTOSAL_SECTION __attribute__((section("RTOSAL_SEC")))
+#define PSP_SECTION __attribute__((section("PSP_SEC")))
 
-#endif /* __RTOSAL_MACRO_H__ */
+#define read_csr(reg) ({ unsigned long __tmp; \
+  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __tmp; })
+
+#define write_csr(reg, val) ({ \
+  if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
+    asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
+  else \
+    asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
+
+#endif /* __PSP_MACRO_H__ */
