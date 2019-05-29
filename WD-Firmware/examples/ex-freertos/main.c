@@ -520,7 +520,7 @@ static uint32_t ulCount = 0;
         in "FromISR()".
 
 
-        xHigherPriorityTaskWoken was initialised to pdFALSE, and will be set to
+        xHigherPriorityTaskWoken was initialized to pdFALSE, and will be set to
         pdTRUE by xSemaphoreGiveFromISR() if giving the semaphore unblocked a
         task that has equal or higher priority than the interrupted task.
         NOTE: A semaphore is used for example purposes.  In a real application it
@@ -530,6 +530,7 @@ static uint32_t ulCount = 0;
       xSemaphoreGiveFromISR( xEventSemaphore, &xHigherPriorityTaskWoken );
 #else
       rtosalSemaphoreRelease(&xEventSemaphore);
+      rtosalContextSwitchIndicationClear();
 #endif
       ulCount = 0UL;
 
