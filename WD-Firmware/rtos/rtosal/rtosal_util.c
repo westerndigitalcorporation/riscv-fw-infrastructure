@@ -105,6 +105,18 @@ RTOSAL_SECTION void rtosalContextSwitchIndicationSet(void)
 }
 
 /**
+*
+*
+* @param none
+*
+* @return none
+*/
+RTOSAL_SECTION void rtosalContextSwitchIndicationClear(void)
+{
+	g_rtosalContextSwitch = 0;
+}
+
+/**
 * This API is ThreadX specific. It is invoked during ThreadX init flow
 *
 * @param pMemory - pointer to memory used for the initial application init

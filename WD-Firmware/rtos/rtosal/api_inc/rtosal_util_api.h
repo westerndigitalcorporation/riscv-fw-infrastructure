@@ -50,6 +50,7 @@ typedef void (*rtosalParamErrorNotification_t)(const void *pParam, u32_t uiError
 /**
 * local prototypes
 */
+void rtosalContextSwitchIndicationClear(void);
 
 /**
 * external prototypes
