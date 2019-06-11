@@ -69,36 +69,38 @@
 
     1 tab == 4 spaces!
 */
-#if __riscv_xlen == 64
+
+.if __riscv_xlen == 64
 #define STORE    sd
 #define LOAD     ld
 #define LOG_REGBYTES 3
 #define ADDI     addiw
-#else
-#define STORE    sw
-#define LOAD     lw
-#define LOG_REGBYTES 2
-#define ADDI     addi
-#endif
-#define REGBYTES (1 << LOG_REGBYTES)
+.else
+.equ STORE,sw
+#define LOAD lw
+#define ADDI addi
+.equ LOG_REGBYTES,2
+.endif
+
+.equ REGBYTES,(1 << LOG_REGBYTES)
 
 .macro CALL_INT_HANDLER fptIntHandler
     /* load the address of provided fptIntHandler */
     la t0, \fptIntHandler
     /* load the actual handler address */
     LOAD t0, 0x0(t0)
-    /* invoker the interrupt handler */
+    /* invoke the interrupt handler */
     jalr t0
 .endm
 
 /* Macro for saving task context */
 .macro pushREGFILE
 	/* make room in stack */
-	addi	sp, sp, -REGBYTES * 34
+	ADDI	sp, sp, -REGBYTES * 34
 	/* Save Context */
 	STORE	x1, 1 * REGBYTES(sp)
 	STORE	x2, 2 * REGBYTES(sp)
-	//STORE	x3, 3 * REGBYTES(sp)
+	/* STORE	x3, 3 * REGBYTES(sp) */
 	STORE	x4, 4 * REGBYTES(sp)
 	STORE	x5, 5 * REGBYTES(sp)
 	STORE	x6, 6 * REGBYTES(sp)
@@ -151,7 +153,7 @@
 	/* Restore registers,
 	Skip global pointer because that does not change */
 	LOAD	x1, 1 * REGBYTES(sp)
-	//LOAD 	x3, 3 * REGBYTES(sp)
+	/* LOAD 	x3, 3 * REGBYTES(sp) */
 	LOAD	x4, 4 * REGBYTES(sp)
 	LOAD	x5, 5 * REGBYTES(sp)
 	LOAD	x6, 6 * REGBYTES(sp)

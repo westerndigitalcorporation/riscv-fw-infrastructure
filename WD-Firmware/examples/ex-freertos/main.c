@@ -240,6 +240,7 @@ void demo_init(void *pMem)
     {
         pspRegisterIsrExceptionHandler(vSynchTrapUnhandled, cause);
     }
+    /* register E_CALL exception handler */
     pspRegisterIsrExceptionHandler(vSynchTrap, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
     /* install timer interrupt handler */
     pspRegisterIsrCauseHandler(vPortSysTickHandler, E_MACHINE_TIMER_CAUSE);
