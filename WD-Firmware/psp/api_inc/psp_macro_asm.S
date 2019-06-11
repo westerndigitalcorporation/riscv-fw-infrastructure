@@ -76,14 +76,15 @@
 #define LOG_REGBYTES 3
 #define ADDI     addiw
 .else
-.equ STORE,sw
+#define STORE sw
 #define LOAD lw
 #define ADDI addi
 .equ LOG_REGBYTES,2
+#define REGBYTES 4
 .endif
-
+/*
 .equ REGBYTES,(1 << LOG_REGBYTES)
-
+*/
 .macro CALL_INT_HANDLER fptIntHandler
     /* load the address of provided fptIntHandler */
     la t0, \fptIntHandler
