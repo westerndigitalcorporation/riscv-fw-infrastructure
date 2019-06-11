@@ -69,7 +69,7 @@
 
     1 tab == 4 spaces!
 */
-#include "psp_macro_asm.S"
+.include "psp_macro_asm.S"
 
 .section  .text.entry
 .align 4
