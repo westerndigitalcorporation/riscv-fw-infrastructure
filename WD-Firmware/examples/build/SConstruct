@@ -169,8 +169,13 @@ if exampleName == 'ex-freertos':
   arr_lib.append(SConscript('SConscript_rtosal', exports='Env'))
   arr_lib.append(SConscript('SConscript_psp', exports='Env'))
   Env['TARGET_LIBS'] += ['c', 'gcc']
+elif exampleName == 'ex-comrv-baremetal':
+  arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
+  arr_lib.append(SConscript('SConscript_psp', exports='Env'))
+  arr_lib.append(SConscript('SConscript_comrv_baremetal', exports='Env'))
+  Env['TARGET_LIBS'] += ['c', 'gcc']
 else:
-  print "missing example=[ex-freertos | TBD]"
+  print "missing example=[ex-freertos | ex-comrv_baremetal | TBD]"
   exit(1)
 
 arr_lib.append(SConscript('SConscript_example', exports='Env'))

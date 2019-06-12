@@ -99,7 +99,7 @@
 .global vPortEndScheduler
 .global xExitStack
 .global trap_entry
-.global g_uiIsInterruptContext
+.global vPortYieldFromInterrupt
 
 .macro SET_INT_CONTEXT
 	/* save address of g_uiIsInterruptContext -> t0 */
@@ -250,6 +250,7 @@
 	addi	sp, sp, REGBYTES * 34
 .endm
 
+#if 0
 /* Interrupt entry point */
 trap_entry:
 	/* Check for interrupt */
@@ -292,6 +293,8 @@ MTIME_IRQ:
 	popREGFILE
 	mret
 
+#endif /* 0 */
+
 xPortStartScheduler:
 	jal		vPortSetup
 	portRESTORE_CONTEXT
@@ -300,13 +303,12 @@ xPortStartScheduler:
 
 
 vPortYield:
-/*  adjust stack pointer back to where it was prior to ulSynchTrap  */
-	mv		sp,a0
-	portSAVE_CONTEXT
+    csrr  a0, mepc
+    ADDI  a0, a0, 4
+	STORE a0, 33 * REGBYTES(sp)
 
-/* context return point was passed back to this function in a1 */
-	STORE	a1, 33 * REGBYTES(sp)
-    /* switch context */
+vPortYieldFromInterrupt:
+	portSAVE_CONTEXT
 	jal		vTaskSwitchContext
 	portRESTORE_CONTEXT
 	CLEAR_INT_CONTEXT

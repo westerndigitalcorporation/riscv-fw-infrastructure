@@ -32,7 +32,7 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-c_defines = [Env['BSP_DEF'], Env['RTOSAL_DEF'], 'D_USE_RTOSAL']
+c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF']
 
 # include paths
 include_paths = [ 

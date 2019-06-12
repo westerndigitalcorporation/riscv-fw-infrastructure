@@ -32,5 +32,12 @@
 /**
 * types
 */
+#ifdef D_USE_FREERTOS
+   typedef u32_t rtosalStackType_t;
+#elif D_USE_THREADX
+#error *** TODO: need to define the TBD ***
+   typedef TBD   rtosalStackType_t;
+#endif /* #ifdef D_USE_FREERTOS */
+
 
 #endif /* __RTOSAL_TYPES_H__ */

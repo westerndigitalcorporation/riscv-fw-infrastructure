@@ -15,57 +15,22 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_default.c
+* @file   psp_config.h
 * @author Ronen Haen
-* @date   21.01.2019 
-* @brief  The file implements the RTOS AL default
-* 
+* @date   20.05.2019
+* @brief  The file defines the psp configuration
 */
+#ifndef  __PSP_CONFIG_H__
+#define  __PSP_CONFIG_H__
 
 /**
 * include files
 */
-#include "rtosal_config.h"
-#include "rtosal_defines.h"
-#include "rtosal_types.h"
-#include "rtosal_macro.h"
 
 /**
 * definitions
 */
+#define D_PSP_ERROR_CHECK            0
+#define D_PSP_NUM_OF_INTS_EXCEPTIONS E_EXC_LAST
 
-/**
-* macros
-*/
-
-/**
-* types
-*/
-
-/**
-* local prototypes
-*/
-
-/**
-* external prototypes
-*/
-extern void rtosalDefaultEmptyIntHandler(void);
-
-/**
-* global variables
-*/
-
-/**
-* default 'param error' notification function
-*
-* @param pParam      pointer of the invalid parameter
-* @param uiErrorCode  error code
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode)
-{
-   (void)pParam;
-   (void)uiErrorCode;
-}
-
+#endif /* __PSP_CONFIG_H__ */
