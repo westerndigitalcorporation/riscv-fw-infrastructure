@@ -6,7 +6,11 @@
 #include "platform.h"
 #include "encoding.h"
 
+#if 0
 extern void trap_entry();
+#else
+extern void vect_table();
+#endif
 
 static unsigned long mtime_lo(void)
 {
@@ -229,7 +233,12 @@ void _init()
  write(1, freq_string, 9);
  write(1, "Hz\n",3);
 
+#if 0
   write_csr(mtvec, &trap_entry);
+#else
+  write_csr(mtvec, &vect_table);
+#endif
+
   if (read_csr(misa) & (1 << ('F' - 'A'))) { // if F extension is present
     write_csr(mstatus, MSTATUS_FS); // allow FPU instructions without trapping
     write_csr(fcsr, 0); // initialize rounding mode, undefined at reset

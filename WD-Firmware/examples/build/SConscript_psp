@@ -22,10 +22,17 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 list_files_c=[
+   [os.path.join('psp','psp_interrupt.c'), os.path.join(out_dir, 'psp_interrupt.o')],
    [os.path.join('psp', 'psp.c'), os.path.join(out_dir, 'psp.o')],
 ]
 
-list_files_a=[]
+# when no OS present, add trap support by psp
+if Env['RTOS_CORE'] != []:
+   list_files_a=[]
+else:
+   list_files_a=[
+   [os.path.join('psp', 'psp_asm.S'), os.path.join(out_dir, 'psp_asm.o')],
+   ]
 
 # compiler flags
 c_flags = [] + Env['C_FLAGS']

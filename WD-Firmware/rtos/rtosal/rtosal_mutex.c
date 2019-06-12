@@ -69,7 +69,7 @@
 *                        - D_RTOSAL_CALLER_ERROR - the caller can not call this function 
 *                        - D_RTOSAL_INHERIT_ERROR - bad parm on uiPriorityInherit
 */
-u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRtosalMutexName, u32_t uiPriorityInherit)
+RTOSAL_SECTION u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRtosalMutexName, u32_t uiPriorityInherit)
 {
    u32_t uiRes;
 
@@ -108,7 +108,7 @@ u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRtosalMutexName, 
 *                    - D_RTOSAL_MUTEX_ERROR - the group pRtosalMutexCb is invalid or been used
 *                    - D_RTOSAL_CALLER_ERROR - the caller can not call this function
 */
-u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
+RTOSAL_SECTION u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
 {
    u32_t uiRes;
 
@@ -141,7 +141,7 @@ u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
 *                         - D_RTOSAL_WAIT_ERROR - illegal use of wait (wait can be used only from thread)
 *                         - D_RTOSAL_CALLER_ERROR - the caller can not call this function 
 */
-u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWaitTimeoutTicks)
+RTOSAL_SECTION u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWaitTimeoutTicks)
 {
    u32_t uiRes;
 
@@ -175,7 +175,7 @@ u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWaitTimeoutTicks)
 *                    - D_RTOSAL_MUTEX_ERROR - the ptr in the mutex CB is invalid
 *                    - D_RTOSAL_CALLER_ERROR - the caller can not call this function 
 */
-u32_t rtosalMutexRelease(rtosalMutex_t* pRtosalMutexCb)
+RTOSAL_SECTION u32_t rtosalMutexRelease(rtosalMutex_t* pRtosalMutexCb)
 {
    u32_t uiRes;
 

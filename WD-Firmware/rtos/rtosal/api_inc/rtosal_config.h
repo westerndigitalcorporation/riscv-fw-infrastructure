@@ -39,14 +39,14 @@
 #elif D_USE_THREADX
    #include "TBD: the root api"
 #else
-   #error *** RTOSAL: undefined RTOS core (use D_USE_THREADX/D_USE_THREADX) ***
+   #error *** RTOSAL: undefined RTOS core (use D_USE_FREERTOS/D_USE_THREADX) ***
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
 * definitions
 */
 #ifdef D_USE_FREERTOS
-   #define D_RTOSAL_ERROR_CHECK                  1
+   #define D_RTOSAL_ERROR_CHECK                  0
 #elif D_USE_THREADX
    #define D_RTOSAL_ERROR_CHECK                  TBD_TAKE_VAL_FROM_TX
 #endif /* #ifdef D_USE_FREERTOS */
