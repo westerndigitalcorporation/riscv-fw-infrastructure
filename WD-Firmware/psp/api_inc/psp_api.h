@@ -30,6 +30,8 @@
 /**
 * definitions
 */
+#define D_NON_INT_CONTEXT 0
+#define D_INT_CONTEXT     1
 
 /**
 * macros
@@ -54,5 +56,16 @@
 /**
 * APIs
 */
+
+
+/**
+* @brief check if in ISR context
+*
+* @param None
+*
+* @return u32_t            - D_NON_INT_CONTEXT
+*                          - non zero value - interrupt context
+*/
 u32_t pspIsInterruptContext(void);
+
 #endif /* __PSP_API_H__ */

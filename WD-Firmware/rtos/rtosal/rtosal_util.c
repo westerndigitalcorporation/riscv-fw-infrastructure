@@ -27,7 +27,6 @@
 */
 #include "rtosal_util_api.h"
 #include "rtosal.h"
-#include "rtosal_macro.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -59,7 +58,6 @@ extern void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode);
 */
 rtosalParamErrorNotification_t fptrParamErrorNotification = rtosalParamErrorNotification;
 rtosalApplicationInit_t  fptrAppInit = NULL;
-u32_t g_rtosalContextSwitch = 0;
 
 /**
 * This API initializes the RTOS and triggers the scheduler operation
@@ -69,7 +67,7 @@ u32_t g_rtosalContextSwitch = 0;
 *
 * @return calling this function will never return
 */
-RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
+void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
 #ifdef D_USE_FREERTOS
    fptrInit(NULL);
@@ -87,7 +85,7 @@ RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 *
 * @return none
 */
-RTOSAL_SECTION void rtosalParamErrorNotifyFuncRegister(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification)
+void rtosalParamErrorNotifyFuncRegister(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification)
 {
    fptrParamErrorNotification = fptrRtosalParamErrorNotification;
 }
@@ -99,21 +97,8 @@ RTOSAL_SECTION void rtosalParamErrorNotifyFuncRegister(rtosalParamErrorNotificat
 *
 * @return none
 */
-RTOSAL_SECTION void rtosalContextSwitchIndicationSet(void)
+void rtosalContextSwitchIndicationSet(void)
 {
-	g_rtosalContextSwitch = 1;
-}
-
-/**
-*
-*
-* @param none
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalContextSwitchIndicationClear(void)
-{
-	g_rtosalContextSwitch = 0;
 }
 
 /**
@@ -124,27 +109,9 @@ RTOSAL_SECTION void rtosalContextSwitchIndicationClear(void)
 * @return none
 */
 #ifdef D_USE_THREADX
-RTOSAL_SECTION void tx_application_define(void *pMemory)
+void tx_application_define(void *pMemory)
 {
    fptrAppInit(pMemory);
 }
 #endif /* #ifdef D_USE_FREERTOS */
 
-/**
-* This function is invoked by the system timer interrupt
-*
-* @param  none
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalTick(void)
-{
-#ifdef D_USE_FREERTOS
-   if (xTaskIncrementTick() == pdTRUE)
-   {
-      vTaskSwitchContext();
-   }
-#elif D_USE_THREADX
-   // call threadx
-#endif /* #ifdef D_USE_FREERTOS */
-}

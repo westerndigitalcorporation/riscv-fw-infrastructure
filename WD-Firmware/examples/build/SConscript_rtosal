@@ -24,6 +24,7 @@ if not os.path.exists(out_dir):
 rtosal_base = os.path.join('rtos', 'rtosal')
 list_files_c=[
    [os.path.join(rtosal_base,'rtosal_event.c'), os.path.join(out_dir, 'rtosal_event.o')],
+   [os.path.join(rtosal_base,'rtosal_interrupt.c'), os.path.join(out_dir, 'rtosal_interrupt.o')],
    [os.path.join(rtosal_base,'rtosal_util.c'), os.path.join(out_dir, 'rtosal_util.o')],
    [os.path.join(rtosal_base,'rtosal_mutex.c'), os.path.join(out_dir, 'rtosal_mutex.o')],
    [os.path.join(rtosal_base,'rtosal_queue.c'), os.path.join(out_dir, 'rtosal_queue.o')],
@@ -34,9 +35,7 @@ list_files_c=[
 #   [os.path.join(rtosal_base,'rtosal_memory.c'), os.path.join(out_dir, 'rtosal_memory.o')],
 ]
 
-list_files_a=[
-   [os.path.join(rtosal_base,'rtosal_asm.S'), os.path.join(out_dir, 'rtosal_asm.o')],
-]
+list_files_a=[]
 
 rtos_core_define = {
   'freertos' :  ['D_USE_FREERTOS'],
@@ -48,8 +47,7 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-Env['RTOSAL_DEF'] = ['D_USE_RTOSAL'] + Env['BSP_DEF'] + rtos_core_define[Env['RTOS_CORE']]
-c_defines = Env['RTOSAL_DEF'] + ['D_RTOSAL_VECT_TABLE=0']
+Env['RTOSAL_DEF'] = [] + rtos_core_define[Env['RTOS_CORE']]
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
@@ -65,14 +63,14 @@ Env['LINKFLAGS'] += []
 # for objects
 objects = []
 for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=Env['RTOSAL_DEF']))
 
 # asm file objects
 for list_file in list_files_a:
   objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
 # for libraries
-rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'rtosal.a'), source=objects)
+rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'],'libs', 'rtosal.a'), source=objects)
 
 #print Env.Dump()
 

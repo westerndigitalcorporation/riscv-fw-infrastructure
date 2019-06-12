@@ -29,7 +29,6 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
-#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -87,7 +86,7 @@
 *                                  - D_RTOSAL_START_ERROR - Invalid uiAutoStart
 *                                  - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtosalPriority_t uiPriority,
+u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtosalPriority_t uiPriority,
                      rtosalTaskHandler_t fptrRtosTaskEntryPoint, u32_t uiTaskEntryPointParameter,
                      u32_t uiStackSize, void * pStackBuffer, u32_t uiTimeSliceTicks,
                      u32_t uiAutoStart, u32_t uiPreemptThuiReshold)
@@ -136,7 +135,7 @@ RTOSAL_SECTION u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* 
 *                                              the task is not idle
 *                    - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
+u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 
@@ -167,7 +166,7 @@ RTOSAL_SECTION u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 *                      - D_RTOSAL_PTR_ERROR      - Invalid pOldPriority
 *                      - D_RTOSAL_CALLER_ERROR   - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
+u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
                                u32_t *pOldPriority)
 {
    u32_t uiRes;
@@ -197,7 +196,7 @@ RTOSAL_SECTION u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t
 *
 * @return None
 */
-RTOSAL_SECTION void rtosalTaskYield(void)
+void rtosalTaskYield(void)
 {
 #ifdef D_USE_FREERTOS
    taskYIELD();
@@ -216,7 +215,7 @@ RTOSAL_SECTION void rtosalTaskYield(void)
 *                     - D_RTOSAL_TASK_ERROR      - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
 *                     - D_RTOSAL_RESUME_ERROR    - The task is not suspended 
 */
-RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
+u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -228,7 +227,7 @@ RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosalTaskResume invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
       /* if we uiResume from an ISR */
       uiRes = xTaskResumeFromISR(pRtosalTaskCb->taskHandle);
@@ -271,7 +270,7 @@ RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 *                      - D_RTOSAL_WAIT_ABORTED - aborted by different consumer (like other thread)
 *                      - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosalTaskSleep(u32_t uiTimerTicks)
+u32_t rtosalTaskSleep(u32_t uiTimerTicks)
 {
    u32_t uiRes;
 
@@ -296,7 +295,7 @@ RTOSAL_SECTION u32_t rtosalTaskSleep(u32_t uiTimerTicks)
 *                     - D_RTOSAL_SUSPEND_ERROR - The task is "done state" like terminated
 *                     - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
+u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 
@@ -322,7 +321,7 @@ RTOSAL_SECTION u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
 *                    - D_RTOSAL_TASK_ERROR - The ptr, cTaskCB, in the pRtosalTaskCb is invalid
 *                    - D_RTOSAL_WAIT_ABORT_ERROR - The task is not in a block/wait state
 */
-RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
+u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 {
    u32_t uiRes;
 

@@ -29,7 +29,6 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
-#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "event_groups.h"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -69,7 +68,7 @@
 *                          - D_RTOSAL_GROUP_ERROR - the group CB is invalid or been used
 *                          - D_RTOSAL_CALLER_ERR - the caller can not call this function 
 */
-RTOSAL_SECTION u32_t rtosalEventGroupCreate(rtosalEventGroup_t* pRtosalEventGroupCb, s08_t* pRtosalEventGroupName)
+u32_t rtosalEventGroupCreate(rtosalEventGroup_t* pRtosalEventGroupCb, s08_t* pRtosalEventGroupName)
 {
    u32_t uiRes;
 
@@ -110,7 +109,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupCreate(rtosalEventGroup_t* pRtosalEventGrou
 *                         - D_RTOSAL_GROUP_ERROR - the group CB is invalid or been used
 *                         - D_RTOSAL_CALLER_ERR - the caller can not call this function 
 */
-RTOSAL_SECTION u32_t rtosalEventGroupDestroy(rtosalEventGroup_t* pRtosalEventGroupCb)
+u32_t rtosalEventGroupDestroy(rtosalEventGroup_t* pRtosalEventGroupCb)
 {
    u32_t uiRes;
 
@@ -140,7 +139,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupDestroy(rtosalEventGroup_t* pRtosalEventGro
 *                        - D_RTOSAL_OPTION_ERROR - bad param on uiSetOption
 *                        - D_RTOSAL_FAIL - fail to set event
 */
-RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb,
+u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb,
                           rtosalEventBits_t stSetRtosalEventBits,
                           u32_t uiSetOption, rtosalEventBits_t* pRtosalEventBits)
 {
@@ -155,7 +154,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb
 
 #ifdef D_USE_FREERTOS
    /* rtosalEventGroupSet invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
       uiRes = xEventGroupSetBitsFromISR(pRtosalEventGroupCb->eventGroupHandle,
                                       stSetRtosalEventBits, &xHigherPriorityTaskWoken);
@@ -217,7 +216,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb
 *                        - D_RTOSAL_WAIT_ERROR - illegal use of wait (wait can be used only from thread)
 *                        - D_RTOSAL_OPTION_ERROR - bad uiRetrieveOption
 */
-RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb, u32_t uiRetrieveEvents,
+u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb, u32_t uiRetrieveEvents,
                           rtosalEventBits_t* pRtosalEventBits, u32_t uiRetrieveOption,
                           u32_t uiWaitTimeoutTicks)
 {
@@ -232,7 +231,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalEventBits, pRtosalEventBits == NULL, D_RTOSAL_GROUP_ERROR);
 
    /* invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
       *pRtosalEventBits = xEventGroupGetBitsFromISR(pRtosalEventGroupCb->eventGroupHandle);
    }

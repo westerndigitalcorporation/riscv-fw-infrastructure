@@ -29,7 +29,6 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
-#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "timers.h"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -83,7 +82,7 @@
 *                          - D_RTOSAL_ACTIVATE_ERROR - Invalid uiAutoActivate
 *                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
+u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
                      rtosalTimerHandler_t fptrRtosTimerCallcabk,
 							u32_t uiTimeCallbackParam, u32_t uiAutoActivate,
 							u32_t uiTicks, u32_t uiRescheduleTicks)
@@ -141,7 +140,7 @@ RTOSAL_SECTION u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtos
 *                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
 *                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-RTOSAL_SECTION u32_t rtosTimerDestroy(rtosalTimer_t* pRtosalTimerCb)
+u32_t rtosTimerDestroy(rtosalTimer_t* pRtosalTimerCb)
 {
    u32_t uiRes;
 
@@ -175,7 +174,7 @@ RTOSAL_SECTION u32_t rtosTimerDestroy(rtosalTimer_t* pRtosalTimerCb)
 *                          - D_RTOSAL_ACTIVATE_ERROR - Timer is already running or already expried
 *                          - D_RTOSAL_FAIL - Timers was not activated, request to active was rejected
 */
-RTOSAL_SECTION u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
+u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -187,7 +186,7 @@ RTOSAL_SECTION u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosTimerStart invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
       uiRes = xTimerStartFromISR(pRtosalTimerCb->timerHandle, &xHigherPriorityTaskWoken);
    }
@@ -228,7 +227,7 @@ RTOSAL_SECTION u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 *                          - D_RTOSAL_TIMER_ERROR - The ptr, cTaskCB, in the pRtosalTimerCb is invalid
 *                          - D_RTOSAL_FAIL - Timers was not Stopped, request to stop was rejected
 */
-RTOSAL_SECTION u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
+u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -240,7 +239,7 @@ RTOSAL_SECTION u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosTimerStop invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
       uiRes = xTimerStopFromISR(pRtosalTimerCb->timerHandle, &xHigherPriorityTaskWoken);
    }
@@ -287,7 +286,7 @@ RTOSAL_SECTION u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 *                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 *                          - D_RTOSAL_ACTIVATE_ERROR - Timer is already running or already expried
 */
-RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t uiTicks, u32_t uiRescheduleTicks)
+u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t uiTicks, u32_t uiRescheduleTicks)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -301,7 +300,7 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 
 #ifdef D_USE_FREERTOS
    /* rtosTimerModifyPeriod invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_INT_CONTEXT)
    {
       uiRes = xTimerChangePeriodFromISR(pRtosalTimerCb->timerHandle, uiTicks, &xHigherPriorityTaskWoken);
    }
