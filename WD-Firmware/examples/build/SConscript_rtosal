@@ -49,7 +49,7 @@ a_flags = [] + Env['A_FLAGS']
 
 # defines
 Env['RTOSAL_DEF'] = ['D_USE_RTOSAL'] + Env['BSP_DEF'] + rtos_core_define[Env['RTOS_CORE']]
-c_defines = Env['RTOSAL_DEF'] + ['D_RTOSAL_VECT_TABLE=0']
+c_defines = Env['RTOSAL_DEF']
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]

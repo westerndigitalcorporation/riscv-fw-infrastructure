@@ -117,7 +117,7 @@
     STORE	x29, 29 * REGBYTES(sp)
     STORE	x30, 30 * REGBYTES(sp)
     STORE	x31, 31 * REGBYTES(sp)
-.end
+.endm
 
 /* Saves current error program counter (EPC) as task program counter */
 .macro portSAVE_EPC

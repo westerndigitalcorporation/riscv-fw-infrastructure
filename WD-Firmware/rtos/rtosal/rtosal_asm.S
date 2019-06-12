@@ -69,7 +69,7 @@
 
     1 tab == 4 spaces!
 */
-.include "psp_macro_asm.S"
+#include "psp_macro_asm.S"
 
 .macro SET_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */
@@ -135,7 +135,7 @@
 .align 4
 .global   vect_table_
 
-.if D_RTOSAL_VECT_TABLE == 0
+.ifndef D_RTOSAL_VECT_TABLE
 .global   vect_table
 vect_table:
     pushREGFILE
@@ -146,13 +146,13 @@ vect_table:
     la    t1, vect_table_
     add   t0, t0, t1
     jr    t0
-.endif /* #if D_RTOSAL_VECT_TABLE == 0 */
+.endif /* #if D_RTOSAL_VECT_TABLE */
 
-.if D_RTOSAL_VECT_TABLE == 0
+.ifndef D_RTOSAL_VECT_TABLE
 vect_table_:
-.elseif D_RTOSAL_VECT_TABLE == 1
+.else
 vect_table:
-.endif
+.endif /* #if D_RTOSAL_VECT_TABLE */
     j exceptions_int
     .align 2
     j reserved_int
@@ -179,10 +179,10 @@ vect_table:
     .align 2
 
 exceptions_int:
-.if D_RTOSAL_VECT_TABLE == 1
+.ifdef D_RTOSAL_VECT_TABLE
     pushREGFILE
     SET_INT_CONTEXT
-.endif /* D_RTOSAL_VECT_TABLE == 1 */
+.endif /* D_RTOSAL_VECT_TABLE */
     /* pass mcause in a0 */
     /* csrr a0, mcause */
     /* pass sp in a1 */
@@ -197,10 +197,10 @@ exceptions_int:
     mret
 
 m_soft_int:
-.if D_RTOSAL_VECT_TABLE == 1
+.ifdef D_RTOSAL_VECT_TABLE
     pushREGFILE
     SET_INT_CONTEXT
-.endif /* D_RTOSAL_VECT_TABLE == 1 */
+.endif /* D_RTOSAL_VECT_TABLE */
     CALL_INT_HANDLER fptrIntMSoftIntHandler
     portEND_SWITCHING_ISR m_soft_int_no_cs
 m_soft_int_no_cs:
@@ -209,10 +209,10 @@ m_soft_int_no_cs:
     mret
 
 m_timer_int:
-.if D_RTOSAL_VECT_TABLE == 1
+.ifdef D_RTOSAL_VECT_TABLE
     pushREGFILE
     SET_INT_CONTEXT
-.endif /* D_RTOSAL_VECT_TABLE == 1 */
+.endif /* D_RTOSAL_VECT_TABLE */
     portSAVE_CONTEXT
     portSAVE_EPC
     CALL_INT_HANDLER fptrIntMTimerIntHandler
@@ -222,10 +222,10 @@ m_timer_int:
     mret
 
 m_external_int:
-.if D_RTOSAL_VECT_TABLE == 1
+.ifdef D_RTOSAL_VECT_TABLE
     pushREGFILE
     SET_INT_CONTEXT
-.endif /* D_RTOSAL_VECT_TABLE == 1 */
+.endif /* D_RTOSAL_VECT_TABLE */
     CALL_INT_HANDLER fptrIntMExternIntHandler
     portRESTORE_X2
     portEND_SWITCHING_ISR m_external_int_no_cs
