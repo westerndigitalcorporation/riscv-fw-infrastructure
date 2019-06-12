@@ -69,94 +69,94 @@
 
     1 tab == 4 spaces!
 */
-.include "psp_macro_asm.S"
+#include "psp_macro_asm.S"
 
 .section  .text.entry
 .align 4
 .global   vect_table_
 
-#if D_PSP_VECT_TABLE == 0
+.ifndef D_PSP_VECT_TABLE
 .global   vect_table
 vect_table:
-	pushREGFILE
-	csrr  t0, mcause
-	bge	  t0, zero, vect_table_
-	slli  t0, t0, 2
-	la    t1, vect_table_
-	add   t0, t0, t1
-	jr    t0
-#endif /* #if D_PSP_VECT_TABLE == 0 */
+    pushREGFILE
+    csrr  t0, mcause
+    bge	  t0, zero, vect_table_
+    slli  t0, t0, 2
+    la    t1, vect_table_
+    add   t0, t0, t1
+    jr    t0
+.endif /* D_PSP_VECT_TABLE */
 
-#if D_PSP_VECT_TABLE == 0
+.ifndef D_PSP_VECT_TABLE
 vect_table_:
-#elif D_PSP_VECT_TABLE == 1
+.else
 vect_table:
-#endife
-	j exceptions_int
-	.align 2
-	j reserved_int
-	.align 2
-	j reserved_int
-	.align 2
+.endif
+    j exceptions_int
+    .align 2
+    j reserved_int
+    .align 2
+    j reserved_int
+    .align 2
     j m_soft_int
-	.align 2
+    .align 2
     j reserved_int
-	.align 2
+    .align 2
     j reserved_int
-	.align 2
+    .align 2
     j reserved_int
-	.align 2
+    .align 2
     j m_timer_int
-	.align 2
+    .align 2
     j reserved_int
-	.align 2
+    .align 2
     j reserved_int
-	.align 2
+    .align 2
     j reserved_int
-	.align 2
+    .align 2
     j m_external_int
 
 exceptions_int:
-#if D_PSP_VECT_TABLE == 1
-	pushREGFILE
-#endif /* D_PSP_VECT_TABLE == 1 */
-	/* pass mcause in a0 */
-	/* csrr a0, mcause */
-	/* pass sp in a1 */
-	/* mv   a1,sp */
-	/* call the exception handler */
-	CALL_INT_HANDLER fptrIntExceptionIntHandler
+.ifdef D_PSP_VECT_TABLE
+    pushREGFILE
+.endif /* D_PSP_VECT_TABLE */
+    /* pass mcause in a0 */
+    /* csrr a0, mcause */
+    /* pass sp in a1 */
+    /* mv  a1,sp */
+    /* call the exception handler */
+    CALL_INT_HANDLER fptrIntExceptionIntHandler
     /* adjust stack pointer back to
-       where it was prior to ulSynchTrap  */
-	/*mv	sp,a0*/
-	popREGFILE
-	mret
+    where it was prior to ulSynchTrap  */
+    /*mv  sp,a0*/
+    popREGFILE
+    mret
 
 m_soft_int:
-#if D_PSP_VECT_TABLE == 1
-	pushREGFILE
-#endif /* D_PSP_VECT_TABLE == 1 */
+.ifdef D_PSP_VECT_TABLE
+    pushREGFILE
+.endif /* D_PSP_VECT_TABLE */
     CALL_INT_HANDLER fptrIntMSoftIntHandler
-	popREGFILE
-	mret
+    popREGFILE
+    mret
 
 m_timer_int:
-#if D_PSP_VECT_TABLE == 1
-	pushREGFILE
-#endif /* D_PSP_VECT_TABLE == 1 */
+.ifdef D_PSP_VECT_TABLE
+    pushREGFILE
+.endif /* D_PSP_VECT_TABLE */
     CALL_INT_HANDLER fptrIntMTimerIntHandler
-	popREGFILE
-	mret
+    popREGFILE
+    mret
 
 m_external_int:
-#if D_PSP_VECT_TABLE == 1
-	pushREGFILE
-#endif /* D_PSP_VECT_TABLE == 1 */
+.ifdef D_PSP_VECT_TABLE
+    pushREGFILE
+.endif /* D_PSP_VECT_TABLE */
     CALL_INT_HANDLER fptrIntMExternIntHandler
-	popREGFILE
-	mret
+    popREGFILE
+    mret
 
 .weak reserved_int
 reserved_int:
 1:
-  j 1b
+    j 1b

@@ -15,12 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_interrupt_cfg.c
+* @file   rtosal_defines.h
 * @author Ronen Haen
-* @date   21.01.2019 
-* @brief  The file implements the RTOS AL interrupt configuration
+* @date   11.06.2019
+* @brief  The COM-RV defines
 * 
 */
+#ifndef  __COMRV_DEFINES_H__
+#define  __COMRV_DEFINES_H__
 
 /**
 * include files
@@ -30,22 +32,4 @@
 * definitions
 */
 
-/**
-* macros
-*/
-
-/**
-* types
-*/
-
-/**
-* local prototypes
-*/
-
-/**
-* external prototypes
-*/
-
-/**
-* global variables
-*/
+#endif /* __COMRV_DEFINES_H__ */
