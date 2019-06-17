@@ -25,10 +25,8 @@
 /**
 * include files
 */
+#include "psp_api.h"
 #include "psp_interrupt_api.h"
-#include "psp_macro.h"
-#include "psp_config.h"
-#include "psp_defines.h"
 
 /**
 * definitions
@@ -184,7 +182,7 @@ PSP_SECTION u32_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInter
 PSP_SECTION void pspDefaultExceptionIntHandler(void)
 {
    /* get the exception cause */
-   u32_t cause = read_csr(mcause);
+   u32_t cause = M_PSP_READ_CSR(mcause);
 
    /* is it a valid cause */
    if (cause < D_PSP_NUM_OF_INTS_EXCEPTIONS)

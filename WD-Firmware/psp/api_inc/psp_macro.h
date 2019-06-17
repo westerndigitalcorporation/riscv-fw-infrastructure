@@ -30,7 +30,9 @@
 /**
 * macros
 */
+/* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
+   /* TODO: need to add default function */
    #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
       if (conditionMet) \
       { \
@@ -43,11 +45,11 @@
 
 #define PSP_SECTION __attribute__((section("PSP_SEC")))
 
-#define read_csr(reg) ({ unsigned long __tmp; \
+#define M_PSP_READ_CSR(reg) (	{ unsigned long __tmp; \
   asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
   __tmp; })
 
-#define write_csr(reg, val) ({ \
+#define M_PSP_WRITE_CSR(reg, val) ({ \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
     asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
   else \

@@ -25,13 +25,10 @@
 /**
 * include files
 */
-#include "common_types.h"
-#include "common_defines.h"
+#include "psp_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_macro.h"
 #include "rtosal.h"
-#include "psp_api.h"
-#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "queue.h"
 #endif /* #ifdef D_USE_FREERTOS */

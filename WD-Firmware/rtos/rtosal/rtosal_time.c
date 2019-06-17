@@ -29,7 +29,6 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
-#include "psp_defines.h"
 #ifdef D_USE_FREERTOS
    #include "timers.h"
 #endif /* #ifdef D_USE_FREERTOS */

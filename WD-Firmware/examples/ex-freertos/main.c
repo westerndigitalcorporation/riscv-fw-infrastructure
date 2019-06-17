@@ -721,10 +721,10 @@ static void prvSetupHardware( void )
 /*-----------------------------------------------------------*/
 
 #ifdef D_USE_RTOSAL
-void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
+void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rtosalStack_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
 {
-  *ppxIdleTaskTCBBuffer = (StaticTask_t*)&xIdleTaskTCBBuffer;
-  *ppxIdleTaskStackBuffer = (StackType_t*)&xIdleStack[0];
+  *ppxIdleTaskTCBBuffer = (rtosalStaticTask_t*)&xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = (rtosalStack_t*)&xIdleStack[0];
   *pulIdleTaskStackSize = D_IDLE_TASK_SIZE;
 }
 
@@ -732,10 +732,10 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackTyp
    following callback function - which enables the application to optionally
    provide the memory that will be used by the timer task as the task's stack
    and TCB. */
-void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
+void vApplicationGetTimerTaskMemory(rtosalStaticTask_t **ppxTimerTaskTCBBuffer, rtosalStack_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
 {
-  *ppxTimerTaskTCBBuffer = (StaticTask_t*)&xTimerTaskTCBBuffer;
-  *ppxTimerTaskStackBuffer = (StackType_t*)&xTimerStack[0];
+  *ppxTimerTaskTCBBuffer = (rtosalStaticTask_t*)&xTimerTaskTCBBuffer;
+  *ppxTimerTaskStackBuffer = (rtosalStack_t*)&xTimerStack[0];
   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 #endif /* #ifdef D_USE_RTOSAL */
