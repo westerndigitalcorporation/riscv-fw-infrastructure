@@ -147,7 +147,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="comrv bare metal demo" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.678110434" name="comrv-baremetal" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="RISCV comrv bare metal demo" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.678110434" name="comrv-baremetal" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.678110434." name="/" resourcePath="">
 						<toolChain id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.434331560" name="RISC-V Cross GCC" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base">
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix.1188864337" name="Prefix" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix" value="riscv64-unknown-elf-" valueType="string"/>
