@@ -27,9 +27,9 @@
 /**
 * include files
 */
-#include "psp_api.h"
+#include "common_types.h"
 #ifdef D_USE_FREERTOS
-#include "FreeRTOS.h"
+   #include "FreeRTOS.h"
 #endif /* #ifdef D_USE_FREERTOS */
 /**
 * types
@@ -37,21 +37,21 @@
 #ifdef D_USE_FREERTOS
    typedef u32_t rtosalStackType_t;
 #elif D_USE_THREADX
-#error *** TODO: need to define the TBD ***
+   #error *** TODO: need to define the TBD ***
    typedef TBD   rtosalStackType_t;
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
    typedef StaticTask_t rtosalStaticTask_t;
 #elif D_USE_THREADX
-#error *** TODO: need to define the TBD ***
+   #error *** TODO: need to define the TBD ***
    typedef TBD        rtosalStaticTask_t;
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
    typedef StackType_t rtosalStack_t;
 #elif D_USE_THREADX
-#error *** TODO: need to define the TBD ***
+   #error *** TODO: need to define the TBD ***
    typedef TBD         rtosalStack_t;
 #endif /* __RTOSAL_TYPES_H__ */
 

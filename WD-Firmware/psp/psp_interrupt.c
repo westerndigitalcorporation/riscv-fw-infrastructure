@@ -25,6 +25,7 @@
 /**
 * include files
 */
+#include "common_types.h"
 #include "psp_api.h"
 #include "psp_interrupt_api.h"
 

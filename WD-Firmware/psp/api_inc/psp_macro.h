@@ -33,7 +33,7 @@
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
    /* TODO: need to add default function */
-   #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
+   #define M_PSP_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
       if (conditionMet) \
       { \
          fptrParamErrorNotification((const void*)(param), returnCode); \

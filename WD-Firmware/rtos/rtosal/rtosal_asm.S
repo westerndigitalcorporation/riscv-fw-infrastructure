@@ -69,7 +69,7 @@
 
     1 tab == 4 spaces!
 */
-#include "psp_macro_asm.S"
+#include "psp_macro_asm.inc"
 
 .macro SET_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */

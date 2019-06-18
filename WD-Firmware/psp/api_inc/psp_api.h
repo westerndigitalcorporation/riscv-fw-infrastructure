@@ -26,8 +26,6 @@
 /**
 * include files
 */
-#include "common_types.h"
-#include "common_defines.h"
 #include "psp_config.h"
 #include "psp_macro.h"
 #include "psp_defines.h"
