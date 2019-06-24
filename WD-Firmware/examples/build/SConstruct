@@ -116,7 +116,8 @@ Env['RTOS_INC_PATH']   = []
 Env['BSP_INC_PATH']    = []
 Env['TARGET_LIBS']     = []
 Env['RTOS_CORE']       = []
-Env['PUBLIC_INC_PATH'] = [] 
+Env['PUBLIC_INC_PATH'] = []
+Env['PUBLIC_DEF']      = [] 
 Env['OUT_DIR_PATH']    = 'output'
 Env['TARGET_BOARD']    = tagretName
 Env['EXAMPLE_NAME']    = exampleName
@@ -164,12 +165,14 @@ Env['BUILDERS']['Size'] = size
 arr_lib              = []
 if exampleName == 'ex-freertos':
   Env['RTOS_CORE'] = 'freertos'
+  Env['PUBLIC_DEF']= ['D_USE_RTOSAL'] 
   arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
   arr_lib.append(SConscript('SConscript_'+ Env['RTOS_CORE'], exports='Env'))
   arr_lib.append(SConscript('SConscript_rtosal', exports='Env'))
   arr_lib.append(SConscript('SConscript_psp', exports='Env'))
   Env['TARGET_LIBS'] += ['c', 'gcc']
 elif exampleName == 'ex-comrv-baremetal':
+  Env['PUBLIC_DEF'] = ['D_BARE_METAL'] 
   arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
   arr_lib.append(SConscript('SConscript_psp', exports='Env'))
   arr_lib.append(SConscript('SConscript_comrv_baremetal', exports='Env'))

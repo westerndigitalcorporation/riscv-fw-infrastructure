@@ -6,10 +6,12 @@
 #include "platform.h"
 #include "encoding.h"
 
-#if 0
-extern void trap_entry();
+#ifdef D_USE_RTOSAL
+  extern void rtosal_vect_table();
+#elif defined(D_BARE_METAL)
+  extern void psp_vect_table();
 #else
-extern void vect_table();
+  extern void trap_entry();
 #endif
 
 static unsigned long mtime_lo(void)
@@ -233,10 +235,12 @@ void _init()
  write(1, freq_string, 9);
  write(1, "Hz\n",3);
 
-#if 0
-  write_csr(mtvec, &trap_entry);
+#ifdef D_USE_RTOSAL
+  write_csr(mtvec, &rtosal_vect_table);
+#elif defined(D_BARE_METAL)
+  write_csr(mtvec, &psp_vect_table);
 #else
-  write_csr(mtvec, &vect_table);
+  write_csr(mtvec, &trap_entry);
 #endif
 
   if (read_csr(misa) & (1 << ('F' - 'A'))) { // if F extension is present

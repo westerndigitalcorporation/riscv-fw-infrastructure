@@ -74,7 +74,7 @@
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
 #include "rtosal_util_api.h"
-#include "psp_interrupt_api.h"
+#include "psp_api.h"
 #include "task.h"     /* for tskIDLE_PRIORITY */
 #else
 /* Kernel includes. */
@@ -531,6 +531,12 @@ static uint32_t ulCount = 0;
       xSemaphoreGiveFromISR( xEventSemaphore, &xHigherPriorityTaskWoken );
 #else
       rtosalSemaphoreRelease(&xEventSemaphore);
+      /* the rtosalSemaphoreRelease will automatically handle the xHigherPriorityTaskWoken
+       * indication and in this case even if xHigherPriorityTaskWoken is true, we don't
+       * need to perform a context switch (we are in a context of the tick interrupt which
+       * is already handling context switch if required therefore we must clear the
+       * rtos al 'context switch' indication)
+       */
       rtosalContextSwitchIndicationClear();
 #endif
       ulCount = 0UL;

@@ -70,19 +70,49 @@
     1 tab == 4 spaces!
 */
 
+/*
+This implementation supports riscv privileged v1.10
+*/
+
 #include "psp_defines.h"
 
-.macro CALL_INT_HANDLER fptIntHandler
+.section  .text.entry
+.align 4
+.global   psp_vect_table
+
+.macro m_CALL_INT_HANDLER fptIntHandler
     /* load the address of provided fptIntHandler */
-    la t0, \fptIntHandler
+    la a0, \fptIntHandler
     /* load the actual handler address */
-    LOAD t0, 0x0(t0)
+    LOAD a0, 0x0(a0)
     /* invoke the interrupt handler */
-    jalr t0
+    jalr a0
+.endm
+
+.macro m_SET_INT_CONTEXT
+    /* save address of g_uiIsInterruptContext -> t0 */
+    la      a0, g_uiIsInterruptContext
+    /* load the value g_uiIsInterruptContext -> t1 */
+    LOAD    a1, 0x0(a0)
+    /* increment t1 by 1 */
+    ADDI    a1, a1, 1
+    /* store new value to g_uiIsInterruptContext */
+    STORE   a1, 0x0(a0)
+.endm
+
+.macro m_CLEAR_INT_CONTEXT
+    /* save address of g_uiIsInterruptContext -> t0 */
+    la      a0, g_uiIsInterruptContext
+    /* load the value g_uiIsInterruptContext -> t1 */
+    LOAD    a1, 0x0(a0)
+    /* decrement t1 by 1 */
+    ADDI    a1, a1, -1
+    /* store new value to g_uiIsInterruptContext */
+    STORE   a1, 0x0(a0)
 .endm
 
 /* Macro for saving task context */
-.macro pushREGFILE
+.macro m_pushREGFILE
     /* make room in stack */
     ADDI	sp, sp, -REGBYTES * 34
     /* Save Context */
@@ -119,26 +149,8 @@
     STORE	x31, 31 * REGBYTES(sp)
 .endm
 
-/* Saves current error program counter (EPC) as task program counter */
-.macro portSAVE_EPC
-    csrr	t0, mepc
-    STORE	t0, 33 * REGBYTES(sp)
-.endm
-
-/* Saves current return adress (RA) as task program counter */
-.macro portSAVE_RA
-    LOAD	t0, 1 * REGBYTES(sp)
-    STORE	t0, 33 * REGBYTES(sp)
-.endm
-
-/*/not called on a context switch*/
-.macro portRESTORE_X2
-    LOAD 	x2, 2 * REGBYTES(sp)
-    //LOAD 	x3, 3 * REGBYTES(sp)
-.endm
-
 /* Macro for restoring task context */
-.macro popREGFILE
+.macro m_popREGFILE
     /* Restore registers,
     Skip global pointer because that does not change */
     LOAD	x1, 1 * REGBYTES(sp)
@@ -173,3 +185,98 @@
     LOAD	x31, 31 * REGBYTES(sp)
     addi	sp, sp, REGBYTES * 34
 .endm
+
+.ifndef D_PSP_VECT_TABLE
+psp_vect_table:
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
+    csrr  t0, mcause
+    bge	  t0, zero, psp_vect_table_
+    slli  t0, t0, 2
+    la    t1, psp_vect_table_
+    add   t0, t0, t1
+    jr    t0
+.endif /* D_PSP_VECT_TABLE */
+
+.ifndef D_PSP_VECT_TABLE
+psp_vect_table_:
+.else
+psp_vect_table:
+.endif
+    j psp_exceptions_int       /* User software interrupt & exceptions */
+    .align 2
+    j psp_reserved_int         /* Supervisor software interrupt    */
+    .align 2
+    j psp_reserved_int         /* Reserved for future standard use */
+    .align 2
+    j psp_m_soft_int           /* Machine software interrupt       */
+    .align 2
+    j psp_reserved_int         /* User timer interrupt             */
+    .align 2
+    j psp_reserved_int         /* Supervisor timer interrupt       */
+    .align 2
+    j psp_reserved_int         /* Reserved for future standard use */
+    .align 2
+    j psp_m_timer_int          /* Machine timer interrupt          */
+    .align 2
+    j psp_reserved_int         /* User external interrupt          */
+    .align 2
+    j psp_reserved_int         /* Supervisor external interrupt    */
+    .align 2
+    j psp_reserved_int         /* Reserved for future standard use */
+    .align 2
+    j psp_m_external_int       /* Machine external interrupt       */
+    .align 2
+
+psp_exceptions_int:
+.ifdef D_PSP_VECT_TABLE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
+.endif /* D_PSP_VECT_TABLE */
+    /* pass mcause in a0 */
+    /* csrr a0, mcause */
+    /* pass sp in a1 */
+    /* mv  a1,sp */
+    /* call the exception handler */
+    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler
+    /* adjust stack pointer back to
+    where it was prior to ulSynchTrap  */
+    /*mv  sp,a0*/
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
+    mret
+
+psp_m_soft_int:
+.ifdef D_PSP_VECT_TABLE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
+.endif /* D_PSP_VECT_TABLE */
+    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
+    mret
+
+psp_m_timer_int:
+.ifdef D_PSP_VECT_TABLE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
+.endif /* D_PSP_VECT_TABLE */
+    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
+    mret
+
+psp_m_external_int:
+.ifdef D_PSP_VECT_TABLE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
+.endif /* D_PSP_VECT_TABLE */
+    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
+    mret
+
+.weak psp_reserved_int
+psp_reserved_int:
+1:
+    j 1b

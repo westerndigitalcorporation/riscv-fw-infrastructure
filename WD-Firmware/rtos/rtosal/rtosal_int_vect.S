@@ -69,43 +69,47 @@
 
     1 tab == 4 spaces!
 */
-#include "psp_macro_asm.inc"
 
-.macro SET_INT_CONTEXT
+/*
+This implementation supports riscv privileged v1.10
+*/
+#include "psp_defines.h"
+
+.macro m_SET_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */
-    la      t0, g_uiIsInterruptContext
+    la      a0, g_uiIsInterruptContext
     /* load the value g_uiIsInterruptContext -> t1 */
-    LOAD    t1, 0x0(t0)
+    LOAD    a1, 0x0(a0)
     /* increment t1 by 1 */
-    ADDI    t1, t1, 1
+    ADDI    a1, a1, 1
     /* store new value to g_uiIsInterruptContext */
-    STORE   t1, 0x0(t0)
+    STORE   a1, 0x0(a0)
 .endm
 
-.macro CLEAR_INT_CONTEXT
+.macro m_CLEAR_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */
-    la      t0, g_uiIsInterruptContext
+    la      a0, g_uiIsInterruptContext
     /* load the value g_uiIsInterruptContext -> t1 */
-    LOAD    t1, 0x0(t0)
+    LOAD    a1, 0x0(a0)
     /* decrement t1 by 1 */
-    ADDI    t1, t1, -1
+    ADDI    a1, a1, -1
     /* store new value to g_uiIsInterruptContext */
-    STORE   t1, 0x0(t0)
+    STORE   a1, 0x0(a0)
 .endm
 
 /*saves mstatus and tcb    */
-.macro portSAVE_CONTEXT
+.macro m_portSAVE_CONTEXT
     .global    pxCurrentTCB
     /* Store mstatus */
-    csrr    t0, mstatus    //pointer
+    csrr    t0, mstatus
     STORE   t0, 32 * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
-    LOAD    t0, pxCurrentTCB    //pointer
+    LOAD    t0, pxCurrentTCB
     STORE   sp, 0x0(t0)
 .endm
 
  /*restore mstatus and tcb    */
-.macro portRESTORE_CONTEXT
+.macro m_portRESTORE_CONTEXT
     .global    pxCurrentTCB
     /* Load stack pointer from the current TCB */
     LOAD    sp, pxCurrentTCB
@@ -118,123 +122,220 @@
     csrw    mstatus, t0
 .endm
 
-.macro portEND_SWITCHING_ISR brunch_label
+.macro m_portEND_SWITCHING_ISR brunch_label
     /* save address of g_rtosalContextSwitch -> t0 */
-    la      t0, g_rtosalContextSwitch
+    la      a0, g_rtosalContextSwitch
     /* load the value g_rtosalContextSwitch -> t1 */
-    LOAD    t1, 0x0(t0)
+    LOAD    a1, 0x0(t0)
     /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz    t1, \brunch_label
+    beqz    a1, \brunch_label
     /* clear g_rtosalContextSwitch */
-    STORE   zero, 0x0(t0)
+    STORE   zero, 0x0(a0)
     /* perform context switch */
+.if D_USE_FREERTOS
     j       vPortYieldFromInterrupt
+.elseif D_USE_THREADX
+.endif /* .if D_USE_FREERTOS */
+.endm
+
+.macro m_CALL_INT_HANDLER fptIntHandler
+    /* load the address of provided fptIntHandler */
+    la a0, \fptIntHandler
+    /* load the actual handler address */
+    LOAD a0, 0x0(a0)
+    /* invoke the interrupt handler */
+    jalr a0
+.endm
+
+/* Macro for saving task context */
+.macro m_pushREGFILE
+    /* make room in stack */
+    ADDI	sp, sp, -REGBYTES * 34
+    /* Save Context */
+    STORE	x1, 1 * REGBYTES(sp)
+    STORE	x2, 2 * REGBYTES(sp)
+    /* STORE	x3, 3 * REGBYTES(sp) */
+    STORE	x4, 4 * REGBYTES(sp)
+    STORE	x5, 5 * REGBYTES(sp)
+    STORE	x6, 6 * REGBYTES(sp)
+    STORE	x7, 7 * REGBYTES(sp)
+    STORE	x8, 8 * REGBYTES(sp)
+    STORE	x9, 9 * REGBYTES(sp)
+    STORE	x10, 10 * REGBYTES(sp)
+    STORE	x11, 11 * REGBYTES(sp)
+    STORE	x12, 12 * REGBYTES(sp)
+    STORE	x13, 13 * REGBYTES(sp)
+    STORE	x14, 14 * REGBYTES(sp)
+    STORE	x15, 15 * REGBYTES(sp)
+    STORE	x16, 16 * REGBYTES(sp)
+    STORE	x17, 17 * REGBYTES(sp)
+    STORE	x18, 18 * REGBYTES(sp)
+    STORE	x19, 19 * REGBYTES(sp)
+    STORE	x20, 20 * REGBYTES(sp)
+    STORE	x21, 21 * REGBYTES(sp)
+    STORE	x22, 22 * REGBYTES(sp)
+    STORE	x23, 23 * REGBYTES(sp)
+    STORE	x24, 24 * REGBYTES(sp)
+    STORE	x25, 25 * REGBYTES(sp)
+    STORE	x26, 26 * REGBYTES(sp)
+    STORE	x27, 27 * REGBYTES(sp)
+    STORE	x28, 28 * REGBYTES(sp)
+    STORE	x29, 29 * REGBYTES(sp)
+    STORE	x30, 30 * REGBYTES(sp)
+    STORE	x31, 31 * REGBYTES(sp)
+.endm
+
+/* Saves current error program counter (EPC) as task program counter */
+.macro m_portSAVE_EPC
+    csrr	t0, mepc
+    STORE	t0, 33 * REGBYTES(sp)
+.endm
+
+/* Saves current return adress (RA) as task program counter */
+.macro m_portSAVE_RA
+    LOAD	t0, 1 * REGBYTES(sp)
+    STORE	t0, 33 * REGBYTES(sp)
+.endm
+
+/*/not called on a context switch*/
+.macro m_portRESTORE_X2
+    LOAD 	x2, 2 * REGBYTES(sp)
+    //LOAD 	x3, 3 * REGBYTES(sp)
+.endm
+
+/* Macro for restoring task context */
+.macro m_popREGFILE
+    /* Restore registers,
+    Skip global pointer because that does not change */
+    LOAD	x1, 1 * REGBYTES(sp)
+    /* LOAD 	x3, 3 * REGBYTES(sp) */
+    LOAD	x4, 4 * REGBYTES(sp)
+    LOAD	x5, 5 * REGBYTES(sp)
+    LOAD	x6, 6 * REGBYTES(sp)
+    LOAD	x7, 7 * REGBYTES(sp)
+    LOAD	x8, 8 * REGBYTES(sp)
+    LOAD	x9, 9 * REGBYTES(sp)
+    LOAD	x10, 10 * REGBYTES(sp)
+    LOAD	x11, 11 * REGBYTES(sp)
+    LOAD	x12, 12 * REGBYTES(sp)
+    LOAD	x13, 13 * REGBYTES(sp)
+    LOAD	x14, 14 * REGBYTES(sp)
+    LOAD	x15, 15 * REGBYTES(sp)
+    LOAD	x16, 16 * REGBYTES(sp)
+    LOAD	x17, 17 * REGBYTES(sp)
+    LOAD	x18, 18 * REGBYTES(sp)
+    LOAD	x19, 19 * REGBYTES(sp)
+    LOAD	x20, 20 * REGBYTES(sp)
+    LOAD	x21, 21 * REGBYTES(sp)
+    LOAD	x22, 22 * REGBYTES(sp)
+    LOAD	x23, 23 * REGBYTES(sp)
+    LOAD	x24, 24 * REGBYTES(sp)
+    LOAD	x25, 25 * REGBYTES(sp)
+    LOAD	x26, 26 * REGBYTES(sp)
+    LOAD	x27, 27 * REGBYTES(sp)
+    LOAD	x28, 28 * REGBYTES(sp)
+    LOAD	x29, 29 * REGBYTES(sp)
+    LOAD	x30, 30 * REGBYTES(sp)
+    LOAD	x31, 31 * REGBYTES(sp)
+    addi	sp, sp, REGBYTES * 34
 .endm
 
 .section  .text.entry
 .align 4
-.global   vect_table_
+.global   rtosal_vect_table
 
 .ifndef D_RTOSAL_VECT_TABLE
-.global   vect_table
-vect_table:
-    pushREGFILE
-    SET_INT_CONTEXT
+rtosal_vect_table:
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
     csrr  t0, mcause
-    bge      t0, zero, vect_table_
+    bge      t0, zero, rtosal_vect_table_
     slli  t0, t0, 2
-    la    t1, vect_table_
+    la    t1, rtosal_vect_table_
     add   t0, t0, t1
     jr    t0
 .endif /* #if D_RTOSAL_VECT_TABLE */
 
 .ifndef D_RTOSAL_VECT_TABLE
-vect_table_:
+rtosal_vect_table_:
 .else
-vect_table:
+rtosal_vect_table:
 .endif /* #if D_RTOSAL_VECT_TABLE */
-    j exceptions_int
+    j rtosa_exceptions_int       /* User software interrupt & exceptions */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* Supervisor software interrupt        */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* Reserved for future standard use     */
     .align 2
-    j m_soft_int
+    j rtosa_m_soft_int           /* Machine software interrupt           */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* User timer interrupt                 */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* Supervisor timer interrupt           */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* Reserved for future standard use     */
     .align 2
-    j m_timer_int
+    j rtosa_m_timer_int          /* Machine timer interrupt              */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* User external interrupt              */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* Supervisor external interrupt        */
     .align 2
-    j reserved_int
+    j rtosa_reserved_int         /* Reserved for future standard use     */
     .align 2
-    j m_external_int
+    j rtosa_m_external_int       /* Machine external interrupt           */
     .align 2
 
-exceptions_int:
+rtosa_exceptions_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    pushREGFILE
-    SET_INT_CONTEXT
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_RTOSAL_VECT_TABLE */
-    /* pass mcause in a0 */
-    /* csrr a0, mcause */
-    /* pass sp in a1 */
-    /* mv   a1,sp */
     /* call the exception handler */
-    CALL_INT_HANDLER fptrIntExceptionIntHandler
-    /* adjust stack pointer back to
-       where it was prior to ulSynchTrap  */
-    /*mv    sp,a0*/
-    CLEAR_INT_CONTEXT
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-m_soft_int:
+rtosa_m_soft_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    pushREGFILE
-    SET_INT_CONTEXT
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_RTOSAL_VECT_TABLE */
-    CALL_INT_HANDLER fptrIntMSoftIntHandler
-    portEND_SWITCHING_ISR m_soft_int_no_cs
-m_soft_int_no_cs:
-    CLEAR_INT_CONTEXT
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler
+    m_portEND_SWITCHING_ISR rtosa_m_soft_int_no_cs
+rtosa_m_soft_int_no_cs:
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-m_timer_int:
+rtosa_m_timer_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    pushREGFILE
-    SET_INT_CONTEXT
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_RTOSAL_VECT_TABLE */
-    portSAVE_CONTEXT
-    portSAVE_EPC
-    CALL_INT_HANDLER fptrIntMTimerIntHandler
-    portRESTORE_CONTEXT
-    CLEAR_INT_CONTEXT
-    popREGFILE
+    m_portSAVE_CONTEXT
+    m_portSAVE_EPC
+    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler
+    m_portRESTORE_CONTEXT
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-m_external_int:
+rtosa_m_external_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    pushREGFILE
-    SET_INT_CONTEXT
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_RTOSAL_VECT_TABLE */
-    CALL_INT_HANDLER fptrIntMExternIntHandler
-    portRESTORE_X2
-    portEND_SWITCHING_ISR m_external_int_no_cs
-m_external_int_no_cs:
-    CLEAR_INT_CONTEXT
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler
+    m_portRESTORE_X2
+    m_portEND_SWITCHING_ISR rtosa_m_external_int_no_cs
+rtosa_m_external_int_no_cs:
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-.weak reserved_int
-reserved_int:
+.weak rtosa_reserved_int
+rtosa_reserved_int:
 1:
   j 1b

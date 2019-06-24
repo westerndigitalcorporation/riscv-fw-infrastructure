@@ -22,5 +22,5 @@
 *
 */
 
-/*#include "psp_macro_asm.inc"*/
+/*#include "psp_asm_macros.inc"*/
 

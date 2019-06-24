@@ -26,9 +26,11 @@
 /**
 * include files
 */
+//#include "common_types.h"
 #include "psp_config.h"
 #include "psp_macro.h"
 #include "psp_defines.h"
+#include "psp_interrupt_api.h"
 
 /**
 * definitions
@@ -58,4 +60,7 @@
 * APIs
 */
 u32_t pspIsInterruptContext(void);
+pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
+pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
+
 #endif /* __PSP_API_H__ */

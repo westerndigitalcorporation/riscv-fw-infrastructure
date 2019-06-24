@@ -49,7 +49,6 @@
 /**
 * external prototypes
 */
-extern void rtosalDefaultEmptyIntHandler(void);
 
 /**
 * global variables

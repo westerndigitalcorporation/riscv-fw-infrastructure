@@ -1,3 +1,6 @@
+/* This file is based on led_blink code sample from FreedomStudio package
+ * (/FreedomStudio/SiFive/Examples/HiFive1/led_blink) */
+
 // See LICENSE for license details.
 
 // This is the program which ships on the HiFive1
@@ -15,34 +18,6 @@ static const char led_msg[] = "\a\n\r\n\r\
 5555555 Are the LEDs Changing? [y/n]  555555555\n\r\
 55555555555555555555555555555555555555555555555\n\r";
 
-static const char sifive_msg[] = "\n\r\
-\n\r\
-                SIFIVE, INC.\n\r\
-\n\r\
-         5555555555555555555555555\n\r\
-        5555                   5555\n\r\
-       5555                     5555\n\r\
-      5555                       5555\n\r\
-     5555       5555555555555555555555\n\r\
-    5555       555555555555555555555555\n\r\
-   5555                             5555\n\r\
-  5555                               5555\n\r\
- 5555                                 5555\n\r\
-5555555555555555555555555555          55555\n\r\
- 55555           555555555           55555\n\r\
-   55555           55555           55555\n\r\
-     55555           5           55555\n\r\
-       55555                   55555\n\r\
-         55555               55555\n\r\
-           55555           55555\n\r\
-             55555       55555\n\r\
-               55555   55555\n\r\
-                 555555555\n\r\
-                   55555\n\r\
-                     5\n\r\
-\n\r\
-               'led_fade' Demo \n\r\
-\n\r";
 
 static void _putc(char c) {
   while ((int32_t) UART0_REG(UART_REG_TXFIFO) < 0);
@@ -64,7 +39,6 @@ static void _puts(const char * s) {
     _putc(*s++);
   }
 }
-
 
 int main (void){
 
@@ -96,7 +70,7 @@ int main (void){
   volatile int i=0;
   while(i < 10000){i++;}
 
-  _puts(sifive_msg);
+  //_puts(sifive_msg);
   //_puts("Config String:\n\r");
   //_puts(*((const char **) 0x100C));
   //_puts("\n\r");
