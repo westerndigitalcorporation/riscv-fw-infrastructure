@@ -269,22 +269,11 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="WD-Firmware.null.731020170" name="WD-Firmware"/>
-	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295;ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1096648574;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.cpp.compiler.1249716764;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.cpp.compiler.input.1935214354">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295;ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1096648574;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.1134618641;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.1400981216">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
+		<project id="WD-Firmware.null.1634379101" name="WD-Firmware"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="comrv-baremetal">
-			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
-		</configuration>
+		<configuration configurationName="comrv-baremetal"/>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
@@ -294,4 +283,16 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295;ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1096648574;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.1134618641;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.1400981216">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="0.1320279205">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295;ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1096648574;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.cpp.compiler.1249716764;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.cpp.compiler.input.1935214354">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
 </cproject>
