@@ -129,3 +129,11 @@ WD-Firmware
 ### Adding new source modules
 
 The folder WD-Firmware/examples/build/ contains a template file (SConscript_template) which can be used.
+
+# GCC Releases
+- #### RISCV GCC 8.2
+	- Initial RISCV official 8.2 GCC release
+- #### RISCV GCC 8.3
+	- RISCV official 8.3 GCC release
+	- GDB fix for skipping breakpoint at fist line after ASM lable
+	- lto simple_object fix opening mode in windows (text->bin)
