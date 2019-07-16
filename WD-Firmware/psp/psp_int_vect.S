@@ -74,130 +74,25 @@
 This implementation supports riscv privileged v1.10
 */
 
-#include "psp_defines.h"
+.include "psp_asm_macros.h"
 
 .section  .text.entry
 .align 4
 .global   psp_vect_table
 
-.macro m_CALL_INT_HANDLER fptIntHandler
-    /* load the address of provided fptIntHandler */
-    la a0, \fptIntHandler
-    /* load the actual handler address */
-    LOAD a0, 0x0(a0)
-    /* invoke the interrupt handler */
-    jalr a0
-.endm
-
-.macro m_SET_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
-    la      a0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
-    LOAD    a1, 0x0(a0)
-    /* increment t1 by 1 */
-    ADDI    a1, a1, 1
-    /* store new value to g_uiIsInterruptContext */
-    STORE   a1, 0x0(a0)
-.endm
-
-.macro m_CLEAR_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
-    la      a0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
-    LOAD    a1, 0x0(a0)
-    /* decrement t1 by 1 */
-    ADDI    a1, a1, -1
-    /* store new value to g_uiIsInterruptContext */
-    STORE   a1, 0x0(a0)
-.endm
-
-/* Macro for saving task context */
-.macro m_pushREGFILE
-    /* make room in stack */
-    ADDI	sp, sp, -REGBYTES * 34
-    /* Save Context */
-    STORE	x1, 1 * REGBYTES(sp)
-    STORE	x2, 2 * REGBYTES(sp)
-    /* STORE	x3, 3 * REGBYTES(sp) */
-    STORE	x4, 4 * REGBYTES(sp)
-    STORE	x5, 5 * REGBYTES(sp)
-    STORE	x6, 6 * REGBYTES(sp)
-    STORE	x7, 7 * REGBYTES(sp)
-    STORE	x8, 8 * REGBYTES(sp)
-    STORE	x9, 9 * REGBYTES(sp)
-    STORE	x10, 10 * REGBYTES(sp)
-    STORE	x11, 11 * REGBYTES(sp)
-    STORE	x12, 12 * REGBYTES(sp)
-    STORE	x13, 13 * REGBYTES(sp)
-    STORE	x14, 14 * REGBYTES(sp)
-    STORE	x15, 15 * REGBYTES(sp)
-    STORE	x16, 16 * REGBYTES(sp)
-    STORE	x17, 17 * REGBYTES(sp)
-    STORE	x18, 18 * REGBYTES(sp)
-    STORE	x19, 19 * REGBYTES(sp)
-    STORE	x20, 20 * REGBYTES(sp)
-    STORE	x21, 21 * REGBYTES(sp)
-    STORE	x22, 22 * REGBYTES(sp)
-    STORE	x23, 23 * REGBYTES(sp)
-    STORE	x24, 24 * REGBYTES(sp)
-    STORE	x25, 25 * REGBYTES(sp)
-    STORE	x26, 26 * REGBYTES(sp)
-    STORE	x27, 27 * REGBYTES(sp)
-    STORE	x28, 28 * REGBYTES(sp)
-    STORE	x29, 29 * REGBYTES(sp)
-    STORE	x30, 30 * REGBYTES(sp)
-    STORE	x31, 31 * REGBYTES(sp)
-.endm
-
-/* Macro for restoring task context */
-.macro m_popREGFILE
-    /* Restore registers,
-    Skip global pointer because that does not change */
-    LOAD	x1, 1 * REGBYTES(sp)
-    /* LOAD 	x3, 3 * REGBYTES(sp) */
-    LOAD	x4, 4 * REGBYTES(sp)
-    LOAD	x5, 5 * REGBYTES(sp)
-    LOAD	x6, 6 * REGBYTES(sp)
-    LOAD	x7, 7 * REGBYTES(sp)
-    LOAD	x8, 8 * REGBYTES(sp)
-    LOAD	x9, 9 * REGBYTES(sp)
-    LOAD	x10, 10 * REGBYTES(sp)
-    LOAD	x11, 11 * REGBYTES(sp)
-    LOAD	x12, 12 * REGBYTES(sp)
-    LOAD	x13, 13 * REGBYTES(sp)
-    LOAD	x14, 14 * REGBYTES(sp)
-    LOAD	x15, 15 * REGBYTES(sp)
-    LOAD	x16, 16 * REGBYTES(sp)
-    LOAD	x17, 17 * REGBYTES(sp)
-    LOAD	x18, 18 * REGBYTES(sp)
-    LOAD	x19, 19 * REGBYTES(sp)
-    LOAD	x20, 20 * REGBYTES(sp)
-    LOAD	x21, 21 * REGBYTES(sp)
-    LOAD	x22, 22 * REGBYTES(sp)
-    LOAD	x23, 23 * REGBYTES(sp)
-    LOAD	x24, 24 * REGBYTES(sp)
-    LOAD	x25, 25 * REGBYTES(sp)
-    LOAD	x26, 26 * REGBYTES(sp)
-    LOAD	x27, 27 * REGBYTES(sp)
-    LOAD	x28, 28 * REGBYTES(sp)
-    LOAD	x29, 29 * REGBYTES(sp)
-    LOAD	x30, 30 * REGBYTES(sp)
-    LOAD	x31, 31 * REGBYTES(sp)
-    addi	sp, sp, REGBYTES * 34
-.endm
-
 .ifndef D_PSP_VECT_TABLE
 psp_vect_table:
     m_pushREGFILE
     m_SET_INT_CONTEXT
-    csrr  t0, mcause
-    bge	  t0, zero, psp_vect_table_
-    slli  t0, t0, 2
-    la    t1, psp_vect_table_
-    add   t0, t0, t1
-    jr    t0
+    csrr    t0, mcause
+    bge	    t0, zero, psp_vect_table_
+    slli    t0, t0, 2
+    la      t1, psp_vect_table_
+    add     t0, t0, t1
+    jr      t0
 .endif /* D_PSP_VECT_TABLE */
 
+.align 4
 .ifndef D_PSP_VECT_TABLE
 psp_vect_table_:
 .else
@@ -233,15 +128,8 @@ psp_exceptions_int:
     m_pushREGFILE
     m_SET_INT_CONTEXT
 .endif /* D_PSP_VECT_TABLE */
-    /* pass mcause in a0 */
-    /* csrr a0, mcause */
-    /* pass sp in a1 */
-    /* mv  a1,sp */
     /* call the exception handler */
     m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler
-    /* adjust stack pointer back to
-    where it was prior to ulSynchTrap  */
-    /*mv  sp,a0*/
     m_CLEAR_INT_CONTEXT
     m_popREGFILE
     mret
@@ -279,4 +167,6 @@ psp_m_external_int:
 .weak psp_reserved_int
 psp_reserved_int:
 1:
+    nop
+    nop
     j 1b

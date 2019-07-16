@@ -235,6 +235,9 @@ void demo_init(void *pMem)
     prvSetupHardware();
 
 #ifdef D_USE_RTOSAL
+    /* Disable the machine & timer interrupts until setup is done. */
+    clear_csr(mie, MIP_MEIP);
+    clear_csr(mie, MIP_MTIP);
     /* register exception handlers */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
@@ -246,6 +249,8 @@ void demo_init(void *pMem)
     pspRegisterIsrCauseHandler(vPortSysTickHandler, E_MACHINE_TIMER_CAUSE);
     /* install external interrupt handler */
     pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE);
+    /* Enable the Machine-External bit in MIE */
+    set_csr(mie, MIP_MEIP);
 #endif /* D_USE_RTOSAL */
 
     /* Create the queue used by the queue send and queue receive tasks. */

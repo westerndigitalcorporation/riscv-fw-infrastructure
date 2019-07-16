@@ -102,222 +102,168 @@
 .global vPortYieldFromInterrupt
 
 .macro SET_INT_CONTEXT
-	/* save address of g_uiIsInterruptContext -> t0 */
-	la   	t0, g_uiIsInterruptContext
-	/* load the value g_uiIsInterruptContext -> t1 */
-	LOAD	t1, 0x0(t0)
-	/* increment t1 by 1 */
-	ADDI    t1, t1, 1
-	/* store new value to g_uiIsInterruptContext */
-	STORE	t1, 0x0(t0)
+    /* save address of g_uiIsInterruptContext -> t0 */
+    la       t0, g_uiIsInterruptContext
+    /* load the value g_uiIsInterruptContext -> t1 */
+    LOAD    t1, 0x0(t0)
+    /* increment t1 by 1 */
+    ADDI    t1, t1, 1
+    /* store new value to g_uiIsInterruptContext */
+    STORE    t1, 0x0(t0)
 .endm
 
 .macro CLEAR_INT_CONTEXT
-	/* save address of g_uiIsInterruptContext -> t0 */
-	la      t0, g_uiIsInterruptContext
-	/* load the value g_uiIsInterruptContext -> t1 */
-	LOAD	t1, 0x0(t0)
-	/* decrement t1 by 1 */
-	ADDI    t1, t1, -1
-	/* store new value to g_uiIsInterruptContext */
-	STORE	t1, 0x0(t0)
+    /* save address of g_uiIsInterruptContext -> t0 */
+    la      t0, g_uiIsInterruptContext
+    /* load the value g_uiIsInterruptContext -> t1 */
+    LOAD    t1, 0x0(t0)
+    /* decrement t1 by 1 */
+    ADDI    t1, t1, -1
+    /* store new value to g_uiIsInterruptContext */
+    STORE    t1, 0x0(t0)
 .endm
 
 /* Macro for saving task context */
 .macro pushREGFILE
-	/* make room in stack */
-	addi	sp, sp, -REGBYTES * 34
+    /* make room in stack */
+    addi    sp, sp, -REGBYTES * 36
 
-	/* Save Context */
-	STORE	x1, 1 * REGBYTES(sp)
-	STORE	x2, 2 * REGBYTES(sp)
-	//STORE	x3, 3 * REGBYTES(sp)
-	STORE	x4, 4 * REGBYTES(sp)
-	STORE	x5, 5 * REGBYTES(sp)
-	STORE	x6, 6 * REGBYTES(sp)
-	STORE	x7, 7 * REGBYTES(sp)
-	STORE	x8, 8 * REGBYTES(sp)
-	STORE	x9, 9 * REGBYTES(sp)
-	STORE	x10, 10 * REGBYTES(sp)
-	STORE	x11, 11 * REGBYTES(sp)
-	STORE	x12, 12 * REGBYTES(sp)
-	STORE	x13, 13 * REGBYTES(sp)
-	STORE	x14, 14 * REGBYTES(sp)
-	STORE	x15, 15 * REGBYTES(sp)
-	STORE	x16, 16 * REGBYTES(sp)
-	STORE	x17, 17 * REGBYTES(sp)
-	STORE	x18, 18 * REGBYTES(sp)
-	STORE	x19, 19 * REGBYTES(sp)
-	STORE	x20, 20 * REGBYTES(sp)
-	STORE	x21, 21 * REGBYTES(sp)
-	STORE	x22, 22 * REGBYTES(sp)
-	STORE	x23, 23 * REGBYTES(sp)
-	STORE	x24, 24 * REGBYTES(sp)
-	STORE	x25, 25 * REGBYTES(sp)
-	STORE	x26, 26 * REGBYTES(sp)
-	STORE	x27, 27 * REGBYTES(sp)
-	STORE	x28, 28 * REGBYTES(sp)
-	STORE	x29, 29 * REGBYTES(sp)
-	STORE	x30, 30 * REGBYTES(sp)
-	STORE	x31, 31 * REGBYTES(sp)
-	
+    /* Save Context */
+    STORE    x1, 1 * REGBYTES(sp)
+    STORE    x2, 2 * REGBYTES(sp)
+    STORE    x4, 4 * REGBYTES(sp)
+    STORE    x5, 5 * REGBYTES(sp)
+    STORE    x6, 6 * REGBYTES(sp)
+    STORE    x7, 7 * REGBYTES(sp)
+    STORE    x8, 8 * REGBYTES(sp)
+    STORE    x9, 9 * REGBYTES(sp)
+    STORE    x10, 10 * REGBYTES(sp)
+    STORE    x11, 11 * REGBYTES(sp)
+    STORE    x12, 12 * REGBYTES(sp)
+    STORE    x13, 13 * REGBYTES(sp)
+    STORE    x14, 14 * REGBYTES(sp)
+    STORE    x15, 15 * REGBYTES(sp)
+    STORE    x16, 16 * REGBYTES(sp)
+    STORE    x17, 17 * REGBYTES(sp)
+    STORE    x18, 18 * REGBYTES(sp)
+    STORE    x19, 19 * REGBYTES(sp)
+    STORE    x20, 20 * REGBYTES(sp)
+    STORE    x21, 21 * REGBYTES(sp)
+    STORE    x22, 22 * REGBYTES(sp)
+    STORE    x23, 23 * REGBYTES(sp)
+    STORE    x24, 24 * REGBYTES(sp)
+    STORE    x25, 25 * REGBYTES(sp)
+    STORE    x26, 26 * REGBYTES(sp)
+    STORE    x27, 27 * REGBYTES(sp)
+    STORE    x28, 28 * REGBYTES(sp)
+    STORE    x29, 29 * REGBYTES(sp)
+    STORE    x30, 30 * REGBYTES(sp)
+    STORE    x31, 31 * REGBYTES(sp)
+
 .endm
 
-/*saves mstatus and tcb	*/
+/*saves mstatus and tcb    */
 .macro portSAVE_CONTEXT
-	.global	pxCurrentTCB
-		/* Store mstatus */
-	csrr	t0, mstatus	//pointer
-	STORE	t0, 32 * REGBYTES(sp)
+    .global    pxCurrentTCB
+    /* Store mstatus */
+    csrr    t0, mstatus    //pointer
+    STORE    t0, 32 * REGBYTES(sp)
 
-	/* Store current stackpointer in task control block (TCB) */
-	LOAD	t0, pxCurrentTCB	//pointer
-	STORE	sp, 0x0(t0)
+    /* Store current stackpointer in task control block (TCB) */
+    LOAD    t0, pxCurrentTCB    //pointer
+    STORE    sp, 0x0(t0)
 .endm
 
 
 /* Saves current error program counter (EPC) as task program counter */
 .macro portSAVE_EPC
-  	csrr	t0, mepc
-	STORE	t0, 33 * REGBYTES(sp)
-
+    csrr    t0, mepc
+    STORE    t0, 33 * REGBYTES(sp)
 .endm
 
 /* Saves current return adress (RA) as task program counter */
 .macro portSAVE_RA
-	LOAD	t0, 1 * REGBYTES(sp)
-	STORE	t0, 33 * REGBYTES(sp)
-
+    LOAD    t0, 1 * REGBYTES(sp)
+    STORE    t0, 33 * REGBYTES(sp)
 .endm
 
 //not called on a context switch
 .macro portRESTORE_X2
-	LOAD 	x2, 2 * REGBYTES(sp)
-	//LOAD 	x3, 3 * REGBYTES(sp)
+    LOAD     x2, 2 * REGBYTES(sp)
+    //LOAD     x3, 3 * REGBYTES(sp)
  .endm
 
- /*restore mstatus and tcb	*/
+ /*restore mstatus and tcb    */
 .macro portRESTORE_CONTEXT
-	.global	pxCurrentTCB
-	/* Load stack pointer from the current TCB */
-	LOAD	sp, pxCurrentTCB
-	LOAD	sp, 0x0(sp)
-	/* Load task program counter */
-	LOAD	t0, 33 * REGBYTES(sp)
-  	csrw	mepc, t0
-	/* Load saved mstatus */
-	LOAD	t0, 32 * REGBYTES(sp)
-  	csrw	mstatus, t0
+    .global    pxCurrentTCB
+    /* Load stack pointer from the current TCB */
+    LOAD    sp, pxCurrentTCB
+    LOAD    sp, 0x0(sp)
+    /* Load task program counter */
+    LOAD    t0, 33 * REGBYTES(sp)
+    csrw    mepc, t0
+    /* Load saved mstatus */
+    LOAD    t0, 32 * REGBYTES(sp)
+    csrw    mstatus, t0
 .endm
 
 
 /* Macro for restoring task context */
 .macro popREGFILE
+    /* Restore registers, Skip global pointer because that does not change */
+    LOAD    x1, 1 * REGBYTES(sp)
+    LOAD    x4, 4 * REGBYTES(sp)
+    LOAD    x5, 5 * REGBYTES(sp)
+    LOAD    x6, 6 * REGBYTES(sp)
+    LOAD    x7, 7 * REGBYTES(sp)
+    LOAD    x8, 8 * REGBYTES(sp)
+    LOAD    x9, 9 * REGBYTES(sp)
+    LOAD    x10, 10 * REGBYTES(sp)
+    LOAD    x11, 11 * REGBYTES(sp)
+    LOAD    x12, 12 * REGBYTES(sp)
+    LOAD    x13, 13 * REGBYTES(sp)
+    LOAD    x14, 14 * REGBYTES(sp)
+    LOAD    x15, 15 * REGBYTES(sp)
+    LOAD    x16, 16 * REGBYTES(sp)
+    LOAD    x17, 17 * REGBYTES(sp)
+    LOAD    x18, 18 * REGBYTES(sp)
+    LOAD    x19, 19 * REGBYTES(sp)
+    LOAD    x20, 20 * REGBYTES(sp)
+    LOAD    x21, 21 * REGBYTES(sp)
+    LOAD    x22, 22 * REGBYTES(sp)
+    LOAD    x23, 23 * REGBYTES(sp)
+    LOAD    x24, 24 * REGBYTES(sp)
+    LOAD    x25, 25 * REGBYTES(sp)
+    LOAD    x26, 26 * REGBYTES(sp)
+    LOAD    x27, 27 * REGBYTES(sp)
+    LOAD    x28, 28 * REGBYTES(sp)
+    LOAD    x29, 29 * REGBYTES(sp)
+    LOAD    x30, 30 * REGBYTES(sp)
+    LOAD    x31, 31 * REGBYTES(sp)
 
-	/* Restore registers,
-	Skip global pointer because that does not change */
-	LOAD	x1, 1 * REGBYTES(sp)
-	//LOAD 	x3, 3 * REGBYTES(sp)
-	LOAD	x4, 4 * REGBYTES(sp)
-	LOAD	x5, 5 * REGBYTES(sp)
-	LOAD	x6, 6 * REGBYTES(sp)
-	LOAD	x7, 7 * REGBYTES(sp)
-	LOAD	x8, 8 * REGBYTES(sp)
-	LOAD	x9, 9 * REGBYTES(sp)
-	LOAD	x10, 10 * REGBYTES(sp)
-	LOAD	x11, 11 * REGBYTES(sp)
-	LOAD	x12, 12 * REGBYTES(sp)
-	LOAD	x13, 13 * REGBYTES(sp)
-	LOAD	x14, 14 * REGBYTES(sp)
-	LOAD	x15, 15 * REGBYTES(sp)
-	LOAD	x16, 16 * REGBYTES(sp)
-	LOAD	x17, 17 * REGBYTES(sp)
-	LOAD	x18, 18 * REGBYTES(sp)
-	LOAD	x19, 19 * REGBYTES(sp)
-	LOAD	x20, 20 * REGBYTES(sp)
-	LOAD	x21, 21 * REGBYTES(sp)
-	LOAD	x22, 22 * REGBYTES(sp)
-	LOAD	x23, 23 * REGBYTES(sp)
-	LOAD	x24, 24 * REGBYTES(sp)
-	LOAD	x25, 25 * REGBYTES(sp)
-	LOAD	x26, 26 * REGBYTES(sp)
-	LOAD	x27, 27 * REGBYTES(sp)
-	LOAD	x28, 28 * REGBYTES(sp)
-	LOAD	x29, 29 * REGBYTES(sp)
-	LOAD	x30, 30 * REGBYTES(sp)
-	LOAD	x31, 31 * REGBYTES(sp)
-
-	addi	sp, sp, REGBYTES * 34
+    addi    sp, sp, REGBYTES * 36
 .endm
 
-#if 0
-/* Interrupt entry point */
-trap_entry:
-	/* Check for interrupt */
-	pushREGFILE
-	SET_INT_CONTEXT
-	csrr	a0, mcause
-	blt		a0,zero,interrupt
-
-	/* synchronous interrupt*/
-	/* pass sp in a1 */
-	mv a1,sp
-	jal ulSynchTrap
-/*  adjust stack pointer back to where it was prior to ulSynchTrap  */
-	mv		sp,a0
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-/* async interrupt, this function is called */
-interrupt:
-	li      t0,INT_MASK
-	and     a0,a0,t0
-	li      t0, 0x7
-	beq     a0,t0, MTIME_IRQ
-	/* Interupt not m-time interrupt */
-	/* pass the exception code in a0 */
-	jal 	handle_interrupt
-	portRESTORE_X2
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-	/* Interupt is m-time  */
-MTIME_IRQ:
-	portSAVE_CONTEXT
-	portSAVE_EPC
-	jal		vPortSysTickHandler
-	portRESTORE_CONTEXT
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
-
-#endif /* 0 */
-
 xPortStartScheduler:
-	jal		vPortSetup
-	portRESTORE_CONTEXT
-	popREGFILE
-	mret
-
+    jal vPortSetup
+    portRESTORE_CONTEXT
+    popREGFILE
+    mret
 
 vPortYield:
     csrr  a0, mepc
     ADDI  a0, a0, 4
-	STORE a0, 33 * REGBYTES(sp)
-
-vPortYieldFromInterrupt:
-	portSAVE_CONTEXT
-	jal		vTaskSwitchContext
-	portRESTORE_CONTEXT
-	CLEAR_INT_CONTEXT
-	popREGFILE
-	mret
+    STORE a0, 33 * REGBYTES(sp)
+    portSAVE_CONTEXT
+    jal vTaskSwitchContext
+    portRESTORE_CONTEXT
+    CLEAR_INT_CONTEXT
+    popREGFILE
+    mret
 
 vPortEndScheduler:
 1:
-	j		1b
+    j 1b
 
 
 .weak handle_interrupt
