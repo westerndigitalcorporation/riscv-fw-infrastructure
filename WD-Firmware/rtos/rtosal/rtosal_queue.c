@@ -78,7 +78,7 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
 *                             - D_RTOSAL_SIZE_ERROR   - Invalid uiRtosMsgQueueSize
 *                             - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
-u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosMsgQueueBuffer,
+RTOSAL_SECTION u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosMsgQueueBuffer,
                            u32_t uiRtosMsgQueueSize, u32_t uiRtosMsgQueueItemSize,
                            s08_t* pRtosalMsgQueueName)
 {
@@ -122,7 +122,7 @@ u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosMsgQu
 *                        - D_RTOSAL_QUEUE_ERROR - the ptr, MsgQueueCB, in the pRtosalMsgQueueCb is invalid
 *                        - D_RTOSAL_CALLER_ERROR - the caller can not call this function
 */
-u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
+RTOSAL_SECTION u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
 {
    u32_t uiRes;
 
@@ -159,7 +159,7 @@ u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
 *                          - D_RTOSAL_WAIT_ERROR - invalide uiWaitTimeoutTicks: if caller is not a thread it 
 *                                                   must use "NO WAIT"
 */
-u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+RTOSAL_SECTION u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
                        u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    return msgQueueSend(pRtosalMsgQueueCb, pRtosalMsgQueueItem,
@@ -181,7 +181,7 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
    if (uiSendToFront == D_RTOSAL_TRUE)
    {
       /* msgQueueSend invoked from an ISR context */
-      if (pspIsInterruptContext() == D_INT_CONTEXT)
+      if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
       {
          /* send the queue message */
          uiRes = xQueueSendToFrontFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
@@ -195,7 +195,7 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
    else
    {
       /* msgQueueSend invoked from an ISR context */
-      if (pspIsInterruptContext() == D_INT_CONTEXT)
+      if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
       {
          uiRes = xQueueSendToBackFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
       }
@@ -280,7 +280,7 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
 #ifdef D_USE_FREERTOS
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueDstBuf, pRtosalMsgQueueDstBuf == NULL, D_RTOSAL_PTR_ERROR);
    /* rtosalMsgQueueRecieve invoked from an ISR context */
-   if (pspIsInterruptContext() == D_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
    {
       uiRes = xQueueReceiveFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, &xHigherPriorityTaskWoken);
    }

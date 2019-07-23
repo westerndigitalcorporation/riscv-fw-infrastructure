@@ -15,56 +15,22 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_default.c
+* @file   comrv_types.h
 * @author Ronen Haen
-* @date   21.01.2019 
-* @brief  The file implements the RTOS AL default
+* @date   11.06.2019
+* @brief  The defines RTOS AL specific types
 * 
 */
+#ifndef  __COMRV_TYPES_H__
+#define  __COMRV_TYPES_H__
 
 /**
 * include files
-*/
-#include "rtosal_config.h"
-#include "rtosal_defines.h"
-#include "rtosal_types.h"
-#include "rtosal_macro.h"
-
-/**
-* definitions
-*/
-
-/**
-* macros
 */
 
 /**
 * types
 */
 
-/**
-* local prototypes
-*/
 
-/**
-* external prototypes
-*/
-
-/**
-* global variables
-*/
-
-/**
-* default 'param error' notification function
-*
-* @param pParam      pointer of the invalid parameter
-* @param uiErrorCode  error code
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode)
-{
-   (void)pParam;
-   (void)uiErrorCode;
-}
-
+#endif /* __COMRV_TYPES_H__ */

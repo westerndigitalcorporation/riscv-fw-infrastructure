@@ -38,6 +38,7 @@ a_flags = [] + Env['A_FLAGS']
 
 # defines
 Env['BSP_DEF'] = ['_HIFIVE']
+c_defines = Env['RTOSAL_DEF'] + Env['BSP_DEF'] + Env['PUBLIC_DEF']
 
 # include paths
 include_paths = [ 
@@ -57,11 +58,11 @@ Env['LINKFLAGS'] += ['-T', os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'l
 # c file objects
 objects = []
 for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=Env['BSP_DEF']))
+  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
 
 # asm file objects
 for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=Env['BSP_DEF']))
+  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
 # for libraries
 bsp_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=objects)
