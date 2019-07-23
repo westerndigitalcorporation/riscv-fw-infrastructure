@@ -29,7 +29,7 @@
 #include "rtosal_config.h"
 #include "rtosal_defines.h"
 #include "rtosal_types.h"
-
+#include "rtosal_macro.h"
 /**
 * definitions
 */

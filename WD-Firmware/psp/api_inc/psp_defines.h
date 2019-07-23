@@ -15,56 +15,28 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_default.c
+* @file   psp_defines.h
 * @author Ronen Haen
-* @date   21.01.2019 
-* @brief  The file implements the RTOS AL default
+* @date   20.05.2019
+* @brief  The psp defines
 * 
 */
+#ifndef  __PSP_DEFINES_H__
+#define  __PSP_DEFINES_H__
 
 /**
 * include files
 */
-#include "rtosal_config.h"
-#include "rtosal_defines.h"
-#include "rtosal_types.h"
-#include "rtosal_macro.h"
 
 /**
 * definitions
 */
+/* interrupt context indication values */
+#define D_PSP_NON_INT_CONTEXT              0
+#define D_PSP_INT_CONTEXT                  1
 
-/**
-* macros
-*/
-
-/**
-* types
-*/
-
-/**
-* local prototypes
-*/
-
-/**
-* external prototypes
-*/
-
-/**
-* global variables
-*/
-
-/**
-* default 'param error' notification function
-*
-* @param pParam      pointer of the invalid parameter
-* @param uiErrorCode  error code
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode)
-{
-   (void)pParam;
-   (void)uiErrorCode;
-}
-
+/* function return codes */
+#define D_PSP_SUCCESS                      0x00
+#define D_PSP_FAIL                          0x01
+#define D_PSP_PTR_ERROR                    0x02
+#endif /* __PSP_DEFINES_H__ */
