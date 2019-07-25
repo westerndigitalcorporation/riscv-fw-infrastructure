@@ -201,6 +201,12 @@ extern void vSynchTrap(void);
 extern void vSynchTrapUnhandled(void);
 #endif /* D_USE_RTOSAL */
 
+/* Workaround to issue that raised when we moved to GCC-8.3 version regarding association
+ * of FW init function to the startup code created by libc.
+ * We explicitly call our init function from the beginning of our demo_init function */
+extern void _init();
+
+
 void demo_init(void* pMem);
 
 int main(void)
@@ -229,6 +235,9 @@ void demo_init(void *pMem)
 	u32_t res;
 	pspExceptionCause_t cause;
 #endif /* D_USE_RTOSAL */
+
+	/* Explicitly call init function from here */
+	_init();
 
     /* Configure the system ready to run the demo.  The clock configuration
     can be done here if it was not done before main() was called. */
