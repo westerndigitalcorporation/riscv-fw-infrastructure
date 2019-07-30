@@ -35,7 +35,7 @@ list_files_c=[
 ]
 
 list_files_a=[
-   [os.path.join(rtosal_base,'rtosal_asm.S'), os.path.join(out_dir, 'rtosal_asm.o')],
+   [os.path.join(rtosal_base,'rtosal_int_vect.S'), os.path.join(out_dir, 'rtosal_int_vect.o')],
 ]
 
 rtos_core_define = {
@@ -48,8 +48,8 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-Env['RTOSAL_DEF'] = ['D_USE_RTOSAL'] + Env['BSP_DEF'] + rtos_core_define[Env['RTOS_CORE']]
-c_defines = Env['RTOSAL_DEF']
+Env['RTOSAL_DEF'] = rtos_core_define[Env['RTOS_CORE']]
+c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]

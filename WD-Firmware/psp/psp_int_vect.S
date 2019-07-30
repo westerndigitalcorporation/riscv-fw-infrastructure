@@ -69,94 +69,104 @@
 
     1 tab == 4 spaces!
 */
-#include "psp_macro_asm.S"
+
+/*
+This implementation supports riscv privileged v1.10
+*/
+
+.include "psp_asm_macros.h"
 
 .section  .text.entry
 .align 4
-.global   vect_table_
+.global   psp_vect_table
 
 .ifndef D_PSP_VECT_TABLE
-.global   vect_table
-vect_table:
-    pushREGFILE
-    csrr  t0, mcause
-    bge	  t0, zero, vect_table_
-    slli  t0, t0, 2
-    la    t1, vect_table_
-    add   t0, t0, t1
-    jr    t0
+psp_vect_table:
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
+    csrr    t0, mcause
+    bge	    t0, zero, psp_vect_table_
+    slli    t0, t0, 2
+    la      t1, psp_vect_table_
+    add     t0, t0, t1
+    jr      t0
 .endif /* D_PSP_VECT_TABLE */
 
+.align 4
 .ifndef D_PSP_VECT_TABLE
-vect_table_:
+psp_vect_table_:
 .else
-vect_table:
+psp_vect_table:
 .endif
-    j exceptions_int
+    j psp_exceptions_int       /* User software interrupt & exceptions */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* Supervisor software interrupt    */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* Reserved for future standard use */
     .align 2
-    j m_soft_int
+    j psp_m_soft_int           /* Machine software interrupt       */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* User timer interrupt             */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* Supervisor timer interrupt       */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* Reserved for future standard use */
     .align 2
-    j m_timer_int
+    j psp_m_timer_int          /* Machine timer interrupt          */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* User external interrupt          */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* Supervisor external interrupt    */
     .align 2
-    j reserved_int
+    j psp_reserved_int         /* Reserved for future standard use */
     .align 2
-    j m_external_int
+    j psp_m_external_int       /* Machine external interrupt       */
+    .align 2
 
-exceptions_int:
+psp_exceptions_int:
 .ifdef D_PSP_VECT_TABLE
-    pushREGFILE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_PSP_VECT_TABLE */
-    /* pass mcause in a0 */
-    /* csrr a0, mcause */
-    /* pass sp in a1 */
-    /* mv  a1,sp */
     /* call the exception handler */
-    CALL_INT_HANDLER fptrIntExceptionIntHandler
-    /* adjust stack pointer back to
-    where it was prior to ulSynchTrap  */
-    /*mv  sp,a0*/
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-m_soft_int:
+psp_m_soft_int:
 .ifdef D_PSP_VECT_TABLE
-    pushREGFILE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_PSP_VECT_TABLE */
-    CALL_INT_HANDLER fptrIntMSoftIntHandler
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-m_timer_int:
+psp_m_timer_int:
 .ifdef D_PSP_VECT_TABLE
-    pushREGFILE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_PSP_VECT_TABLE */
-    CALL_INT_HANDLER fptrIntMTimerIntHandler
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-m_external_int:
+psp_m_external_int:
 .ifdef D_PSP_VECT_TABLE
-    pushREGFILE
+    m_pushREGFILE
+    m_SET_INT_CONTEXT
 .endif /* D_PSP_VECT_TABLE */
-    CALL_INT_HANDLER fptrIntMExternIntHandler
-    popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler
+    m_CLEAR_INT_CONTEXT
+    m_popREGFILE
     mret
 
-.weak reserved_int
-reserved_int:
+.weak psp_reserved_int
+psp_reserved_int:
 1:
+    nop
+    nop
     j 1b

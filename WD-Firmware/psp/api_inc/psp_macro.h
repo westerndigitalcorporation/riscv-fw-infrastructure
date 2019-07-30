@@ -30,8 +30,10 @@
 /**
 * macros
 */
+/* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
-   #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
+   /* TODO: need to add default function */
+   #define M_PSP_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
       if (conditionMet) \
       { \
          fptrParamErrorNotification((const void*)(param), returnCode); \
@@ -41,13 +43,22 @@
    #define M_PSP_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode)
 #endif /* #if (D_PSP_ERROR_CHECK==1) */
 
-#define PSP_SECTION __attribute__((section("PSP_SEC")))
+#if (D_PSP_ASSERT==1)
+   #define M_PSP_ASSERT(checkedResult)
+   /* TODO add assert call */
+#else
+   #define M_PSP_ASSERT(checkedResult)
+#endif /* #if (D_PSP_ASSERT==1)  */
 
-#define read_csr(reg) ({ unsigned long __tmp; \
+
+#define PSP_TEXT_SECTION __attribute__((section("PSP_TEXT_SEC")))
+#define PSP_DATA_SECTION __attribute__((section("PSP_DATA_SEC")))
+
+#define M_PSP_READ_CSR(reg) (	{ unsigned long __tmp; \
   asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
   __tmp; })
 
-#define write_csr(reg, val) ({ \
+#define M_PSP_WRITE_CSR(reg, val) ({ \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
     asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
   else \

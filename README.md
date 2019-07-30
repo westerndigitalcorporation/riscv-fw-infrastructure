@@ -6,7 +6,7 @@
 This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
-  - GCC 8.2 Toolchain for RISC-V
+  - GCC 8.3 Toolchain for RISC-V
   - Eclipse MCU
 
 
@@ -56,10 +56,10 @@ WD-Firmware
 ```
 
 ### Additional downloads
-- From the repo unzip riscv-gnu-toolchain-8-linux.tar.xz to your designated directory for the tool chain
+- From the repo unzip riscv-gnu-toolchain-8-3-linux.tar.gz to your designated directory for the tool chain
 - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
 
-      $ tar -xvf riscv-gnu-toolchain-8-linux.tar.xz -C [Toolchain-root]
+      $ tar -xvf riscv-gnu-toolchain-8-3-linux.tar.gz -C [Toolchain-root]
 
       $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
 
@@ -129,3 +129,11 @@ WD-Firmware
 ### Adding new source modules
 
 The folder WD-Firmware/examples/build/ contains a template file (SConscript_template) which can be used.
+
+# GCC Releases
+- #### RISCV GCC 8.2
+	- Initial RISCV official 8.2 GCC release
+- #### RISCV GCC 8.3
+	- RISCV official 8.3 GCC release
+	- GDB fix for skipping breakpoint at fist line after ASM lable
+	- lto simple_object fix opening mode in windows (text->bin)

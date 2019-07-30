@@ -128,7 +128,7 @@ RTOSAL_SECTION void tx_application_define(void *pMemory)
 {
    fptrAppInit(pMemory);
 }
-#endif /* #ifdef D_USE_FREERTOS */
+#endif /* #ifdef D_USE_THREADX */
 
 /**
 * This function is invoked by the system timer interrupt

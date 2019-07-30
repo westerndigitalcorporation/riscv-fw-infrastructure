@@ -39,19 +39,4 @@
 #define D_PSP_SUCCESS                      0x00
 #define D_PSP_FAIL                          0x01
 #define D_PSP_PTR_ERROR                    0x02
-
-#if __riscv_xlen == 64
-#define STORE    sd
-#define LOAD     ld
-#define ADDI     addiw
-#define LOG_REGBYTES 3
-#else
-#define STORE sw
-#define LOAD lw
-#define ADDI addi
-#define LOG_REGBYTES 2
-#endif
-
-#define REGBYTES (1 << LOG_REGBYTES)
-
 #endif /* __PSP_DEFINES_H__ */

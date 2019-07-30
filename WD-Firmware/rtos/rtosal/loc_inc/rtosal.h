@@ -27,7 +27,6 @@
 /**
 * include files
 */
-#include "psp_interrupt_api.h"
 
 /**
 * definitions

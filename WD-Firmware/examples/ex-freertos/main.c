@@ -74,7 +74,7 @@
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
 #include "rtosal_util_api.h"
-#include "psp_interrupt_api.h"
+#include "psp_api.h"
 #include "task.h"     /* for tskIDLE_PRIORITY */
 #else
 /* Kernel includes. */
@@ -201,6 +201,12 @@ extern void vSynchTrap(void);
 extern void vSynchTrapUnhandled(void);
 #endif /* D_USE_RTOSAL */
 
+/* Workaround to issue that raised when we moved to GCC-8.3 version regarding association
+ * of FW init function to the startup code created by libc.
+ * We explicitly call our init function from the beginning of our demo_init function */
+extern void _init();
+
+
 void demo_init(void* pMem);
 
 int main(void)
@@ -230,11 +236,17 @@ void demo_init(void *pMem)
 	pspExceptionCause_t cause;
 #endif /* D_USE_RTOSAL */
 
+	/* Explicitly call init function from here */
+	_init();
+
     /* Configure the system ready to run the demo.  The clock configuration
     can be done here if it was not done before main() was called. */
     prvSetupHardware();
 
 #ifdef D_USE_RTOSAL
+    /* Disable the machine & timer interrupts until setup is done. */
+    clear_csr(mie, MIP_MEIP);
+    clear_csr(mie, MIP_MTIP);
     /* register exception handlers */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
@@ -246,6 +258,8 @@ void demo_init(void *pMem)
     pspRegisterIsrCauseHandler(vPortSysTickHandler, E_MACHINE_TIMER_CAUSE);
     /* install external interrupt handler */
     pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE);
+    /* Enable the Machine-External bit in MIE */
+    set_csr(mie, MIP_MEIP);
 #endif /* D_USE_RTOSAL */
 
     /* Create the queue used by the queue send and queue receive tasks. */
@@ -531,6 +545,12 @@ static uint32_t ulCount = 0;
       xSemaphoreGiveFromISR( xEventSemaphore, &xHigherPriorityTaskWoken );
 #else
       rtosalSemaphoreRelease(&xEventSemaphore);
+      /* the rtosalSemaphoreRelease will automatically handle the xHigherPriorityTaskWoken
+       * indication and in this case even if xHigherPriorityTaskWoken is true, we don't
+       * need to perform a context switch (we are in a context of the tick interrupt which
+       * is already handling context switch if required therefore we must clear the
+       * rtos al 'context switch' indication)
+       */
       rtosalContextSwitchIndicationClear();
 #endif
       ulCount = 0UL;
@@ -721,10 +741,10 @@ static void prvSetupHardware( void )
 /*-----------------------------------------------------------*/
 
 #ifdef D_USE_RTOSAL
-void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
+void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rtosalStack_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
 {
-  *ppxIdleTaskTCBBuffer = (StaticTask_t*)&xIdleTaskTCBBuffer;
-  *ppxIdleTaskStackBuffer = (StackType_t*)&xIdleStack[0];
+  *ppxIdleTaskTCBBuffer = (rtosalStaticTask_t*)&xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = (rtosalStack_t*)&xIdleStack[0];
   *pulIdleTaskStackSize = D_IDLE_TASK_SIZE;
 }
 
@@ -732,10 +752,10 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackTyp
    following callback function - which enables the application to optionally
    provide the memory that will be used by the timer task as the task's stack
    and TCB. */
-void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
+void vApplicationGetTimerTaskMemory(rtosalStaticTask_t **ppxTimerTaskTCBBuffer, rtosalStack_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
 {
-  *ppxTimerTaskTCBBuffer = (StaticTask_t*)&xTimerTaskTCBBuffer;
-  *ppxTimerTaskStackBuffer = (StackType_t*)&xTimerStack[0];
+  *ppxTimerTaskTCBBuffer = (rtosalStaticTask_t*)&xTimerTaskTCBBuffer;
+  *ppxTimerTaskStackBuffer = (rtosalStack_t*)&xTimerStack[0];
   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 #endif /* #ifdef D_USE_RTOSAL */

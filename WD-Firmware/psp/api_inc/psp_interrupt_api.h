@@ -26,7 +26,6 @@
 /**
 * include files
 */
-#include "common_types.h"
 
 /**
 * definitions
@@ -61,31 +60,31 @@ typedef enum pspInterruptCause
 /* Exceptions */
 typedef enum pspExceptionCause
 {
-	E_EXC_INSTRUCTION_ADDRESS_MISALIGNED           = 0,
-	E_EXC_INSTRUCTION_ACCESS_FAULT                 = 1,
-	E_EXC_ILLEGAL_INSTRUCTION                      = 2,
-	E_EXC_BREAKPOINT                               = 3,
-	E_EXC_LOAE_EXC_ADDRESS_MISALIGNED              = 4,
-	E_EXC_LOAE_EXC_ACCESS_FAULT                    = 5,
-	E_EXC_STORE_AMO_ADDRESS_MISALIGNED             = 6,
-	E_EXC_STORE_AMO_ACCESS_FAULT                   = 7,
-	E_EXC_ENVIRONMENT_CALL_FROM_UMODE              = 8,
-	E_EXC_ENVIRONMENT_CALL_FROM_SMODE              = 9,
-	E_EXC_RESERVED                                 = 10,
-	E_EXC_ENVIRONMENT_CALL_FROM_MMODE              = 11,
-	E_EXC_INSTRUCTION_PAGE_FAULT                   = 12,
-	E_EXC_LOAE_EXC_PAGE_FAULT                      = 13,
-	E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
-	E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
-	E_EXC_LAST
+   E_EXC_INSTRUCTION_ADDRESS_MISALIGNED           = 0,
+   E_EXC_INSTRUCTION_ACCESS_FAULT                 = 1,
+   E_EXC_ILLEGAL_INSTRUCTION                      = 2,
+   E_EXC_BREAKPOINT                               = 3,
+   E_EXC_LOAE_EXC_ADDRESS_MISALIGNED              = 4,
+   E_EXC_LOAE_EXC_ACCESS_FAULT                    = 5,
+   E_EXC_STORE_AMO_ADDRESS_MISALIGNED             = 6,
+   E_EXC_STORE_AMO_ACCESS_FAULT                   = 7,
+   E_EXC_ENVIRONMENT_CALL_FROM_UMODE              = 8,
+   E_EXC_ENVIRONMENT_CALL_FROM_SMODE              = 9,
+   E_EXC_RESERVED                                 = 10,
+   E_EXC_ENVIRONMENT_CALL_FROM_MMODE              = 11,
+   E_EXC_INSTRUCTION_PAGE_FAULT                   = 12,
+   E_EXC_LOAE_EXC_PAGE_FAULT                      = 13,
+   E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
+   E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
+   E_EXC_LAST
 } pspExceptionCause_t;
 
 typedef enum pspExternIntHandlerPrivilege
 {
-    E_EXT_USER_INT_HNDLR       = E_USER_EXTERNAL_CAUSE,
-	E_EXT_SUPERVISOR_INT_HNDLR = E_SUPERVISOR_EXTERNAL_CAUSE,
-	E_EXT_MACHINE_INT_HNDLR    = E_MACHINE_EXTERNAL_CAUSE,
-	E_EXT_INT_HNDLR_LAST
+   E_EXT_USER_INT_HNDLR       = E_USER_EXTERNAL_CAUSE,
+   E_EXT_SUPERVISOR_INT_HNDLR = E_SUPERVISOR_EXTERNAL_CAUSE,
+   E_EXT_MACHINE_INT_HNDLR    = E_MACHINE_EXTERNAL_CAUSE,
+   E_EXT_INT_HNDLR_LAST
 } pspExternIntHandlerPrivilege_t;
 
 /* interrupt handler definition */
@@ -106,7 +105,5 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * APIs
 */
-u32_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
-u32_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
 
 #endif /* __PSP_INTERRUPT_API_H__ */

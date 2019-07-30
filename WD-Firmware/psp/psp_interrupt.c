@@ -25,10 +25,9 @@
 /**
 * include files
 */
+#include "common_types.h"
+#include "psp_api.h"
 #include "psp_interrupt_api.h"
-#include "psp_macro.h"
-#include "psp_config.h"
-#include "psp_defines.h"
 
 /**
 * definitions
@@ -46,11 +45,11 @@ u32_t g_uiIsInterruptContext = D_PSP_NON_INT_CONTEXT;
 /**
 * local prototypes
 */
-void pspDefaultExceptionIntHandler(void);
-void pspDefaultMSoftIntHandler(void);
-void pspDefaultMTimerIntHandler(void);
-void pspDefaultMExternIntHandler(void);
-void pspDefaultEmptyIntHandler(void);
+void pspDefaultExceptionIntHandler_isr(void);
+void pspDefaultMSoftIntHandler_isr(void);
+void pspDefaultMTimerIntHandler_isr(void);
+void pspDefaultMExternIntHandler_isr(void);
+void pspDefaultEmptyIntHandler_isr(void);
 
 /**
 * external prototypes
@@ -60,36 +59,36 @@ void pspDefaultEmptyIntHandler(void);
 * global variables
 */
 
-pspInterruptHandler_t  exceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler,
-               pspDefaultEmptyIntHandler };
+PSP_DATA_SECTION pspInterruptHandler_t  gExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr,
+                                    pspDefaultEmptyIntHandler_isr };
 
-pspInterruptHandler_t fptrIntExceptionIntHandler = pspDefaultExceptionIntHandler;
-pspInterruptHandler_t fptrIntSSoftIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntRsrvdSoftIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntMSoftIntHandler = pspDefaultMSoftIntHandler;
-pspInterruptHandler_t fptrIntUTimerIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntSTimerIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntRsrvdTimerIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntMTimerIntHandler = pspDefaultMTimerIntHandler;
-pspInterruptHandler_t fptrIntUExternIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntSExternIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler;
-pspInterruptHandler_t fptrIntMExternIntHandler = pspDefaultMExternIntHandler;
-pspInterruptHandler_t fptrIntUSoftIntHandler = pspDefaultEmptyIntHandler;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdSoftIntHandler   = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMSoftIntHandler       = pspDefaultMSoftIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdTimerIntHandler  = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimerIntHandler      = pspDefaultMTimerIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultMExternIntHandler_isr;
+PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
 
 /**
 * The function installs an interrupt service routine per risc-v cause
@@ -97,60 +96,71 @@ pspInterruptHandler_t fptrIntUSoftIntHandler = pspDefaultEmptyIntHandler;
 * @param fptrInterruptHandler     – function pointer to the interrupt service routine
 * @param eIntCause                – interrupt source
 *
-* @return u32_t                   - D_PSP_SUCCESS
-*                                 - D_PSP_PTR_ERROR - provided invalid function pointer
-*                                 - D_PSP_FAIL - unsupported value in eIntCause
+* @return u32_t                   - previously registered ISR
 */
-PSP_SECTION u32_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInterruptHandler,
+PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInterruptHandler,
 		                                     pspInterruptCause_t eIntCause)
 {
-   M_PSP_VALIDATE_FUNC_PARAM(fptrInterruptHandler, fptrInterruptHandler == NULL,
-		                        D_PSP_PTR_ERROR);
-   M_PSP_VALIDATE_FUNC_PARAM(&eIntCause, eIntCause >= E_LAST_CAUSE, D_PSP_FAIL);
+   pspInterruptHandler_t pFptr;
+
+   M_PSP_ASSERT(fptrInterruptHandler == NULL && eIntCause >= E_LAST_CAUSE);
 
    switch (eIntCause)
    {
       case E_USER_SOFTWARE_CAUSE:
-    	  fptrIntUSoftIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntUSoftIntHandler;
+    	  g_fptrIntUSoftIntHandler = fptrInterruptHandler;
     	  break;
       case E_SUPERVISOR_SOFTWARE_CAUSE:
-    	  fptrIntSSoftIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntSSoftIntHandler;
+    	  g_fptrIntSSoftIntHandler = fptrInterruptHandler;
           break;
       case E_RESERVED_SOFTWARE_CAUSE:
-    	  fptrIntRsrvdSoftIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntRsrvdSoftIntHandler;
+    	  g_fptrIntRsrvdSoftIntHandler = fptrInterruptHandler;
     	  break;
       case E_MACHINE_SOFTWARE_CAUSE:
-    	  fptrIntMSoftIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntMSoftIntHandler;
+    	  g_fptrIntMSoftIntHandler = fptrInterruptHandler;
           break;
       case E_USER_TIMER_CAUSE:
-    	  fptrIntUTimerIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntUTimerIntHandler;
+    	  g_fptrIntUTimerIntHandler = fptrInterruptHandler;
     	  break;
       case E_SUPERVISOR_TIMER_CAUSE:
-    	  fptrIntSTimerIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntSTimerIntHandler;
+    	  g_fptrIntSTimerIntHandler = fptrInterruptHandler;
     	  break;
       case E_RESERVED_TIMER_CAUSE:
-    	  fptrIntRsrvdTimerIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntRsrvdTimerIntHandler;
+    	  g_fptrIntRsrvdTimerIntHandler = fptrInterruptHandler;
     	  break;
       case E_MACHINE_TIMER_CAUSE:
-    	  fptrIntMTimerIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntMTimerIntHandler;
+    	  g_fptrIntMTimerIntHandler = fptrInterruptHandler;
     	  break;
       case E_USER_EXTERNAL_CAUSE:
-    	  fptrIntUExternIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntUExternIntHandler;
+    	  g_fptrIntUExternIntHandler = fptrInterruptHandler;
           break;
       case E_SUPERVISOR_EXTERNAL_CAUSE:
-    	  fptrIntSExternIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntSExternIntHandler;
+    	  g_fptrIntSExternIntHandler = fptrInterruptHandler;
           break;
       case E_RESERVED_EXTERNAL_CAUSE:
-    	  fptrIntRsrvdExternIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntRsrvdExternIntHandler;
+    	  g_fptrIntRsrvdExternIntHandler = fptrInterruptHandler;
     	  break;
       case E_MACHINE_EXTERNAL_CAUSE:
-    	  fptrIntMExternIntHandler = fptrInterruptHandler;
+    	  pFptr = g_fptrIntMExternIntHandler;
+    	  g_fptrIntMExternIntHandler = fptrInterruptHandler;
     	  break;
       default:
-    	  return D_PSP_FAIL;
+    	  pFptr = NULL;
+    	  break;
    }
 
-   return D_PSP_SUCCESS;
+   return pFptr;
 }
 
 /**
@@ -159,19 +169,20 @@ PSP_SECTION u32_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInterrupt
 * @param fptrInterruptHandler     – function pointer to the exception handler
 * @param eExcCause                – exception cause
 *
-* @return u32_t                   - D_PSP_SUCCESS
-*                                 - D_PSP_PTR_ERROR - provided invalid function pointer
-*                                 - D_PSP_FAIL - unsupported value in eIntCause
+* @return u32_t                   - previously registered ISR
 */
-PSP_SECTION u32_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
+PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
 		                                         pspExceptionCause_t eExcCause)
 {
-   M_PSP_VALIDATE_FUNC_PARAM(fptrInterruptHandler, fptrInterruptHandler == NULL, D_PSP_PTR_ERROR);
-   M_PSP_VALIDATE_FUNC_PARAM(&eExcCause, eExcCause >= E_EXC_LAST, D_PSP_FAIL);
+   pspInterruptHandler_t pFptr;
 
-   exceptions_ints[eExcCause] = fptrInterruptHandler;
+   M_PSP_ASSERT(fptrInterruptHandler == NULL && eExcCause >= E_EXC_LAST);
 
-   return D_PSP_SUCCESS;
+   pFptr = gExceptions_ints[eExcCause];
+
+   gExceptions_ints[eExcCause] = fptrInterruptHandler;
+
+   return pFptr;
 }
 
 /**
@@ -181,22 +192,16 @@ PSP_SECTION u32_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInter
 *
 * @return none
 */
-PSP_SECTION void pspDefaultExceptionIntHandler(void)
+PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 {
    /* get the exception cause */
-   u32_t cause = read_csr(mcause);
+   u32_t cause = M_PSP_READ_CSR(mcause);
 
    /* is it a valid cause */
-   if (cause < D_PSP_NUM_OF_INTS_EXCEPTIONS)
-   {
-      /* call the specific exception handler */
-      exceptions_ints[cause]();
-   }
-   /* Although cause not valid we still need to do something */
-   else
-   {
-      pspDefaultEmptyIntHandler();
-   }
+   M_PSP_ASSERT(cause < D_PSP_NUM_OF_INTS_EXCEPTIONS);
+
+   /* call the specific exception handler */
+   gExceptions_ints[cause]();
 }
 
 /**
@@ -206,7 +211,7 @@ PSP_SECTION void pspDefaultExceptionIntHandler(void)
 *
 * @return none
 */
-PSP_SECTION void pspDefaultMSoftIntHandler(void)
+PSP_TEXT_SECTION void pspDefaultMSoftIntHandler_isr(void)
 {
 }
 
@@ -217,7 +222,7 @@ PSP_SECTION void pspDefaultMSoftIntHandler(void)
 *
 * @return none
 */
-PSP_SECTION void pspDefaultMTimerIntHandler(void)
+PSP_TEXT_SECTION void pspDefaultMTimerIntHandler_isr(void)
 {
 }
 
@@ -228,7 +233,7 @@ PSP_SECTION void pspDefaultMTimerIntHandler(void)
 *
 * @return none
 */
-PSP_SECTION void pspDefaultMExternIntHandler(void)
+PSP_TEXT_SECTION void pspDefaultMExternIntHandler_isr(void)
 {
 }
 
@@ -239,7 +244,7 @@ PSP_SECTION void pspDefaultMExternIntHandler(void)
 *
 * @return none
 */
-PSP_SECTION void pspDefaultEmptyIntHandler(void)
+PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
 }
 

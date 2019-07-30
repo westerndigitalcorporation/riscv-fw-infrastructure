@@ -30,6 +30,7 @@
 /**
 * macros
 */
+/* error checking macro */
 #if (D_RTOSAL_ERROR_CHECK==1)
    #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode) \
       if (conditionMet) \
