@@ -18,7 +18,7 @@
 * @file   comrv_types.h
 * @author Ronen Haen
 * @date   11.06.2019
-* @brief  The defines RTOS AL specific types
+* @brief  The defines COM-RV specific types
 * 
 */
 #ifndef  __COMRV_TYPES_H__

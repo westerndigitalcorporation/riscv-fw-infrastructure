@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_defines.h
+* @file   comrv_defines.h
 * @author Ronen Haen
 * @date   11.06.2019
-* @brief  The COM-RV defines
+* @brief  This file provides COM-RV defines
 * 
 */
 #ifndef  __COMRV_DEFINES_H__

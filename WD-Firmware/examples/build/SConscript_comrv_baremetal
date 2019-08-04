@@ -36,21 +36,22 @@ list_files_c=[
 # list of assembly files to compile
 list_files_a=[
 #  ['location of assembly file to compile', 'location of resulting object file']
-   [os.path.join('comrv', 'comrv_asm.S'), os.path.join(out_dir, 'comrv_asm.o')],
+   [os.path.join('comrv', 'comrv_entry.S'), os.path.join(out_dir, 'comrv_entry.o')],
 ]
 
 # compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
+c_flags = Env['C_FLAGS'] + ['-fpic']#+ ['-ffixed-x31', '-ffixed-x30']
+a_flags = Env['A_FLAGS'] #+ ['-ffixed-x31', '-ffixed-x30']
 
 # defines
 Env['COMRV_DEF'] = []
 
 # include paths
-local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),]
+local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),
+                   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
 public_includes = [Env['PUBLIC_INC_PATH'], os.path.join(Env['ROOT_DIR'], 'comrv', 'api_inc'),]
 Env['COMRV_INC_PATH'] = public_includes
-include_paths = public_includes + local_includes
+include_paths = public_includes + local_includes + [os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')]
 
 # linker flags
 Env['LINKFLAGS'] += []

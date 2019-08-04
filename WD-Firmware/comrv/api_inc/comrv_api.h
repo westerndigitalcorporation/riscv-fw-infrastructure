@@ -18,7 +18,7 @@
 * @file   comrv_api.h
 * @author Ronen Haen
 * @date   11.06.2019
-* @brief  The file defines the COM RV interfaces
+* @brief  The file defines the COM-RV interfaces
 */
 #ifndef __COMRV_TASK_API_H__
 #define __COMRV_TASK_API_H__
@@ -30,10 +30,25 @@
 /**
 * definitions
 */
+#define _OVERLAY_
+#define OVERLAY_SECTION __attribute__((section(".OVERLAY_SEC")))
 
 /**
 * macros
 */
+/* this macro is used to imitate the compiler and it replaces
+ * the call to any overlay func() with saving the address of func() to x31
+ * and jumping to x31 (which is set to comrv entry point).
+ * The addi is for making the address an 'address token' differentiating it
+ * from regular address
+ */
+ #define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) asm volatile ("addi sp, sp, -16" :  : : ); \
+                                                    asm volatile ("sw	ra,12(sp)" :  :  : ); \
+                                                    asm volatile ("la x31, %0" :  : "i"(func) : ); \
+                                                    asm volatile ("addi x31, x31, %0" :  : "i"(isOvlFunction) : ); \
+		                                            asm volatile ("jalr x30" :  :  : ); \
+                                                    asm volatile ("lw	ra,12(sp)" :  :  : ); \
+                                                    asm volatile ("addi sp, sp, 16" :  : : );
 
 /**
 * types
@@ -54,5 +69,6 @@
 /**
 * APIs
 */
+void comrvInit(void);
 
 #endif /* __COMRV_TASK_API_H__ */

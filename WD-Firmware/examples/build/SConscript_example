@@ -39,6 +39,8 @@ include_paths = [
   Env['BSP_INC_PATH'],
   Env['RTOS_INC_PATH'],
   Env['RTOSAL_INC_PATH'],
+  Env['COMRV_INC_PATH'],
+  os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
 ]
 
 # linker flags

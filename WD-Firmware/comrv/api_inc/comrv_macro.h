@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_macro.h
+* @file   comrv_macro.h
 * @author Ronen Haen
 * @date   11.06.2019
 * @brief  The file defines the COM-RV macros

@@ -53,7 +53,7 @@ Env['BSP_INC_PATH'] = include_paths
 Env['TARGET_LIBS'] += ['wrap-hifive1']
 
 # linker flags
-Env['LINKFLAGS'] += ['-T', os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'link.lds'),'-L'+os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1')]
+Env['LINKFLAGS'] += ['-T', os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', Env['EXAMPLE_NAME']+'-link.lds'),'-L'+os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1')]
 
 # c file objects
 objects = []
