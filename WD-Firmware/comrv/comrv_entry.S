@@ -41,30 +41,35 @@
 
 .global   comrv_entry
 
-.section  .text.entry
+.func  .text.entry
 .align 4
 comrv_entry:
     /* TODO: what if we have more then 8 args to the overlay function ??? */
     /* new stack frame for comrv usage */
     m_ADDI  sp,  sp,-D_COMRV_STACK_SIZE
-    /* save a0 and a1 as we are going to use them */
-    m_STORE a0,  D_COMRV_A0_REG_STACK_OFFSET(sp)
-    m_STORE a1,  D_COMRV_A1_REG_STACK_OFFSET(sp)
-    /* prepare comrvGetCallerRaTokenAndOffset arguments */
-    mv      a0,  ra
-    m_ADDI  a1,  sp, D_COMRV_CALLER_RA_STACK_OFFSET
-    /* save caller token and ra offset */
-    jal comrvGetCallerRaTokenAndOffset
-    /* save the caller token/address */
-    m_STORE a0,  D_COMRV_CALLER_TOKEN_STACK_OFFSET(sp)
-    /* store the return address */
-    m_LOAD  a1,  D_COMRV_A1_REG_STACK_OFFSET(sp)
-    /*m_STORE a0,  D_COMRV_CALLER_RA_STACK_OFFSET(sp)*/
-comrv_check_token:
+    /* if x29 is 0 it means caller is non-overlay function */
+    bnez    x29,  comrv_save_caller_token
+    /* copy ra to caller token register */
+    mv      x29,  ra
+comrv_save_caller_token:
+    /* save caller token */
+    m_STORE x29, D_COMRV_CALLER_TOKEN_STACK_OFFSET(sp)
+    /* check if caller token is an overlay token (bit0 is set) */
+    andi    x28,  x29, 1
+    /* if x28 is 1 it means caller token is an overlay token */
+    beqz    x28,  comrv_check_callee_token
+    /* calculate and store caller ra offset */
+    xori    x28,  x29, 1
+    sub     x28,  ra, x28
+    m_STORE x28,  D_COMRV_CALLER_RA_STACK_OFFSET(sp)
+
+comrv_check_callee_token:
+    /* update caller token register with the callee token */
+    mv      x29,  x31
     /* check if address token is an overlay token (bit0 is set) */
-    andi    x29,  x31, 1
-    /* if x29 is 0 it means we call a non overlay function */
-    beqz    x29,  comrv_invoke_callee
+    andi    x28,  x31, 1
+    /* if x28 is 0 it means we call a non overlay function */
+    beqz    x28,  comrv_invoke_callee
     /* search if the token (x31) is already loaded */
     jal     comrvSearchCurrentAddressToken
     /* if the overlay token is already loaded (a0 will hold the actual address) */
@@ -83,8 +88,16 @@ comrv_invoke_callee:
     m_LOAD  x31, D_COMRV_CALLER_TOKEN_STACK_OFFSET(sp)
     m_LOAD  ra,  D_COMRV_CALLER_RA_STACK_OFFSET(sp)
     /* check if address token is an overlay token */
-    andi    x29, x31, 1
-    beqz    x29, comrv_exit_ret_to_caller
+    andi    x28, x31, 1
+    /* if x28 is 0 it means caller is non-overlay function */
+    bnez    x28,  comrv_skip_clear_x29
+    /* clear x29 as we are returning to a non-overlay function */
+    mv      x29,  zero
+comrv_skip_clear_x29:
+    /* skip token serch and load as we are returning to a non-overlay function */
+    beqz    x28, comrv_exit_ret_to_caller
+    /* store caller token in x29 */
+    mv      x29,  x31
     /* save a0 as we are going to use it */
     m_STORE a0,  D_COMRV_A0_REG_STACK_OFFSET(sp)
     /* search if the token (x31) is already loaded */
@@ -108,3 +121,4 @@ comrv_exit_ret_to_caller:
     m_ADDI  sp,  sp, D_COMRV_STACK_SIZE
     /* return back to the actual caller */
     jr      x31
+.endfunc

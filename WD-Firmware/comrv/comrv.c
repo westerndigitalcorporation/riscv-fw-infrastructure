@@ -63,8 +63,12 @@ typedef struct comrvOverlayTokenEntry
 /**
 * local prototypes
 */
+/* reg x31 holds the address token */
 register comrvOverlayTokenRegister_t g_uiCurrentOverlayToken asm("x31");
-register u32_t g_reserved asm("x30");
+/* reg x30 holds the  address of comrv_entry function */
+register u32_t g_reservedRegX30 asm("x30");
+/* reg x29 holds caller token or 0  in case caller is a non-overlay function */
+register u32_t g_reservedRegX29 asm("x29");
 
 /**
 * external prototypes
@@ -85,6 +89,9 @@ void comrvInit(void)
 {
    /* initialize internal data base */
    memset(overlayTokenList, 0xFF, sizeof(overlayTokenList));
+
+   /* clear reg x29 */
+   g_reservedRegX29 = 0;
 
    /* we need to save the addresses of COMRV entry point */
    asm volatile ("la x30, %0" :  : "i"(comrv_entry));
@@ -138,6 +145,7 @@ void* comrvLoadCurrentAddressToken(void)
 *
 * @return u32_t            -
 */
+#if 0
 u32_t comrvGetCallerRaTokenAndOffset(u32_t* pReturnAddress, u32_t* pToken)
 {
    /* check if the return address is an overlay function */
@@ -151,4 +159,4 @@ u32_t comrvGetCallerRaTokenAndOffset(u32_t* pReturnAddress, u32_t* pToken)
    /* caller is a non-overlay function so offset will be the actual pReturnAddress */
    return (u32_t)pReturnAddress;
 }
-
+#endif

@@ -133,7 +133,7 @@ elf_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.elf'
 cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
 #cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '--gcc-toolchain=/home/ronen/work/bld-rv-linux/', '--sysroot=/home/ronen/work/bld-rv-linux/riscv32-unknown-elf/']
 
-Env['C_FLAGS'] = ['-ffixed-x31', '-ffixed-x30', '-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + cc_options
+Env['C_FLAGS'] = ['-ffixed-x31', '-ffixed-x30', '-ffixed-x29', '-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + cc_options
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + cc_options
 
 if verbose == False:
