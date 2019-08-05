@@ -129,7 +129,7 @@ void* comrvLoadCurrentAddressToken(void)
 {
    overlayTokenList[0].tokenReg.value = g_uiCurrentOverlayToken.value;
 #if 1
-   overlayTokenList[0].actualAddress = g_uiCurrentOverlayToken.value ^ 1;
+   overlayTokenList[0].actualAddress = (void*)(g_uiCurrentOverlayToken.value ^ 1);
    return overlayTokenList[0].actualAddress;
 #else
    memcpy((void*)&__OVERLAY_SEC_START__, arr[(u32_t)g_uiCurrentOverlayToken.value], 100);
