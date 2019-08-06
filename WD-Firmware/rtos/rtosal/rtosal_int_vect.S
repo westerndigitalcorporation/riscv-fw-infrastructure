@@ -100,13 +100,13 @@ This implementation supports riscv privileged v1.10
     csrw      mstatus, t0
 .endm
 
-.macro m_portEND_SWITCHING_ISR brunch_label
+.macro m_portEND_SWITCHING_ISR branch_label
     /* save address of g_rtosalContextSwitch -> a0 */
     la        a0, g_rtosalContextSwitch
     /* load the value g_rtosalContextSwitch -> a1 */
     m_LOAD    a1, 0x0(a0)
     /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz      a1, \brunch_label
+    beqz      a1, \branch_label
     /* clear g_rtosalContextSwitch */
     /* TODO: if bitmanip exist add bit set */
     m_STORE   zero, 0x0(a0)
