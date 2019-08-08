@@ -33,10 +33,12 @@
 * definitions
 */
 #define D_COMRV_NUM_OF_OVERLAY_ENTRIES 1
+#define M_COMRV_READ_TOKEN_REG(x)       asm volatile ("mv %0, t6" : "=r" (x)  : );
 
 /**
 * macros
 */
+#define M_COMRV_SET_ENTRY(func)           asm volatile ("la x30, "#func : : : );
 
 /**
 * types
@@ -63,27 +65,16 @@ typedef struct comrvOverlayTokenEntry
 /**
 * local prototypes
 */
-/* reg x31 holds the address token */
-register comrvOverlayTokenRegister_t g_uiCurrentOverlayToken asm("x31");
-/* reg x30 holds the  address of comrv_entry function */
-register u32_t g_reservedRegX30 asm("x30");
-/* reg x29 holds caller token or 0  in case caller is a non-overlay function */
-register u32_t g_reservedRegX29 asm("x29");
 
 /**
 * external prototypes
 */
-void comrv_entry(void);
+extern void comrv_entry(void);
 
 /**
 * global variables
 */
 static comrvOverlayTokenEntry_t overlayTokenList[D_COMRV_NUM_OF_OVERLAY_ENTRIES];
-
-void * __OVERLAY_SEC_START__;
-void * __OVERLAY_SEC_END__;
-
-//extern void* arr[];
 
 void comrvInit(void)
 {
@@ -91,10 +82,10 @@ void comrvInit(void)
    memset(overlayTokenList, 0xFF, sizeof(overlayTokenList));
 
    /* clear reg x29 */
-   g_reservedRegX29 = 0;
+   asm volatile ("mv t4, zero");
 
    /* we need to save the addresses of COMRV entry point */
-   asm volatile ("la x30, %0" :  : "i"(comrv_entry));
+   M_COMRV_SET_ENTRY(comrv_entry);
 }
 
 /**
@@ -106,10 +97,13 @@ void comrvInit(void)
 */
 void* comrvSearchCurrentAddressToken(void)
 {
-   u32_t index;
+   u32_t index, regValue;
+
+   M_COMRV_READ_TOKEN_REG(regValue);
+
    for (index = 0 ; index < D_COMRV_NUM_OF_OVERLAY_ENTRIES ; index++)
    {
-      if (overlayTokenList[index].tokenReg.value == g_uiCurrentOverlayToken.value)
+      if (overlayTokenList[index].tokenReg.value == regValue)
       {
          return overlayTokenList[index].actualAddress;
       }
@@ -127,36 +121,12 @@ void* comrvSearchCurrentAddressToken(void)
 */
 void* comrvLoadCurrentAddressToken(void)
 {
-   overlayTokenList[0].tokenReg.value = g_uiCurrentOverlayToken.value;
-#if 1
-   overlayTokenList[0].actualAddress = (void*)(g_uiCurrentOverlayToken.value ^ 1);
+   u32_t regValue;
+
+   M_COMRV_READ_TOKEN_REG(regValue);
+
+   overlayTokenList[0].tokenReg.value = regValue;
+   overlayTokenList[0].actualAddress = (void*)(regValue ^ 1);
    return overlayTokenList[0].actualAddress;
-#else
-   memcpy((void*)&__OVERLAY_SEC_START__, arr[(u32_t)g_uiCurrentOverlayToken.value], 100);
-   overlayTokenList[0].actualAddress = (void*)&__OVERLAY_SEC_START__;
-   return &__OVERLAY_SEC_START__;
-#endif
 }
 
-/**
-*
-*
-* @param pRtosalEventGroupCb   - pointer to event group control block
-*
-* @return u32_t            -
-*/
-#if 0
-u32_t comrvGetCallerRaTokenAndOffset(u32_t* pReturnAddress, u32_t* pToken)
-{
-   /* check if the return address is an overlay function */
-   if (pReturnAddress >= (u32_t*)&__OVERLAY_SEC_START__ && pReturnAddress < (u32_t*)&__OVERLAY_SEC_END__)
-   {
-      /* TODO: loop all overlay groups to find the caller group start address */
-	  *pToken = (u32_t)((u08_t*)pReturnAddress - (u08_t*)overlayTokenList[0].actualAddress);
-      return overlayTokenList[0].tokenReg.value;
-   }
-   *pToken = (u32_t)pReturnAddress;
-   /* caller is a non-overlay function so offset will be the actual pReturnAddress */
-   return (u32_t)pReturnAddress;
-}
-#endif

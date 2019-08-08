@@ -40,8 +40,8 @@ list_files_a=[
 ]
 
 # compiler flags
-c_flags = Env['C_FLAGS'] + ['-fpic']#+ ['-ffixed-x31', '-ffixed-x30']
-a_flags = Env['A_FLAGS'] #+ ['-ffixed-x31', '-ffixed-x30']
+c_flags = Env['C_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
+a_flags = Env['A_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
 
 # defines
 Env['COMRV_DEF'] = []

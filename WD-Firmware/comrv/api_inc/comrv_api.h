@@ -42,11 +42,17 @@
  * The addi is for making the address an 'address token' differentiating it
  * from regular address
  */
+/* TODO:
+ * asm volatile ("la t6, "#func :  :  : );
+ * is a workaround, should be
+ * asm volatile ("la t6, %0" :  : "i"(func) : );
+ * This is due to a bug in clang
+ */
  #define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) asm volatile ("addi sp, sp, -16" :  : : ); \
                                                     asm volatile ("sw	ra,12(sp)" :  :  : ); \
-                                                    asm volatile ("la x31, %0" :  : "i"(func) : ); \
-                                                    asm volatile ("addi x31, x31, %0" :  : "i"(isOvlFunction) : ); \
-		                                            asm volatile ("jalr x30" :  :  : ); \
+                                                    asm volatile ("la t6, "#func :  :  : ); \
+                                                    asm volatile ("addi t6, x31, %0" :  : "i"(isOvlFunction) : ); \
+		                                            asm volatile ("jalr t5" :  :  : ); \
                                                     asm volatile ("lw	ra,12(sp)" :  :  : ); \
                                                     asm volatile ("addi sp, sp, 16" :  : : );
 

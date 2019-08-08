@@ -21,9 +21,7 @@
 * @brief  The file implements the COM-RV entry function
 *
 */
-
-.include "psp_asm_macros.h"
-
+#include "psp_asm_macros.h"
 
 /* total size of used stack */
 .equ D_COMRV_STACK_SIZE,                    REGBYTES * 4
@@ -37,11 +35,11 @@
 .equ D_COMRV_CALLER_RA_STACK_OFFSET,        REGBYTES * 0
 .equ D_COMRV_CALLER_TOKEN_STACK_OFFSET,     REGBYTES * 1
 .equ D_COMRV_A0_REG_STACK_OFFSET,           REGBYTES * 2
-.equ D_COMRV_A1_REG_STACK_OFFSET,           REGBYTES * 3
+/*.equ D_COMRV_A1_REG_STACK_OFFSET,           REGBYTES * 3*/
 
 .global   comrv_entry
 
-.func  .text.entry
+.section  .text.entry
 .align 4
 comrv_entry:
     /* TODO: what if we have more then 8 args to the overlay function ??? */
@@ -121,4 +119,3 @@ comrv_exit_ret_to_caller:
     m_ADDI  sp,  sp, D_COMRV_STACK_SIZE
     /* return back to the actual caller */
     jr      x31
-.endfunc
