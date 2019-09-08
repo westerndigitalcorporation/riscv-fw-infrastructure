@@ -4,9 +4,9 @@
 *.o
 *.settings
 *.sconsign.dblite
-*.org.eclipse.cdt.core.prefs
-*.language.settings.xml
-*.cproject
+.org.eclipse.cdt.core.prefs
+.language.settings.xml
+.cproject
 
 
 lto1

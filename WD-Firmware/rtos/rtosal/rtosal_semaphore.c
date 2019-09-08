@@ -131,7 +131,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreC
 *
 * @param  pRtosalSemaphoreCb - Pointer to semaphore control block to wait for
 * @param  uiWaitTimeoutTicks - Define how many ticks to wait in case the
-*                             semaphore isn’t available: D_RTOSAL_NO_WAIT,
+*                             semaphore isnâ€™t available: D_RTOSAL_NO_WAIT,
 *                             D_RTOSAL_WAIT_FOREVER or timer ticks value
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
