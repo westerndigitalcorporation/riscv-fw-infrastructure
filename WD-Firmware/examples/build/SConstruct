@@ -155,8 +155,8 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
 
 #, LIBPATH='.'
 
-if Env['TARGET_BOARD'] != 'hifive1' and Env['TARGET_BOARD'] != 'hifive-un':
-  print "missing target=[hifive1 | hifive-un]"
+if Env['TARGET_BOARD'] != 'hifive1' and Env['TARGET_BOARD'] != 'hifive-un' and Env['TARGET_BOARD'] != 'nexus_a7':
+  print "missing target=[hifive1 | hifive-un | nexus_a7]"
   exit(1)
 
 size = Builder(action = produce_sections_size)
