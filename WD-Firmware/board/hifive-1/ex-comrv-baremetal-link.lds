@@ -6,8 +6,8 @@ MEMORY
 {
   flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
   
-  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 14K
-  ovl (wxa!ri) : ORIGIN = 0x80003C00, LENGTH = 2K
+  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 13K
+  ovl (wxa!ri) : ORIGIN = 0x80003400, LENGTH = 3K
 }
 
 PHDRS
@@ -15,6 +15,7 @@ PHDRS
   flash PT_LOAD;
   ram_init PT_LOAD;
   ram PT_NULL;
+  ovl PT_NULL;
 }
 
 SECTIONS
@@ -161,12 +162,21 @@ SECTIONS
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
 
-  .OVERLAY_SEC :
+  .OVERLAY_SEC ORIGIN(ovl) :
   {
-    . = ALIGN(4);
+    . = ALIGN(512);
     __OVERLAY_SEC_START__ = .;
-       *(.OVERLAY_SEC*)
+       *(.OVERLAY_SEC_0*)
+    . = ALIGN(512);
+       *(.OVERLAY_SEC_1*)
     __OVERLAY_SEC_END__ = .;
-  } > ovl
+  }  >ovl AT>ovl :ovl
+  
+  .ovl_stack ORIGIN(ovl) + LENGTH(ovl) - 1K :
+  {
+    __OVERLAY_STACK_START__ = .;
+    . = 1K;
+    __OVERLAY_STACK_END__ = .;
+  }  >ovl AT>ovl :ovl
 
 }

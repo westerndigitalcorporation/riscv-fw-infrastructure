@@ -31,7 +31,8 @@
 * definitions
 */
 #define _OVERLAY_
-#define OVERLAY_SECTION __attribute__((section(".OVERLAY_SEC")))
+#define OVERLAY_SECTION_0 __attribute__((section(".OVERLAY_SEC_0")))
+#define OVERLAY_SECTION_1 __attribute__((section(".OVERLAY_SEC_1")))
 
 /**
 * macros
@@ -50,9 +51,9 @@
  */
  #define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) asm volatile ("addi sp, sp, -16" :  : : ); \
                                                     asm volatile ("sw	ra,12(sp)" :  :  : ); \
-                                                    asm volatile ("la t6, "#func :  :  : ); \
-                                                    asm volatile ("addi t6, x31, %0" :  : "i"(isOvlFunction) : ); \
-		                                            asm volatile ("jalr t5" :  :  : ); \
+                                                    asm volatile ("la t5, "#func :  :  : ); \
+                                                    asm volatile ("addi t5, t5, %0" :  : "i"(isOvlFunction) : ); \
+		                                            asm volatile ("jalr t6" :  :  : ); \
                                                     asm volatile ("lw	ra,12(sp)" :  :  : ); \
                                                     asm volatile ("addi sp, sp, 16" :  : : );
 

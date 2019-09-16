@@ -1,21 +1,19 @@
 #include "common_types.h"
 #include "comrv_api.h"
 
-OVERLAY_SECTION void _OVERLAY_ OverlayFunc1(void);
-
 /* non overlay function */
 void NonOverlayFunc(void)
 {
 }
 
 /* overlay function 1 */
-OVERLAY_SECTION void _OVERLAY_ OverlayFunc1(void)
+OVERLAY_SECTION_1 void _OVERLAY_ OverlayFunc1(void)
 {
   INVOKE_OVERLAY_ENGINE(NonOverlayFunc, 0);
 }
 
 /* overlay function 0 */
-OVERLAY_SECTION void _OVERLAY_ OverlayFunc0(void)
+OVERLAY_SECTION_0 void _OVERLAY_ OverlayFunc0(void)
 {
   INVOKE_OVERLAY_ENGINE(OverlayFunc1, 1);
 }

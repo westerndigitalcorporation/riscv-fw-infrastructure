@@ -33,16 +33,58 @@
 * definitions
 */
 #define D_COMRV_NUM_OF_OVERLAY_ENTRIES 1
-#define M_COMRV_READ_TOKEN_REG(x)       asm volatile ("mv %0, t6" : "=r" (x)  : );
+#define D_COMRV_END_OF_STACK           0xDEAD
 
 /**
 * macros
 */
-#define M_COMRV_SET_ENTRY(func)           asm volatile ("la x30, "#func : : : );
-
+#define M_COMRV_READ_TOKEN_REG(x)       asm volatile ("mv %0, t5" : "=r" (x)  : );
+#define M_COMRV_SET_ENTRY_ADDR(address) asm volatile ("la t6, "#address : : : );
+#if __riscv_xlen == 64
+ #define M_COMRV_SET_POOL_ADDR(address)  asm volatile ("la t4, "#address : : : ); \
+                                         asm volatile ("ld t4, 0x0(t4)"  : : : );
+ #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
+                                         asm volatile ("ld t3, 0x0(t3)"  : : : );
+#elif __riscv_xlen == 32
+ #define M_COMRV_SET_POOL_ADDR(address)  asm volatile ("la t4, "#address : : : ); \
+                                         asm volatile ("lw t4, 0x0(t4)"  : : : );
+ #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
+                                         asm volatile ("lw t3, 0x0(t3)"  : : : );
+#endif
 /**
 * types
 */
+typedef struct comrvStackFrame
+{
+  /* holds return address (caller is non overlay function) or return offset (caller is overlay function) */
+  u32_t callerReturnAddressOffset;
+  /* holds callee address (callee is non overlay function) or callee token (callee is overlay function) */
+  u32_t calleeToken;
+  /* holds the offset in bytes to the previous stack frame */
+  s16_t offsetPrevFrame;
+  /* size of the loaded overlay group - 1; used to avoid rereading this value from the overlay offset table */
+  u16_t overlayGroupSize;
+} comrvStackFrame_t;
+
+#if 0
+/* overlay token */
+typedef struct comrvToken
+{
+  /* overlay token indication 0: address; 1: overlay token */
+  u32_t overlayAddressToken:1;
+  /* overlay group ID the function resides in */
+  u32_t overlayGroupID:16;
+  /* data/function offset within the overlay group – 4 bytes granularity */
+  u32_t offset:10;
+  /* 2 reserved bits */
+  u32_t reserved:2;
+  /* specify the heap ID this overlay group belongs to */
+  u32_t heapID:2;
+  /* multi group indication */
+  u32_t multiGroup:1;
+} comrvToken_t;
+#endif
+
 typedef struct comrvToken
 {
   u32_t addressToken;
@@ -62,6 +104,7 @@ typedef struct comrvOverlayTokenEntry
   void*                       actualAddress;
 } comrvOverlayTokenEntry_t;
 
+
 /**
 * local prototypes
 */
@@ -74,26 +117,58 @@ extern void comrv_entry(void);
 /**
 * global variables
 */
-static comrvOverlayTokenEntry_t overlayTokenList[D_COMRV_NUM_OF_OVERLAY_ENTRIES];
+comrvOverlayTokenEntry_t overlayTokenList[D_COMRV_NUM_OF_OVERLAY_ENTRIES];
+extern void *__OVERLAY_STACK_START__, *__OVERLAY_STACK_END__;
+comrvStackFrame_t* pStackStartAddr = (comrvStackFrame_t*)&__OVERLAY_STACK_START__;
+u32_t tmp;
 
+/**
+* COM-RV initialization function
+*
+* @param  none
+*
+* @return none
+*/
 void comrvInit(void)
 {
+   comrvStackFrame_t* pStackEndAddr = (comrvStackFrame_t*)&__OVERLAY_STACK_END__ - 1;
+
+   /* mark the last frame */
+   pStackStartAddr->offsetPrevFrame = D_COMRV_END_OF_STACK;
+   /* initialize internal stack */
+   for (pStackStartAddr++ ; pStackStartAddr < pStackEndAddr ; pStackStartAddr++)
+   {
+	   pStackStartAddr->offsetPrevFrame = (s16_t)-sizeof(comrvStackFrame_t);
+	   pStackStartAddr->calleeToken = 0;
+   }
+
    /* initialize internal data base */
    memset(overlayTokenList, 0xFF, sizeof(overlayTokenList));
 
    /* clear reg x29 */
    asm volatile ("mv t4, zero");
 
-   /* we need to save the addresses of COMRV entry point */
-   M_COMRV_SET_ENTRY(comrv_entry);
+   /* set the address of COMRV entry point */
+   M_COMRV_SET_ENTRY_ADDR(comrv_entry);
+
+#ifndef __OS__
+   /* set the address of COMRV stack and initialize it */
+   pStackStartAddr--;
+   M_COMRV_SET_STACK_ADDR(pStackStartAddr);
+   pStackStartAddr->offsetPrevFrame = D_COMRV_END_OF_STACK;
+#endif /* __OS__ */
+
+   /* set the address of COMRV stack pool */
+   pStackStartAddr--;
+   M_COMRV_SET_POOL_ADDR(pStackStartAddr);
 }
 
 /**
 * Search if current overlay token is already loaded
 *
-* @param pRtosalEventGroupCb   - pointer to event group control block
+* @param  none
 *
-* @return u32_t            -
+* @return void* - address of the overlay function or NULL if not loaded
 */
 void* comrvSearchCurrentAddressToken(void)
 {
@@ -113,18 +188,18 @@ void* comrvSearchCurrentAddressToken(void)
 }
 
 /**
-* Load an overlay group according to address token in register x31
+* Load an overlay group according to address token in register t5
 *
-* @param pRtosalEventGroupCb   - pointer to event group control block
+* @param pOverlayGroupSize - pointer output the overlay group size - 1
 *
-* @return u32_t            -
+* @return void*            - address of the loaded overlay function
 */
-void* comrvLoadCurrentAddressToken(void)
+void* comrvLoadCurrentAddressToken(u16_t* pOverlayGroupSize)
 {
    u32_t regValue;
 
    M_COMRV_READ_TOKEN_REG(regValue);
-
+   *pOverlayGroupSize = 512-1;
    overlayTokenList[0].tokenReg.value = regValue;
    overlayTokenList[0].actualAddress = (void*)(regValue ^ 1);
    return overlayTokenList[0].actualAddress;
