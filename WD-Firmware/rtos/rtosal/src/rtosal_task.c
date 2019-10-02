@@ -31,6 +31,8 @@
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -117,8 +119,9 @@ RTOSAL_SECTION u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* 
       uiRes = D_RTOSAL_TASK_ERROR;
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX task create API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -145,9 +148,9 @@ RTOSAL_SECTION u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
    vTaskDelete(pRtosalTaskCb->taskHandle);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //we should terminate thread before deleting it on ThreadX
-   //uiRes = add a call to ThreadX task delete API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -182,8 +185,9 @@ RTOSAL_SECTION u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t
    vTaskPrioritySet(pRtosalTaskCb->taskHandle, uiNewPriority);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX task priority change API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -202,6 +206,8 @@ RTOSAL_SECTION void rtosalTaskYield(void)
    taskYIELD();
 #elif D_USE_THREADX
    tx_thread_relinquish();
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 }
 
@@ -221,6 +227,8 @@ RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalTaskCb, pRtosalTaskCb == NULL, D_RTOSAL_TASK_ERROR);
@@ -254,8 +262,9 @@ RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
       rtosalContextSwitchIndicationSet();
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX task resume API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -278,8 +287,9 @@ RTOSAL_SECTION u32_t rtosalTaskSleep(u32_t uiTimerTicks)
    vTaskDelay(uiTimerTicks);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX task sleep API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -305,8 +315,9 @@ RTOSAL_SECTION u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb)
    vTaskSuspend(pRtosalTaskCb->taskHandle);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX task suspend API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -339,9 +350,8 @@ RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
       /* task isn't in blocking state */
       uiRes = D_RTOSAL_WAIT_ABORT_ERROR;
    }
-#elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX task abort API
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;

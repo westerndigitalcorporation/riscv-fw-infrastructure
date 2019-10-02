@@ -23,19 +23,20 @@ if not os.path.exists(out_dir):
 
 rtosal_base = os.path.join('rtos', 'rtosal')
 list_files_c=[
-   [os.path.join(rtosal_base,'rtosal_event.c'), os.path.join(out_dir, 'rtosal_event.o')],
-   [os.path.join(rtosal_base,'rtosal_util.c'), os.path.join(out_dir, 'rtosal_util.o')],
-   [os.path.join(rtosal_base,'rtosal_mutex.c'), os.path.join(out_dir, 'rtosal_mutex.o')],
-   [os.path.join(rtosal_base,'rtosal_queue.c'), os.path.join(out_dir, 'rtosal_queue.o')],
-   [os.path.join(rtosal_base,'rtosal_semaphore.c'), os.path.join(out_dir, 'rtosal_semaphore.o')],
-   [os.path.join(rtosal_base,'rtosal_task.c'), os.path.join(out_dir, 'rtosal_task.o')],
-   [os.path.join(rtosal_base,'rtosal_time.c'), os.path.join(out_dir, 'rtosal_time.o')],
-   [os.path.join(rtosal_base,'rtosal_default.c'), os.path.join(out_dir, 'rtosal_default.o')],
-#   [os.path.join(rtosal_base,'rtosal_memory.c'), os.path.join(out_dir, 'rtosal_memory.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_event.c'), os.path.join(out_dir, 'rtosal_event.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_util.c'), os.path.join(out_dir, 'rtosal_util.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_mutex.c'), os.path.join(out_dir, 'rtosal_mutex.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_queue.c'), os.path.join(out_dir, 'rtosal_queue.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_semaphore.c'), os.path.join(out_dir, 'rtosal_semaphore.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_task.c'), os.path.join(out_dir, 'rtosal_task.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_time.c'), os.path.join(out_dir, 'rtosal_time.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_default.c'), os.path.join(out_dir, 'rtosal_default.o')],
+#   [os.path.join(rtosal_base, 'src', 'rtosal_memory.c'), os.path.join(out_dir, 'rtosal_memory.o')],
 ]
 
 list_files_a=[
-   [os.path.join(rtosal_base,'rtosal_int_vect.S'), os.path.join(out_dir, 'rtosal_int_vect.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_int_vect.S'), os.path.join(out_dir, 'rtosal_int_vect.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_asm_util.S'), os.path.join(out_dir, 'rtosal_asm_util.o')],
 ]
 
 rtos_core_define = {
@@ -49,13 +50,15 @@ a_flags = [] + Env['A_FLAGS']
 
 # defines
 Env['RTOSAL_DEF'] = rtos_core_define[Env['RTOS_CORE']]
-c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
+c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF'] + Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
 public_includes = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc')]
+                   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
+                   os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),]
+                   
 Env['RTOSAL_INC_PATH'] = public_includes
 include_paths = Env['BSP_INC_PATH'] + Env['RTOS_INC_PATH'] + public_includes + local_includes
 

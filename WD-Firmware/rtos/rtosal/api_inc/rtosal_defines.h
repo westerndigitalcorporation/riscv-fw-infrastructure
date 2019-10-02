@@ -110,6 +110,8 @@
    #define D_RTOSAL_INVALID_CEILING              TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_FAIL                         TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_FEATURE_NOT_ENABLED          TBD_TAKE_VAL_FROM_TX
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /* function input definitions */
@@ -141,6 +143,8 @@
    #define D_RTOSAL_DONT_START                   TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_AUTO_START                   TBD_TAKE_VAL_FROM_TX
    #define D_RTOSAL_NO_TIME_SLICE                TBD_TAKE_VAL_FROM_TX
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 #endif /* __RTOSAL_DEFINES_H__ */

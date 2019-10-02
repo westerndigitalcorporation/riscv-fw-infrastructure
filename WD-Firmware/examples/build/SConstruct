@@ -70,7 +70,6 @@ else:
 tagretName = ARGUMENTS.get('target', '')
 exampleName = ARGUMENTS.get('example', '')
 #downloadFlag = ARGUMENTS.get('download', '0')
-
 #from EnvSnap import *
 #from saba_pkgScons.mdlSconsUtils import *
 # set global environment
@@ -165,7 +164,7 @@ Env['BUILDERS']['Size'] = size
 arr_lib              = []
 if exampleName == 'ex-freertos':
   Env['RTOS_CORE'] = 'freertos'
-  Env['PUBLIC_DEF']= ['D_USE_RTOSAL'] 
+  Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HiFive1'] 
   arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
   arr_lib.append(SConscript('SConscript_'+ Env['RTOS_CORE'], exports='Env'))
   arr_lib.append(SConscript('SConscript_rtosal', exports='Env'))

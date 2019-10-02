@@ -41,7 +41,9 @@
 #ifdef D_USE_FREERTOS
    #define M_EVENT_GROUP_CB_SIZE_IN_BYTES sizeof(StaticEventGroup_t)
 #elif D_USE_THREADX
-   #define M_EVENT_GROUP_CB_SIZE_IN_BYTES sizeof(TBD)  // size of the CB struct 
+   #define M_EVENT_GROUP_CB_SIZE_IN_BYTES sizeof(TBD)  // size of the CB struct
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -52,6 +54,8 @@ typedef struct rtosalEventGroup
 {
 #ifdef D_USE_FREERTOS
    void* eventGroupHandle;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    s08_t cEventGroupCB[M_EVENT_GROUP_CB_SIZE_IN_BYTES];
 } rtosalEventGroup_t;

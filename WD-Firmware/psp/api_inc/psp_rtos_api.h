@@ -15,22 +15,29 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_memory.c
-* @author Ronen Haen
-* @date   21.01.2019 
-* @brief  The file implements the RTOS AL memory API
-* 
+* @file   psp_rtos_api.h
+* @author Nati Rapaport
+* @date   19.09.2019
+* @brief  The file defines the API of PSP to the specific RTOS in use
 */
+#ifndef  __PSP_RTOS_API_H__
+#define  __PSP_RTOS_API_H__
 
+#ifdef D_USE_FREERTOS
 /**
 * include files
 */
-#include "rtosal_api.h"
-#include "rtosal.h"
+#include "FreeRTOS.h"
+#include "portable.h"
 
 /**
 * definitions
 */
+#define pspBYTE_ALIGNMENT_MASK portBYTE_ALIGNMENT_MASK
+
+#else
+   #error "Define dependencies and includes appropriately for the RTOS in use"
+#endif
 
 /**
 * macros
@@ -53,19 +60,7 @@
 */
 
 /**
-*
-*
-* @param 
-*
-* @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_DELETED
+* APIs
 */
-u32_t rtosalMsgQueueRecieve (rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
-                             u32_t uiWaitTimeoutTicks)
-{
-#ifdef D_USE_FREERTOS
 
-#elif D_USE_THREADX
-
-#endif
-}
+#endif /* __PSP_RTOS_API_H__ */

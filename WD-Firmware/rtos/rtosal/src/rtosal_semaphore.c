@@ -31,6 +31,8 @@
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "semphr.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -93,8 +95,9 @@ RTOSAL_SECTION u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb
       uiRes = D_RTOSAL_SEMAPHORE_ERROR;
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX semaphore create API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -119,8 +122,9 @@ RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreC
    vSemaphoreDelete(pRtosalSemaphoreCb->semaphoreHandle);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX semaphore delete API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -131,7 +135,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreC
 *
 * @param  pRtosalSemaphoreCb - Pointer to semaphore control block to wait for
 * @param  uiWaitTimeoutTicks - Define how many ticks to wait in case the
-*                             semaphore isn’t available: D_RTOSAL_NO_WAIT,
+*                             semaphore isnï¿½t available: D_RTOSAL_NO_WAIT,
 *                             D_RTOSAL_WAIT_FOREVER or timer ticks value
 *
 * @return u32_t            - D_RTOSAL_SUCCESS
@@ -148,6 +152,10 @@ RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, 
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#elif D_USE_THREADX
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalSemaphoreCb, pRtosalSemaphoreCb == NULL, D_RTOSAL_SEMAPHORE_ERROR);
@@ -178,8 +186,9 @@ RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, 
       rtosalContextSwitchIndicationSet();
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX semaphore wait API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -199,6 +208,10 @@ RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreC
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#elif D_USE_THREADX
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalSemaphoreCb, pRtosalSemaphoreCb == NULL, D_RTOSAL_SEMAPHORE_ERROR);
@@ -229,8 +242,9 @@ RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreC
       rtosalContextSwitchIndicationSet();
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX semaphore release API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;

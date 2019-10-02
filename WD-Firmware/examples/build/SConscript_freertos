@@ -23,13 +23,13 @@ if not os.path.exists(out_dir):
 
 rtos_base=os.path.join('rtos', 'rtos_core', 'freertos', 'Source')
 list_port_files_c = {
-  'hifive1' :  [[os.path.join(rtos_base, 'portable', 'GCC', 'RISCV', 'port.c'), os.path.join(out_dir, 'port.o')],],
+  'hifive1'    :  [],
   'hifive-un'  :  [],
 }
 
 list_port_files_a = {
-  'hifive1' :  [[os.path.join(rtos_base, 'portable', 'GCC', 'RISCV', 'portasm.S'), os.path.join(out_dir, 'portasm.o')],],
-  'hifive-un'  :  [],
+#  'hifive1'    :  [],
+#  'hifive-un'  :  [],
 }
 
 list_files_c=[
@@ -42,8 +42,8 @@ list_files_c=[
 ] + list_port_files_c[Env['TARGET_BOARD']]
 
 list_port_include_paths={
-    'hifive1' : [os.path.join(Env['ROOT_DIR'], rtos_base, 'portable', 'GCC', 'RISCV'),
-                 os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1')],
+    'hifive1' : [os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'config', 'hifive-1'),
+                 os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')],
     'hifive-un' : [],
 }
 
@@ -57,7 +57,6 @@ c_defines = Env['RTOSAL_DEF'] + Env['BSP_DEF'] + Env['PUBLIC_DEF']
 # include paths
 Env['RTOS_INC_PATH'] = [
   os.path.join(Env['ROOT_DIR'], rtos_base, 'include'),
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'Demo', 'common', 'include'),
 ] + list_port_include_paths[Env['TARGET_BOARD']]
 include_paths = Env['BSP_INC_PATH'] + Env['RTOS_INC_PATH']
 
@@ -69,8 +68,8 @@ objects = []
 for list_file in list_files_c:
   objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
 
-for list_file in list_port_files_a[Env['TARGET_BOARD']]:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+#for list_file in list_port_files_a[Env['TARGET_BOARD']]:
+#  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
 # for libraries
 freertos_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'freertos.a'), source=objects)

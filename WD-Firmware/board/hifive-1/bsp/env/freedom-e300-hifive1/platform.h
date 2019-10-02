@@ -7,16 +7,16 @@
 #define MCAUSE_INT         0x80000000
 #define MCAUSE_CAUSE       0x7FFFFFFF
 
-#include "sifive/const.h"
-#include "sifive/devices/aon.h"
-#include "sifive/devices/clint.h"
-#include "sifive/devices/gpio.h"
-#include "sifive/devices/otp.h"
-#include "sifive/devices/plic.h"
-#include "sifive/devices/prci.h"
-#include "sifive/devices/pwm.h"
-#include "sifive/devices/spi.h"
-#include "sifive/devices/uart.h"
+#include "const.h"
+#include "devices/aon.h"
+#include "devices/clint.h"
+#include "devices/gpio.h"
+#include "devices/otp.h"
+#include "devices/plic.h"
+#include "devices/prci.h"
+#include "devices/pwm.h"
+#include "devices/spi.h"
+#include "devices/uart.h"
 
 /****************************************************************************
  * Platform definitions

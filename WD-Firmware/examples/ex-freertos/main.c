@@ -67,22 +67,26 @@
     1 tab == 4 spaces!
 */
 #ifdef D_USE_RTOSAL
-#include "rtosal_types.h"
-#include "rtosal_semaphore_api.h"
-#include "rtosal_task_api.h"
-#include "rtosal_mutex_api.h"
-#include "rtosal_queue_api.h"
-#include "rtosal_time_api.h"
-#include "rtosal_util_api.h"
-#include "psp_api.h"
-#include "task.h"     /* for tskIDLE_PRIORITY */
+   #include "rtosal_types.h"
+   #include "rtosal_semaphore_api.h"
+   #include "rtosal_task_api.h"
+   #include "rtosal_mutex_api.h"
+   #include "rtosal_queue_api.h"
+   #include "rtosal_time_api.h"
+   #include "rtosal_util_api.h"
+   #include "psp_api.h"
+   #include "task.h"     /* for tskIDLE_PRIORITY */
 #else
-/* Kernel includes. */
-#include "FreeRTOS.h" /* Must come first. */
-#include "task.h"     /* RTOS task related API prototypes. */
-#include "queue.h"    /* RTOS queue related API prototypes. */
-#include "timers.h"   /* Software timer related API prototypes. */
-#include "semphr.h"   /* Semaphore related API prototypes. */
+   #ifdef D_USE_FREERTOS
+      /* Kernel includes. */
+      #include "FreeRTOS.h" /* Must come first. */
+      #include "task.h"     /* RTOS task related API prototypes. */
+      #include "queue.h"    /* RTOS queue related API prototypes. */
+      #include "timers.h"   /* Software timer related API prototypes. */
+      #include "semphr.h"   /* Semaphore related API prototypes. */
+  #else
+     #error "Define RTOS appropriate includes"
+  #endif /* D_USE_FREERTOS */
 #endif /* D_USE_RTOSAL */
 /* TODO Add any manufacture supplied header files can be included
 here. */
@@ -91,7 +95,7 @@ here. */
 #include <unistd.h>
 #include "platform.h"
 #include "encoding.h"
-#include "plic/plic_driver.h"
+#include "plic_driver.h"
 
 /* Priorities at which the tasks are created.  The event semaphore task is
 given the maximum priority of ( configMAX_PRIORITIES - 1 ) to ensure it runs as
@@ -196,9 +200,9 @@ static rtosalStackType_t xIdleStack[D_IDLE_TASK_SIZE];
 static rtosalTask_t xTimerTaskTCBBuffer;
 static rtosalStackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
 void handle_interrupt(void);
-extern void vPortSysTickHandler(void);
-extern void vSynchTrap(void);
-extern void vSynchTrapUnhandled(void);
+extern void pspMTimerIntHandler(void);
+extern void pspEcallHandler(void);
+extern void pspTrapUnhandled(void);
 #endif /* D_USE_RTOSAL */
 
 /* Workaround to issue that raised when we moved to GCC-8.3 version regarding association
@@ -243,23 +247,25 @@ void demo_init(void *pMem)
     can be done here if it was not done before main() was called. */
     prvSetupHardware();
 
+// NatiR: what happens when we are not in D_USE_RTOSAL? where the ISRs are installed?
 #ifdef D_USE_RTOSAL
     /* Disable the machine & timer interrupts until setup is done. */
     clear_csr(mie, MIP_MEIP);
     clear_csr(mie, MIP_MTIP);
+    // NatiR:  Can I use instead MIE bit in mstatus reg to generally disable M-mode interrupts?
     /* register exception handlers */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
-        pspRegisterIsrExceptionHandler(vSynchTrapUnhandled, cause);
+        pspRegisterIsrExceptionHandler(pspTrapUnhandled, cause);
     }
     /* register E_CALL exception handler */
-    pspRegisterIsrExceptionHandler(vSynchTrap, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
+    pspRegisterIsrExceptionHandler(pspEcallHandler, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
     /* install timer interrupt handler */
-    pspRegisterIsrCauseHandler(vPortSysTickHandler, E_MACHINE_TIMER_CAUSE);
+    pspRegisterIsrCauseHandler(pspMTimerIntHandler, E_MACHINE_TIMER_CAUSE);
     /* install external interrupt handler */
     pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE);
     /* Enable the Machine-External bit in MIE */
-    set_csr(mie, MIP_MEIP);
+    set_csr(mie, MIP_MEIP); // NatiR: why not re-enable MIP_MTIP too?
 #endif /* D_USE_RTOSAL */
 
     /* Create the queue used by the queue send and queue receive tasks. */
@@ -415,8 +421,6 @@ static void vExampleTimerCallback(void* xTimer)
 }
 /*-----------------------------------------------------------*/
 
-
-
 static void prvQueueSendTask( void *pvParameters )
 {
 #ifndef D_USE_RTOSAL
@@ -453,6 +457,7 @@ const uint32_t ulValueToSend = 100UL;
 #endif /* D_USE_RTOSAL */
     }
 }
+
 /*-----------------------------------------------------------*/
 
 static void prvQueueReceiveTask( void *pvParameters )
@@ -484,6 +489,7 @@ static void prvQueueReceiveTask( void *pvParameters )
         }
     }
 }
+
 /*-----------------------------------------------------------*/
 
 static void prvEventSemaphoreTask( void *pvParameters )
@@ -514,6 +520,7 @@ static void prvEventSemaphoreTask( void *pvParameters )
         write(1, "Semaphore taken\n", 16);
     }
 }
+
 /*-----------------------------------------------------------*/
 
 void vApplicationTickHook( void )
@@ -606,7 +613,7 @@ void vApplicationStackOverflowHook(void* xTask, signed char *pcTaskName)
 }
 /*-----------------------------------------------------------*/
 #ifndef D_USE_RTOSAL
-extern UBaseType_t uxCriticalNesting;
+// extern UBaseType_t uxCriticalNesting; NatiR - Think it is unnessecary anymore. make sure then remove it
 #endif /* USE_FREERTOS */
 void vApplicationIdleHook( void )
 {
@@ -650,9 +657,11 @@ void wake_ISR( )    {
 #ifndef D_USE_RTOSAL
 /*Entry Point for Interrupt Handler*/
 void handle_interrupt(unsigned long mcause){
-
+// NatiR: I need to understand the different behavior between D_USE_RTOSAL yes/no
+// NatiR: It seems that there is no real ISR installed for any external interrupt. Am I wrong?
   /* check if global*/
-  if(((mcause & MCAUSE_CAUSE) == IRQ_M_EXT))  {
+  if(((mcause & MCAUSE_CAUSE) == IRQ_M_EXT))
+  {
     plic_source int_num  = PLIC_claim_interrupt(&g_plic);
     g_ext_interrupt_handlers[int_num]();
     PLIC_complete_interrupt(&g_plic, int_num);
@@ -684,7 +693,7 @@ void interrupts_init(  ) {
 
     // Disable the machine & timer interrupts until setup is done.
     clear_csr(mie, MIP_MEIP);
-    clear_csr(mie, MIP_MTIP);
+    clear_csr(mie, MIP_MTIP); //NatiR - why you disable Timer int here? and why you don't re-enable it at the end of this function?
 
 
   //setup PLIC

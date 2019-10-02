@@ -15,22 +15,27 @@
 * limitations under the License.
 */
 /**
-* @file   psp_api.h
-* @author Ronen Haen
-* @date   21.01.2019
-* @brief  The file defines the PSP API
+* @file   psp_specific_rtos.h
+* @author Nati Rapaport
+* @date   16.09.2019
+* @brief  This file is used internally by PSP module and serves as an api layer to specific core.
 */
-#ifndef  __PSP_API_H__
-#define  __PSP_API_H__
+#ifndef  __PSP_SPECIFIC_RTOS_H__
+#define  __PSP_SPECIFIC_RTOS_H__
 
 /**
 * include files
 */
 
-#include "psp_config.h"
-#include "psp_defines.h"
-#include "psp_interrupt_api.h"
-#include "psp_macros.h"
+/**
+* APIs
+*/
+/* API to context-switch handler in the RTOS layer */
+#ifdef D_USE_FREERTOS
+   .extern void vTaskSwitchContext(void);
+#else
+   #error "Define APIs per the RTOS in use"
+#endif
 
 /**
 * definitions
@@ -52,15 +57,10 @@
 * external prototypes
 */
 
+
 /**
 * global variables
 */
 
-/**
-* APIs
-*/
-u32_t pspIsInterruptContext(void);
-pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
-pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
 
-#endif /* __PSP_API_H__ */
+#endif /* __PSP_SPECIFIC_RTOS_H__ */

@@ -73,68 +73,19 @@
 /*
 This implementation supports riscv privileged v1.10
 */
-.include "psp_asm_macros.h"
+#include "psp_asm_macros.h"
+#include "psp_specific_definitions.h"
+#include "psp_specific_macros.h"
 
-/* saves mstatus and tcb */
-.macro m_portSAVE_CONTEXT
-    .global    pxCurrentTCB
-    /* Store mstatus */
-    csrr      t0, mstatus
-    m_STORE   t0, 32 * REGBYTES(sp)
-    /* Store current stackpointer in task control block (TCB) */
-    m_LOAD    t0, pxCurrentTCB
-    m_STORE   sp, 0x0(t0)
-.endm
 
- /* restore mstatus and tcb */
-.macro m_portRESTORE_CONTEXT
-    .global    pxCurrentTCB
-    /* Load stack pointer from the current TCB */
-    m_LOAD    sp, pxCurrentTCB
-    m_LOAD    sp, 0x0(sp)
-    /* Load task program counter */
-    m_LOAD    t0, 33 * REGBYTES(sp)
-    csrw      mepc, t0
-    /* Load saved mstatus */
-    m_LOAD    t0, 32 * REGBYTES(sp)
-    csrw      mstatus, t0
-.endm
 
-.macro m_portEND_SWITCHING_ISR brunch_label
-    /* save address of g_rtosalContextSwitch -> a0 */
-    la        a0, g_rtosalContextSwitch
-    /* load the value g_rtosalContextSwitch -> a1 */
-    m_LOAD    a1, 0x0(a0)
-    /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz      a1, \brunch_label
-    /* clear g_rtosalContextSwitch */
-    /* TODO: if bitmanip exist add bit set */
-    m_STORE   zero, 0x0(a0)
-    /* perform context switch */
-.if D_USE_FREERTOS
-    m_portSAVE_CONTEXT
-    jal     vTaskSwitchContext
-    m_portRESTORE_CONTEXT
-.elseif D_USE_THREADX
-.endif /* .if D_USE_FREERTOS */
-.endm
-
-/* Saves current Machine Exception Program Counter (MEPC) as task program counter */
-.macro m_portSAVE_EPC
-    csrr      t0, mepc
-    m_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/* Saves current return adress (RA) as task program counter */
-.macro m_portSAVE_RA
-    LOAD      t0, 1 * REGBYTES(sp)
-    m_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/*/not called on a context switch*/
-.macro m_portRESTORE_SP
-    m_LOAD    x2, 2 * REGBYTES(sp)
-.endm
+/* The following macros were here before. I moved them to psp_asm_macros.h
+//.macro m_RESTORE_CONTEXT
+//.macro m_END_SWITCHING_ISR branch_label
+//.macro m_SAVE_EPC
+//.macro m_SAVE_RA
+//.macro m_RESTORE_SP
+*/
 
 .section  .text.entry
 .align 4
@@ -144,6 +95,9 @@ This implementation supports riscv privileged v1.10
 rtosal_vect_table:
     m_pushREGFILE
     m_SET_INT_CONTEXT
+    m_pushAdditionalRegs
+    m_SAVE_CONTEXT
+    m_SET_SP_TO_ISR_STACK /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
     csrr    t0, mcause
     bge     t0, zero, rtosal_vect_table_
     slli    t0, t0, 2
@@ -185,51 +139,69 @@ rtosal_vect_table:
 
 rtosa_exceptions_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    m_pushREGFILE                                     /* Push registers of current task onto stack */
+    m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    m_pushAdditionalRegs
+    m_SAVE_CONTEXT
+    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    /* call the exception handler */
-    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler   /* Call the exception handler */
+    m_SET_SP_TO_TASK_STACK                            /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    m_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
+    m_popREGFILE                                      /* Restore the registers of current task from the stack */
+    m_popAdditionalRegs
     mret
 
 rtosa_m_soft_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    m_pushREGFILE                                     /* Push registers of current task onto stack */
+    m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    m_pushAdditionalRegs
+    m_SAVE_CONTEXT
+    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler
-    m_portEND_SWITCHING_ISR rtosa_m_soft_int_no_cs
+    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler        /* Call the interrupt handler */
+    m_END_SWITCHING_ISR rtosa_m_soft_int_no_cs         /* Check if context switch is required now. If yes - handle it now */
 rtosa_m_soft_int_no_cs:
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    m_CLEAR_INT_CONTEXT                                /* Clear interrupt context indication */
+    m_SET_SP_TO_TASK_STACK                             /* Just before pop RegFile of the interrupted Task - change sp to point to current Task-Stack */
+    m_popREGFILE                                       /* Restore the registers of current task from the stack */
+    m_popAdditionalRegs
     mret
 
 rtosa_m_timer_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    m_pushREGFILE                                     /* Push registers of current task onto stack */
+    m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    m_pushAdditionalRegs
+    m_SAVE_CONTEXT
+    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    m_portSAVE_CONTEXT
-    m_portSAVE_EPC
-    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler
-    m_portRESTORE_CONTEXT
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+// natiR - remove    m_SAVE_EPC                                         /* Save MEPC CSR */
+    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler       /* Call the interrupt handler */
+    m_RESTORE_CONTEXT                                  /* Restore mstatus, mepc and sp */
+    m_SET_SP_TO_TASK_STACK                             /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    m_CLEAR_INT_CONTEXT                                /* Clear interrupt context indication */
+    m_popREGFILE                                       /* Restore the registers of current task from the stack */
+    m_popAdditionalRegs
     mret
 
 rtosa_m_external_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    m_pushREGFILE                                     /* Push registers of current task onto stack */
+    m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    m_pushAdditionalRegs
+    m_SAVE_CONTEXT
+    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler
-    m_portRESTORE_SP
-    m_portEND_SWITCHING_ISR rtosa_m_external_int_no_cs
+    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler      /* Call the interrupt handler */
+    m_RESTORE_SP                                       /* Restore sp with the stack address of the current task */
+    m_END_SWITCHING_ISR rtosa_m_external_int_no_cs     /* Check if context switch is required now. If yes - handle it now */
 rtosa_m_external_int_no_cs:
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    m_CLEAR_INT_CONTEXT                                /* Clear the indication of interupt context */
+    m_SET_SP_TO_TASK_STACK                             /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    m_popREGFILE                                       /* Restore the registers of current task from the stack */
+    m_popAdditionalRegs
     mret
 
 .weak rtosa_reserved_int

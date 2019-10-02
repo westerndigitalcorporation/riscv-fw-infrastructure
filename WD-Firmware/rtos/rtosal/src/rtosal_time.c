@@ -31,6 +31,8 @@
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "timers.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -90,6 +92,8 @@ RTOSAL_SECTION u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtos
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
    UBaseType_t uiAutoReload;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalTimerCb, pRtosalTimerCb == NULL, D_RTOSAL_TIMER_ERROR);
@@ -124,8 +128,9 @@ RTOSAL_SECTION u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtos
       uiRes = D_RTOSAL_SUCCESS;
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX timer create API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -157,8 +162,9 @@ RTOSAL_SECTION u32_t rtosTimerDestroy(rtosalTimer_t* pRtosalTimerCb)
       uiRes = D_RTOSAL_TIMER_ERROR;
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX timer delete API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -180,6 +186,8 @@ RTOSAL_SECTION u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalTimerCb, pRtosalTimerCb == NULL, D_RTOSAL_TIMER_ERROR);
@@ -211,8 +219,9 @@ RTOSAL_SECTION u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
       rtosalContextSwitchIndicationSet();
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX timer start API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -233,6 +242,8 @@ RTOSAL_SECTION u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalTimerCb, pRtosalTimerCb == NULL, D_RTOSAL_TIMER_ERROR);
@@ -264,8 +275,9 @@ RTOSAL_SECTION u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
       rtosalContextSwitchIndicationSet();
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX timer stop API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -294,6 +306,8 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 #elif D_USE_THREADX
    UINT uiActive;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalTimerCb, pRtosalTimerCb == NULL, D_RTOSAL_TIMER_ERROR);
@@ -347,6 +361,10 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
          }
       }
    }
+#elif D_USE_THREADX
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;

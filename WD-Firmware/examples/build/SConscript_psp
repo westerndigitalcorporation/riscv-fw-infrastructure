@@ -22,27 +22,48 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 list_files_c=[
-   [os.path.join('psp','psp_interrupt.c'), os.path.join(out_dir, 'psp_interrupt.o')],
-   [os.path.join('psp', 'psp.c'), os.path.join(out_dir, 'psp.o')],
+   [os.path.join('psp', 'src', 'psp_int_handlers.c'), os.path.join(out_dir, 'psp_int_handlers.o')],
+   [os.path.join('psp', 'src', 'psp_traps.c'), os.path.join(out_dir, 'psp_traps.o')],
 ]
 
 list_files_a=[
-[os.path.join('psp', 'psp_int_vect.S'), os.path.join(out_dir, 'psp_int_vect.o')],
+   [os.path.join('psp', 'src', 'psp_int_vect.S'), os.path.join(out_dir, 'psp_int_vect.o')],
+   [os.path.join('psp', 'src', 'psp_util.S'), os.path.join(out_dir, 'psp_util.o')],
 ]
 
 # compiler flags
 c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
+
 # defines
-c_defines = []
+c_defines = []+Env['PUBLIC_DEF'] + Env['RTOSAL_DEF']
 
 # include paths
 local_includes  = []
 public_includes = [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'loc_inc'),
   os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
+  #os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'include', 'sifive'),
+  #os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'env'),
+  #os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'env', 'freedom-e300-hifive1'),
+  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'Source', 'include'),
+  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'config', 'hifive-1'),
+  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'),
+  os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'loc_inc'),
+  os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),
 ]
+############################################################################################
+# Define include path specific to the core in use
+if 'D_RV_HiFive1' in Env['PUBLIC_DEF']:
+  public_includes += [
+  os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'include', 'sifive'),
+  os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'env'),
+  os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'env', 'freedom-e300-hifive1'),
+]
+############################################################################################
+
 include_paths = public_includes + local_includes
 
 # linker flags

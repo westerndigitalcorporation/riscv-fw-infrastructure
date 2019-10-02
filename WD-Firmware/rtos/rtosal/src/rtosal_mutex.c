@@ -30,6 +30,8 @@
 #include "rtosal.h"
 #ifdef D_USE_FREERTOS
    #include "semphr.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -91,9 +93,9 @@ RTOSAL_SECTION u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRt
       uiRes = D_RTOSAL_MUTEX_ERROR;
    }
 #elif D_USE_THREADX
-   /* create the mutex */
-   // TODO:
-   // uiRes = add a call to ThreadX mutex create API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -118,8 +120,9 @@ RTOSAL_SECTION u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
    vSemaphoreDelete(pRtosalMutexCb->mutexHandle);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX mutex delete API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -158,8 +161,9 @@ RTOSAL_SECTION u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWait
       uiRes = D_RTOSAL_NOT_AVAILABLE;
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX mutex get API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -192,8 +196,9 @@ RTOSAL_SECTION u32_t rtosalMutexRelease(rtosalMutex_t* pRtosalMutexCb)
       uiRes = D_RTOSAL_NOT_OWNED;
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX mutex release API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;

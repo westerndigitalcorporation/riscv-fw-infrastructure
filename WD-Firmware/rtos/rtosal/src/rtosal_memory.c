@@ -15,22 +15,18 @@
 * limitations under the License.
 */
 /**
-* @file   psp_api.h
+* @file   rtosal_memory.c
 * @author Ronen Haen
-* @date   21.01.2019
-* @brief  The file defines the PSP API
+* @date   21.01.2019 
+* @brief  The file implements the RTOS AL memory API
+* 
 */
-#ifndef  __PSP_API_H__
-#define  __PSP_API_H__
 
 /**
 * include files
 */
-
-#include "psp_config.h"
-#include "psp_defines.h"
-#include "psp_interrupt_api.h"
-#include "psp_macros.h"
+#include "rtosal_api.h"
+#include "rtosal.h"
 
 /**
 * definitions
@@ -57,10 +53,21 @@
 */
 
 /**
-* APIs
+*
+*
+* @param 
+*
+* @return u32_t            - D_RTOSAL_SUCCESS
+*                          - D_RTOSAL_DELETED
 */
-u32_t pspIsInterruptContext(void);
-pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
-pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
+u32_t rtosalMsgQueueRecieve (rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
+                             u32_t uiWaitTimeoutTicks)
+{
+#ifdef D_USE_FREERTOS
 
-#endif /* __PSP_API_H__ */
+#elif D_USE_THREADX
+
+#else
+   #error "Add appropriate RTOS definitions"
+#endif
+}

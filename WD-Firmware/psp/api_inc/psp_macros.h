@@ -51,17 +51,41 @@
 #endif /* #if (D_PSP_ASSERT==1)  */
 
 
-#define PSP_TEXT_SECTION __attribute__((section("PSP_TEXT_SEC")))
-#define PSP_DATA_SECTION __attribute__((section("PSP_DATA_SEC")))
-
-#define M_PSP_READ_CSR(reg) (	{ unsigned long __tmp; \
+#define M_READ_CSR(reg) (	{ unsigned long __tmp; \
   asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
   __tmp; })
 
-#define M_PSP_WRITE_CSR(reg, val) ({ \
+
+#define M_WRITE_CSR(reg, val) ({ \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
     asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
   else \
     asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
+
+
+#define M_SWAP_CSR(reg, val) ({ unsigned long __tmp; \
+  if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
+    asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
+  else \
+    asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "r"(val)); \
+  __tmp; })
+
+
+#define M_SET_CSR(reg, bit) ({ unsigned long __tmp; \
+  if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
+    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
+  else \
+    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
+  __tmp; })
+
+#define M_CLEAR_CSR(reg, bit) ({ unsigned long __tmp; \
+  if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
+    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
+  else \
+    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
+  __tmp; })
+
+
+
 
 #endif /* __PSP_MACRO_H__ */

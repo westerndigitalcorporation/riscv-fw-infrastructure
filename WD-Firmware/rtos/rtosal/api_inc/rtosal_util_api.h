@@ -75,8 +75,9 @@ void rtosalStart(rtosalApplicationInit_t fptrInit);
 void rtosalParamErrorNotifyFuncSet(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification);
 
 /**
-* This function is invoked by the system timer interrupt
+* This function implements ending of scheduler activity
 */
-void rtosalTick(void);
+void rtosalEndScheduler(void);
+
 
 #endif /* __RTOSAL_UTIL_API_H__ */

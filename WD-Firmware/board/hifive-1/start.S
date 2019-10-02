@@ -7,6 +7,8 @@
 	.type _start,@function
 
 _start:
+
+/*ebreak*/
 .option push
 .option norelax
 	la gp, __global_pointer$

@@ -3,7 +3,7 @@
 #ifndef PLIC_H
 #define PLIC_H
 
-#include <sifive/const.h>
+#include <const.h>
 
 // 32 bits per source
 #define PLIC_PRIORITY_OFFSET            _AC(0x0000,UL)

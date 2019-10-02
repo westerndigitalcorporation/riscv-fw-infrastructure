@@ -41,6 +41,8 @@
    #define M_MSG_QUEUE_CB_SIZE_IN_BYTES   sizeof(StaticQueue_t)
 #elif D_USE_THREADX
    #define M_MSG_QUEUE_CB_SIZE_IN_BYTES   sizeof(TBD)  // size of the CB struct 
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -51,6 +53,8 @@ typedef struct rtosalMsgQueue
 {
 #ifdef D_USE_FREERTOS
    void* msgQueueHandle;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    s08_t cMsgQueueCB[M_MSG_QUEUE_CB_SIZE_IN_BYTES];
 } rtosalMsgQueue_t;

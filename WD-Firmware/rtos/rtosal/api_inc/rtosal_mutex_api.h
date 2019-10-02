@@ -40,7 +40,9 @@
 #ifdef D_USE_FREERTOS
    #define M_MUTEX_CB_SIZE_IN_BYTES       sizeof(StaticSemaphore_t)
 #elif D_USE_THREADX
-   #define M_MUTEX_CB_SIZE_IN_BYTES       sizeof(TBD) // size of the CB struct 
+   #define M_MUTEX_CB_SIZE_IN_BYTES       sizeof(TBD) // size of the CB struct
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -51,6 +53,8 @@ typedef struct rtosalMutex
 {
 #ifdef D_USE_FREERTOS
    void* mutexHandle;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    s08_t cMutexCB[M_MUTEX_CB_SIZE_IN_BYTES];
 } rtosalMutex_t;

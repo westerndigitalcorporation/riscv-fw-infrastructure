@@ -30,6 +30,8 @@
 #include "rtosal_macro.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -69,6 +71,7 @@ u32_t g_rtosalContextSwitch = 0;
 *
 * @return calling this function will never return
 */
+#include <unistd.h>
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
 #ifdef D_USE_FREERTOS
@@ -77,6 +80,8 @@ RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 #elif D_USE_THREADX
    fptrAppInit = fptrInit;
    tx_kernel_enter();
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 }
 
@@ -145,6 +150,16 @@ RTOSAL_SECTION void rtosalTick(void)
       vTaskSwitchContext();
    }
 #elif D_USE_THREADX
-   // call threadx
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 }
+
+
+RTOSAL_SECTION void rtosalEndScheduler( void )
+{
+	/* Not implemented. */
+	for( ;; );
+}
+

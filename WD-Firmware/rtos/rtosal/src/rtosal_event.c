@@ -31,6 +31,8 @@
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "event_groups.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -95,6 +97,8 @@ RTOSAL_SECTION u32_t rtosalEventGroupCreate(rtosalEventGroup_t* pRtosalEventGrou
    // TODO:
    // uiRes = add call to threadx create flags API
 
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -119,8 +123,9 @@ RTOSAL_SECTION u32_t rtosalEventGroupDestroy(rtosalEventGroup_t* pRtosalEventGro
    vEventGroupDelete(pRtosalEventGroupCb->eventGroupHandle);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   // uiRes = add call to threadx delete flags API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif
 
    return uiRes;
@@ -147,6 +152,8 @@ RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalEventGroupCb, pRtosalEventGroupCb == NULL, D_RTOSAL_GROUP_ERROR);
@@ -187,6 +194,8 @@ RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb
    {
       // uiRes = add call to ThreadX set flags API
    }
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -223,6 +232,8 @@ RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
    BaseType_t xClearOnExit;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalEventGroupCb, pRtosalEventGroupCb == NULL, D_RTOSAL_GROUP_ERROR);
@@ -264,8 +275,9 @@ RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb
    }
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   // uiRes = call ThreadX get flags API
+   #error "Add appropriate THREADX definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    return uiRes;
 }
