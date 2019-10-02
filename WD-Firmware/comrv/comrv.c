@@ -187,5 +187,5 @@ void* comrvGerFunctionAddressFromToken(u16_t* pOverlayGroupSize)
 
 void comrvEvictionLru()
 {
-}
+
 }
