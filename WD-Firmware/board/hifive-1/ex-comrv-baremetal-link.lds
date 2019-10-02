@@ -162,7 +162,7 @@ SECTIONS
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
 
-  .OVERLAY_SEC ORIGIN(ovl) :
+  .overlay_sec ORIGIN(ovl) :
   {
     . = ALIGN(512);
     __OVERLAY_SEC_START__ = .;

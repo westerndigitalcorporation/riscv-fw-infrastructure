@@ -4,6 +4,7 @@
 /* non overlay function */
 void NonOverlayFunc(void)
 {
+	//*((unsigned int*)0x80001000) = *((unsigned int*)0x80001010) + *((unsigned int*)0x800010200);
 }
 
 /* overlay function 1 */

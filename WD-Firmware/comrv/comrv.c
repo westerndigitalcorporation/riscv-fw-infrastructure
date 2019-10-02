@@ -83,12 +83,14 @@ typedef struct comrvToken
   /* multi group indication */
   u32_t multiGroup:1;
 } comrvToken_t;
-#endif
+
+#else
 
 typedef struct comrvToken
 {
   u32_t addressToken;
 } comrvToken_t;
+#endif
 
 /* overlay token */
 typedef union comrvOverlayTokenRegister
@@ -103,7 +105,6 @@ typedef struct comrvOverlayTokenEntry
   comrvOverlayTokenRegister_t tokenReg;
   void*                       actualAddress;
 } comrvOverlayTokenEntry_t;
-
 
 /**
 * local prototypes
@@ -120,7 +121,7 @@ extern void comrv_entry(void);
 comrvOverlayTokenEntry_t overlayTokenList[D_COMRV_NUM_OF_OVERLAY_ENTRIES];
 extern void *__OVERLAY_STACK_START__, *__OVERLAY_STACK_END__;
 comrvStackFrame_t* pStackStartAddr = (comrvStackFrame_t*)&__OVERLAY_STACK_START__;
-u32_t tmp;
+u08_t comrvLruList[D_COMRV_NUM_OF_OVERLAY_ENTRIES];
 
 /**
 * COM-RV initialization function
@@ -141,12 +142,6 @@ void comrvInit(void)
 	   pStackStartAddr->offsetPrevFrame = (s16_t)-sizeof(comrvStackFrame_t);
 	   pStackStartAddr->calleeToken = 0;
    }
-
-   /* initialize internal data base */
-   memset(overlayTokenList, 0xFF, sizeof(overlayTokenList));
-
-   /* clear reg x29 */
-   asm volatile ("mv t4, zero");
 
    /* set the address of COMRV entry point */
    M_COMRV_SET_ENTRY_ADDR(comrv_entry);
@@ -170,7 +165,7 @@ void comrvInit(void)
 *
 * @return void* - address of the overlay function or NULL if not loaded
 */
-void* comrvSearchCurrentAddressToken(void)
+void* comrvGerFunctionAddressFromToken(u16_t* pOverlayGroupSize)
 {
    u32_t index, regValue;
 
@@ -184,24 +179,13 @@ void* comrvSearchCurrentAddressToken(void)
       }
    }
 
-   return 0;
-}
-
-/**
-* Load an overlay group according to address token in register t5
-*
-* @param pOverlayGroupSize - pointer output the overlay group size - 1
-*
-* @return void*            - address of the loaded overlay function
-*/
-void* comrvLoadCurrentAddressToken(u16_t* pOverlayGroupSize)
-{
-   u32_t regValue;
-
-   M_COMRV_READ_TOKEN_REG(regValue);
    *pOverlayGroupSize = 512-1;
    overlayTokenList[0].tokenReg.value = regValue;
    overlayTokenList[0].actualAddress = (void*)(regValue ^ 1);
    return overlayTokenList[0].actualAddress;
 }
 
+void comrvEvictionLru()
+{
+}
+}

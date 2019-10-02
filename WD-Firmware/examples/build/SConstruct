@@ -43,9 +43,9 @@ def produce_sections_size(target, source, env):
       os.system('echo "' + headere + '" >> ' + map_file_name)
       os.system(size_util_name + ' ' + elf_name + ' >> ' + map_file_name) 
       # uncomment the following 3 lines to create a dumpfile 
-      #objdump_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.dmp'
-      #objdump_util_name = os.path.join(Env['SECONDARY_TOOLS_BASE_DIR'], Env['TOOLS_PREFIX']+'-unknown-elf-objdump')
-      #os.system(objdump_util_name + ' ' + elf_name + ' -D > ' + objdump_file_name)
+      objdump_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.dmp'
+      objdump_util_name = os.path.join(Env['SECONDARY_TOOLS_BASE_DIR'], Env['TOOLS_PREFIX']+'-unknown-elf-objdump')
+      os.system(objdump_util_name + ' ' + elf_name + ' -D > ' + objdump_file_name)
    return None
 
 tc_root_env_var_name = 'RISCV_TC_ROOT'
@@ -54,7 +54,8 @@ tc_root_path = os.getenv(tc_root_env_var_name)
 if tc_root_path == '' or tc_root_path == None:
   print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV toolchain root")
   exit(1)
-
+#tc_root_path = '/media/ronen/Linux/llvm-project/llvm/build/'
+#tc_root_path = '/home/ronen/work/bld-rv-linux-32/'
 # under linux, verify installation dependencies
 if platform.uname()[0] == 'Linux':
    dependency_list = ['libftdi1-2',]
@@ -155,6 +156,7 @@ if Env['COMPILER_NAME'] == 'clang':
     print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV secondary toolchain root")
     exit(1)
   cc_specific_options = ['--gcc-toolchain='+secondary_tc_root_path, '--sysroot=' + os.path.join(secondary_tc_root_path,Env['TOOLS_PREFIX']) + '-unknown-elf/']
+  #cc_specific_options = ['-foverlay-functions',
   Env['SECONDARY_TOOLS_BASE_DIR'] = os.path.join(secondary_tc_root_path,'bin')
 else:
   cc_specific_options = ['-mcmodel=medany']

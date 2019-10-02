@@ -30,7 +30,6 @@
 /**
 * definitions
 */
-#define _OVERLAY_
 #define OVERLAY_SECTION_0 __attribute__((section(".OVERLAY_SEC_0")))
 #define OVERLAY_SECTION_1 __attribute__((section(".OVERLAY_SEC_1")))
 
@@ -49,6 +48,8 @@
  * asm volatile ("la t6, %0" :  : "i"(func) : );
  * This is due to a bug in clang
  */
+#if 1
+#define _OVERLAY_   //__attribute__((noinline))
  #define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) asm volatile ("addi sp, sp, -16" :  : : ); \
                                                     asm volatile ("sw	ra,12(sp)" :  :  : ); \
                                                     asm volatile ("la t5, "#func :  :  : ); \
@@ -56,7 +57,10 @@
 		                                            asm volatile ("jalr t6" :  :  : ); \
                                                     asm volatile ("lw	ra,12(sp)" :  :  : ); \
                                                     asm volatile ("addi sp, sp, 16" :  : : );
-
+#else
+#define _OVERLAY_  __attribute__((overlaycall)) __attribute__((noinline))
+#define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) func();
+#endif
 /**
 * types
 */
