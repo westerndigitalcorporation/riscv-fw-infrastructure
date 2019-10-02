@@ -73,84 +73,12 @@
 /*
 This implementation supports riscv privileged v1.10
 */
-<<<<<<< HEAD:WD-Firmware/rtos/rtosal/src/rtosal_int_vect.S
+
 #include "psp_asm_macros.h"
 #include "psp_specific_definitions.h"
 #include "psp_specific_macros.h"
 
 
-
-/* The following macros were here before. I moved them to psp_asm_macros.h
-//.macro m_RESTORE_CONTEXT
-//.macro m_END_SWITCHING_ISR brunch_label
-//.macro m_SAVE_EPC
-//.macro m_SAVE_RA
-//.macro m_RESTORE_SP
-*/
-=======
-.include "psp_asm_macros.h"
-
-/* saves mstatus and tcb */
-.macro m_portSAVE_CONTEXT
-    .global    pxCurrentTCB
-    /* Store mstatus */
-    csrr      t0, mstatus
-    m_STORE   t0, 32 * REGBYTES(sp)
-    /* Store current stackpointer in task control block (TCB) */
-    m_LOAD    t0, pxCurrentTCB
-    m_STORE   sp, 0x0(t0)
-.endm
-
- /* restore mstatus and tcb */
-.macro m_portRESTORE_CONTEXT
-    .global    pxCurrentTCB
-    /* Load stack pointer from the current TCB */
-    m_LOAD    sp, pxCurrentTCB
-    m_LOAD    sp, 0x0(sp)
-    /* Load task program counter */
-    m_LOAD    t0, 33 * REGBYTES(sp)
-    csrw      mepc, t0
-    /* Load saved mstatus */
-    m_LOAD    t0, 32 * REGBYTES(sp)
-    csrw      mstatus, t0
-.endm
-
-.macro m_portEND_SWITCHING_ISR brunch_label
-    /* save address of g_rtosalContextSwitch -> a0 */
-    la        a0, g_rtosalContextSwitch
-    /* load the value g_rtosalContextSwitch -> a1 */
-    m_LOAD    a1, 0x0(a0)
-    /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz      a1, \brunch_label
-    /* clear g_rtosalContextSwitch */
-    /* TODO: if bitmanip exist add bit set */
-    m_STORE   zero, 0x0(a0)
-    /* perform context switch */
-.if D_USE_FREERTOS
-    m_portSAVE_CONTEXT
-    jal     vTaskSwitchContext
-    m_portRESTORE_CONTEXT
-.elseif D_USE_THREADX
-.endif /* .if D_USE_FREERTOS */
-.endm
-
-/* Saves current Machine Exception Program Counter (MEPC) as task program counter */
-.macro m_portSAVE_EPC
-    csrr      t0, mepc
-    m_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/* Saves current return adress (RA) as task program counter */
-.macro m_portSAVE_RA
-    LOAD      t0, 1 * REGBYTES(sp)
-    m_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/*/not called on a context switch*/
-.macro m_portRESTORE_SP
-    m_LOAD    x2, 2 * REGBYTES(sp)
-.endm
->>>>>>> 02376fdecd7bf2f9adf18afb271eca43c9ee6872:WD-Firmware/rtos/rtosal/rtosal_int_vect.S
 
 .section  .text.entry
 .align 4
