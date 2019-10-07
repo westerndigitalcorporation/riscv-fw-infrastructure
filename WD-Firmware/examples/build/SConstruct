@@ -154,8 +154,8 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
 
 #, LIBPATH='.'
 
-if Env['TARGET_BOARD'] != 'hifive1' and Env['TARGET_BOARD'] != 'hifive-un':
-  print "missing target=[hifive1 | hifive-un]"
+if Env['TARGET_BOARD'] != 'hifive1' and Env['TARGET_BOARD'] != 'hifive-un' and Env['TARGET_BOARD'] != 'nexys_a7':
+  print "missing target=[hifive1 | hifive-un | nexys_a7]"
   exit(1)
 
 size = Builder(action = produce_sections_size)
@@ -164,12 +164,19 @@ Env['BUILDERS']['Size'] = size
 arr_lib              = []
 if exampleName == 'ex-freertos':
   Env['RTOS_CORE'] = 'freertos'
-  Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HiFive1'] 
+  if Env['TARGET_BOARD'] == 'nexys_a7':
+    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HiFive1']  ##[OS]: if this will keep beening here then we need new define
+  elif Env['TARGET_BOARD'] == 'hifive1':
+    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HiFive1']
+  else:
+    exit(1)
+  
   arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
   arr_lib.append(SConscript('SConscript_'+ Env['RTOS_CORE'], exports='Env'))
   arr_lib.append(SConscript('SConscript_rtosal', exports='Env'))
   arr_lib.append(SConscript('SConscript_psp', exports='Env'))
   Env['TARGET_LIBS'] += ['c', 'gcc']
+  
 elif exampleName == 'ex-comrv-baremetal':
   Env['PUBLIC_DEF'] = ['D_BARE_METAL'] 
   arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
