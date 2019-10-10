@@ -104,7 +104,6 @@ chip_specific_stack_frame:				      /* First add any chip specific registers to 
 
 /* Implements context-switch as a result of ECALL exception */
 pspHandleEcall:
-    m_SAVE_CONTEXT
     D_LOAD  a0, 0(sp) // NatiR - use macro for location on stack
     D_ADDI  a0, a0, 4
     D_STORE a0, 0(sp) // NatiR - use macro for location on stack
@@ -116,7 +115,8 @@ pspHandleEcall:
     m_RESTORE_CONTEXT
     m_CLEAR_INT_CONTEXT
     m_popREGFILE
-    // NatiR - pop aditionals ..
+    /*m_popAdditionalRegs NatiR - we need it here */
     mret
+
 
 

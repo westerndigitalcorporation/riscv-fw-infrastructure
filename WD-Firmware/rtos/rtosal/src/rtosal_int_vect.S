@@ -188,7 +188,7 @@ rtosa_m_external_int:
     m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     m_CALL_INT_HANDLER g_fptrIntMExternIntHandler      /* Call the interrupt handler */
-    m_RESTORE_SP                                       /* Restore sp with the stack address of the current task */
+    /*m_RESTORE_SP  NatiR - make sure what to do w/ it */                                      /* Restore sp with the stack address of the current task */
     m_END_SWITCHING_ISR rtosa_m_external_int_no_cs     /* Check if context switch is required now. If yes - handle it now */
 rtosa_m_external_int_no_cs:
     m_CLEAR_INT_CONTEXT                                /* Clear the indication of interupt context */
