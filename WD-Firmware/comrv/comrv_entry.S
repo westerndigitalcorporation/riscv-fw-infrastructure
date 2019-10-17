@@ -25,7 +25,7 @@
 .include "comrv_asm_macros.h"
 
 /* total size of used stack */
-.equ D_COMRV_STACK_SIZE,                    REGBYTES * 4
+.equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
 
 /* shift amount to get the function offset in the lsb */
 .equ D_COMRV_FUNC_OFFSET_SMNT,              17
@@ -33,6 +33,7 @@
 /* mask for function ofset in the token */
 .equ D_COMRV_FUNC_OFFSET_MASK,              0x3FF
 
+.equ D_COMRV_TOKEN_INDICATION,              1
 /*
  local stack frame layout:
  offset 0 - RA
@@ -60,7 +61,12 @@
 /* This is the function responsible for invoking the overlay function
    Whenever there is a call to an overlay function, the compiler will plant instead
    a call to this entry point (its address is fixed in t6) and set the appropriate
-   address token in register t5 */
+   address token in register t5;
+   this code uses fixed registers t3, t4 and t5 -
+   t3 - points to current stack top (per task if OS involved)
+   t4 - points to the free pool of stack frames
+   t5 - holds the token we need to invoke (can be an actual address if callee
+        is a non-overlay function) */
 comrv_entry:
     /* allocate a new stack frame from the stack frame pool - we unlink the next
        free frame from the stack frame pool (t4) and assign its address to t2.
@@ -92,34 +98,34 @@ comrv_entry:
     /* save the return address */
     m_STORE ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* check if callee token is an overlay token (in t5 bit0 is set) */
-    andi    t2, t5, 1
+    andi    t2, t5, D_COMRV_TOKEN_INDICATION
     /* if t2 is 0 it means callee is a non overlay function so we can
        skip search and load */
     beqz    t2, comrv_invoke_callee
     /* change sp for temporary storage */
-    m_ADDI  sp, sp, -D_COMRV_STACK_SIZE
+    m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 in the next free stack frame */
     m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* prepare address output arg for comrvGerFunctionAddressFromToken - overlay loaded
+    /* prepare address output arg for comrvGetFunctionAddressFromToken - overlay loaded
        to comrv table entry */
     m_ADDI  a0, t3, D_COMRV_GROUP_SIZE_STACK_OFFSET
     /* search if the token (t5) is already loaded */
-    jal     comrvGerFunctionAddressFromToken
+    jal     comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
     mv      t5, a0
     /* restore a0 - may contain an actual callee function argument */
     m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
-    m_ADDI  sp, sp, D_COMRV_STACK_SIZE
+    m_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
 comrv_invoke_callee:
     /* call the function */
     jalr    t5
     /* load the return address */
     m_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
-    /* we need to load the caller token to detrmine if the RA is an offset
+    /* we need to load the caller token to detrmine if the RA is to an overlay
        or an actual return address; first we need to unlink the top of the
        com-rv stack frame, return it back to the stack frame pool and get
-       read the caller token (in previous frame it will bethe  callee token) */
+       read the caller token (in previous frame it will be the callee token) */
     /* load the offset to previous stack frame */
     lh      t5, D_COMRV_PREV_STACK_FRAME(t3)
     /* unlink the top of the stack - t3 hold the unlinked stack frame address
@@ -142,21 +148,21 @@ comrv_invoke_callee:
        the previous stack frame) */
     m_LOAD  t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
     /* t2 will hold the token type - address/token */
-    andi    t2, t5, 1
+    andi    t2, t5, D_COMRV_TOKEN_INDICATION
     /* t2 is 0 means return to a non-overlay function so we can skip
        token search and load */
     beqz    t2, comrv_exit_ret_to_caller
     /* change sp for temporary storage */
-    m_ADDI  sp, sp, -D_COMRV_STACK_SIZE
+    m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
     m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* temporary save ra as it is being used */
     m_STORE ra, D_COMRV_RA_REG_STACK_OFFSET_TMP(sp)
-    /* the arg passed to comrvGerFunctionAddressFromToken isn't used now so
+    /* the arg passed to comrvGetAddressFromToken isn't used now so
        we just provide it a temp location on the stack */
     m_ADDI  a0, sp, D_COMRV_ARG_STACK_OFFSET_TMP
     /* search if the token (t5) is already loaded */
-    jal     comrvGerFunctionAddressFromToken
+    jal     comrvGetAddressFromToken
     /* restore ra - load the saved address */
     m_LOAD  ra, D_COMRV_RA_REG_STACK_OFFSET_TMP(sp)
     /* get the function offset from the token */
@@ -174,7 +180,7 @@ comrv_invoke_callee:
     /* restore a0 */
     m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
-    m_ADDI  sp,  sp, D_COMRV_STACK_SIZE
+    m_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */
     ret

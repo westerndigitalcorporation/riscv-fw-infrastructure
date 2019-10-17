@@ -169,6 +169,7 @@ SECTIONS
        *(.OVERLAY_SEC_0*)
     . = ALIGN(512);
        *(.OVERLAY_SEC_1*)
+    . = ALIGN(512);
     __OVERLAY_SEC_END__ = .;
   }  >ovl AT>ovl :ovl
   

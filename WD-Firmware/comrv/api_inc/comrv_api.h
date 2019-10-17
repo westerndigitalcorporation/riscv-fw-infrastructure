@@ -33,6 +33,9 @@
 #define OVERLAY_SECTION_0 __attribute__((section(".OVERLAY_SEC_0")))
 #define OVERLAY_SECTION_1 __attribute__((section(".OVERLAY_SEC_1")))
 
+#define D_COMRV_ERR_NO_AVAILABLE_ENTRY    0
+
+
 /**
 * macros
 */
@@ -81,5 +84,9 @@
 * APIs
 */
 void comrvInit(void);
+void comrvErrorInddicationHook(u32_t errorNum);
+void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes);
+void comrvLoadHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes);
+void comrvNotificationHook(void);
 
 #endif /* __COMRV_TASK_API_H__ */

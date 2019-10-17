@@ -51,5 +51,7 @@
 /**
 * global variables
 */
+extern void *__OVERLAY_SEC_START__, *__OVERLAY_SEC_END__;
+extern void *__OVERLAY_STACK_START__, *__OVERLAY_STACK_END__;
 
 #endif /* __COMRV_H__ */

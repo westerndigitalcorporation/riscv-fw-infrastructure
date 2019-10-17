@@ -44,7 +44,7 @@ c_flags = Env['C_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
 a_flags = Env['A_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
 
 # defines
-Env['COMRV_DEF'] = []
+Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU', 'D_COMRV_MULTI_GROUP_SUPPORT']
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),

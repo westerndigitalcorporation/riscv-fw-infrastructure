@@ -20,7 +20,8 @@
 * @date   11.06.2019
 * @brief  The file defines the COM-RV configuration
 */
-
+#ifndef __COMRV_CONFIG_H__
+#define __COMRV_CONFIG_H__
 /**
 * include files
 */
@@ -28,5 +29,7 @@
 /**
 * definitions
 */
+#define D_COMRV_OVL_GROUP_SIZE_MIN 512
+#define D_COMRV_OVL_GROUP_SIZE_MAX 4096
 
 #endif /* __COMRV_CONFIG_H__ */
