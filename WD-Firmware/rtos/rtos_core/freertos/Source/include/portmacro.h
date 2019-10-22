@@ -98,34 +98,12 @@ extern void vTaskEnterCritical( void );
 extern void vTaskExitCritical( void );
 
 #define portSET_INTERRUPT_MASK_FROM_ISR() 0
+
 #define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue ) ( void ) uxSavedStatusValue
-//////////// NatiR //////////////
-#include <unistd.h>
-char stringValue[4];
-//////////// NatiR //////////////
-#define portDISABLE_INTERRUPTS()	__asm volatile( "csrc mstatus, 8" );\
-		                            itoa(__LINE__,stringValue, 4);\
-                                    write(1,stringValue, 4);\
-                                    write(1,"\n",1);
-
-
+#define portDISABLE_INTERRUPTS()	__asm volatile( "csrc mstatus, 8" );
 #define portENABLE_INTERRUPTS()		__asm volatile( "csrs mstatus, 8" );
-/*                                    itoa(__LINE__,stringValue, 10);\
-                                    write(1,stringValue, 10);\
-                                    write(1,"\n",1);
-*/
 #define portENTER_CRITICAL()	vTaskEnterCritical()
 #define portEXIT_CRITICAL()		vTaskExitCritical()
-
-/*
-uint32_t ulReceivedValue;
-char stringValue[10];
-itoa(__LINE__,stringValue, 10);
-write(1,"Recieved: ", 10);
-write(1,stringValue, 3);
-write(1,"\n",1);
-*/
-
 
 /*-----------------------------------------------------------*/
 

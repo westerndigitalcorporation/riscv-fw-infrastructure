@@ -100,7 +100,7 @@ your application. */
 #define configUSE_NEWLIB_REENTRANT              0
 #define configENABLE_BACKWARD_COMPATIBILITY     0
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
-#define configISR_STACK_SIZE_WORDS              500
+#define configISR_STACK_SIZE_WORDS              400
 
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         1

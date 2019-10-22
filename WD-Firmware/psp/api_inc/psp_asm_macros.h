@@ -45,14 +45,9 @@
 .macro m_ADDI operand1,operand2,operand3
     addi \operand1, \operand2, \operand3
 .endm
-/*.equ REGBYTES, 4   --  NatiR - resolve why it gives here “expected symbol name” compilation error */
+.equ REGBYTES, 4
 /*.endif */
 #endif
-
-#ifndef REGBYTES
-#define REGBYTES 4
-#endif
-
 
 
 
