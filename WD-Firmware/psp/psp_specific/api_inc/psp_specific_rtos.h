@@ -33,6 +33,10 @@
 /* API to context-switch handler in the RTOS layer */
 #ifdef D_USE_FREERTOS
    .extern void vTaskSwitchContext(void);
+
+   #define D_MEPC_LOC_IN_STK    0
+   #define D_MSTATUS_LOC_IN_STK 29
+
 #else
    #error "Define APIs per the RTOS in use"
 #endif

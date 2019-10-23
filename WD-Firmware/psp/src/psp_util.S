@@ -57,8 +57,9 @@
  */
 #include "psp_defines.h"
 #include "psp_specific_definitions.h"
+#include "psp_specific_macros.h"
 #include "psp_asm_macros.h"
-
+#include "psp_specific_rtos.h"
 
 
 
@@ -104,19 +105,25 @@ chip_specific_stack_frame:				      /* First add any chip specific registers to 
 
 /* Implements context-switch as a result of ECALL exception */
 pspHandleEcall:
-    D_LOAD  a0, 0(sp) // NatiR - use macro for location on stack
+    /* Update & save MEPC contents on the Task's stack: */
+    /* 1. Use Task's stack (rather than ISR's stack) */
+    m_SET_SP_TO_TASK_STACK
+    /* 2. Read MEPC content as saved on stack (location 0) */
+    D_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
+    /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
     D_ADDI  a0, a0, 4
-    D_STORE a0, 0(sp) // NatiR - use macro for location on stack
+    /* 4. Write back the number to Task's stack (location 0) */
+    D_STORE a0, D_MEPC_LOC_IN_STK(sp)
 #ifdef D_USE_FREERTOS
+    m_SET_SP_TO_ISR_STACK
     jal vTaskSwitchContext
 #else
    #error Add appropriate RTOS definitions
 #endif
-    m_RESTORE_CONTEXT
+    m_RESTORE_CONTEXT     /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
     m_CLEAR_INT_CONTEXT
     m_popREGFILE
-    /*m_popAdditionalRegs NatiR - we need it here */
+    m_popAdditionalRegs
     mret
-
 
 

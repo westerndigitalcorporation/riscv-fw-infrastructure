@@ -252,7 +252,6 @@ void demo_init(void *pMem)
     /* Disable the machine & timer interrupts until setup is done. */
     clear_csr(mie, MIP_MEIP);
     clear_csr(mie, MIP_MTIP);
-    // NatiR:  Can I use instead MIE bit in mstatus reg to generally disable M-mode interrupts?
     /* register exception handlers */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
@@ -351,7 +350,7 @@ void demo_init(void *pMem)
 	}
 #endif /* D_USE_RTOSAL */
 
-	/* Create the task that is synchronised with an interrupt using the
+	/* Create the task that is synchronized with an interrupt using the
     xEventSemaphore semaphore. */
 #ifndef D_USE_RTOSAL
     xTaskCreate(     prvEventSemaphoreTask,
@@ -612,9 +611,6 @@ void vApplicationStackOverflowHook(void* xTask, signed char *pcTaskName)
     for( ;; );
 }
 /*-----------------------------------------------------------*/
-#ifndef D_USE_RTOSAL
-// extern UBaseType_t uxCriticalNesting; NatiR - Think it is unnessecary anymore. make sure then remove it
-#endif /* USE_FREERTOS */
 void vApplicationIdleHook( void )
 {
 #ifndef D_USE_RTOSAL

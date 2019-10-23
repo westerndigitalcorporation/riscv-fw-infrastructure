@@ -33,7 +33,7 @@
 .macro m_ADDI operand1,operand2,operand3
     addiw \operand1, \operand2, \operand3
 .endm
-/*.equ REGBYTES, 8   --  NatiR - resolve why it gives here “expected symbol name” compilation error */
+.equ REGBYTES, 8
 /*.else */
 #elif __riscv_xlen == 32
 .macro m_STORE operand1,operand2
@@ -181,13 +181,13 @@
     .global    pxCurrentTCB
     /* Store mstatus */
     csrr      t0, mstatus
-    m_STORE   t0, 29 * REGBYTES(sp)
+    m_STORE   t0, D_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
     m_LOAD    t0, pxCurrentTCB
     m_STORE   sp, 0x0(t0)
-    /* NatiR - doc it*/
+    /* Store mepc */
 	csrr      t0, mepc
-    m_STORE   t0, 0(sp) // NatiR - use macro for location
+    m_STORE   t0, D_MEPC_LOC_IN_STK(sp)
 
 .endm
 
@@ -198,10 +198,10 @@
     m_LOAD    sp, pxCurrentTCB
     m_LOAD    sp, 0x0(sp)
     /* Load task program counter */
-    m_LOAD    t0, 0 * REGBYTES(sp)
+    m_LOAD    t0, D_MEPC_LOC_IN_STK * REGBYTES(sp)
     csrw      mepc, t0
     /* Load saved mstatus */
-    m_LOAD    t0, 29 * REGBYTES(sp)
+    m_LOAD    t0, D_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     csrw      mstatus, t0
 .endm
 
@@ -217,9 +217,7 @@
     m_STORE   zero, 0x0(a0)
     /* perform context switch */
 #ifdef D_USE_FREERTOS
-    m_SAVE_CONTEXT
     jal     vTaskSwitchContext
-    m_RESTORE_CONTEXT
 #else
     -- Add appropriate RTOS definitions
 #endif /* .if D_USE_FREERTOS */
@@ -232,7 +230,7 @@
 .endm
 
 /* Saves current return adress (RA) as task program counter */
-.macro m_SAVE_RA // NatiR - remove it ?
+.macro m_SAVE_RA
     LOAD      t0, 1 * REGBYTES(sp)
     m_STORE   t0, 33 * REGBYTES(sp)
 .endm

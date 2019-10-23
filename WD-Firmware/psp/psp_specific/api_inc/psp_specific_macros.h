@@ -106,7 +106,7 @@
    .endm
 
 #else
-   // NatiR #error "Specific core is not defined!"
+   #error "Specific configuration is not defined!"
 #endif
 
 
