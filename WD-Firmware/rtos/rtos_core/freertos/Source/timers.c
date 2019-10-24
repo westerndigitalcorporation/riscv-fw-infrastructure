@@ -705,6 +705,7 @@ BaseType_t xProcessTimerNow = pdFALSE;
 	return xProcessTimerNow;
 }
 /*-----------------------------------------------------------*/
+
 static void	prvProcessReceivedCommands( void )
 {
 DaemonTaskMessage_t xMessage;

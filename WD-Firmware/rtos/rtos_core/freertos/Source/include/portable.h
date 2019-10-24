@@ -52,6 +52,10 @@ must be set in the compiler's include path. */
 	#include "portmacro.h"
 #endif
 
+#define pxPortInitialiseStack  pspInitializeStack
+#define xPortStartScheduler    rtosalStartScheduler
+#define vPortEndScheduler      rtosalEndScheduler
+
 #if portBYTE_ALIGNMENT == 32
 	#define portBYTE_ALIGNMENT_MASK ( 0x001f )
 #endif

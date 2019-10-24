@@ -40,8 +40,6 @@ task.h is included from an application file. */
 #include "timers.h"
 #include "stack_macros.h"
 
-extern BaseType_t rtosalStartScheduler(void);
-
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
 because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
 for the header files above, but not in this file, in order to generate the
@@ -1019,17 +1017,17 @@ UBaseType_t x;
 		{
 			#if( portSTACK_GROWTH < 0 )
 			{
-				pxNewTCB->pxTopOfStack = pspInitializeStack( pxTopOfStack, pxNewTCB->pxStack, pxTaskCode, pvParameters, xRunPrivileged );
+				pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxNewTCB->pxStack, pxTaskCode, pvParameters, xRunPrivileged );
 			}
 			#else /* portSTACK_GROWTH */
 			{
-				pxNewTCB->pxTopOfStack = pspInitializeStack( pxTopOfStack, pxNewTCB->pxEndOfStack, pxTaskCode, pvParameters, xRunPrivileged );
+				pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxNewTCB->pxEndOfStack, pxTaskCode, pvParameters, xRunPrivileged );
 			}
 			#endif /* portSTACK_GROWTH */
 		}
 		#else /* portHAS_STACK_OVERFLOW_CHECKING */
 		{
-			pxNewTCB->pxTopOfStack = pspInitializeStack( pxTopOfStack, pxTaskCode, pvParameters, xRunPrivileged );
+			pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxTaskCode, pvParameters, xRunPrivileged );
 		}
 		#endif /* portHAS_STACK_OVERFLOW_CHECKING */
 	}
@@ -1042,17 +1040,17 @@ UBaseType_t x;
 		{
 			#if( portSTACK_GROWTH < 0 )
 			{
-				pxNewTCB->pxTopOfStack = pspInitializeStack( pxTopOfStack, pxNewTCB->pxStack, pxTaskCode, pvParameters );
+				pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxNewTCB->pxStack, pxTaskCode, pvParameters );
 			}
 			#else /* portSTACK_GROWTH */
 			{
-				pxNewTCB->pxTopOfStack = pspInitializeStack( pxTopOfStack, pxNewTCB->pxEndOfStack, pxTaskCode, pvParameters );
+				pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxNewTCB->pxEndOfStack, pxTaskCode, pvParameters );
 			}
 			#endif /* portSTACK_GROWTH */
 		}
 		#else /* portHAS_STACK_OVERFLOW_CHECKING */
 		{
-			pxNewTCB->pxTopOfStack = pspInitializeStack( pxTopOfStack, pxTaskCode, pvParameters );
+			pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxTaskCode, pvParameters );
 		}
 		#endif /* portHAS_STACK_OVERFLOW_CHECKING */
 	}
@@ -2034,7 +2032,7 @@ BaseType_t xReturn;
 		#endif
 
 		/* Interrupts are turned off here, to ensure a tick does not occur
-		before or during the call to rtosalStartScheduler().  The stacks of
+		before or during the call to xPortStartScheduler().  The stacks of
 		the created tasks contain a status word with interrupts switched on
 		so interrupts will automatically get re-enabled when the first task
 		starts to run. */
@@ -2064,7 +2062,7 @@ BaseType_t xReturn;
 
 		/* Setting up the timer tick is hardware specific and thus in the
 		portable interface. */
-		if( rtosalStartScheduler() != pdFALSE )
+		if( xPortStartScheduler() != pdFALSE )
 		{
 			/* Should not reach here as if the scheduler is running the
 			function will not return. */
@@ -2095,7 +2093,7 @@ void vTaskEndScheduler( void )
 	layer must ensure interrupts enable	bit is left in the correct state. */
 	portDISABLE_INTERRUPTS();
 	xSchedulerRunning = pdFALSE;
-	rtosalEndScheduler();
+	vPortEndScheduler();
 }
 /*----------------------------------------------------------*/
 

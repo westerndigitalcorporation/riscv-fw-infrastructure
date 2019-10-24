@@ -125,7 +125,7 @@ void pspTrapUnhandled(void)
 ***************************************************************************************************/
 void pspEcallHandler(void)
 {
-	write(1,"ECALL\n", 6);
+	/*write(1,"ECALL\n", 6);*/
 	pspHandleEcall();
 }
 
