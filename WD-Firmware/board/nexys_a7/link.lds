@@ -1,3 +1,24 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2019 Western Digital Corporation or its affiliates.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/ 
+
+/*
+ Linker script
+*/
+
 OUTPUT_ARCH( "riscv" )
 
 ENTRY( _start )
@@ -8,18 +29,21 @@ MEMORY
   ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64K
 }
 
+/*----------------------------------------------------------------------*/
+/* Sections                            */
+/*----------------------------------------------------------------------*/
 
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 4K;
 
-  .text.init	:
+  .text.init :
   {
     *(.text.init)
     . = ALIGN(8);
   } > ram
 
-  .text           :
+  .text :
   {
     *(.text.unlikely .text.unlikely.*)
     *(.text.startup .text.startup.*)
@@ -29,35 +53,34 @@ SECTIONS
   } >ram
 
 
-  .rodata         :
+  .rodata :
   {
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
     . = ALIGN(4);
   } > ram
-
   
-
-
-  .lalign         :
+  .lalign : 
   {
     . = ALIGN(4);
     PROVIDE( _data_lma = . );
   } > ram
-  .dalign         :
+  
+  .dalign :
   {
     . = ALIGN(4);
     PROVIDE( _data = . );
   } > ram
-  .data          :
+  
+  .data :
   {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
     . = ALIGN(8);
   } > ram
 
-  .sdata	:
+  .sdata :
   {
     . = ALIGN(8);
     __global_pointer$ = . + 0x800;
@@ -68,7 +91,7 @@ SECTIONS
    . = ALIGN(8);
   } > ram
   
-  .sbss  :
+  .sbss :
   {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
