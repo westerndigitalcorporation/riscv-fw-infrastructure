@@ -4,10 +4,14 @@ ENTRY( _start )
 
 MEMORY
 {
-  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
-  
-  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 13K
-  ovl (wxa!ri) : ORIGIN = 0x80003400, LENGTH = 3K
+  flash (rxai!w)   : ORIGIN = 0x20400000, LENGTH = 512M
+  /*ovldata (rxai!w) : ORIGIN = 0x26800000, LENGTH = 12M*/
+  ram (wxa!ri)     : ORIGIN = 0x80000000, LENGTH = 14K
+  ovl (wxa!ri)     : ORIGIN = 0x80003800, LENGTH = 2K
+  /* Temporary location for storing overlay functions. This is needed for the
+     linker to place functions, and as the addresses of functions in debuginfo,
+     but is never loaded onto the system. */
+  ovltmp           : ORIGIN = 0xF0000000, LENGTH = 0x10000
 }
 
 PHDRS
@@ -26,6 +30,10 @@ SECTIONS
   {
     KEEP (*(SORT_NONE(.init)))
   } >flash AT>flash :flash
+
+  /* Placeholder location for overlay functions. Marked as not allocated by the
+     linker. This must live ahead of the .text declaration */
+  .ovlallfns      : { *(.text.ovlfn.*) } > ovltmp
 
   .text           :
   {
@@ -49,6 +57,23 @@ SECTIONS
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
+  } >flash AT>flash :flash
+
+  /* Overlay data */
+  .ovlgrp.0       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_START__ = .;} >flash AT>flash :flash
+  .ovlgrp.1       : {} >flash AT>flash :flash
+
+  /* Overlay offset table */
+  .ovlgrptbl      : {
+    overlayOffsetTable = .;
+    PROVIDE (OVERLAY_GROUP_TABLE = .);
+    *(.ovlgrptbl)
+  } >flash AT>flash :flash
+  /* Overlay multi group table */
+  .ovlmultigroup  : {
+    overlayMultiGroupTokensTable = .;
+    PROVIDE (OVERLAY_MULTI_GROUP_TABLE = .);
+    *(.ovlmultigroup)
   } >flash AT>flash :flash
 
   . = ALIGN(4);
@@ -164,12 +189,8 @@ SECTIONS
 
   .overlay_sec ORIGIN(ovl) :
   {
-    . = ALIGN(512);
     __OVERLAY_SEC_START__ = .;
-       *(.OVERLAY_SEC_0*)
-    . = ALIGN(512);
-       *(.OVERLAY_SEC_1*)
-    . = ALIGN(512);
+    . = 1K;
     __OVERLAY_SEC_END__ = .;
   }  >ovl AT>ovl :ovl
   
@@ -179,5 +200,4 @@ SECTIONS
     . = 1K;
     __OVERLAY_STACK_END__ = .;
   }  >ovl AT>ovl :ovl
-
 }

@@ -54,8 +54,7 @@ tc_root_path = os.getenv(tc_root_env_var_name)
 if tc_root_path == '' or tc_root_path == None:
   print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV toolchain root")
   exit(1)
-#tc_root_path = '/media/ronen/Linux/llvm-project/llvm/build/'
-#tc_root_path = '/home/ronen/work/bld-rv-linux-32/'
+
 # under linux, verify installation dependencies
 if platform.uname()[0] == 'Linux':
    dependency_list = ['libftdi1-2',]
@@ -164,7 +163,7 @@ else:
   Env['SECONDARY_TOOLS_BASE_DIR'] = Env['TOOLS_BASE_DIR']  
   
 cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac'] + cc_specific_options 
-Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf', '-include', 'sys/cdefs.h'] + cc_options
+Env['C_FLAGS'] = ['-foverlay-functions', '-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf', '-include', 'sys/cdefs.h'] + cc_options
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + cc_options
 
 if verbose == False:
@@ -189,7 +188,7 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
                     '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
-                    '-Wl,-Map='+ map_file_name] + cc_options
+                    '-Wl,-Map='+ map_file_name, '-Wl,--grouping-file=comrv-baremetal.csv'] + cc_options
 
 #, LIBPATH='.'
 

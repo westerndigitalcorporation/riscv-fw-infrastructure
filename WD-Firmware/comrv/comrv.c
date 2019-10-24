@@ -34,13 +34,19 @@
 /**
 * definitions
 */
-#define D_COMRV_NUM_OF_OVERLAY_ENTRIES   (((u08_t*)&__OVERLAY_SEC_END__ - (u08_t*)&__OVERLAY_SEC_START__)/D_COMRV_OVL_GROUP_SIZE_MIN)
-#define D_COMRV_END_OF_STACK             0xDEAD
-#define D_COMRV_LRU_LAST_ITEM            0xFF
-#define D_COMRV_LRU_FIRST_ITEM           0xFF
-#define D_COMRV_EVICT_CANDIDATE_MAP_SIZE 4
-#define D_COMRV_DWORD_IN_BITS            32
-#define D_COMRV_ENTRY_LOCKED             1
+#define D_COMRV_NUM_OF_OVERLAY_ENTRIES          (((u08_t*)&__OVERLAY_SEC_END__ - (u08_t*)&__OVERLAY_SEC_START__)/D_COMRV_OVL_GROUP_SIZE_MIN)
+#define D_COMRV_END_OF_STACK                    0xDEAD
+#define D_COMRV_LRU_LAST_ITEM                   0xFF
+#define D_COMRV_LRU_FIRST_ITEM                  0xFF
+#define D_COMRV_MAX_GROUP_NUM                   0xFFFF
+#define D_COMRV_EVICT_CANDIDATE_MAP_SIZE        4
+#define D_COMRV_DWORD_IN_BITS                   32
+#define D_COMRV_ENTRY_LOCKED                    1
+#define D_COMRV_CANDIDATE_LIST_SIZE             (1+(D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN))
+#define D_COMRV_ENTRY_TOKEN_INIT_VALUE          0x0001FFFE
+#define D_COMRV_ENTRY_PROPERTIES_INIT_VALUE     0x04
+#define D_COMRV_ENTRY_PROPERTIES_RESET_MASK     0xC3
+
 /**
 * macros
 */
@@ -58,9 +64,9 @@
                                          asm volatile ("lw t3, 0x0(t3)"  : : : );
 #endif
 
-#define M_COMRV_GET_OVL_GROUP_SIZE(tokenRegister) (D_COMRV_OVL_GROUP_SIZE_MIN * \
-                                                   (TBD_GroupArray[tokenRegister.token.overlayGroupID+1] - \
-                                                    TBD_GroupArray[tokenRegister.token.overlayGroupID]));
+#define M_COMRV_GET_OVL_GROUP_SIZE(groupID)  (pOverlayOffsetTable[groupID+1] - pOverlayOffsetTable[groupID])
+#define M_COMRV_GET_GROUP_OFFSET(token)      ((pOverlayOffsetTable[token.fields.overlayGroupID]) << 9)
+#define M_COMRV_GET_OFFSET(token)            ((token.fields.offset) << 2)
 /**
 * types
 */
@@ -76,8 +82,7 @@ typedef struct comrvStackFrame
   u16_t overlayGroupSize;
 } comrvStackFrame_t;
 
-#if 1
-/* overlay token */
+/* overlay token fields */
 typedef struct comrvToken
 {
   /* overlay token indication 0: address; 1: overlay token */
@@ -92,30 +97,28 @@ typedef struct comrvToken
   u32_t heapID:2;
   /* multi group indication */
   u32_t multiGroup:1;
-} comrvToken_t;
-
-#else
-
-typedef struct comrvToken
-{
-  u32_t addressToken;
-} comrvToken_t;
-#endif
+} comrvTokenFields_t;
 
 /* overlay token */
-typedef union comrvOverlayTokenRegister
+typedef union comrvOverlayToken
 {
-  u32_t        value;
-  comrvToken_t token;
-} comrvOverlayTokenRegister_t;
+  u32_t              value;
+  comrvTokenFields_t fields;
+} comrvOverlayToken_t;
 
 /* overlay token */
-typedef struct comrvEntryProperties
+typedef struct comrvPropertiesFields
 {
-  u08_t merged:1;
   u08_t locked:1;
+  u08_t data:1;
   u08_t size:3;
-  u08_t reserved:2;
+  u08_t reserved:3;
+} comrvPropertiesFields_t;
+
+typedef union comrvEntryProperties
+{
+  u08_t                   value;
+  comrvPropertiesFields_t fields;
 } comrvEntryProperties_t;
 
 /* overlay token entry */
@@ -126,10 +129,10 @@ typedef struct comrvOverlayHeapEntry
   u08_t nextIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
-  comrvEntryProperties_t      properties;
-  comrvOverlayTokenRegister_t tokenRegister;
-  void*                       actualAddress;
-} comrvOverlayHeapEntry_t;
+  comrvEntryProperties_t properties;
+  comrvOverlayToken_t    token;
+  void*                  pAddress;
+} comrvHeapEntry_t;
 
 /* com-rv control block */
 typedef struct comrvCB
@@ -140,15 +143,15 @@ typedef struct comrvCB
 #elif defined(D_COMRV_EVICTION_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
   u08_t                    numOfOverlayEntries;
-  comrvOverlayHeapEntry_t* overlayHeap;
+  comrvHeapEntry_t* overlayHeap;
 } comrvCB_t;
 
 /**
 * local prototypes
 */
-static void* comrvSearchForLoadedToken(comrvToken_t token);
+static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t token);
 static void  comrvUpdateHeapEntryAccess(u08_t entryIndex);
-static u08_t comrvGetCandidatesForEviction(u16_t requestedEvictionSize, u32_t* pEvictCandidatesMap);
+static u08_t comrvGetCandidatesForEviction(u08_t requestedEvictionSize, u08_t* pEvictCandidatesList);
 
 /**
 * external prototypes
@@ -160,8 +163,8 @@ extern void comrv_entry(void);
 */
 comrvStackFrame_t* pStackStartAddr = (comrvStackFrame_t*)&__OVERLAY_STACK_START__;
 comrvCB_t*         pComrvCB;
-u16_t TBD_GroupArray[5];
-comrvOverlayTokenRegister_t TBD_MultiGroupArray[5];
+u16_t *pOverlayOffsetTable = (u16_t*)&overlayOffsetTable;
+comrvTokenFields_t *pOverlayMultiGroupTokensTable = (comrvTokenFields_t*)&overlayMultiGroupTokensTable;
 
 
 /**
@@ -175,20 +178,25 @@ void comrvInit(void)
 {
    u08_t i;
    comrvStackFrame_t* pStackEndAddr = (comrvStackFrame_t*)&__OVERLAY_STACK_END__ - 1;
+   void* pBaseAddress = &__OVERLAY_SEC_START__;
 
    /* determine the location of comrv internal control block */
    pComrvCB = (comrvCB_t*)((&__OVERLAY_SEC_END__) - sizeof(comrvCB_t));
    /* determine the number of heap entries */
    pComrvCB->numOfOverlayEntries = D_COMRV_NUM_OF_OVERLAY_ENTRIES;
    /* determine the location of comrv overlay heap structure */
-   pComrvCB->overlayHeap = (comrvOverlayHeapEntry_t*)((u08_t*)pComrvCB - (pComrvCB->numOfOverlayEntries*sizeof(comrvOverlayHeapEntry_t)));
+   pComrvCB->overlayHeap = (comrvHeapEntry_t*)((u08_t*)pComrvCB - (pComrvCB->numOfOverlayEntries*sizeof(comrvHeapEntry_t)));
 #ifdef D_COMRV_EVICTION_LRU
    /* initialize all heap entries */
    for (i = 0 ; i < pComrvCB->numOfOverlayEntries ; i++)
    {
       /* initially each entry points to the previous and next neighbor cells */
-      pComrvCB->overlayHeap[i].prevIndex = i-1;
-      pComrvCB->overlayHeap[i].nextIndex = i+1;
+      pComrvCB->overlayHeap[i].prevIndex        = i-1;
+      pComrvCB->overlayHeap[i].nextIndex        = i+1;
+      pComrvCB->overlayHeap[i].token.value      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+      pComrvCB->overlayHeap[i].properties.value = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+      pComrvCB->overlayHeap[i].pAddress         = pBaseAddress;
+      pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
    pComrvCB->overlayHeap[i-1].nextIndex = D_COMRV_LRU_LAST_ITEM;
@@ -230,37 +238,39 @@ void comrvInit(void)
 */
 void* comrvGetAddressFromToken(u16_t* pOverlayGroupSize)
 {
-   u08_t                       entry, numOfEvictionCandidates;
-   u16_t                       groupSize;
-   u32_t                       evictCandidateMap[D_COMRV_EVICT_CANDIDATE_MAP_SIZE];
-   void*                       pAddress;
-   comrvOverlayTokenRegister_t tokenRegister;
+   u08_t  entryIndex, numOfEvictionCandidates, index, sizeOfEvictionCandidates;
+   u08_t  evictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
+   u16_t  groupSize;
+   void*  pAddress;
+   u32_t  crc;
+   comrvOverlayToken_t token;
+   comrvHeapEntry_t*   pEntry;
 
    /* read the requested token value */
-   M_COMRV_READ_TOKEN_REG(tokenRegister.value);
+   M_COMRV_READ_TOKEN_REG(token.value);
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
-   if (tokenRegister.token.multiGroup == 0)
+   if (token.multiGroup == 0)
    {
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
       /* search for token */
-      pAddress = comrvSearchForLoadedToken(tokenRegister.token);
+      pAddress = comrvSearchForLoadedOverlayGroup(token);
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    }
    /* search for a multi-group overlay token */
    else
    {
       pAddress = NULL;
-      /* first entry to search from in the multi group table is determined by the overlayGroupID
+      /* first entryIndex to search from in the multi group table is determined by the overlayGroupID
          field of the requested token */
-      entry = tokenRegister.token.overlayGroupID;
+      entryIndex = token.overlayGroupID;
       do
       {
          /* search for the token */
-         pAddress = comrvSearchForLoadedToken(TBD_MultiGroupArray[entry].token);
+         pAddress = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[entryIndex].token);
       /* continue the search as long as the group wasn't found and we have additional tokens */
-      } while ((pAddress == NULL) && (TBD_MultiGroupArray[++entry].value != 0));
+      } while ((pAddress == NULL) && (pOverlayMultiGroupTokensTable[++entryIndex].value != 0));
    }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
@@ -268,47 +278,136 @@ void* comrvGetAddressFromToken(u16_t* pOverlayGroupSize)
    if (pAddress != NULL)
    {
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-      return (void*)((u32_t*)pAddress + TBD_MultiGroupArray[--entry].token.offset);
+      return (void*)((u32_t*)pAddress + M_COMRV_GET_OFFSET(pOverlayMultiGroupTokensTable[entryIndex-1]));
 #else
-      return (void*)((u32_t*)pAddress + tokenRegister.token.offset);
+      return (void*)((u32_t*)pAddress + M_COMRV_GET_OFFSET(token));
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    }
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token is a multi-group token */
-   if (tokenRegister.token.multiGroup != 0)
+   if (token.multiGroup != 0)
    {
       /* for now we take the first token in the list of tokens */
-      tokenRegister = TBD_MultiGroupArray[tokenRegister.token.overlayGroupID];
+      token = pOverlayMultiGroupTokensTable[token.overlayGroupID];
    }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
-   /* get the group size */
-   groupSize = M_COMRV_GET_OVL_GROUP_SIZE(tokenRegister);
+   /* get the group size in bytes */
+   groupSize = M_COMRV_GET_OVL_GROUP_SIZE(token.fields.overlayGroupID);
+
+   /* disable ints */
+   // TODO: disable ints
 
    /* get eviction candidates according to the requested groupSize */
-   numOfEvictionCandidates = comrvGetCandidatesForEviction(groupSize, evictCandidateMap);
+   numOfEvictionCandidates = comrvGetCandidatesForEviction(groupSize, evictCandidateList);
 
-   /* if no heap entry available */
-   if (numOfEvictionCandidates == 0)
+   entryIndex = 0;
+   /* we need to handle heap fragmentation since we got more
+      than 1 eviction candidate */
+   if (numOfEvictionCandidates > 1)
    {
-      /* this means the end used locked all entries */
-      comrvErrorInddicationHook(D_COMRV_ERR_NO_AVAILABLE_ENTRY);
+      /* no handling to the last eviction candidate */
+      numOfEvictionCandidates--;
+      while (entryIndex < numOfEvictionCandidates)
+      {
+         /* get the candidate entry */
+         pEntry = &pComrvCB->overlayHeap[evictCandidateList[entryIndex]];
+         /* calc the source address */
+         pAddress = ((u32_t*)pEntry->pAddress + M_COMRV_GET_OVL_GROUP_SIZE(pEntry->token.fields.overlayGroupID));
+         /* perform code copy */
+         comrvMemcpyHook(pEntry->pAddress, pAddress,
+               pComrvCB->overlayHeap[evictCandidateList[entryIndex]].pAddress - pAddress);
+
+         /* after code copy we need to align the entries structures */
+         for(index = evictCandidateList[entryIndex] ; index < evictCandidateList[entryIndex+1] ; index++)
+         {
+            pEntry = &pComrvCB->overlayHeap[index + pComrvCB->overlayHeap[index].properties.fields.size];
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+            /* an overlay data is present when handling defragmentation */
+            if (pEntry->properties.data)
+            {
+               comrvErrorInddicationHook(D_COMRV_OVL_DATA_DEFRAG_ERR);
+            }
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+            pComrvCB->overlayHeap[index].properties = pEntry->properties;
+            pComrvCB->overlayHeap[index].token.value = pEntry->token.value;
+#ifdef D_COMRV_EVICTION_LRU
+            pComrvCB->overlayHeap[pEntry->prevIndex].nextIndex = index;
+            pComrvCB->overlayHeap[pEntry->nextIndex].prevIndex = index;
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
+         }
+         entryIndex++;
+      }
+      numOfEvictionCandidates++;
+   }
+   /* this means the end user locked all entries */
+   else if (numOfEvictionCandidates == 0)
+   {
+      /* enable ints */
+      // TODO: enable ints
+      comrvErrorInddicationHook(D_COMRV_NO_AVAILABLE_ENTRY_ERR);
+   }
+   index = evictCandidateList[entryIndex];
+   /* update the entry access */
+   comrvUpdateHeapEntryAccess(index);
+   /* update the heap entry with the new token */
+   pComrvCB->overlayHeap[index].token.value = token.value;
+   /* update the heap entry properties with the group size */
+   pComrvCB->overlayHeap[index].properties.fields.size = groupSize;
+   /* if evicted size is larger than requested size we need to update the remaining tail*/
+   sizeOfEvictionCandidates = evictCandidateList[numOfEvictionCandidates] - groupSize;
+   if (sizeOfEvictionCandidates != 0)
+   {
+      entryIndex += groupSize;
+      pComrvCB->overlayHeap[entryIndex].properties.fields.size = sizeOfEvictionCandidates;
+#ifdef D_COMRV_EVICTION_LRU
+      pComrvCB->overlayHeap[pComrvCB->overlayHeap[entryIndex].prevIndex].nextIndex = pComrvCB->overlayHeap[entryIndex].nextIndex;
+      pComrvCB->overlayHeap[entryIndex].nextIndex         = index;
+      pComrvCB->overlayHeap[entryIndex].prevIndex         = D_COMRV_LRU_FIRST_ITEM;
+      /* mark the group ID so that it won't pop in the next search */
+      pComrvCB->overlayHeap[entryIndex].token.value       = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+      pComrvCB->overlayHeap[entryIndex].properties.value &= D_COMRV_ENTRY_PROPERTIES_RESET_MASK;
+      pComrvCB->lruIndex = index;
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
+   }
+   /* Q: should I temporary mark it before load and unmark it after load, so the memory
+      won't move in case of context switch during the load */
+   /* enable ints */
+   // TODO
+   /* now we can load the overlay group */
+   //groupSize = 9 << groupSize;
+   pAddress = comrvLoadOvlayGroupHook(M_COMRV_GET_GROUP_OFFSET(pComrvCB->overlayHeap[index].token),
+         pComrvCB->overlayHeap[index].pAddress, groupSize << 9);
+   /* if group wasn't loaded */
+   if (pAddress == NULL)
+   {
+      comrvErrorInddicationHook(D_COMRV_LOAD_ERR);
    }
 
-   *pOverlayGroupSize = 512-1;
-   pComrvCB->overlayHeap[0].tokenRegister.value = tokenRegister.value;
-   pComrvCB->overlayHeap[0].actualAddress = (void*)(tokenRegister.value ^ 1);
-   return pComrvCB->overlayHeap[0].actualAddress;
+   /* calculate crc */
+   crc = comrvCrcCalcHook(pAddress, groupSize-sizeof(u32_t));
+   if (crc != *((u08_t*)pAddress + (groupSize-sizeof(u32_t))))
+   {
+      comrvErrorInddicationHook(D_COMRV_CRC_CHECK_ERR);
+   }
+
+   /* group is now loaded to memory so we can return the address to the data/function */
+   return (void*)((u32_t*)pAddress + M_COMRV_GET_OFFSET(token));
 }
 
-u08_t comrvGetCandidatesForEviction(u16_t requestedEvictionSize, u32_t* pEvictCandidatesMap)
+u08_t comrvGetCandidatesForEviction(u08_t requestedEvictionSize, u08_t* pEvictCandidatesList)
 {
-   u08_t entryIndex, numberOfCandidates = 0;
-   u16_t accumulatedSize = 0;
+   u08_t entryIndex, numberOfCandidates = 0, index = 0;
+   u08_t accumulatedSize = 0;
+   u32_t evictCandidateMap[D_COMRV_EVICT_CANDIDATE_MAP_SIZE], candidates;
 
    /* first lets clear the candidates list */
-   memset(pEvictCandidatesMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
+   memset(evictCandidateMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
 
 #ifdef D_COMRV_EVICTION_LRU
    /* get the first lru entry */
@@ -318,14 +417,14 @@ u08_t comrvGetCandidatesForEviction(u16_t requestedEvictionSize, u32_t* pEvictCa
    do
    {
       /* verify the entry isn't locked */
-      if (pComrvCB->overlayHeap[entryIndex].properties.locked != D_COMRV_ENTRY_LOCKED)
+      if (pComrvCB->overlayHeap[entryIndex].properties.fields.locked != D_COMRV_ENTRY_LOCKED)
       {
          /* count the number of candidates */
          numberOfCandidates++;
          /* accumulate size */
-         accumulatedSize += M_COMRV_GET_OVL_GROUP_SIZE(pComrvCB->overlayHeap[entryIndex].tokenRegister);
+         accumulatedSize += pComrvCB->overlayHeap[entryIndex].properties.fields.size;
          /* set the eviction candidate in the eviction map */
-         pEvictCandidatesMap[entryIndex/D_COMRV_DWORD_IN_BITS] |= (entryIndex & (D_COMRV_DWORD_IN_BITS-1));
+         evictCandidateMap[entryIndex/D_COMRV_DWORD_IN_BITS] |= (1 << entryIndex);
       }
       /* move to the next LRU candidate */
       entryIndex = pComrvCB->overlayHeap[entryIndex].nextIndex;
@@ -336,10 +435,31 @@ u08_t comrvGetCandidatesForEviction(u16_t requestedEvictionSize, u32_t* pEvictCa
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
+
+   /* now we have eviction candidates bitmap of heap entries - lets create
+      an output sorted list of these entries */
+   for (entryIndex = 0 ; index != numberOfCandidates && entryIndex < D_COMRV_EVICT_CANDIDATE_MAP_SIZE ; entryIndex++)
+   {
+      /* get the candidates */
+      candidates = evictCandidateMap[entryIndex];
+      /* convert each candidate to an actual value in pEvictCandidatesList */
+      while (candidates)
+      {
+         /* get the lsb that is set */
+         pEvictCandidatesList[index] = candidates & (-candidates);
+         /* subtract the lsb that is set */
+         candidates -= pEvictCandidatesList[index]--;
+         pEvictCandidatesList[index++] += entryIndex*D_COMRV_DWORD_IN_BITS;
+      }
+   }
+
+   /* set the total size of eviction candidates in the last entry */
+   pEvictCandidatesList[numberOfCandidates] = accumulatedSize;
+
    return numberOfCandidates;
 }
 
-static void* comrvSearchForLoadedToken(comrvToken_t token)
+static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t token)
 {
    u08_t entryIndex;
 
@@ -347,12 +467,12 @@ static void* comrvSearchForLoadedToken(comrvToken_t token)
    for (entryIndex = 0 ; entryIndex < pComrvCB->numOfOverlayEntries ; entryIndex++)
    {
       /* if token already loaded */
-      if (pComrvCB->overlayHeap[entryIndex].tokenRegister.token.overlayGroupID == token.overlayGroupID)
+      if (pComrvCB->overlayHeap[entryIndex].token.fields.overlayGroupID == token.fields.overlayGroupID)
       {
          /* update that the entry was accessed */
          comrvUpdateHeapEntryAccess(entryIndex);
          /* return the actual function location (function offset expressed in 4 bytes granularity) */
-         return (void*)((u08_t*)pComrvCB->overlayHeap[entryIndex].actualAddress + (token.offset << 2));
+         return (void*)((u08_t*)pComrvCB->overlayHeap[entryIndex].pAddress + (token.fields.offset << 2));
       }
    }
    /* overlay group not loaded */
@@ -390,21 +510,4 @@ static void comrvUpdateHeapEntryAccess(u08_t entryIndex)
 #else
 
 #endif /* D_COMRV_EVICTION_LRU */
-}
-
-void comrvErrorInddicationHook(u32_t errorNum)
-{
-}
-
-void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
-{
-   memcpy(pDest, pSrc, sizeInBytes);
-}
-
-void comrvLoadHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes)
-{
-}
-
-void comrvNotificationHook(void)
-{
 }

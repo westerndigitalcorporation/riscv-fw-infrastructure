@@ -30,11 +30,10 @@
 /**
 * definitions
 */
-#define OVERLAY_SECTION_0 __attribute__((section(".OVERLAY_SEC_0")))
-#define OVERLAY_SECTION_1 __attribute__((section(".OVERLAY_SEC_1")))
-
-#define D_COMRV_ERR_NO_AVAILABLE_ENTRY    0
-
+#define D_COMRV_NO_AVAILABLE_ENTRY_ERR    0
+#define D_COMRV_LOAD_ERR                  1
+#define D_COMRV_OVL_DATA_DEFRAG_ERR       2
+#define D_COMRV_CRC_CHECK_ERR             3
 
 /**
 * macros
@@ -51,19 +50,8 @@
  * asm volatile ("la t6, %0" :  : "i"(func) : );
  * This is due to a bug in clang
  */
-#if 1
-#define _OVERLAY_   //__attribute__((noinline))
- #define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) asm volatile ("addi sp, sp, -16" :  : : ); \
-                                                    asm volatile ("sw	ra,12(sp)" :  :  : ); \
-                                                    asm volatile ("la t5, "#func :  :  : ); \
-                                                    asm volatile ("addi t5, t5, %0" :  : "i"(isOvlFunction) : ); \
-		                                            asm volatile ("jalr t6" :  :  : ); \
-                                                    asm volatile ("lw	ra,12(sp)" :  :  : ); \
-                                                    asm volatile ("addi sp, sp, 16" :  : : );
-#else
 #define _OVERLAY_  __attribute__((overlaycall)) __attribute__((noinline))
-#define INVOKE_OVERLAY_ENGINE(func, isOvlFunction) func();
-#endif
+
 /**
 * types
 */
@@ -83,10 +71,11 @@
 /**
 * APIs
 */
-void comrvInit(void);
-void comrvErrorInddicationHook(u32_t errorNum);
-void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes);
-void comrvLoadHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes);
-void comrvNotificationHook(void);
+void   comrvInit(void);
+void   comrvErrorInddicationHook(u32_t errorNum);
+void   comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes);
+void*  comrvLoadOvlayGroupHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes);
+void   comrvNotificationHook(void);
+u32_t comrvCrcCalcHook(void* pAddress, u16_t memprySize);
 
 #endif /* __COMRV_TASK_API_H__ */

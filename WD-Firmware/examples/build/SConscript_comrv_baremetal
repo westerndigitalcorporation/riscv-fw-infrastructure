@@ -31,6 +31,7 @@ if not os.path.exists(out_dir):
 list_files_c=[
 #  ['location of c file to compile', 'location of resulting object file']
    [os.path.join('comrv', 'comrv.c'), os.path.join(out_dir, 'comrv.o')],
+   [os.path.join('comrv', 'comrv_hooks.c'), os.path.join(out_dir, 'comrv_hooks.o')],
 ]
 
 # list of assembly files to compile
@@ -44,7 +45,7 @@ c_flags = Env['C_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
 a_flags = Env['A_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
 
 # defines
-Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU', 'D_COMRV_MULTI_GROUP_SUPPORT']
+Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU'] #, 'D_COMRV_MULTI_GROUP_SUPPORT']
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),
