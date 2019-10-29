@@ -68,11 +68,11 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
 * Create a message queue
 *
 * @param pRtosalMsgQueueCb      - Pointer to queue control block to be created
-* @param pRtosMsgQueueBuffer    - Poiter to the queue buffer (its size must be
+* @param pRtosMsgQueueBuffer    - Pointer to the queue buffer (its size must be
 *                                 uiRtosMsgQueueSize * uiRtosMsgQueueItemSize)
 * @param uiRtosMsgQueueSize     - Maximum number of items ( queue deep )
 * @param uiRtosMsgQueueItemSize - Queue message-item size in bytes
-* @param pRtosalMsgQueueName    - String of the queue name (for debuging)
+* @param pRtosalMsgQueueName    - String of the queue name (for debugging)
 *
 * @return u32_t               - D_RTOSAL_SUCCESS
 *                             - D_RTOSAL_QUEUE_ERROR  - The pRtosalMsgQueueCb is invalid or been used

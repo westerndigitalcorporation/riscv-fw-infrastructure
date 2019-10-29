@@ -22,7 +22,9 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 list_files_c=[
-   [os.path.join('examples', Env['EXAMPLE_NAME'], 'main.c'), os.path.join(out_dir, 'main.o')],
+   [os.path.join('examples', 'demo' , 'main.c'), os.path.join(out_dir, 'main.o')],
+   [os.path.join('examples', 'demo' , 'platform_al.c'), os.path.join(out_dir, 'platform_al.o')],
+   [os.path.join('examples', 'demo' , 'rtosal_demo.c'), os.path.join(out_dir, 'rtosal_demo.o')],
 ]
 
 list_files_a=[]
