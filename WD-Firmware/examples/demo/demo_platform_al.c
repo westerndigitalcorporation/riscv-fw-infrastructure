@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   platform_al.h
+* @file   demo_platform_al.c
 * @author Nati Rapaport
 * @date   23.10.2019
 * @brief  initializations and api layer to the specific platform functions 
@@ -24,10 +24,7 @@
 /**
 * include files
 */
-#ifdef D_RV_HiFive1
-   #include "encoding.h"
-   #include "platform.h"
-#endif
+#include "demo_platform_al.h"
 /**
 * definitions
 */
@@ -47,12 +44,6 @@
 /**
 * external prototypes
 */
-#ifdef D_RV_HiFive1
-   extern void _init();
-#else
-   #error "\n\n-- A platform is not defined -- \n\n"
-#endif
-
 
 /**
 * global variables
@@ -65,5 +56,38 @@
 /**
 * functions
 */
-void platformInit(void);
+void demoLedsInit(void);
+
+
+/**
+* demoPlatformInit - Initialize board related stuff
+*
+* 
+* */
+void demoPlatformInit(void)
+{
+#ifdef D_RV_HiFive1
+	_init();
+#else
+   #error Platform was not defined
+#endif
+    demoLedsInit();
+
+}
+
+
+/**
+* demoLedsInit - LEDs initialization per board's specifications
+*
+* */
+void demoLedsInit(void)
+{
+#ifdef D_RV_HiFive1
+	GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+#else
+   #error "\n\n-- A platform is not defined -- \n\n"
+#endif
+}
 

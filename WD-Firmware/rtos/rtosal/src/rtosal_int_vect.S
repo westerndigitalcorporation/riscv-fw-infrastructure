@@ -77,7 +77,7 @@ This implementation supports riscv privileged v1.10
 #include "psp_asm_macros.h"
 #include "psp_specific_definitions.h"
 #include "psp_specific_macros.h"
-
+#include "rtosal_asm_macros.h"
 
 
 .section  .text.entry
@@ -90,7 +90,7 @@ rtosal_vect_table:
     m_SET_INT_CONTEXT
     m_pushAdditionalRegs
     m_SAVE_CONTEXT
-    m_SET_SP_TO_ISR_STACK /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
+    m_SET_SP_FROM_APP_TO_ISR_STACK  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
     csrr    t0, mcause
     bge     t0, zero, rtosal_vect_table_
     slli    t0, t0, 2
@@ -136,7 +136,7 @@ rtosa_exceptions_int:
     m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
     m_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
-    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    m_SET_SP_FROM_APP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler   /* Call the exception handler - if it is ECALL handler, then it also does RESTORE-CONTEXT*/
     m_RESTORE_CONTEXT                                 /* Restore SP (Task's one) and MEPC & MSTATUS */
@@ -151,7 +151,7 @@ rtosa_m_soft_int:
     m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
     m_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
-    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    m_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler       /* Call the interrupt handler */
     m_END_SWITCHING_ISR rtosa_m_soft_int_no_cs        /* Check if context switch is required now. If yes - handle it now */
@@ -168,7 +168,7 @@ rtosa_m_timer_int:
     m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
     m_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
-    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    m_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler       /* Call the interrupt handler */
     m_RESTORE_CONTEXT                                  /* Restore SP (Task's one) and MEPC & MSTATUS */
@@ -183,7 +183,7 @@ rtosa_m_external_int:
     m_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
     m_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
-    m_SET_SP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    m_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     m_CALL_INT_HANDLER g_fptrIntMExternIntHandler     /* Call the interrupt handler */
     m_END_SWITCHING_ISR rtosa_m_external_int_no_cs    /* Check if context switch is required now. If yes - handle it now */

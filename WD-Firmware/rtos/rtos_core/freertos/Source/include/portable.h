@@ -52,6 +52,7 @@ must be set in the compiler's include path. */
 	#include "portmacro.h"
 #endif
 
+extern int rtosalStartScheduler(void);
 #define pxPortInitialiseStack  pspInitializeStack
 #define xPortStartScheduler    rtosalStartScheduler
 #define vPortEndScheduler      rtosalEndScheduler

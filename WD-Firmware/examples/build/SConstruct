@@ -187,7 +187,7 @@ else:
   print "missing example=[ex-freertos | ex-comrv_baremetal | TBD]"
   exit(1)
 
-arr_lib.append(SConscript('SConscript_example', exports='Env'))
+arr_lib.append(SConscript('SConscript_demo_rtosal', exports='Env'))
 example_bundle = Env.Program(elf_file_name, arr_lib, LIBS=Env['TARGET_LIBS'])
 Env.Size(source=example_bundle)
 

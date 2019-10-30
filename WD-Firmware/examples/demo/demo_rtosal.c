@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_demo.c
+* @file   demo_rtosal_demo.c
 * @author Nati Rapaport
 * @date   23.10.2019
 * @brief  application of RTOS abstraction layer basic demonstration
@@ -28,7 +28,7 @@
 #include <unistd.h>
 
 #include "common_types.h"
-#include "platform_al.h"
+#include "demo_platform_al.h"
 
 #include "psp_api.h"
 #include "psp_macros.h"
@@ -75,6 +75,7 @@ meaning the send task should always find the queue empty. */
 /**
 * local prototypes
 */
+static void demoRtosalCreateTasks(void *pParam);
 static void demoReceiveMsgTask( void *pvParameters );
 static void demoSendMsgTask( void *pvParameters );
 static void demoSemaphoreTask( void *pvParameters );
@@ -124,10 +125,17 @@ static rtosalStackType_t uTimerTaskStackBuffer[configTIMER_TASK_STACK_DEPTH];
 /**
 * functions
 */
-
+/**
+ * demoStart - startup point of the demo application. called from main function.
+ *
+ */
+void demoStart(void)
+{
+	rtosalStart(demoRtosalCreateTasks);
+}
 
 /**
- * demoInit
+ * demoRtosalCreateTasks
  *
  * Initialize the application:
  * - Register unhandled exceptions, Ecall exception and Timer ISR
@@ -139,9 +147,8 @@ static rtosalStackType_t uTimerTaskStackBuffer[configTIMER_TASK_STACK_DEPTH];
  * This function is called from RTOS abstraction layer. After its completion, the scheduler is kicked on
  * and the tasks are start to be active
  *
- * void *pMem - not in use
  */
-void demoInit(void *pMem)
+void demoRtosalCreateTasks(void *pParam)
 {
 	
     u32_t res;

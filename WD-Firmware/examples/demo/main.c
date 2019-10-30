@@ -24,15 +24,8 @@
 /**
 * include files
 */
-#include <unistd.h>
-#include "platform_al.h"
-#include "demo_app.h"
+#include "demo_platform_al.h"
 
-#ifdef D_USE_RTOSAL
-  #include "rtosal_util_api.h"
-#else
-   #error "\n\n --- You have to use RTOS abstraction layer --- \n\n"
-#endif
 
 /**
 * definitions
@@ -53,7 +46,7 @@
 /**
 * external prototypes
 */
-
+extern void demoStart(void);
 /**
 * global variables
 */
@@ -73,16 +66,16 @@
 int main(void)
 {
 	/* Initilize the platform first */
-	platformInit();
+	demoPlatformInit();
 
    /* Now is the time to activate the relevant demonstration function */
-   rtosalStart(demoInit);
+   demoStart();
 
    /* If all is well, the scheduler will now be running, and the following line
    will never be reached.  If the following line does execute, then there was
    insufficient FreeRTOS heap memory available for the idle and/or timer tasks
    to be created.  See the memory management section on the FreeRTOS web site
    for more details.  */
-   write(1,"\n-- We should not reach here. Check what went wrong. --\n", 55);
+   //write(1,"\n-- We should not reach here. Check what went wrong. --\n", 55);
    for( ;; );
 }
