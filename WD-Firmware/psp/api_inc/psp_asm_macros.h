@@ -14,11 +14,6 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 */
-#ifndef __PSP_ASM_MACROS_H__
-#define __PSP_ASM_MACROS_H__
-
-#include "psp_specific_rtos.h"
-
 
 .extern xISRStackTop
 
@@ -152,5 +147,3 @@
     /* Make sure SP is aligned to 16 */
     m_ADDI    sp, sp, REGBYTES * 32
 .endm
-
-#endif /* __PSP_ASM_MACROS_H__ */

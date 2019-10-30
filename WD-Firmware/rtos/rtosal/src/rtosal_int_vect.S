@@ -77,6 +77,7 @@ This implementation supports riscv privileged v1.10
 #include "psp_asm_macros.h"
 #include "psp_specific_definitions.h"
 #include "psp_specific_macros.h"
+#include "psp_specific_rtos.h"
 #include "rtosal_asm_macros.h"
 
 
