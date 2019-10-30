@@ -17,7 +17,7 @@
 
 .extern xISRStackTop
 
-#if __riscv_xlen == 64
+.if __riscv_xlen == 64
 .macro m_STORE operand1,operand2
     sd \operand1, \operand2
 .endm
@@ -28,7 +28,7 @@
     addiw \operand1, \operand2, \operand3
 .endm
 .equ REGBYTES, 8
-#elif __riscv_xlen == 32
+.else
 .macro m_STORE operand1,operand2
     sw \operand1, \operand2
 .endm
@@ -39,7 +39,7 @@
     addi \operand1, \operand2, \operand3
 .endm
 .equ REGBYTES, 4
-#endif
+.endif
 
 
 
