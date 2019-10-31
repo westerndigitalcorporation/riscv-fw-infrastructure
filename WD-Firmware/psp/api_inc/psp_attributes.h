@@ -29,31 +29,14 @@
 /**
 * definitions
 */
-//#if defined(__GCC ?? __)  NatiR: Is this #ifedf needed? And if yes - what is the exact definition and where it is defined?
+
+#ifdef __GNUC__  /* NatiR - to do - check for LLVM too */
   #define D_NO_INLINE                         __attribute__((noinline))
   #define D_ALWAYS_INLINE                     __attribute__((always_inline))
-  #define D_PSP_TEXT_SECTION                  __attribute__((section("PSP_TEXT_SEC")))
-  #define D_PSP_DATA_SECTION                  __attribute__((section("PSP_DATA_SEC")))
   #define D_16_ALIGNED                        __attribute__ ((aligned(16)))
   #define D_WEAK                              __attribute__(( weak ))
-  #define D_PRIVILEGED_FUNCTION               __attribute__((section("privileged_functions")))
-  #define D_PRIVILEGED_DATA                   __attribute__((section("privileged_data")))
-  #define D_RTOSAL_SECTION                    __attribute__((section("RTOSAL_SEC")))
-//  #define D_INTERRUPT                          __attribute__(())
-//  #define D_EXCEPTION                          __attribute__(())
-/*
-#else
-  #define D_NO_INLINE
-  #define D_ALWAYS_INLINE
-  #define D_TEXT_SECTION
-  #define D_DATA_SECTION
-  #define D_16_ALIGNED
-  #define D_WEAK
-  #define D_PRIVILEGED_FUNCTION
-  #define D_PRIVILEGED_DATA
-  #define D_RTOSAL_SECTION
 #endif
-*/
+
 /**
 * macros
 */

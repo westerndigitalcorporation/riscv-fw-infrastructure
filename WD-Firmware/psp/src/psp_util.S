@@ -55,20 +55,12 @@
  * registers.
  *
  */
-#include "psp_defines.h"
+
 #include "psp_specific_definitions.h"
 #include "psp_specific_macros.h"
 #include "psp_asm_macros.h"
 #include "psp_specific_rtos.h"
 #include "rtosal_asm_macros.h"
-
-
-/* Only the standard core registers are stored by default.  Any additional
-registers must be saved by the portasmSAVE_ADDITIONAL_REGISTERS and
-portasmRESTORE_ADDITIONAL_REGISTERS macros - which can be defined in a chip
-specific version of freertos_risc_v_chip_specific_extensions.h.  See the notes
-at the top of this file. */
-//#define portCONTEXT_SIZE ( 30 * D_pspWORD_SIZE )
 
 .global pspHandleEcall
 .global pspInitializeStack
@@ -80,26 +72,26 @@ at the top of this file. */
 pspInitializeStack:
 
 	csrr t0, mstatus					/* Obtain current mstatus value. */
-    D_ADDI t1, x0, 0x188                /* Generate the value 0x1880, which are -   */
+    M_ADDI t1, x0, 0x188                /* Generate the value 0x1880, which are -   */
 	slli t1, t1, 4                      /* the MPIE and MPP bits to set in mstatus. */
 	or t0, t0, t1						/* Set MPIE and MPP bits in mstatus value. */
 
-    D_ADDI a0, a0, -D_pspWORD_SIZE
-    D_STORE t0, 0(a0)					      /* mstatus onto the stack. */
-    D_ADDI a0, a0, -(22 * D_pspWORD_SIZE)	  /* Space for registers x11-x31. */
-    D_STORE a2, 0(a0)					      /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
-    D_ADDI a0, a0, -(6 * D_pspWORD_SIZE)	  /* Space for registers x5-x9. */
-    D_STORE x0, 0(a0)					      /* Return address onto the stack, could be pspTASK_RETURN_ADDRESS */
-    D_ADDI t0, x0, D_pspAdditionalContextSize /* The number of chip specific additional registers. */
-chip_specific_stack_frame:				      /* First add any chip specific registers to the stack frame being created. */
-    beq t0, x0, 1f						      /* No more chip specific registers to save. */
-    D_ADDI a0, a0, -D_pspWORD_SIZE			  /* Make space for chip specific register. */
-    D_STORE x0, 0(a0)					      /* Give the chip specific register an initial value of zero. */
-    D_ADDI t0, t0, -1						  /* Decrement the count of chip specific registers remaining. */
-    j chip_specific_stack_frame			      /* Until no more chip specific registers. */
+    M_ADDI a0, a0, -REGBYTES
+    M_STORE t0, 0(a0)                         /* mstatus onto the stack. */
+    M_ADDI a0, a0, -(22 * REGBYTES)           /* Space for registers x11-x31. */
+    M_STORE a2, 0(a0)                         /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
+    M_ADDI a0, a0, -(6 * REGBYTES)            /* Space for registers x5-x9. */
+    M_STORE x0, 0(a0)                         /* Return address onto the stack, could be pspTASK_RETURN_ADDRESS */
+    M_ADDI t0, x0, D_pspAdditionalContextSize /* The number of chip specific additional registers. */
+chip_specific_stack_frame:                    /* First add any chip specific registers to the stack frame being created. */
+    beq t0, x0, 1f                            /* No more chip specific registers to save. */
+    M_ADDI a0, a0, -REGBYTES                  /* Make space for chip specific register. */
+    M_STORE x0, 0(a0)                         /* Give the chip specific register an initial value of zero. */
+    M_ADDI t0, t0, -1                         /* Decrement the count of chip specific registers remaining. */
+    j chip_specific_stack_frame               /* Until no more chip specific registers. */
 1:
-    D_ADDI a0, a0, -D_pspWORD_SIZE
-    D_STORE a1, 0(a0)					    /* mret value (pxCode parameter) onto the stack. */
+    M_ADDI a0, a0, -REGBYTES
+    M_STORE a1, 0(a0)                         /* mret value (pxCode parameter) onto the stack. */
     ret
 .endfunc
 
@@ -107,22 +99,22 @@ chip_specific_stack_frame:				      /* First add any chip specific registers to 
 pspHandleEcall:
     /* Update & save MEPC contents on the Task's stack: */
     /* 1. Use Task's stack (rather than ISR's stack) */
-    m_REVERT_SP_FROM_ISR_TO_APP_STACK
+    M_REVERT_SP_FROM_ISR_TO_APP_STACK
     /* 2. Read MEPC content as saved on stack (location 0) */
-    D_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
+    M_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
     /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
-    D_ADDI  a0, a0, 4
+    M_ADDI  a0, a0, 4
     /* 4. Write back the number to Task's stack (location 0) */
-    D_STORE a0, D_MEPC_LOC_IN_STK(sp)
+    M_STORE a0, D_MEPC_LOC_IN_STK(sp)
 #ifdef D_USE_FREERTOS
-    m_SET_SP_FROM_APP_TO_ISR_STACK
+    M_SET_SP_FROM_APP_TO_ISR_STACK
     jal vTaskSwitchContext
 #else
    #error Add appropriate RTOS definitions
 #endif
-    m_RESTORE_CONTEXT     /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    M_RESTORE_CONTEXT     /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
+    M_CLEAR_INT_CONTEXT
+    M_POP_REGFILE
     m_popAdditionalRegs
     mret
 

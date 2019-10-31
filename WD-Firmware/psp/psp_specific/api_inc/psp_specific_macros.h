@@ -63,36 +63,36 @@
 
    /* Save additional registers found on the Pulpino. */
    .macro m_pushAdditionalRegs
-      addi sp, sp, -(D_pspAdditionalContextSize * D_pspWORD_SIZE) /* Make room for the additional registers. */
+      addi sp, sp, -(D_pspAdditionalContextSize * REGBYTES) /* Make room for the additional registers. */
       csrr t0, lpstart0							 /* Load additional registers into accessible temporary registers. */
       csrr t1, lpend0
       csrr t2, lpcount0
       csrr t3, lpstart1
       csrr t4, lpend1
       csrr t5, lpcount1
-      sw t0, 1 * D_pspWORD_SIZE( sp )
-      sw t1, 2 * D_pspWORD_SIZE( sp )
-      sw t2, 3 * D_pspWORD_SIZE( sp )
-      sw t3, 4 * D_pspWORD_SIZE( sp )
-      sw t4, 5 * D_pspWORD_SIZE( sp )
-      sw t5, 6 * D_pspWORD_SIZE( sp )
+      sw t0, 1 * REGBYTES( sp )
+      sw t1, 2 * REGBYTES( sp )
+      sw t2, 3 * REGBYTES( sp )
+      sw t3, 4 * REGBYTES( sp )
+      sw t4, 5 * REGBYTES( sp )
+      sw t5, 6 * REGBYTES( sp )
    .endm
 
    /* Restore the additional registers found on the Pulpino. */
    .macro m_popAdditionalRegs
-      lw t0, 1 * D_pspWORD_SIZE( sp )			/* Load additional registers into accessible temporary registers. */
-      lw t1, 2 * D_pspWORD_SIZE( sp )
-      lw t2, 3 * D_pspWORD_SIZE( sp )
-      lw t3, 4 * D_pspWORD_SIZE( sp )
-      lw t4, 5 * D_pspWORD_SIZE( sp )
-      lw t5, 6 * D_pspWORD_SIZE( sp )
+      lw t0, 1 * REGBYTES( sp )			/* Load additional registers into accessible temporary registers. */
+      lw t1, 2 * REGBYTES( sp )
+      lw t2, 3 * REGBYTES( sp )
+      lw t3, 4 * REGBYTES( sp )
+      lw t4, 5 * REGBYTES( sp )
+      lw t5, 6 * REGBYTES( sp )
       csrw lpstart0, t0
       csrw lpend0, t1
       csrw lpcount0, t2
       csrw lpstart1, t3
       csrw lpend1, t4
       csrw lpcount1, t5
-      addi sp, sp, (D_pspAdditionalContextSize * D_pspWORD_SIZE )/* Remove space added for additional registers. */
+      addi sp, sp, (D_pspAdditionalContextSize * REGBYTES )/* Remove space added for additional registers. */
    .endm
 
 #elif defined (D_RV32I_CLINT_no_extensions)

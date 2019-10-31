@@ -81,8 +81,8 @@ This implementation supports riscv privileged v1.10
 
 rtosalStartScheduler:
     jal pspSetupTimer
-    m_RESTORE_CONTEXT
-    m_popREGFILE
+    M_RESTORE_CONTEXT
+    M_POP_REGFILE
     mret
 
 

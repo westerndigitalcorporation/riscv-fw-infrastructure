@@ -88,9 +88,9 @@ This implementation supports riscv privileged v1.10
 
 .ifndef D_PSP_VECT_TABLE
 psp_vect_table:
-    m_pushREGFILE
+    M_PUSH_REGFILE
     m_pushAdditionalRegs
-    m_SET_INT_CONTEXT
+    M_SET_INT_CONTEXT
     csrr    t0, mcause
     bge	    t0, zero, psp_vect_table_
     slli    t0, t0, 2
@@ -132,57 +132,57 @@ psp_vect_table:
 
 psp_exceptions_int:
 .ifdef D_PSP_VECT_TABLE
-    m_pushREGFILE                                   /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                  /* Push registers of current task onto stack */
     m_pushAdditionalRegs
-    m_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
-    m_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
+    M_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    M_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
 .endif /* D_PSP_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler /* call the exception handler */
-    m_CLEAR_INT_CONTEXT                             /* Clear interrupt context indication */
-   // Nati - replace with appropriate macro m_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
-    m_popREGFILE                                    /* Restore the registers of current task from the stack */
+    M_CALL_INT_HANDLER g_fptrIntExceptionIntHandler /* call the exception handler */
+    M_CLEAR_INT_CONTEXT                             /* Clear interrupt context indication */
+   // Nati - replace with appropriate macro M_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    M_POP_REGFILE                                   /* Restore the registers of current task from the stack */
     m_popAdditionalRegs
     mret
 
 psp_m_soft_int:
 .ifdef D_PSP_VECT_TABLE
-    m_pushREGFILE                                   /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                   /* Push registers of current task onto stack */
     m_pushAdditionalRegs
-    m_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
-    m_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
+    M_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
+    M_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
 .endif /* D_PSP_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler     /* Call the interrupt handler */
-    m_CLEAR_INT_CONTEXT                             /* Clear interrupt context indication */
-   // Nati - replace with appropriate macro     m_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted Task - change sp to point to current Task-Stack */
-    m_popREGFILE                                    /* Restore the registers of current task from the stack */
+    M_CALL_INT_HANDLER g_fptrIntMSoftIntHandler     /* Call the interrupt handler */
+    M_CLEAR_INT_CONTEXT                             /* Clear interrupt context indication */
+   // Nati - replace with appropriate macro     M_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted Task - change sp to point to current Task-Stack */
+    M_POP_REGFILE                                    /* Restore the registers of current task from the stack */
     m_popAdditionalRegs
     mret
 
 psp_m_timer_int:
 .ifdef D_PSP_VECT_TABLE
-    m_pushREGFILE                                   /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                   /* Push registers of current task onto stack */
     m_pushAdditionalRegs
-    m_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
-    m_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
+    M_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
+    M_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
 .endif /* D_PSP_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler    /* Call the interrupt handler */
-    m_CLEAR_INT_CONTEXT                             /* Clear interrupt context indication */
-   // Nati - replace with appropriate macro     m_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
-    m_popREGFILE                                    /* Restore the registers of current task from the stack */
+    M_CALL_INT_HANDLER g_fptrIntMTimerIntHandler    /* Call the interrupt handler */
+    M_CLEAR_INT_CONTEXT                             /* Clear interrupt context indication */
+   // Nati - replace with appropriate macro     M_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    M_POP_REGFILE                                    /* Restore the registers of current task from the stack */
     m_popAdditionalRegs
     mret
 
 psp_m_external_int:
 .ifdef D_PSP_VECT_TABLE
-    m_pushREGFILE                                   /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                   /* Push registers of current task onto stack */
     m_pushAdditionalRegs
-    m_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
-    m_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
+    M_SET_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    M_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
 .endif /* D_PSP_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler   /* Call the interrupt handler */
-    m_CLEAR_INT_CONTEXT                             /* Clear the indication of interupt context */
-   // Nati - replace with appropriate macro     m_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
-    m_popREGFILE                                    /* Restore the registers of current task from the stack */
+    M_CALL_INT_HANDLER g_fptrIntMExternIntHandler   /* Call the interrupt handler */
+    M_CLEAR_INT_CONTEXT                             /* Clear the indication of interupt context */
+   // Nati - replace with appropriate macro     M_REVERT_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    M_POP_REGFILE                                    /* Restore the registers of current task from the stack */
     m_popAdditionalRegs
     mret
 

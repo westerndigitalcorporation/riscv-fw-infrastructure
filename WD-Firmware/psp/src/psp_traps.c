@@ -32,13 +32,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "../api_inc/psp_macros.h"
-/* Scheduler includes. */
-//#include "FreeRTOS.h"
+#include "psp_macros.h"
 #include "psp_rtos_api.h"
 #include "psp_defines.h"
-#include "rtosal_services_api.h"
 #include "psp_specific_definitions.h"
+#include "rtosal_services_api.h"
 
 extern void pspHandleEcall();
 

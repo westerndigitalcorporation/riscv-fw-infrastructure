@@ -31,6 +31,7 @@
 /**
 * definitions
 */
+
 /* interrupt context indication values */
 #define D_PSP_NON_INT_CONTEXT              0
 #define D_PSP_INT_CONTEXT                  1
@@ -39,25 +40,6 @@
 #define D_PSP_SUCCESS                      0x00
 #define D_PSP_FAIL                         0x01
 #define D_PSP_PTR_ERROR                    0x02
-
-
-#if __riscv_xlen == 64
-	#define D_pspWORD_SIZE 8
-	#define D_STORE        sd
-	#define D_LOAD         ld
-    #define D_ADDI         addiw
-    #define D_SLL32        sllw
-    #define D_LWU          lwu
-#elif __riscv_xlen == 32
-	#define D_pspWORD_SIZE 4
-	#define D_STORE        sw
-	#define D_LOAD         lw
-    #define D_ADDI         addi
-    #define D_SLL32        sll
-    #define D_LWU          lw
-#else
-	#error Assembler did not define __riscv_xlen
-#endif
 
 
 /* Definitions for the various fields in the CSRs */
@@ -93,27 +75,27 @@
 #define D_SSTATUS32_SD        0x80000000
 #define D_SSTATUS64_SD        0x8000000000000000
 
-#define D_DCSR_XDEBUGVER      (3U<<30)
-#define D_DCSR_NDRESET        (1<<29)
-#define D_DCSR_FULLRESET      (1<<28)
-#define D_DCSR_EBREAKM        (1<<15)
-#define D_DCSR_EBREAKH        (1<<14)
-#define D_DCSR_EBREAKS        (1<<13)
-#define D_DCSR_EBREAKU        (1<<12)
-#define D_DCSR_STOPCYCLE      (1<<10)
-#define D_DCSR_STOPTIME       (1<<9)
-#define D_DCSR_CAUSE          (7<<6)
-#define D_DCSR_DEBUGINT       (1<<5)
-#define D_DCSR_HALT           (1<<3)
-#define D_DCSR_STEP           (1<<2)
-#define D_DCSR_PRV            (3<<0)
+#define D_CSR_XDEBUGVER      (3U<<30)
+#define D_CSR_NDRESET        (1<<29)
+#define D_CSR_FULLRESET      (1<<28)
+#define D_CSR_EBREAKM        (1<<15)
+#define D_CSR_EBREAKH        (1<<14)
+#define D_CSR_EBREAKS        (1<<13)
+#define D_CSR_EBREAKU        (1<<12)
+#define D_CSR_STOPCYCLE      (1<<10)
+#define D_CSR_STOPTIME       (1<<9)
+#define D_CSR_CAUSE          (7<<6)
+#define D_CSR_DEBUGINT       (1<<5)
+#define D_CSR_HALT           (1<<3)
+#define D_CSR_STEP           (1<<2)
+#define D_CSR_PRV            (3<<0)
 
-#define D_DCSR_CAUSE_NONE     0
-#define D_DCSR_CAUSE_SWBP     1
-#define D_DCSR_CAUSE_HWBP     2
-#define D_DCSR_CAUSE_DEBUGINT 3
-#define D_DCSR_CAUSE_STEP     4
-#define D_DCSR_CAUSE_HALT     5
+#define D_CSR_CAUSE_NONE     0
+#define D_CSR_CAUSE_SWBP     1
+#define D_CSR_CAUSE_HWBP     2
+#define D_CSR_CAUSE_DEBUGINT 3
+#define D_CSR_CAUSE_STEP     4
+#define D_CSR_CAUSE_HALT     5
 
 #define D_MCONTROL_TYPE(xlen)    (0xfULL<<((xlen)-4))
 #define D_MCONTROL_DMODE(xlen)   (1ULL<<((xlen)-5))
