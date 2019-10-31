@@ -66,6 +66,7 @@
 .global pspInitializeStack
 .extern vTaskSwitchContext
 
+.global pxCurrentTCB
 
 .align 8
 .func
@@ -99,9 +100,7 @@ chip_specific_stack_frame:                    /* First add any chip specific reg
 pspHandleEcall:
     /* Update & save MEPC contents on the Task's stack: */
     /* 1. Use Task's stack (rather than ISR's stack) */
-    M_REVERT_SP_FROM_ISR_TO_APP_STACK
-    /* 2. Read MEPC content as saved on stack (location 0) */
-    M_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
+    M_REVERT_SP_FROM_ISR_TO_APP_STACK  pxCurrentTCB, 0
     /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
     M_ADDI  a0, a0, 4
     /* 4. Write back the number to Task's stack (location 0) */
@@ -112,7 +111,7 @@ pspHandleEcall:
 #else
    #error Add appropriate RTOS definitions
 #endif
-    M_RESTORE_CONTEXT     /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
+    M_RESTORE_CONTEXT pxCurrentTCB, 0    /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
     M_CLEAR_INT_CONTEXT
     M_POP_REGFILE
     m_popAdditionalRegs

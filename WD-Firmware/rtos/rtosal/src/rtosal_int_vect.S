@@ -80,6 +80,7 @@ This implementation supports riscv privileged v1.10
 #include "psp_specific_rtos.h"
 #include "rtosal_asm_macros.h"
 
+.global    pxCurrentTCB
 
 .section  .text.entry
 .align 4
@@ -90,7 +91,7 @@ rtosal_vect_table:
     M_PUSH_REGFILE
     M_SET_INT_CONTEXT
     m_pushAdditionalRegs
-    M_SAVE_CONTEXT
+    M_SAVE_CONTEXT pxCurrentTCB, 0
     M_SET_SP_FROM_APP_TO_ISR_STACK  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
     csrr    t0, mcause
     bge     t0, zero, rtosal_vect_table_
@@ -133,65 +134,65 @@ rtosal_vect_table:
 
 rtosa_exceptions_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    M_PUSH_REGFILE                                     /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                    /* Push registers of current task onto stack */
     M_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
-    M_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
-    M_SET_SP_FROM_APP_TO_ISR_STACK                             /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    M_SAVE_CONTEXT pxCurrentTCB, 0                                 /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
+    M_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     M_CALL_INT_HANDLER g_fptrIntExceptionIntHandler   /* Call the exception handler - if it is ECALL handler, then it also does RESTORE-CONTEXT*/
-    M_RESTORE_CONTEXT                                 /* Restore SP (Task's one) and MEPC & MSTATUS */
+    M_RESTORE_CONTEXT pxCurrentTCB, 0                 /* Restore SP (Task's one) and MEPC & MSTATUS */
     M_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
-    M_POP_REGFILE                                      /* Restore the registers of current task from the stack */
+    M_POP_REGFILE                                     /* Restore the registers of current task from the stack */
     m_popAdditionalRegs                               /* Restore the configuration-specific registers */
     mret
 
 rtosa_m_soft_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    M_PUSH_REGFILE                                     /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                    /* Push registers of current task onto stack */
     M_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
-    M_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
+    M_SAVE_CONTEXT pxCurrentTCB, 0                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
     M_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     M_CALL_INT_HANDLER g_fptrIntMSoftIntHandler       /* Call the interrupt handler */
     M_END_SWITCHING_ISR rtosa_m_soft_int_no_cs        /* Check if context switch is required now. If yes - handle it now */
 rtosa_m_soft_int_no_cs:
-    M_RESTORE_CONTEXT                                 /* Restore SP (Task's one) and MEPC & MSTATUS */
+    M_RESTORE_CONTEXT pxCurrentTCB, 0                                 /* Restore SP (Task's one) and MEPC & MSTATUS */
     M_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
-    M_POP_REGFILE                                      /* Restore the registers of current task from the stack */
+    M_POP_REGFILE                                     /* Restore the registers of current task from the stack */
     m_popAdditionalRegs                               /* Restore the configuration-specific registers */
     mret
 
 rtosa_m_timer_int:
 .ifdef D_RTOSAL_VECT_TABLE
     M_PUSH_REGFILE                                     /* Push registers of current task onto stack */
-    M_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
-    m_pushAdditionalRegs                              /* Push configuration-specific registers */
-    M_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
-    M_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
+    M_SET_INT_CONTEXT                                  /* Mark we are in interrupt context */
+    m_pushAdditionalRegs                               /* Push configuration-specific registers */
+    M_SAVE_CONTEXT pxCurrentTCB, 0                                  /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
+    M_SET_SP_FROM_APP_TO_ISR_STACK                     /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     M_CALL_INT_HANDLER g_fptrIntMTimerIntHandler       /* Call the interrupt handler */
-    M_RESTORE_CONTEXT                                  /* Restore SP (Task's one) and MEPC & MSTATUS */
+    M_RESTORE_CONTEXT pxCurrentTCB, 0                  /* Restore SP (Task's one) and MEPC & MSTATUS */
     M_CLEAR_INT_CONTEXT                                /* Clear interrupt context indication */
-    M_POP_REGFILE                                       /* Restore the registers of current task from the stack */
+    M_POP_REGFILE                                      /* Restore the registers of current task from the stack */
     m_popAdditionalRegs                                /* Restore the configuration-specific registers */
     mret
 
 rtosa_m_external_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    M_PUSH_REGFILE                                     /* Push registers of current task onto stack */
+    M_PUSH_REGFILE                                    /* Push registers of current task onto stack */
     M_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
     m_pushAdditionalRegs                              /* Push configuration-specific registers */
-    M_SAVE_CONTEXT                                    /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
+    M_SAVE_CONTEXT pxCurrentTCB, 0                                   /* Save MEPC & MSTATUS on stack. Save SP in currunt Task CB */
     M_SET_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
     M_CALL_INT_HANDLER g_fptrIntMExternIntHandler     /* Call the interrupt handler */
     M_END_SWITCHING_ISR rtosa_m_external_int_no_cs    /* Check if context switch is required now. If yes - handle it now */
 rtosa_m_external_int_no_cs:
-    M_RESTORE_CONTEXT                                 /* Restore SP (Task's one) and MEPC & MSTATUS */
+    M_RESTORE_CONTEXT pxCurrentTCB, 0                 /* Restore SP (Task's one) and MEPC & MSTATUS */
     M_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
-    M_POP_REGFILE                                      /* Restore the registers of current task from the stack */
+    M_POP_REGFILE                                     /* Restore the registers of current task from the stack */
     m_popAdditionalRegs                               /* Restore the configuration-specific registers */
     mret
 

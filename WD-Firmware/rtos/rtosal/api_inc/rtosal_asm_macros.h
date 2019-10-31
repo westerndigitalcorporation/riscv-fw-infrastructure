@@ -40,23 +40,21 @@
 .endm
 
 /* Macro for setting SP to use stack of current Task */
-.macro M_REVERT_SP_FROM_ISR_TO_APP_STACK
-    .global    pxCurrentTCB
+.macro M_REVERT_SP_FROM_ISR_TO_APP_STACK  pTaskCB, spLocInTcb
     /* Load sp register with the address of current Task-CB */
-    M_LOAD    sp, pxCurrentTCB
+    M_LOAD    sp, \pTaskCB
 	/* Update sp regsiter to point to Task's stack*/
-    M_LOAD    sp, 0x0(sp)
+    M_LOAD    sp, \spLocInTcb(sp)
 .endm
 
 /* saves mstatus and tcb */
-.macro M_SAVE_CONTEXT
-    .global    pxCurrentTCB
+.macro M_SAVE_CONTEXT  pTaskCB, spLocInTcb
     /* Store mstatus */
     csrr      t0, mstatus
     M_STORE   t0, D_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
-    M_LOAD    t0, pxCurrentTCB
-    M_STORE   sp, 0x0(t0)
+    M_LOAD    t0, \pTaskCB
+    M_STORE   sp, \spLocInTcb(t0)
     /* Store mepc */
 	csrr      t0, mepc
     M_STORE   t0, D_MEPC_LOC_IN_STK(sp)
@@ -64,11 +62,10 @@
 .endm
 
  /* restore mstatus and tcb */
-.macro M_RESTORE_CONTEXT
-    .global    pxCurrentTCB
+.macro M_RESTORE_CONTEXT  pTaskCB, spLocInTcb
     /* Load stack pointer from the current TCB */
-    M_LOAD    sp, pxCurrentTCB
-    M_LOAD    sp, 0x0(sp)
+    M_LOAD    sp, \pTaskCB
+    M_LOAD    sp, \spLocInTcb(sp)
     /* Load task program counter */
     M_LOAD    t0, D_MEPC_LOC_IN_STK * REGBYTES(sp)
     csrw      mepc, t0

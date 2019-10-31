@@ -77,11 +77,12 @@ This implementation supports riscv privileged v1.10
 #include "psp_specific_rtos.h"
 #include "rtosal_asm_macros.h"
 
+.global pxCurrentTCB
 .global rtosalStartScheduler
 
 rtosalStartScheduler:
     jal pspSetupTimer
-    M_RESTORE_CONTEXT
+    M_RESTORE_CONTEXT pxCurrentTCB, 0
     M_POP_REGFILE
     mret
 
