@@ -101,6 +101,8 @@ pspHandleEcall:
     /* Update & save MEPC contents on the Task's stack: */
     /* 1. Use Task's stack (rather than ISR's stack) */
     M_REVERT_SP_FROM_ISR_TO_APP_STACK  pxCurrentTCB, 0
+    /* 2. Read MEPC content as saved on stack (location 0) */
+    M_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
     /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
     M_ADDI  a0, a0, 4
     /* 4. Write back the number to Task's stack (location 0) */
