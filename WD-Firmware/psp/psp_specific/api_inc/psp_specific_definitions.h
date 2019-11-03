@@ -40,9 +40,6 @@
 #if defined (D_RV_HiFive1)
    #define D_pspHasCLINT 1
    #define D_pspAdditionalContextSize 0 /* Must be even number on 32-bit cores. */
-#elif defined (D_RV32I_CLINT_no_extensions)
-    #define D_pspHasCLINT 1
-    #define D_pspAdditionalContextSize 0 /* Must be even number on 32-bit cores. */
 #else
    #error "Specific core is not defined!"
 #endif

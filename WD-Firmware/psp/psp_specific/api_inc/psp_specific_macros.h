@@ -51,16 +51,6 @@
 	   /* No additional registers to restore, so this macro does nothing. */
    .endm
 
-#elif defined (D_RV32I_CLINT_no_extensions)
-
-   .macro m_pushAdditionalRegs
-      /* No additional registers to save, so this macro does nothing. */
-   .endm
-
-   .macro m_popAdditionalRegs
-      /* No additional registers to restore, so this macro does nothing. */
-   .endm
-
 #else
    #error "Specific configuration is not defined!"
 #endif
