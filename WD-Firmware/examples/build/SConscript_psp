@@ -22,7 +22,7 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 list_files_c=[
-   [os.path.join('psp', 'src', 'psp_int_handlers.c'), os.path.join(out_dir, 'psp_int_handlers.o')],
+   [os.path.join('psp', 'src', 'psp_interrupts.c'), os.path.join(out_dir, 'psp_interrupts.o')],
    [os.path.join('psp', 'src', 'psp_traps.c'), os.path.join(out_dir, 'psp_traps.o')],
 ]
 

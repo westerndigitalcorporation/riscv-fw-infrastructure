@@ -15,10 +15,11 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupt.c
+* @file   psp_interrupts.c
 * @author Ronen Haen
 * @date   20.05.2019
-* @brief  The file implements the PSP interrupt API
+* @brief  The file supllies interrups services such as  - registration, default handlers and indication
+*         whether we are in interrpu context
 * 
 */
 
