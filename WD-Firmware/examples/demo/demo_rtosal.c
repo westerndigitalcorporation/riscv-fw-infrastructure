@@ -248,7 +248,7 @@ static void demoTimerCallback(void* xTimer)
     execute periodically. */
     ulCountOfTimerCallbackExecutions++;
 
-    GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
+    demoOutputLed(D_LED_BLUE_ON);
     demoOutputMsg("RTOS Timer Callback\n", 20);
 }
 
@@ -376,9 +376,8 @@ static uint32_t ulCount = 0;
       rtosalContextSwitchIndicationClear();
       ulCount = 0UL;
 
-    	GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
-    	demoOutputMsg("Giving Semaphore\n", 17);
-
+      demoOutputLed(D_LED_GREEN_ON);
+      demoOutputMsg("Giving Semaphore\n", 17);
     }
 }
 

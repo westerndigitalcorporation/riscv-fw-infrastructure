@@ -29,7 +29,7 @@
 #ifdef D_RV_HiFive1
    #include <unistd.h>
 #else
-   #error Platform was not defined
+   #error "Platform is not defined"
 #endif
 
 /**
@@ -61,7 +61,7 @@
 */
 
 /**
-* functions
+* internal functions
 */
 
 
@@ -76,10 +76,26 @@ void demoLedsInit(void)
 	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 #else
-   #error "\n\n-- A platform is not defined -- \n\n"
+   #error "Platform is not defined"
 #endif
 }
 
+/**
+* demoUartInit - URAT initialization per board's specifications
+*
+* */
+void demoUartInit(void)
+{
+#ifdef D_RV_HiFive1
+	/* Empty implementation */
+#else
+   #error "Platform is not defined"
+#endif
+}
+
+/**
+* api functions
+*/
 
 /**
 * demoPlatformInit - Initialize board related stuff
@@ -90,9 +106,10 @@ void demoPlatformInit(void)
 #ifdef D_RV_HiFive1
 	_init();
 #else
-   #error Platform was not defined
+   #error "Platform is not defined"
 #endif
     demoLedsInit();
+    demoUartInit();
 
 }
 
@@ -110,11 +127,37 @@ void demoOutputMsg(const void *str, size_t size)
 #ifdef D_RV_HiFive1
 	write(1, str, size);
 #else
-   #error Platform was not defined
+   #error "Platform is not defined"
 #endif
-
 }
 
+
+/**
+* demoOutputLed - sets LED output according input request.
+*
+* const D_LED_ACTION ledAct - LED action to do
+*
+* The "LED action" is defined per each platform
+*
+* */
+void demoOutputLed(const int ledAct)
+{
+#ifdef D_RV_HiFive1
+	switch (ledAct)
+	{
+        case D_LED_GREEN_ON:
+           GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
+ 	       break;
+        case D_LED_BLUE_ON:
+           GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
+ 	       break;
+        default:
+           break;
+	}
+#else
+   #error "Platform is not defined"
+#endif
+}
 
 
 

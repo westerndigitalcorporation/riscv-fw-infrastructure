@@ -32,6 +32,14 @@
 * definitions
 */
 
+/* LEDs outputs definition */
+#ifdef D_RV_HiFive1
+    #define D_LED_GREEN_ON 1
+    #define D_LED_BLUE_ON  2
+#else
+   #error "Platform is not defined"
+#endif
+
 /**
 * macros
 */
@@ -50,7 +58,7 @@
 #ifdef D_RV_HiFive1
    extern void _init();
 #else
-   #error Platform was not defined
+   #error "Platform is not defined"
 #endif
 
 
@@ -83,4 +91,15 @@ void demoPlatformInit(void);
 *
 * */
 void demoOutputMsg(const void *str, size_t size);
+
+/**
+* demoOutputLed - sets LED output according input request.
+*
+* const D_LED_ACTION ledAct - LED action to do
+*
+* The "LED action" is defined per each platform
+*
+* */
+void demoOutputLed(const int ledAct);
+
 
