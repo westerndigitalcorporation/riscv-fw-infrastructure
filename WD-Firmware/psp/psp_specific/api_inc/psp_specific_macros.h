@@ -51,50 +51,6 @@
 	   /* No additional registers to restore, so this macro does nothing. */
    .endm
 
-#elif defined (D_Pulpino_Vega_RV32M1RM)
-
-   /* Constants to define the additional registers found on the Pulpino RI5KY. */
-   #define lpstart0 	0x7b0
-   #define lpend0 		0x7b1
-   #define lpcount0 	0x7b2
-   #define lpstart1 	0x7b4
-   #define lpend1 		0x7b5
-   #define lpcount1 	0x7b6
-
-   /* Save additional registers found on the Pulpino. */
-   .macro m_pushAdditionalRegs
-      addi sp, sp, -(D_pspAdditionalContextSize * REGBYTES) /* Make room for the additional registers. */
-      csrr t0, lpstart0							 /* Load additional registers into accessible temporary registers. */
-      csrr t1, lpend0
-      csrr t2, lpcount0
-      csrr t3, lpstart1
-      csrr t4, lpend1
-      csrr t5, lpcount1
-      sw t0, 1 * REGBYTES( sp )
-      sw t1, 2 * REGBYTES( sp )
-      sw t2, 3 * REGBYTES( sp )
-      sw t3, 4 * REGBYTES( sp )
-      sw t4, 5 * REGBYTES( sp )
-      sw t5, 6 * REGBYTES( sp )
-   .endm
-
-   /* Restore the additional registers found on the Pulpino. */
-   .macro m_popAdditionalRegs
-      lw t0, 1 * REGBYTES( sp )			/* Load additional registers into accessible temporary registers. */
-      lw t1, 2 * REGBYTES( sp )
-      lw t2, 3 * REGBYTES( sp )
-      lw t3, 4 * REGBYTES( sp )
-      lw t4, 5 * REGBYTES( sp )
-      lw t5, 6 * REGBYTES( sp )
-      csrw lpstart0, t0
-      csrw lpend0, t1
-      csrw lpcount0, t2
-      csrw lpstart1, t3
-      csrw lpend1, t4
-      csrw lpcount1, t5
-      addi sp, sp, (D_pspAdditionalContextSize * REGBYTES )/* Remove space added for additional registers. */
-   .endm
-
 #elif defined (D_RV32I_CLINT_no_extensions)
 
    .macro m_pushAdditionalRegs
