@@ -179,7 +179,7 @@ void demoRtosalCreateTasks(void *pParam)
     res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(uint32_t), NULL);
     if (res != D_RTOSAL_SUCCESS)
     {
-        write(1,"Msg-Q creation failed\n", 22);
+    	demoOutputMsg("Msg-Q creation failed\n", 22);
         for(;;);
     }
 
@@ -189,7 +189,7 @@ void demoRtosalCreateTasks(void *pParam)
                   0, D_RTOSAL_AUTO_START, 0);
 	if (res != D_RTOSAL_SUCCESS)
 	{
-        write(1,"Rx-Task creation failed\n", 24);
+		demoOutputMsg("Rx-Task creation failed\n", 24);
 		for(;;);
 	}
 
@@ -199,7 +199,7 @@ void demoRtosalCreateTasks(void *pParam)
 				  uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
 	if (res != D_RTOSAL_SUCCESS)
 	{
-        write(1,"Tx-Task creation failed\n", 24);
+		demoOutputMsg("Tx-Task creation failed\n", 24);
 		for(;;);
 	}
 
@@ -209,7 +209,7 @@ void demoRtosalCreateTasks(void *pParam)
     res = rtosalSemaphoreCreate(&stEventSemaphore, NULL, 0, 1);
 	if (res != D_RTOSAL_SUCCESS)
 	{
-        write(1,"Semaphore creation failed\n", 26);
+		demoOutputMsg("Semaphore creation failed\n", 26);
 		for(;;);
 	}
 
@@ -220,7 +220,7 @@ void demoRtosalCreateTasks(void *pParam)
 				  uSemTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
 	if (res != D_RTOSAL_SUCCESS)
 	{
-        write(1,"Sem-Task creation failed\n", 25);
+		demoOutputMsg("Sem-Task creation failed\n", 25);
 	    for(;;);
 	}
 
@@ -229,7 +229,7 @@ void demoRtosalCreateTasks(void *pParam)
                          D_RTOSAL_AUTO_START, D_MAIN_SOFTWARE_TIMER_PERIOD_MS, pdTRUE);
     if (res != D_RTOSAL_SUCCESS)
     {
-    	write(1,"Timer creation failed\n", 22);
+    	demoOutputMsg("Timer creation failed\n", 22);
         for(;;);
     }
 }
@@ -249,7 +249,7 @@ static void demoTimerCallback(void* xTimer)
     ulCountOfTimerCallbackExecutions++;
 
     GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
-    write(1,"RTOS Timer Callback\n", 20);
+    demoOutputMsg("RTOS Timer Callback\n", 20);
 }
 
 /**
@@ -269,9 +269,9 @@ const uint32_t ulValueToSend = 100UL;
         The block time is specified in ticks, the constant used converts ticks
         to ms.  The task will not consume any CPU time while it is in the
         Blocked state. */
-       rtosalTaskSleep(D_MAIN_QUEUE_SEND_PERIOD_MS);
+        rtosalTaskSleep(D_MAIN_QUEUE_SEND_PERIOD_MS);
 
-        write(1, "Sending to queue\n", 17);
+        demoOutputMsg("Sending to queue\n", 17);
         /* Send to the queue - causing the queue receive task to unblock and
         increment its counter.  0 is used as the block time so the sending
         operation will not block - it shouldn't need to block as the queue
@@ -298,9 +298,9 @@ static void demoReceiveMsgTask( void *pvParameters )
         FreeRTOSConfig.h. */
         rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
         itoa(ulReceivedValue,stringValue, 10);
-        write(1,"Recieved: ", 10);
-        write(1,stringValue, 3);
-        write(1,"\n",1);
+        demoOutputMsg("Recieved: ", 10);
+		demoOutputMsg(stringValue, 3);
+		demoOutputMsg("\n",1);
 
         /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */
@@ -335,7 +335,7 @@ static void demoSemaphoreTask( void *pvParameters )
            ulCountOfReceivedSemaphores++;
         }
 
-        write(1, "Semaphore taken\n", 16);
+        demoOutputMsg("Semaphore taken\n", 16);
     }
 }
 
@@ -377,7 +377,7 @@ static uint32_t ulCount = 0;
       ulCount = 0UL;
 
     	GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
-    	write(1, "Giving Semaphore\n", 17);
+    	demoOutputMsg("Giving Semaphore\n", 17);
 
     }
 }
@@ -398,7 +398,7 @@ void vApplicationMallocFailedHook( void )
     internally by FreeRTOS API functions that create tasks, queues, software
     timers, and semaphores.  The size of the FreeRTOS heap is set by the
     configTOTAL_HEAP_SIZE configuration constant in FreeRTOSConfig.h. */
-	write(1,"malloc failed\n", 14);
+	demoOutputMsg("malloc failed\n", 14);
     for( ;; );
 }
 
@@ -420,7 +420,7 @@ void vApplicationStackOverflowHook(void* xTask, signed char *pcTaskName)
     function is called if a stack overflow is detected.  pxCurrentTCB can be
     inspected in the debugger if the task name passed into this function is
     corrupt. */
-    write(1, "Stack Overflow\n", 15);
+    demoOutputMsg("Stack Overflow\n", 15);
     for( ;; );
 }
 

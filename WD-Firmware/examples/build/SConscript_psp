@@ -45,15 +45,13 @@ public_includes = [
   os.path.join(Env['ROOT_DIR'], 'psp', 'loc_inc'),
   os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
-  #os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'include', 'sifive'),
-  #os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'env'),
-  #os.path.join(Env['ROOT_DIR'], 'board', 'hifive-1', 'bsp', 'env', 'freedom-e300-hifive1'),
   os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'Source', 'include'),
   os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'config', 'hifive-1'),
   os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'config', 'nexys_a7_swerv'),
   os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'),
   os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'loc_inc'),
   os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),
+  os.path.join(Env['ROOT_DIR'], 'examples', 'demo'),
 ]
 ############################################################################################
 # Define include path specific to the core in use

@@ -25,6 +25,13 @@
 * include files
 */
 #include "demo_platform_al.h"
+
+#ifdef D_RV_HiFive1
+   #include <unistd.h>
+#else
+   #error Platform was not defined
+#endif
+
 /**
 * definitions
 */
@@ -56,24 +63,6 @@
 /**
 * functions
 */
-void demoLedsInit(void);
-
-
-/**
-* demoPlatformInit - Initialize board related stuff
-*
-* 
-* */
-void demoPlatformInit(void)
-{
-#ifdef D_RV_HiFive1
-	_init();
-#else
-   #error Platform was not defined
-#endif
-    demoLedsInit();
-
-}
 
 
 /**
@@ -90,4 +79,42 @@ void demoLedsInit(void)
    #error "\n\n-- A platform is not defined -- \n\n"
 #endif
 }
+
+
+/**
+* demoPlatformInit - Initialize board related stuff
+*
+* */
+void demoPlatformInit(void)
+{
+#ifdef D_RV_HiFive1
+	_init();
+#else
+   #error Platform was not defined
+#endif
+    demoLedsInit();
+
+}
+
+/**
+* demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
+*                 using the platform means for that.
+*
+* const void *str - pointer to a string to be printed out
+*
+* size_t size - number of characters to print
+*
+* */
+void demoOutputMsg(const void *str, size_t size)
+{
+#ifdef D_RV_HiFive1
+	write(1, str, size);
+#else
+   #error Platform was not defined
+#endif
+
+}
+
+
+
 

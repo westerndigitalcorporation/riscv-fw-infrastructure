@@ -37,6 +37,7 @@
 #include "psp_defines.h"
 #include "psp_specific_definitions.h"
 #include "rtosal_services_api.h"
+#include "demo_platform_al.h"
 
 extern void pspHandleEcall();
 
@@ -123,7 +124,6 @@ void pspTrapUnhandled(void)
 ***************************************************************************************************/
 void pspEcallHandler(void)
 {
-	/*write(1,"ECALL\n", 6);*/
 	pspHandleEcall();
 }
 
@@ -136,7 +136,6 @@ void pspMTimerIntHandler(void)
 {
 	static uint64_t then = 0;
 
-	//write(1,"MTIMER int\n", 11);
 	M_CLEAR_CSR(mie, D_MIP_MTIP); /* clear timer interrupt indication */
     volatile uint64_t * mtime       = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIME); /* mtime - pointer to mtime field in CLINT */
     volatile uint64_t * mtimecmp    = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIMECMP); /* mtimecmp - pointer to mtimecmp field in CLINT */
@@ -175,7 +174,7 @@ void pspMTimerIntHandler(void)
 void pspSetupTimer(void)
 {
 #ifdef D_pspHasCLINT
-	write(1,"SETUP Timer\n", 12);
+	demoOutputMsg("SETUP Timer\n", 12);
 
     // Set the machine timer
     volatile uint64_t * mtime       = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIME);

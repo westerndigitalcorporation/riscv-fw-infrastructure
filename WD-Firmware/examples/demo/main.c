@@ -65,7 +65,7 @@ extern void demoStart(void);
 //////////////////////////////////////////////////////////////////////
 int main(void)
 {
-	/* Initilize the platform first */
+	/* Initialize the platform first */
 	demoPlatformInit();
 
    /* Now is the time to activate the relevant demonstration function */

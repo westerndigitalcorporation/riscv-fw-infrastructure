@@ -65,5 +65,22 @@
 /**
 * functions
 */
+
+/**
+* demoPlatformInit - Initialize board related stuff
+*
+* */
 void demoPlatformInit(void);
+
+
+/**
+* demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
+*                 using the platform means for that.
+*
+* const void *str - pointer to a string to be printed out
+*
+* size_t size - number of characters to print
+*
+* */
+void demoOutputMsg(const void *str, size_t size);
 
