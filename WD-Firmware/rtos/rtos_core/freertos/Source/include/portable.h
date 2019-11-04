@@ -53,7 +53,7 @@ must be set in the compiler's include path. */
 #endif
 
 extern int rtosalStartScheduler(void);
-#define pxPortInitialiseStack  pspInitializeStack
+#define pxPortInitialiseStack  rtosalInitializeStack
 #define xPortStartScheduler    rtosalStartScheduler
 #define vPortEndScheduler      rtosalEndScheduler
 
@@ -111,15 +111,15 @@ extern "C" {
  */
 #if( portUSING_MPU_WRAPPERS == 1 )
 	#if( portHAS_STACK_OVERFLOW_CHECKING == 1 )
-		StackType_t *pspInitializeStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
+		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
 	#else
-		StackType_t *pspInitializeStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
+		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
 	#endif
 #else
 	#if( portHAS_STACK_OVERFLOW_CHECKING == 1 )
-		StackType_t *pspInitializeStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
+		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
 	#else
-		StackType_t *pspInitializeStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
+		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
 	#endif
 #endif
 

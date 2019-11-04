@@ -57,7 +57,8 @@ local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
 public_includes = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),]
+                   os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),
+                   os.path.join(Env['ROOT_DIR'], 'examples', 'demo'),]
                    
 Env['RTOSAL_INC_PATH'] = public_includes
 include_paths = Env['BSP_INC_PATH'] + Env['RTOS_INC_PATH'] + public_includes + local_includes

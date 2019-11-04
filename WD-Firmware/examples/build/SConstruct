@@ -165,9 +165,9 @@ arr_lib              = []
 if exampleName == 'ex-freertos':
   Env['RTOS_CORE'] = 'freertos'
   if Env['TARGET_BOARD'] == 'nexys_a7':
-    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HiFive1']  ##[OS]: if this will keep beening here then we need new define
+    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HI_FIVE1']  ##[OS]: if this will keep beening here then we need new define
   elif Env['TARGET_BOARD'] == 'hifive1':
-    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HiFive1']
+    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HI_FIVE1']
   else:
     exit(1)
   

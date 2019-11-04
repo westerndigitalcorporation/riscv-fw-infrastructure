@@ -42,19 +42,6 @@
 extern void pspHandleEcall();
 
 
-#ifndef configCLINT_BASE_ADDRESS
-	#warning configCLINT_BASE_ADDRESS must be defined in FreeRTOSConfig.h.  If the target chip includes a Core Local Interrupter (CLINT) then set configCLINT_BASE_ADDRESS to the CLINT base address.  Otherwise set configCLINT_BASE_ADDRESS to 0.
-#endif
-
-/* Let the user override the pre-loading of the initial LR with the address of
-prvTaskExitError() in case it messes up unwinding of the stack in the
-debugger. */
-#ifdef configTASK_RETURN_ADDRESS
-	#define pspTASK_RETURN_ADDRESS	configTASK_RETURN_ADDRESS
-#else
-	#define pspTASK_RETURN_ADDRESS	prvTaskExitError
-#endif
-
 /* The stack used by interrupt service routines.  Set configISR_STACK_SIZE_WORDS
 to use a statically allocated array as the interrupt stack.  Alternative leave
 configISR_STACK_SIZE_WORDS undefined and update the linker script so that a
@@ -70,11 +57,6 @@ interrupt stack after the scheduler has started. */
 	const StackType_t xISRStackTop = ( StackType_t ) __freertos_irq_stack_top;
 #endif
 
-
-/* Used to program the machine timer compare register. */
-uint64_t ullNextTime = 0ULL;
-const uint64_t *pullNextTime = &ullNextTime;
-const size_t uxTimerIncrementsForOneTick = ( size_t ) ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ); /* Assumes increment won't go over 32-bits. */
 
 /* Set configCHECK_FOR_STACK_OVERFLOW to 3 to add ISR stack checking to task
 stack checking.  A problem in the ISR stack will trigger an assert, not call the

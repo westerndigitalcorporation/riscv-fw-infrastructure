@@ -56,45 +56,16 @@
  *
  */
 
-#include "psp_specific_definitions.h"
 #include "psp_specific_macros.h"
 #include "psp_asm_macros.h"
 #include "psp_specific_rtos.h"
 #include "rtosal_asm_macros.h"
 
 .global pspHandleEcall
-.global pspInitializeStack
 .extern vTaskSwitchContext
 
 .global pxCurrentTCB
 
-.align 8
-.func
-pspInitializeStack:
-
-	csrr t0, mstatus					/* Obtain current mstatus value. */
-    M_ADDI t1, x0, 0x188                /* Generate the value 0x1880, which are -   */
-	slli t1, t1, 4                      /* the MPIE and MPP bits to set in mstatus. */
-	or t0, t0, t1						/* Set MPIE and MPP bits in mstatus value. */
-
-    M_ADDI a0, a0, -REGBYTES
-    M_STORE t0, 0(a0)                         /* mstatus onto the stack. */
-    M_ADDI a0, a0, -(22 * REGBYTES)           /* Space for registers x11-x31. */
-    M_STORE a2, 0(a0)                         /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
-    M_ADDI a0, a0, -(6 * REGBYTES)            /* Space for registers x5-x9. */
-    M_STORE x0, 0(a0)                         /* Return address onto the stack, could be pspTASK_RETURN_ADDRESS */
-    M_ADDI t0, x0, D_pspAdditionalContextSize /* The number of chip specific additional registers. */
-chip_specific_stack_frame:                    /* First add any chip specific registers to the stack frame being created. */
-    beq t0, x0, 1f                            /* No more chip specific registers to save. */
-    M_ADDI a0, a0, -REGBYTES                  /* Make space for chip specific register. */
-    M_STORE x0, 0(a0)                         /* Give the chip specific register an initial value of zero. */
-    M_ADDI t0, t0, -1                         /* Decrement the count of chip specific registers remaining. */
-    j chip_specific_stack_frame               /* Until no more chip specific registers. */
-1:
-    M_ADDI a0, a0, -REGBYTES
-    M_STORE a1, 0(a0)                         /* mret value (pxCode parameter) onto the stack. */
-    ret
-.endfunc
 
 /* Implements context-switch as a result of ECALL exception */
 pspHandleEcall:

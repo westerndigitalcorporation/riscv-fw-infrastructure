@@ -58,7 +58,7 @@ has a higher priority than the send task, so will remove items as they are added
 meaning the send task should always find the queue empty. */
 #define D_MAIN_QUEUE_LENGTH                    ( 1 )
 
-/* Stack size of the tasks in thsi application */
+/* Stack size of the tasks in this application */
 #define D_RX_TASK_STACK_SIZE  600
 #define D_TX_TASK_STACK_SIZE  configMINIMAL_STACK_SIZE
 #define D_SEM_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
@@ -80,6 +80,7 @@ static void demoReceiveMsgTask( void *pvParameters );
 static void demoSendMsgTask( void *pvParameters );
 static void demoSemaphoreTask( void *pvParameters );
 static void demoTimerCallback( void* xTimer );
+
 
 /**
 * external prototypes
@@ -382,7 +383,7 @@ static uint32_t ulCount = 0;
 }
 
 /**
- * vApplicationMallocFailedHook - Called upon malloc failure
+ * vApplicationMallocFailedHook - Called from FreeRTOS upon malloc failure
  *
  * Not in use
  *
@@ -431,6 +432,7 @@ void vApplicationStackOverflowHook(void* xTask, signed char *pcTaskName)
  */
 void vApplicationIdleHook( void )
 {
+	/*demoOutputMsg("Idle Task Hook\n", 15);*/
 }
 
 /**

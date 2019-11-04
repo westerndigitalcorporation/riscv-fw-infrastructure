@@ -41,7 +41,7 @@
 /**
 * macros
 */
-#if defined (D_RV_HiFive1)
+#if defined (D_RV_HI_FIVE1)
 
    .macro m_pushAdditionalRegs
       /* No additional registers to save, so this macro does nothing. */

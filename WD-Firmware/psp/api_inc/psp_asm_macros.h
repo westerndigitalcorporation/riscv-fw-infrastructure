@@ -15,8 +15,6 @@
  limitations under the License.
 */
 
-.extern xISRStackTop
-
 .if __riscv_xlen == 32
     .equ REGBYTES, 4
 

@@ -26,7 +26,7 @@
 */
 #include "demo_platform_al.h"
 
-#ifdef D_RV_HiFive1
+#ifdef D_RV_HI_FIVE1
    #include <unistd.h>
 #else
    #error "Platform is not defined"
@@ -71,7 +71,7 @@
 * */
 void demoLedsInit(void)
 {
-#ifdef D_RV_HiFive1
+#ifdef D_RV_HI_FIVE1
 	GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
@@ -86,7 +86,7 @@ void demoLedsInit(void)
 * */
 void demoUartInit(void)
 {
-#ifdef D_RV_HiFive1
+#ifdef D_RV_HI_FIVE1
 	/* Empty implementation */
 #else
    #error "Platform is not defined"
@@ -103,7 +103,7 @@ void demoUartInit(void)
 * */
 void demoPlatformInit(void)
 {
-#ifdef D_RV_HiFive1
+#ifdef D_RV_HI_FIVE1
 	_init();
 #else
    #error "Platform is not defined"
@@ -124,7 +124,7 @@ void demoPlatformInit(void)
 * */
 void demoOutputMsg(const void *str, size_t size)
 {
-#ifdef D_RV_HiFive1
+#ifdef D_RV_HI_FIVE1
 	write(1, str, size);
 #else
    #error "Platform is not defined"
@@ -142,7 +142,7 @@ void demoOutputMsg(const void *str, size_t size)
 * */
 void demoOutputLed(const int ledAct)
 {
-#ifdef D_RV_HiFive1
+#ifdef D_RV_HI_FIVE1
 	switch (ledAct)
 	{
         case D_LED_GREEN_ON:
