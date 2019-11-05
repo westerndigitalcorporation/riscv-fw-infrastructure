@@ -15,55 +15,32 @@
 * limitations under the License.
 */
 /**
-* @file   psp_specific_definitions.h
+* @file   psp_types.h
 * @author Nati Rapaport
-* @date   16.09.2019
-* @brief  This file is used internally by PSP module for handling CSRs specific to a given core
+* @date   04.11.2019
+* @brief  The file defines the fw types - its contents is fully identical to WD-Firmware/common/api_inc/common_types.h
+*                                         we duplicates it here in order to keep PSP fully independant
 */
-#ifndef  __PSP_SPECIFIC_DEFS_H__
-#define  __PSP_SPECIFIC_DEFS_H__
-
-
+#ifndef  __FW_PSP_TYPES_H__
+#define  __FW_PSP_TYPES_H__
 
 /**
 * include files
 */
 
 /**
-* APIs
-*/
-/* API to context-switch handler in the RTOS layer */
-
-/**
-* definitions
-*/
-#if defined (D_RV_HI_FIVE1)
-   #define D_pspHasCLINT 1
-#else
-   #error "Specific core is not defined!"
-#endif
-
-/**
-* macros
-*/
-
-
-/**
 * types
 */
+typedef signed char        s08_t;
+typedef signed short       s16_t;
+typedef signed int         s32_t;
+typedef signed long long   s64_t;
+typedef unsigned char      u08_t;
+typedef unsigned short     u16_t;
+typedef unsigned int       u32_t;
+typedef unsigned long long u64_t;
 
-/**
-* local prototypes
-*/
+/* for general use */
+typedef void (*fptrFunction)(void);
 
-/**
-* external prototypes
-*/
-
-
-/**
-* global variables
-*/
-
-
-#endif /* __PSP_SPECIFIC_DEFS_H__ */
+#endif /* __FW_PSP_TYPES_H__ */

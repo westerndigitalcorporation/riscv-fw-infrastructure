@@ -39,6 +39,9 @@
 /**
 * macros
 */
+#define	M_PSP_CLR_TIMER_INT()     M_CLEAR_CSR(mie, D_MIP_MTIP);
+#define M_PSP_ENABLE_TIMER_INT()   M_SET_CSR(mie, D_MIP_MTIP);
+// NatiR - add additional macros for more CSRs
 
 /**
 * types
@@ -62,5 +65,7 @@
 u32_t pspIsInterruptContext(void);
 pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
 pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
+
+
 
 #endif /* __PSP_API_H__ */

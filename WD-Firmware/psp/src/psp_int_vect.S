@@ -72,7 +72,6 @@
 
 
 #include "psp_asm_macros.h"
-#include "psp_specific_definitions.h"
 #include "psp_specific_macros.h"
 
 

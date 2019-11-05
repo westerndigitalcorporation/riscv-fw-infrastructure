@@ -29,7 +29,6 @@
 * definitions
 */
 #if defined (D_RV_HI_FIVE1)
-   #define D_pspHasCLINT 1
    #define D_NUM_OF_ADDITIONAL_REGISTERS 0 /* Must be even number on 32-bit cores. */
 #else
    #error "Specific core is not defined!"

@@ -33,6 +33,7 @@
 #else
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
+#include "psp_api.h"
 
 /**
 * definitions
@@ -71,9 +72,17 @@ u32_t g_rtosalContextSwitch = 0;
 *
 * @return calling this function will never return
 */
-#include <unistd.h>
+
+extern void rtosalTimerIntHandler(void);
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
+	/* Initialize the Timer to create ticks for OS usage */
+	//pspInitTimerForTicks();
+
+    /* register timer interrupt handler */
+    pspRegisterIsrCauseHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
+
+
 #ifdef D_USE_FREERTOS
    fptrInit(NULL);
    vTaskStartScheduler();

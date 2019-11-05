@@ -33,11 +33,8 @@
 #include <stdlib.h>
 
 #include "psp_macros.h"
-#include "psp_rtos_api.h"
+#include "psp_rtos_api.h" // NatiR - Must delete it from here and resolve how I pass CLINT numbers into here via scons
 #include "psp_defines.h"
-#include "psp_specific_definitions.h"
-#include "rtosal_services_api.h"
-#include "demo_platform_al.h"
 
 extern void pspHandleEcall();
 
@@ -109,54 +106,15 @@ void pspEcallHandler(void)
 	pspHandleEcall();
 }
 
-/***************************************************************************************************
-*
-* @brief Handler of M-Timer interrupt
-*
-***************************************************************************************************/
-void pspMTimerIntHandler(void)
-{
-	static uint64_t then = 0;
-
-	M_CLEAR_CSR(mie, D_MIP_MTIP); /* clear timer interrupt indication */
-    volatile uint64_t * mtime       = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIME); /* mtime - pointer to mtime field in CLINT */
-    volatile uint64_t * mtimecmp    = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIMECMP); /* mtimecmp - pointer to mtimecmp field in CLINT */
-
-    /* Configure CLINT for the next timer interrupt: */
-	if(then != 0)  {
-		//next timer irq is 1 second from previous
-		then += (configRTC_CLOCK_HZ / configTICK_RATE_HZ);
-	} else{ //first time setting the timer
-		uint64_t now = *mtime;
-		then = now + (configRTC_CLOCK_HZ / configTICK_RATE_HZ);
-	}
-	*mtimecmp = then;
-
-   /* Increment the RTOS tick. */
-#ifndef D_USE_RTOSAL
-   #ifdef D_USE_FREERTOS
-	   if( xTaskIncrementTick() != pdFALSE )
-	   {
-	      vTaskSwitchContext();
-	   }
-   #else
-	   #error "Need to add a direct RTOS call herein"
-   #endif  /* D_USE_FREERTOS */
-#else
-	rtosalTick();
-#endif /* D_USE_RTOSAL */
-	M_SET_CSR(mie, D_MIP_MTIP);
-}
 
 /***************************************************************************************************
 *
 * @brief Setup function for M-Timer in the CLINT (per priviliged spec)
 *
 ***************************************************************************************************/
-void pspSetupTimer(void)
+void pspSetupTimerSingleRun(const unsigned int enable)
 {
-#ifdef D_pspHasCLINT
-	demoOutputMsg("SETUP Timer\n", 12);
+	//demoOutputMsg("SETUP Timer\n", 12);
 
     // Set the machine timer
     volatile uint64_t * mtime       = (uint64_t*) (CLINT_CTRL_ADDR + CLINT_MTIME);
@@ -165,14 +123,12 @@ void pspSetupTimer(void)
     uint64_t then = now + (configRTC_CLOCK_HZ / configTICK_RATE_HZ);
     *mtimecmp = then;
 
-    // Enable the Machine-Timer bit in MIE
-    M_SET_CSR(mie, D_MIP_MTIP);
-#else
-    #error "Need to define timer interrupt implementation when no CLINT in the core"
-    /* TBD for future specs*/
-#endif
+    if (D_PSP_TRUE == enable)
+    {
+        // Enable the Machine-Timer bit in MIE
+        M_SET_CSR(mie, D_MIP_MTIP);
+    }
 }
-
 
 
 

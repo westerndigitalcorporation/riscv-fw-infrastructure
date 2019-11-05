@@ -28,6 +28,7 @@
 #include "rtosal_time_api.h"
 #include "rtosal_macro.h"
 #include "rtosal.h"
+#include "rtosal_services_api.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "timers.h"
@@ -369,3 +370,25 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 
    return uiRes;
 }
+
+
+/**
+* @brief rtosalTimerIntHandler - Timer interrupt handler
+*
+* @param void
+*
+*/
+extern void pspSetupTimerSingleRun(const unsigned int enable);
+void rtosalTimerIntHandler(void)
+{
+	M_PSP_CLR_TIMER_INT();
+
+	/* Indicate PSP to let the Timer run an additional cycle, without enable it - this is done later on here after Ticking the RTOS */
+	pspSetupTimerSingleRun(0);
+
+   /* Increment the RTOS tick. */
+	rtosalTick();
+
+	M_PSP_ENABLE_TIMER_INT();
+}
+

@@ -85,7 +85,6 @@ static void demoTimerCallback( void* xTimer );
 /**
 * external prototypes
 */
-extern void pspMTimerIntHandler(void);
 extern void pspEcallHandler(void);
 extern void pspTrapUnhandled(void);
 
@@ -166,9 +165,6 @@ void demoRtosalCreateTasks(void *pParam)
 
     /* register E_CALL exception handler */
     pspRegisterIsrExceptionHandler(pspEcallHandler, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
-
-    /* register timer interrupt handler */
-        pspRegisterIsrCauseHandler(pspMTimerIntHandler, E_MACHINE_TIMER_CAUSE);
 
     /* register external interrupt handler */
     /* pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
