@@ -28,6 +28,7 @@
 * include files
 */
 
+
 /**
 * types
 */
@@ -39,6 +40,13 @@ typedef unsigned char      u08_t;
 typedef unsigned short     u16_t;
 typedef unsigned int       u32_t;
 typedef unsigned long long u64_t;
+
+#if __riscv_xlen == 32
+   typedef u32_t pspStack_t;
+#elif __riscv_xlen == 64
+   typedef u64_t pspStack_t;
+#endif
+
 
 /* for general use */
 typedef void (*fptrFunction)(void);
