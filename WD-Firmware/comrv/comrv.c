@@ -158,7 +158,7 @@ typedef struct comrvCB
 * local prototypes
 */
 static void  comrvUpdateHeapEntryAccess      (u08_t entryIndex);
-static u08_t comrvGetEvictionCandidates   (u08_t requestedEvictionSize, u08_t* pEvictCandidatesList);
+static u08_t comrvGetEvictionCandidates      (u08_t requestedEvictionSize, u08_t* pEvictCandidatesList);
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t token);
 
 /**
@@ -177,7 +177,6 @@ comrvStackFrame_t* pStackStartAddr = (comrvStackFrame_t*)&__OVERLAY_STACK_START_
 comrvCB_t*         pComrvCB;
 u16_t *pOverlayOffsetTable = (u16_t*)&overlayOffsetTable;
 comrvOverlayToken_t *pOverlayMultiGroupTokensTable = (comrvOverlayToken_t*)&overlayMultiGroupTokensTable;
-
 
 /**
 * COM-RV initialization function
@@ -228,12 +227,12 @@ void comrvInit(void)
       pStackStartAddr->calleeToken = 0;
    }
 
-#ifndef __OS__
+#ifndef D_COMRV_USE_OS
    /* set the address of COMRV stack and initialize it */
    pStackStartAddr--;
    M_COMRV_SET_STACK_ADDR(pStackStartAddr);
    pStackStartAddr->offsetPrevFrame = D_COMRV_END_OF_STACK;
-#endif /* __OS__ */
+#endif /* D_COMRV_USE_OS */
 
    /* set the address of COMRV stack pool */
    pStackStartAddr--;
@@ -246,13 +245,12 @@ void comrvInit(void)
 /**
 * Search if current overlay token is already loaded
 *
-* @param
+* @param pComrvStackFrame - address of current comrv stack frame
 *
-* @return void* - address of the overlay function/data or NULL if not loaded
+* @return void* - address of the overlay function/data
 */
 void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
 {
-   u32_t               temp;
    comrvOverlayToken_t token;
    comrvHeapEntry_t*   pEntry;
    u08_t               isInvoke;
@@ -267,6 +265,7 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
    u32_t               profilingIndication;
 #endif /* D_COMRV_FW_PROFILING */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
+   u32_t               temp;
    u16_t               selectedMultiGroupEntry;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
@@ -314,8 +313,9 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
          pAddress = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[entryIndex]);
       /* continue the search as long as the group wasn't found and we have additional tokens */
       } while ((pAddress == NULL) && (pOverlayMultiGroupTokensTable[entryIndex].value != 0));
-ronen         /* save the selected multi group entry */
-         selectedMultiGroupEntry = entryIndex++;
+
+      /* save the selected multi group entry */
+      selectedMultiGroupEntry = entryIndex-1;
    }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
@@ -367,6 +367,8 @@ ronen         /* save the selected multi group entry */
                /* an overlay data is present when handling defragmentation */
                if (pEntry->properties.data)
                {
+                  /* enable ints */
+                  // TODO: enable ints
                   comrvNotificationHook(D_COMRV_OVL_DATA_DEFRAG_ERR, token.value);
                }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
@@ -415,7 +417,7 @@ ronen         /* save the selected multi group entry */
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
       }
-      /* Q: should I temporary mark it before load and unmark it after load, so the memory
+      /* TODO:Q: should I temporary mark it before load and unmark it after load, so the memory
          won't move in case of context switch during the load */
       /* enable ints */
       // TODO
@@ -458,11 +460,19 @@ ronen         /* save the selected multi group entry */
       /* calculate the function return offset; at this point pComrvStackFrame->calleeToken
          will hold the return address */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-     /*  */
-      temp = M_COMRV_GET_OFFSET(pOverlayMultiGroupTokensTable[pComrvStackFrame->calleeMultiGroupTableEntry]);
-      offset += ((u32_t)(pComrvStackFrame->calleeToken) - temp) & (--overlayGroupSize);
-#else
-      offset += ((u32_t)(pComrvStackFrame->calleeToken) - offset) & (--overlayGroupSize);
+      /*  */
+      if ()
+      {
+         temp = M_COMRV_GET_OFFSET(pOverlayMultiGroupTokensTable[pComrvStackFrame->calleeMultiGroupTableEntry]);
+         overlayGroupSize = TODO: get the group size
+         offset += ((u32_t)(pComrvStackFrame->calleeToken) - temp) & (--overlayGroupSize);
+      }
+      else
+      {
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+         offset += ((u32_t)(pComrvStackFrame->calleeToken) - offset) & (--overlayGroupSize);
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+      }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    }
    /* we are calling a new overlay function or accessing overlay data */
@@ -484,6 +494,14 @@ ronen         /* save the selected multi group entry */
    return (void*)((u08_t*)pAddress + offset);
 }
 
+/**
+* Get comrv heap eviction candidates according to a given size
+*
+* @param requestedEvictionSize - size requested for eviction; expressed in
+*                                units of D_COMRV_OVL_GROUP_SIZE_MIN
+*        pEvictCandidatesList  - output eviction candidate list of comrv heap indexes
+* @return number of eviction candidates in the output list
+*/
 u08_t comrvGetEvictionCandidates(u08_t requestedEvictionSize, u08_t* pEvictCandidatesList)
 {
    u08_t accumulatedSize = 0, index = 0;
@@ -543,6 +561,13 @@ u08_t comrvGetEvictionCandidates(u08_t requestedEvictionSize, u08_t* pEvictCandi
    return numberOfCandidates;
 }
 
+/**
+* search if a specific token is already loaded to the heap
+*
+* @param token - the token to search for
+* @return if the token is loaded the return value is set to the loaded address
+*         otherwise NULL
+*/
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t token)
 {
    u08_t entryIndex;
@@ -563,6 +588,13 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t token)
    return NULL;
 }
 
+/**
+* Update a given comrv heap entry was accessed
+*
+* @param entryIndex - the comrv heap entry being accessed
+*
+* @return none
+*/
 static void comrvUpdateHeapEntryAccess(u08_t entryIndex)
 {
 #ifdef D_COMRV_EVICTION_LRU
