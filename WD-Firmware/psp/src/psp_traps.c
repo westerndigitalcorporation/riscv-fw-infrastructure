@@ -116,9 +116,13 @@ void pspSetupTimerSingleRun(const unsigned int enable)
 {
 	//demoOutputMsg("SETUP Timer\n", 12);
 
-    // Set the machine timer
-    volatile uint64_t * mtime       = (uint64_t*) (D_CLINT_CTRL_ADDR + D_CLINT_MTIME);
-    volatile uint64_t * mtimecmp    = (uint64_t*) (D_CLINT_CTRL_ADDR + D_CLINT_MTIMECMP);
+    #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
+       #error "MTIME/MTIMECMP address definition is missing"
+    #endif
+
+     // Set the machine timer
+    volatile uint64_t * mtime       = (uint64_t*)D_MTIME_ADDRESS;
+    volatile uint64_t * mtimecmp    = (uint64_t*)D_MTIMECMP_ADDRESS;
     uint64_t now = *mtime;
     uint64_t then = now + (D_RTC_CLOCK_HZ / D_TICK_RATE_HZ);
     *mtimecmp = then;
