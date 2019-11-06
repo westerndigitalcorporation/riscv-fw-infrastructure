@@ -46,17 +46,6 @@
 extern void* __OVERLAY_START__;
 
 /**
-* Search if current overlay token is already loaded
-*
-* @param  none
-*
-* @return void* - address of the overlay function/data or NULL if not loaded
-*/
-void comrvErrorInddicationHook(u32_t errorNum)
-{
-}
-
-/**
 * memory copy hook
 *
 * @param  none
@@ -65,7 +54,18 @@ void comrvErrorInddicationHook(u32_t errorNum)
 */
 void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 {
-   memcpy(pDest, pSrc, sizeInBytes);
+   u32_t loopCount = sizeInBytes/(sizeof(u32_t)), i;
+   /* copy dwords */
+   for (i = 0; i < loopCount ; i++)
+   {
+      *((u32_t*)pDest + i) = *((u32_t*)pSrc + i);
+   }
+   loopCount = sizeInBytes - (loopCount*(sizeof(u32_t)));
+   /* copy bytes */
+   for (i = (i-1)*(sizeof(u32_t)) ; i < loopCount ; i++)
+   {
+      *((u08_t*)pDest + i) = *((u08_t*)pSrc + i);
+   }
 }
 
 /**
@@ -77,7 +77,7 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 */
 void* comrvLoadOvlayGroupHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes)
 {
-   memcpy(pDest, (u08_t*)&__OVERLAY_START__ + groupOffset, sizeInBytes);
+   comrvMemcpyHook(pDest, (u08_t*)&__OVERLAY_START__ + groupOffset, sizeInBytes);
    return pDest;
 }
 
@@ -88,10 +88,9 @@ void* comrvLoadOvlayGroupHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes)
 *
 * @return none
 */
-void comrvNotificationHook(void)
+void comrvNotificationHook(u32_t notificationNum, u32_t token)
 {
 }
-
 
 /**
 * crc calculation hook

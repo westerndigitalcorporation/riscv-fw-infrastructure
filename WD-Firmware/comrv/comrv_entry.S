@@ -34,6 +34,8 @@
 .equ D_COMRV_FUNC_OFFSET_MASK,              0x3FF
 
 .equ D_COMRV_TOKEN_INDICATION,              1
+.equ D_COMRV_PROFILING_INVOKE_VAL,          1
+
 /*
  local stack frame layout:
  offset 0 - RA
@@ -89,7 +91,7 @@ comrv_entry:
        to the stack pointed by t3. */
     /* calc the offset from the new stack frame (t2) to previous stack frame (t3) */
     sub     t3, t3, t2
-    /* in current stack frame (t2r) save the offset to previous stack frame */
+    /* in current stack frame (t2) save the offset to previous stack frame */
     sh      t3, D_COMRV_PREV_STACK_FRAME(t2)
     /* link allocated stack frame */
     mv      t3, t2
@@ -106,9 +108,12 @@ comrv_entry:
     m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 in the next free stack frame */
     m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* prepare address output arg for comrvGetFunctionAddressFromToken - overlay loaded
-       to comrv table entry */
-    m_ADDI  a0, t3, D_COMRV_GROUP_SIZE_STACK_OFFSET
+    /* current comrv stack frame is needed when calling a new overlay function so */
+    mv      a0, t3
+    /* Add the indication we are calling a new overlay function
+       this indication is required to calculate the correct offset
+       when returning to an overlay function */
+    ori     a0, a0, D_COMRV_PROFILING_INVOKE_VAL
     /* search if the token (t5) is already loaded */
     jal     comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
@@ -156,27 +161,18 @@ comrv_invoke_callee:
     m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
     m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* temporary save ra as it is being used */
-    m_STORE ra, D_COMRV_RA_REG_STACK_OFFSET_TMP(sp)
-    /* the arg passed to comrvGetAddressFromToken isn't used now so
-       we just provide it a temp location on the stack */
-    m_ADDI  a0, sp, D_COMRV_ARG_STACK_OFFSET_TMP
+    /* save ra as in the token as a placeholder - this field
+       is no longer in use */
+    m_STORE ra, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
+    /* the arg passed to comrvGetAddressFromToken holds
+       the return address - in that function
+       we will extract the return offset */
+    mv      a0, t3
     /* search if the token (t5) is already loaded */
     jal     comrvGetAddressFromToken
-    /* restore ra - load the saved address */
-    m_LOAD  ra, D_COMRV_RA_REG_STACK_OFFSET_TMP(sp)
-    /* get the function offset from the token */
-    srli    t2, t5, D_COMRV_FUNC_OFFSET_SMNT
-    andi    t2, t2, D_COMRV_FUNC_OFFSET_MASK
-    /* subtract the function offset from the saved RA */
-    sub     ra, ra, zero /* FIXME when we get the actual offset in the token change zero to t2 */
-    /* read the group size */
-    lh      t1, D_COMRV_GROUP_SIZE_STACK_OFFSET(t3)
-    /* get the actual ra offset */
-    and     ra, ra, t1
-    /* an overlay token is already loaded then a0 will hold the actual
-       address we can add to it the RA offset */
-    add     ra, ra, a0
+    /* an overlay function is now loaded and a0 holds the actual
+       address we can keep it in ra */
+    mv      ra, a0
     /* restore a0 */
     m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */

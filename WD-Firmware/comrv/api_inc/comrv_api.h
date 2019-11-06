@@ -35,6 +35,18 @@
 #define D_COMRV_OVL_DATA_DEFRAG_ERR       2
 #define D_COMRV_CRC_CHECK_ERR             3
 
+#define D_COMRV_PROFILE_BASE_IND          0xFC
+#define D_COMRV_PROFILING_INVOKE_VAL      1
+#define D_COMRV_PROFILING_LOAD_VAL        2
+/* Load and invoke an overlay function */
+#define D_COMRV_LOAD_AND_INVOKE_IND       (D_COMRV_PROFILE_BASE_IND | D_COMRV_PROFILING_LOAD_BIT | D_COMRV_PROFILING_INVOKE_BIT)
+/* invoke an overlay function already loaded */
+#define D_COMRV_NO_LOAD_AND_INVOKE_IND    (D_COMRV_PROFILE_BASE_IND | D_COMRV_PROFILING_INVOKE_BIT)
+/* load and return from an overlay function */
+#define D_COMRV_LOAD_AND_RETURN_IND       (D_COMRV_PROFILE_BASE_IND | D_COMRV_PROFILING_LOAD_VAL)
+/* return from an overlay function w/o loading */
+#define D_COMRV_NO_LOAD_AND_RETURN_IND    (D_COMRV_PROFILE_BASE_IND)
+
 /**
 * macros
 */
@@ -72,10 +84,5 @@
 * APIs
 */
 void   comrvInit(void);
-void   comrvErrorInddicationHook(u32_t errorNum);
-void   comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes);
-void*  comrvLoadOvlayGroupHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes);
-void   comrvNotificationHook(void);
-u32_t comrvCrcCalcHook(void* pAddress, u16_t memprySize);
 
 #endif /* __COMRV_TASK_API_H__ */

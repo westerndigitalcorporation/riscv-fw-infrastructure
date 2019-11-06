@@ -188,7 +188,7 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
                     '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
-                    '-Wl,-Map='+ map_file_name, '-Wl,--grouping-file=comrv-baremetal.csv'] + cc_options
+                    '-Wl,-Map='+ map_file_name] + cc_options
 
 #, LIBPATH='.'
 

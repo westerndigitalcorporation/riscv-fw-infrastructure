@@ -40,9 +40,14 @@ list_files_a=[
    [os.path.join('comrv', 'comrv_entry.S'), os.path.join(out_dir, 'comrv_entry.o')],
 ]
 
+#add to the global flags ???
+Env['C_FLAGS'] += ['-ffixed-x31', '-ffixed-x30', '-ffixed-x29', '-ffixed-x28']
+Env['A_FLAGS'] += ['-ffixed-x31', '-ffixed-x30', '-ffixed-x29', '-ffixed-x28']
+
 # compiler flags
-c_flags = Env['C_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
-a_flags = Env['A_FLAGS'] #+ ['-ffixed-x30', '-ffixed-x29']
+c_flags = Env['C_FLAGS']
+a_flags = Env['A_FLAGS']
+
 
 # defines
 Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU'] #, 'D_COMRV_MULTI_GROUP_SUPPORT']
@@ -55,7 +60,7 @@ Env['COMRV_INC_PATH'] = public_includes
 include_paths = public_includes + local_includes + [os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')]
 
 # linker flags
-Env['LINKFLAGS'] += []
+Env['LINKFLAGS'] += ['-Wl,--grouping-file=comrv-baremetal.csv']
 
 # loop the list of c files and compile them
 objects = []

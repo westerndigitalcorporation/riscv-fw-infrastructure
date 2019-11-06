@@ -62,6 +62,8 @@ SECTIONS
   /* Overlay data */
   .ovlgrp.0       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_START__ = .;} >flash AT>flash :flash
   .ovlgrp.1       : {} >flash AT>flash :flash
+  .ovlgrp.2       : {} >flash AT>flash :flash
+  .ovlgrp.3       : {} >flash AT>flash :flash
 
   /* Overlay offset table */
   .ovlgrptbl      : {
