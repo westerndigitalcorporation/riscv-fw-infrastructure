@@ -39,47 +39,6 @@
 extern void pspHandleEcall();
 
 
-/* The stack used by interrupt service routines.  Set configISR_STACK_SIZE_WORDS
-to use a statically allocated array as the interrupt stack.  Alternative leave
-configISR_STACK_SIZE_WORDS undefined and update the linker script so that a
-linker variable names __freertos_irq_stack_top has the same value as the top
-of the stack used by main.  Using the linker script method will repurpose the
-stack that was used by main before the scheduler was started for use as the
-interrupt stack after the scheduler has started. */
-#ifdef D_ISR_STACK_SIZE_WORDS
-	static __attribute__ ((aligned(16))) pspStack_t xISRStack[ D_ISR_STACK_SIZE_WORDS ] = { 0 };
-	const pspStack_t xISRStackTop = ( pspStack_t ) &( xISRStack[ ( D_ISR_STACK_SIZE_WORDS ) - 1 ] );
-#else
-	extern const uint32_t __freertos_irq_stack_top[];
-	const pspStack_t xISRStackTop = ( pspStack_t ) __freertos_irq_stack_top;
-#endif
-
-
-/* Set configCHECK_FOR_STACK_OVERFLOW to 3 to add ISR stack checking to task
-stack checking.  A problem in the ISR stack will trigger an assert, not call the
-stack overflow hook function (because the stack overflow hook is specific to a
-task stack, not the ISR stack). */
-#if( configCHECK_FOR_STACK_OVERFLOW > 2 )
-	#warning This path not tested, or even compiled yet.
-	/* Don't use 0xa5 as the stack fill bytes as that is used by the kernerl for
-	the task stacks, and so will legitimately appear in many positions within
-	the ISR stack. */
-	#define pspISR_STACK_FILL_BYTE	0xee
-
-	static const uint8_t ucExpectedStackBytes[] = {
-									pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE,		\
-									pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE,		\
-									pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE,		\
-									pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE,		\
-									pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE, pspISR_STACK_FILL_BYTE };	\
-
-	#define pspCHECK_ISR_STACK() configASSERT( ( memcmp( ( void * ) xISRStack, ( void * ) ucExpectedStackBytes, sizeof( ucExpectedStackBytes ) ) == 0 ) )
-#else
-	/* Define the function away. */
-	#define pspCHECK_ISR_STACK()
-#endif /* configCHECK_FOR_STACK_OVERFLOW > 2 */
-
-
 /***************************************************************************************************
 *
 * @brief Function that called upon unregistered Trap handler
@@ -118,6 +77,9 @@ void pspSetupTimerSingleRun(const unsigned int enable)
 
     #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
        #error "MTIME/MTIMECMP address definition is missing"
+    #endif
+    #if !defined(D_RTC_CLOCK_HZ) || !defined(D_TICK_RATE_HZ)
+       #error "Core frequency values definitions are missing"
     #endif
 
      // Set the machine timer
