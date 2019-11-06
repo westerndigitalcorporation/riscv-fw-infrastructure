@@ -55,6 +55,8 @@
 * external prototypes
 */
 extern void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode);
+extern void rtosalTimerIntHandler(void);
+extern void rtosalHandleEcall(void);
 
 
 /**
@@ -72,12 +74,10 @@ u32_t g_rtosalContextSwitch = 0;
 *
 * @return calling this function will never return
 */
-
-extern void rtosalTimerIntHandler(void);
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
-	/* Initialize the Timer to create ticks for OS usage */
-	//pspInitTimerForTicks();
+    /* register E_CALL exception handler */
+    pspRegisterIsrExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
 
     /* register timer interrupt handler */
     pspRegisterIsrCauseHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);

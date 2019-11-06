@@ -85,8 +85,8 @@ static void demoTimerCallback( void* xTimer );
 /**
 * external prototypes
 */
-extern void pspEcallHandler(void);
 extern void pspTrapUnhandled(void);
+
 
 /**
 * global variables
@@ -160,11 +160,13 @@ void demoRtosalCreateTasks(void *pParam)
     /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
+    	/* Skip ECALL entry as we already registered there a handler */
+    	if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == cause)
+    	{
+    		continue;
+    	}
         pspRegisterIsrExceptionHandler(pspTrapUnhandled, cause);
     }
-
-    /* register E_CALL exception handler */
-    pspRegisterIsrExceptionHandler(pspEcallHandler, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
 
     /* register external interrupt handler */
     /* pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */

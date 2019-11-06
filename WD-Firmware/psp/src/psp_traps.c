@@ -28,15 +28,9 @@
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the RISC-V RV32 port.
  *----------------------------------------------------------*/
-/* Standard Includes */
-#include <unistd.h>
-#include <stdlib.h>
-
 #include "psp_macros.h"
 #include "psp_defines.h"
 #include "psp_types.h"
-
-extern void pspHandleEcall();
 
 
 /***************************************************************************************************
@@ -46,7 +40,7 @@ extern void pspHandleEcall();
 ***************************************************************************************************/
 void pspTrapUnhandled(void)
 {
-	uint32_t local_mepc,local_mcause;
+	u32_t local_mepc,local_mcause;
 	//exit(M_READ_CSR(mcause));
 	local_mepc = M_READ_CSR(mepc);
 	local_mcause = M_READ_CSR(mcause);
@@ -54,17 +48,6 @@ void pspTrapUnhandled(void)
 	//write(1, "Unhandeled exc\n", 15);
 	asm volatile ("ebreak" : : : );
 }
-
-/***************************************************************************************************
-*
-* @brief Handler of ECALL exception
-*
-***************************************************************************************************/
-void pspEcallHandler(void)
-{
-	pspHandleEcall();
-}
-
 
 /***************************************************************************************************
 *
@@ -83,10 +66,10 @@ void pspSetupTimerSingleRun(const unsigned int enable)
     #endif
 
      // Set the machine timer
-    volatile uint64_t * mtime       = (uint64_t*)D_MTIME_ADDRESS;
-    volatile uint64_t * mtimecmp    = (uint64_t*)D_MTIMECMP_ADDRESS;
-    uint64_t now = *mtime;
-    uint64_t then = now + (D_RTC_CLOCK_HZ / D_TICK_RATE_HZ);
+    volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
+    volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+    u64_t now = *mtime;
+    u64_t then = now + (D_RTC_CLOCK_HZ / D_TICK_RATE_HZ);
     *mtimecmp = then;
 
     if (D_PSP_TRUE == enable)

@@ -55,6 +55,7 @@
 /**
 * external prototypes
 */
+extern void pspSetupTimerSingleRun(const unsigned int enable);
 
 /**
 * global variables
@@ -378,7 +379,6 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 * @param void
 *
 */
-extern void pspSetupTimerSingleRun(const unsigned int enable);
 void rtosalTimerIntHandler(void)
 {
 	M_PSP_CLR_TIMER_INT();

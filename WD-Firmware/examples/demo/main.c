@@ -56,7 +56,7 @@ extern void demoStart(void);
 
 //////////////////////////////////////////////////////////////////////
 /**
-* Initialize the platform and then calls the apropriate demo function
+* Initialize the platform and then calls the appropriate demo function
 *
 * @param  - void
 *
