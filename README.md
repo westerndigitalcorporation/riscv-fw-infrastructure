@@ -6,7 +6,7 @@
 This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
-  - GCC 9.2 Toolchain for RISC-V
+  - GCC 9.2.0 Toolchain for RISC-V
   - Eclipse MCU
 
 
@@ -56,10 +56,10 @@ WD-Firmware
 ```
 
 ### Additional downloads
-- From the repo unzip riscv-gnu-toolchain-9.2.0-debian.tar.gz to your designated directory for the tool chain
+- From the repo unzip riscv-gnu-toolchain-debian.tar.gz to your designated directory for the tool chain
 - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
 
-      $ tar -xvf riscv-gnu-toolchain-9.2.0-debian.tar.gz -C [Toolchain-root]
+      $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C [Toolchain-root]
 
       $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
 
