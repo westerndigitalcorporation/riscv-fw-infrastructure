@@ -164,8 +164,8 @@ Env['BUILDERS']['Size'] = size
 arr_lib              = []
 if exampleName == 'ex-freertos':
   Env['RTOS_CORE'] = 'freertos'
-  if Env['TARGET_BOARD'] == 'nexys_a7':
-    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HI_FIVE1']  ##[OS]: if this will keep beening here then we need new define
+  if Env['TARGET_BOARD'] == 'nexys_a7': # we need HW params for Nexys
+    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_NEXYS_A7', 'D_MTIME_ADDRESS=0x0200BFF8', 'D_MTIMECMP_ADDRESS=0x02004000', 'D_RTC_CLOCK_HZ=32768', 'D_TICK_RATE_HZ=250', 'D_ISR_STACK_SIZE_WORDS=400']  ##[OS]: if this will keep beening here then we need new define
   elif Env['TARGET_BOARD'] == 'hifive1':
     Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HI_FIVE1', 'D_MTIME_ADDRESS=0x0200BFF8', 'D_MTIMECMP_ADDRESS=0x02004000', 'D_RTC_CLOCK_HZ=32768', 'D_TICK_RATE_HZ=250', 'D_ISR_STACK_SIZE_WORDS=400']
   else:

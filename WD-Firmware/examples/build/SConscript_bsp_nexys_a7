@@ -23,11 +23,13 @@ if not os.path.exists(out_dir):
     
 bsp_base=os.path.join('board', 'nexys_a7', 'bsp')
 
-list_files_c=[
-   [os.path.join(bsp_base, 'env', 'freedom-e300-hifive1', 'init.c'), os.path.join(out_dir, 'init.o')],
-   [os.path.join(bsp_base, 'drivers', 'plic', 'plic_driver.c'), os.path.join(out_dir, 'plic_driver.o')],
-]
+#list_files_c=[
+#   [os.path.join(bsp_base, 'env', 'freedom-e300-hifive1', 'init.c'), os.path.join(out_dir, 'init.o')],
+#   [os.path.join(bsp_base, 'drivers', 'plic', 'plic_driver.c'), os.path.join(out_dir, 'plic_driver.o')],
+#]
 
+list_files_c=[]
+    
 list_files_a=[
    [os.path.join('board', 'nexys_a7', 'startup.S'), os.path.join(out_dir, 'startup.o')],
 ]
