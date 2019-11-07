@@ -15,6 +15,9 @@
  limitations under the License.
 */
 
+.global xISRStackTop
+
+/* Basic macros that depend on whether the core is 32bits or 64bits */
 .if __riscv_xlen == 32
     .equ REGBYTES, 4
 
@@ -50,6 +53,7 @@
 
 
 
+/* Macro that sets indication of interrupt context */
 .macro M_SET_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */
     la        a0, g_uiIsInterruptContext
@@ -61,6 +65,7 @@
     M_STORE   a1, 0x0(a0)
 .endm
 
+/* Macro that clears indication of interrupt context */
 .macro M_CLEAR_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */
     la        a0, g_uiIsInterruptContext
@@ -81,7 +86,7 @@
     jalr      a0
 .endm
 
-/* Macro for saving task context */
+/* Macro for saving application context */
 .macro M_PUSH_REGFILE
     /* make room in stack for the starndard core registers.
      * In addition, make sure SP is aligned to 16 */
@@ -117,7 +122,7 @@
     M_STORE    x31, 28  * REGBYTES(sp)
 .endm
 
-/* Macro for restoring task context */
+/* Macro for restoring application context */
 .macro M_POP_REGFILE
     /* Restore core standard registers,
     Skip global pointer because that does not change */
@@ -151,4 +156,19 @@
     M_LOAD    x31, 28 * REGBYTES(sp)
     /* Make sure SP is aligned to 16 */
     M_ADDI    sp, sp, REGBYTES * 32
+.endm
+
+
+/* Macro for setting SP to use stack dedicated to ISRs */
+.macro M_CHANGE_SP_FROM_APP_TO_ISR_STACK
+    /* Load sp register with the addres of current Task-CB */
+    M_LOAD    sp, xISRStackTop
+.endm
+
+/* Macro for setting SP to use stack of current application */
+.macro M_CHANGE_SP_FROM_ISR_TO_APP_STACK  pAppCB, spLocationInAppCB
+    /* Load sp register with the address of current Application Control Block */
+    M_LOAD    sp, \pAppCB
+	/* Update sp regsiter to point to Task's stack*/
+    M_LOAD    sp, \spLocationInAppCB(sp)
 .endm

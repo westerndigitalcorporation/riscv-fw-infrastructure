@@ -30,42 +30,31 @@
 */
 
 .if D_USE_FREERTOS
+   .global pxCurrentTCB
+.else
+   .error "RTOS is not defined!"
+.endif // D_USE_FREERTOS
 
-.global    pxCurrentTCB
 
-/* Macro for setting SP to use stack dedicated to ISRs */
-.macro M_SET_SP_FROM_APP_TO_ISR_STACK
-    /* Load sp register with the addres of current Task-CB */
-    M_LOAD    sp, xISRStackTop
-.endm
-
-/* Macro for setting SP to use stack of current Task */
-.macro M_REVERT_SP_FROM_ISR_TO_APP_STACK  pTaskCB, spLocInTcb
-    /* Load sp register with the address of current Task-CB */
-    M_LOAD    sp, \pTaskCB
-	/* Update sp regsiter to point to Task's stack*/
-    M_LOAD    sp, \spLocInTcb(sp)
-.endm
-
-/* saves mstatus and tcb */
-.macro M_SAVE_CONTEXT  pTaskCB, spLocInTcb
+/* this macro save mstatus and mepc CSRs on stack then store sp in the Application control block */
+.macro M_SAVE_CONTEXT  pAppCB, spLocationInAppCB
     /* Store mstatus */
     csrr      t0, mstatus
     M_STORE   t0, D_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
-    M_LOAD    t0, \pTaskCB
-    M_STORE   sp, \spLocInTcb(t0)
+    M_LOAD    t0, \pAppCB
+    M_STORE   sp, \spLocationInAppCB(t0)
     /* Store mepc */
 	csrr      t0, mepc
     M_STORE   t0, D_MEPC_LOC_IN_STK(sp)
 
 .endm
 
- /* restore mstatus and tcb */
-.macro M_RESTORE_CONTEXT  pTaskCB, spLocInTcb
+ /* this macro restore sp from the Application control block then restore mstatus and mepc CSRs from stack */
+.macro M_RESTORE_CONTEXT  pAppCB, spLocationInAppCB
     /* Load stack pointer from the current TCB */
-    M_LOAD    sp, \pTaskCB
-    M_LOAD    sp, \spLocInTcb(sp)
+    M_LOAD    sp, \pAppCB
+    M_LOAD    sp, \spLocationInAppCB(sp)
     /* Load task program counter */
     M_LOAD    t0, D_MEPC_LOC_IN_STK * REGBYTES(sp)
     csrw      mepc, t0
@@ -74,7 +63,14 @@
     csrw      mstatus, t0
 .endm
 
-.macro M_END_SWITCHING_ISR branch_label
+/* This macro is activated at the end of ISR handling. It does the following:
+ * (1) checks whether a context-switch is required.
+ * (2) If no - jump to 'branch_label'
+ * (2) if yes - then
+ *    (a) it clears the context-switch indication and
+ *    (b) it calls contextSwitchFunc (OS function to do context-switch)
+ */
+.macro M_END_CONTEXT_SWITCH_FROM_ISR branch_label
     /* save address of g_rtosalContextSwitch -> a0 */
     la        a0, g_rtosalContextSwitch
     /* load the value g_rtosalContextSwitch -> a1 */
@@ -84,32 +80,7 @@
     /* clear g_rtosalContextSwitch */
     /* TODO: if bitmanip exist add bit set */
     M_STORE   zero, 0x0(a0)
-    /* perform context switch */
-.if D_USE_FREERTOS
-    jal     vTaskSwitchContext
-.else
-    -- Add appropriate RTOS definitions
-.endif /* .if D_USE_FREERTOS */
+    /* call OS to perform context switch */
+    jal     contextSwitchFunc
 .endm
-
-/* Saves current Machine Exception Program Counter (MEPC) as task program counter */
-.macro M_SAVE_EPC_
-    csrr      t0, mepc
-    M_STORE   t0, 0 * REGBYTES(sp)
-.endm
-
-/* Saves current return adress (RA) as task program counter */
-.macro M_SAVE_RA
-    LOAD      t0, 1 * REGBYTES(sp)
-    M_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/* not called on a context switch*/
-.macro M_RESTORE_SP
-    M_LOAD    x2, 2 * REGBYTES(sp)
-.endm
-
-.else
-   .error "RTOS is not defined!"
-.endif // D_USE_FREERTOS
 

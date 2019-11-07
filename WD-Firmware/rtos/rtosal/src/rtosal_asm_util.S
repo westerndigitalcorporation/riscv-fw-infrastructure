@@ -73,12 +73,10 @@
 /*
 This implementation supports riscv privileged v1.10
 */
-#include "psp_asm_macros.h"
-#include "psp_specific_rtos.h"
+#include "psp_asm_macros.inc"
+#include "rtosal_defines.h"
 #include "rtosal_asm_macros.h"
 #include "demo_specific_definitions.h"
-#include "psp_specific_macros.h"
-#include "psp_specific_rtos.h"
 
 .global pxCurrentTCB
 .global rtosalStartScheduler
@@ -130,7 +128,7 @@ chip_specific_stack_frame:                    /* First add any chip specific reg
 rtosalHandleEcall:
     /* Update & save MEPC contents on the Task's stack: */
     /* 1. Use Task's stack (rather than ISR's stack) */
-    M_REVERT_SP_FROM_ISR_TO_APP_STACK  pxCurrentTCB, 0
+    M_CHANGE_SP_FROM_ISR_TO_APP_STACK  pxCurrentTCB, 0
     /* 2. Read MEPC content as saved on stack (location 0) */
     M_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
     /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
@@ -138,14 +136,13 @@ rtosalHandleEcall:
     /* 4. Write back the number to Task's stack (location 0) */
     M_STORE a0, D_MEPC_LOC_IN_STK(sp)
 #ifdef D_USE_FREERTOS
-    M_SET_SP_FROM_APP_TO_ISR_STACK
-    jal vTaskSwitchContext
+    M_CHANGE_SP_FROM_APP_TO_ISR_STACK
+    jal contextSwitchFunc
 #else
    #error Add appropriate RTOS definitions
 #endif
     M_RESTORE_CONTEXT pxCurrentTCB, 0    /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
     M_CLEAR_INT_CONTEXT
     M_POP_REGFILE
-    m_popAdditionalRegs
     mret
 
