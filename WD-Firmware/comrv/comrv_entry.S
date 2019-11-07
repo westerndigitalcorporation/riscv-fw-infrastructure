@@ -35,6 +35,7 @@
 
 .equ D_COMRV_TOKEN_INDICATION,              1
 .equ D_COMRV_PROFILING_INVOKE_VAL,          1
+.equ D_COMRV_THUNK_SHMT,                    4
 
 /*
  local stack frame layout:
@@ -125,6 +126,7 @@ comrv_entry:
 comrv_invoke_callee:
     /* call the function */
     jalr    t5
+comrv_skip_thunk:
     /* load the return address */
     m_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay
@@ -157,6 +159,10 @@ comrv_invoke_callee:
     /* t2 is 0 means return to a non-overlay function so we can skip
        token search and load */
     beqz    t2, comrv_exit_ret_to_caller
+    /* place thunk bit in the msb */
+    slli    t2, t5, D_COMRV_THUNK_SHMT
+    /* if thunk bit set (t2 negative) we skip current comrv stack frame */
+    bltz    t2, comrv_skip_thunk
     /* change sp for temporary storage */
     m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */

@@ -50,8 +50,11 @@
 /**
 * macros
 */
+/* read token register (t5) */
 #define M_COMRV_READ_TOKEN_REG(x)        asm volatile ("mv %0, t5" : "=r" (x)  : );
+/* set comrv entry engine address */
 #define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la t6, "#address : : : );
+/* set the comrv stack pool and comrv stack registers */
 #if __riscv_xlen == 64
  #define M_COMRV_SET_POOL_ADDR(address)  asm volatile ("la t4, "#address : : : ); \
                                          asm volatile ("ld t4, 0x0(t4)"  : : : );
@@ -64,9 +67,16 @@
                                          asm volatile ("lw t3, 0x0(t3)"  : : : );
 #endif
 
-#define M_COMRV_GET_OVL_GROUP_SIZE(groupID)  (pOverlayOffsetTable[groupID+1] - pOverlayOffsetTable[groupID])
-#define M_COMRV_GET_GROUP_OFFSET(token)      ((pOverlayOffsetTable[token.fields.overlayGroupID]) << 9)
-#define M_COMRV_GET_OFFSET(token)            ((token.fields.offset) * D_COMRV_OFFSET_SCALE_VALUE)
+/* overlay group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
+#define M_COMRV_GET_OVL_GROUP_SIZE(token)          (pOverlayOffsetTable[token.fields.overlayGroupID+1] - \
+                                                    pOverlayOffsetTable[token.fields.overlayGroupID])
+/* overlay group size in bytes */
+#define M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(token) ((pOverlayOffsetTable[token.fields.overlayGroupID+1] - \
+                                                     pOverlayOffsetTable[token.fields.overlayGroupID]) << 9)
+/* token offset in bytes */
+#define M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(token)   ((token.fields.offset) * D_COMRV_OFFSET_SCALE_VALUE)
+/* overlay group offset in bytes */
+#define M_COMRV_GET_GROUP_OFFSET_IN_BYTES(token)   ((pOverlayOffsetTable[token.fields.overlayGroupID]) << 9)
 
 /**
 * types
@@ -320,7 +330,7 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
    /* get the group size */
-   overlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(token.fields.overlayGroupID);
+   overlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(token);
 
    /* if the data/function is not loaded we need to evict and load it */
    if (pAddress == NULL)
@@ -354,7 +364,7 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
             /* get the candidate entry */
             pEntry = &pComrvCB->overlayHeap[evictCandidateList[entryIndex]];
             /* calc the source address */
-            pAddress = ((u32_t*)pEntry->pAddress + M_COMRV_GET_OVL_GROUP_SIZE(pEntry->token.fields.overlayGroupID));
+            pAddress = ((u08_t*)pEntry->pAddress + M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(pEntry->token));
             /* perform code copy */
             comrvMemcpyHook(pEntry->pAddress, pAddress,
                   pComrvCB->overlayHeap[evictCandidateList[entryIndex]].pAddress - pAddress);
@@ -424,7 +434,7 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
       /* the group size in bytes */
       overlayGroupSize <<= 9;
       /* now we can load the overlay group */
-      pAddress = comrvLoadOvlayGroupHook(M_COMRV_GET_GROUP_OFFSET(pComrvCB->overlayHeap[index].token),
+      pAddress = comrvLoadOvlayGroupHook(M_COMRV_GET_GROUP_OFFSET_IN_BYTES(pComrvCB->overlayHeap[index].token),
             pComrvCB->overlayHeap[index].pAddress, overlayGroupSize);
       /* if group wasn't loaded */
       if (pAddress == NULL)
@@ -452,24 +462,31 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
    }
 
    /* get actual function/data offset */
-   offset = M_COMRV_GET_OFFSET(token);
+   offset = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(token);
 
    /* are we returning to an overlay function */
    if (isInvoke != D_COMRV_PROFILING_INVOKE_VAL)
    {
-      /* calculate the function return offset; at this point pComrvStackFrame->calleeToken
-         will hold the return address */
+      /* calculate the function return offset; at this point
+         pComrvStackFrame->calleeToken holds the return address */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-      /*  */
-      if ()
+      /* In multi group token we need to get the offset from previously loaded token */
+      if (pComrvStackFrame->calleeMultiGroupTableEntry)
       {
-         temp = M_COMRV_GET_OFFSET(pOverlayMultiGroupTokensTable[pComrvStackFrame->calleeMultiGroupTableEntry]);
-         overlayGroupSize = TODO: get the group size
+         /* we now are at the point of loading a multi-group toke so we need to take the
+            previous token for which the return address refers to */
+         token = pOverlayMultiGroupTokensTable[pComrvStackFrame->calleeMultiGroupTableEntry];
+         /* get the offset */
+         temp = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(token);
+         /* get the token group size */
+         overlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(token);
+         /* calculate the actual return offset */
          offset += ((u32_t)(pComrvStackFrame->calleeToken) - temp) & (--overlayGroupSize);
       }
       else
       {
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+         /* calculate the actual return offset */
          offset += ((u32_t)(pComrvStackFrame->calleeToken) - offset) & (--overlayGroupSize);
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       }

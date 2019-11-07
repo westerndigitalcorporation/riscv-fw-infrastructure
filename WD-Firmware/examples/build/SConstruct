@@ -163,7 +163,7 @@ else:
   Env['SECONDARY_TOOLS_BASE_DIR'] = Env['TOOLS_BASE_DIR']  
   
 cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac'] + cc_specific_options 
-Env['C_FLAGS'] = ['-foverlay-functions', '-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf', '-include', 'sys/cdefs.h'] + cc_options
+Env['C_FLAGS'] = ['-foverlay-functions', '-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf', '-include', 'sys/cdefs.h', '-ffixed-x31', '-ffixed-x30', '-ffixed-x29', '-ffixed-x28'] + cc_options
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + cc_options
 
 if verbose == False:
