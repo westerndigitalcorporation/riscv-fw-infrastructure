@@ -86,6 +86,8 @@
   __tmp; })
 
 
+#define M_NOP() asm volatile ("nop");
+
 
 
 #endif /* __PSP_MACRO_H__ */

@@ -52,7 +52,15 @@
    .endm
 
 #else
-   #error "Specific configuration is not defined!"
+   /* [OS]: this is just for now since this file is going to be removed */
+   .macro m_pushAdditionalRegs
+      /* No additional registers to save, so this macro does nothing. */
+   .endm
+
+   .macro m_popAdditionalRegs
+	   /* No additional registers to restore, so this macro does nothing. */
+   .endm
+
 #endif
 
 

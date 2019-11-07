@@ -31,7 +31,8 @@
 #if defined (D_RV_HI_FIVE1)
    #define D_NUM_OF_ADDITIONAL_REGISTERS 0 /* Must be even number on 32-bit cores. */
 #else
-   #error "Specific core is not defined!"
+/* [OS]: this is just for now since this file is going to be removed */
+   #define D_NUM_OF_ADDITIONAL_REGISTERS 0
 #endif
 
 /**

@@ -24,6 +24,8 @@
 /**
 * include files
 */
+#include "psp_pragmas.h"
+
 #ifdef D_RV_HI_FIVE1
    #include "encoding.h"
    #include "platform.h"
@@ -37,7 +39,9 @@
     #define D_LED_GREEN_ON 1
     #define D_LED_BLUE_ON  2
 #else
-   #error "Platform is not defined"
+    #define D_LED_GREEN_ON 'X' //unknown
+    #define D_LED_BLUE_ON  'X' //unknown
+   PRE_COMPILED_MSG("no platform was defined")
 #endif
 
 /**
@@ -57,8 +61,6 @@
 */
 #ifdef D_RV_HI_FIVE1
    extern void _init();
-#else
-   #error "Platform is not defined"
 #endif
 
 

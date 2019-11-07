@@ -25,11 +25,12 @@
 * include files
 */
 #include "demo_platform_al.h"
+#include "psp_pragmas.h"
 
 #ifdef D_RV_HI_FIVE1
    #include <unistd.h>
 #else
-   #error "Platform is not defined"
+   PRE_COMPILED_MSG("no platform was defined")
 #endif
 
 /**
@@ -75,8 +76,7 @@ void demoLedsInit(void)
 	GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-#else
-   #error "Platform is not defined"
+
 #endif
 }
 
@@ -84,12 +84,11 @@ void demoLedsInit(void)
 * demoUartInit - URAT initialization per board's specifications
 *
 * */
+
 void demoUartInit(void)
 {
 #ifdef D_RV_HI_FIVE1
 	/* Empty implementation */
-#else
-   #error "Platform is not defined"
 #endif
 }
 
@@ -105,8 +104,6 @@ void demoPlatformInit(void)
 {
 #ifdef D_RV_HI_FIVE1
 	_init();
-#else
-   #error "Platform is not defined"
 #endif
     demoLedsInit();
     demoUartInit();
@@ -126,8 +123,6 @@ void demoOutputMsg(const void *str, size_t size)
 {
 #ifdef D_RV_HI_FIVE1
 	write(1, str, size);
-#else
-   #error "Platform is not defined"
 #endif
 }
 
@@ -154,8 +149,7 @@ void demoOutputLed(const int ledAct)
         default:
            break;
 	}
-#else
-   #error "Platform is not defined"
+
 #endif
 }
 
