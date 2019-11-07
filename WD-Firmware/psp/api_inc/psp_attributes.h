@@ -35,6 +35,8 @@
   #define D_ALWAYS_INLINE                     __attribute__((always_inline))
   #define D_16_ALIGNED                        __attribute__ ((aligned(16)))
   #define D_WEAK                              __attribute__(( weak ))
+  #define D_PSP_TEXT_SECTION                  __attribute__((section("PSP_TEXT_SEC")))
+  #define D_PSP_DATA_SECTION                  __attribute__((section("PSP_DATA_SEC")))
 #endif
 
 /**

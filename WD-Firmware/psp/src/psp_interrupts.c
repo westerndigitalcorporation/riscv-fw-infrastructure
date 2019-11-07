@@ -36,7 +36,7 @@
 
 /* The stack used by interrupt service routines */
 #ifdef D_ISR_STACK_SIZE_WORDS
-	static D_16_ALIGNED pspStack_t xISRStack[ D_ISR_STACK_SIZE_WORDS ] = { 0 };
+	/*D_PSP_DATA_SECTION*/ static D_16_ALIGNED pspStack_t xISRStack[ D_ISR_STACK_SIZE_WORDS ] = { 0 };
 	const pspStack_t xISRStackTop = ( pspStack_t ) &( xISRStack[ ( D_ISR_STACK_SIZE_WORDS ) - 1 ] );
 #else
     #error "ISR Stack size is not defined"
@@ -93,7 +93,7 @@ void pspDefaultEmptyIntHandler_isr(void);
 /**
 * global variables
 */
-pspInterruptHandler_t  gExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
+D_PSP_DATA_SECTION pspInterruptHandler_t  gExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
@@ -110,19 +110,19 @@ pspInterruptHandler_t  gExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr };
 
-pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
-pspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntRsrvdSoftIntHandler   = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntMSoftIntHandler       = pspDefaultMSoftIntHandler_isr;
-pspInterruptHandler_t g_fptrIntUTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntSTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntRsrvdTimerIntHandler  = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntMTimerIntHandler      = pspDefaultMTimerIntHandler_isr;
-pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
-pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultMExternIntHandler_isr;
-pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdSoftIntHandler   = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMSoftIntHandler       = pspDefaultMSoftIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdTimerIntHandler  = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimerIntHandler      = pspDefaultMTimerIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultMExternIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
 
 /**
 * The function installs an interrupt service routine per risc-v cause
@@ -132,7 +132,7 @@ pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInterruptHandler,
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInterruptHandler,
 		                                         pspInterruptCause_t eIntCause)
 {
    pspInterruptHandler_t pFptr;
@@ -205,7 +205,7 @@ pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInter
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
 		                                             pspExceptionCause_t eExcCause)
 {
    pspInterruptHandler_t pFptr;
@@ -226,10 +226,10 @@ pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrI
 *
 * @return none
 */
-void pspDefaultExceptionIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 {
    /* get the exception cause */
-   u32_t cause = M_READ_CSR(mcause);
+   u32_t cause = M_PSP_READ_CSR(mcause);
 
    /* is it a valid cause */
    M_PSP_ASSERT(cause < D_PSP_NUM_OF_INTS_EXCEPTIONS);
@@ -245,7 +245,7 @@ void pspDefaultExceptionIntHandler_isr(void)
 *
 * @return none
 */
-void pspDefaultMSoftIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspDefaultMSoftIntHandler_isr(void)
 {
 }
 
@@ -256,7 +256,7 @@ void pspDefaultMSoftIntHandler_isr(void)
 *
 * @return none
 */
-void pspDefaultMTimerIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspDefaultMTimerIntHandler_isr(void)
 {
 }
 
@@ -267,7 +267,7 @@ void pspDefaultMTimerIntHandler_isr(void)
 *
 * @return none
 */
-void pspDefaultMExternIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspDefaultMExternIntHandler_isr(void)
 {
 }
 
@@ -278,7 +278,7 @@ void pspDefaultMExternIntHandler_isr(void)
 *
 * @return none
 */
-void pspDefaultEmptyIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
 }
 
@@ -290,7 +290,7 @@ void pspDefaultEmptyIntHandler_isr(void)
 * @return u32_t            - D_NON_INT_CONTEXT
 *                          - non zero value - interrupt context
 */
-u32_t pspIsInterruptContext(void)
+D_PSP_TEXT_SECTION u32_t pspIsInterruptContext(void)
 {
    return (g_uiIsInterruptContext > 0);
 }

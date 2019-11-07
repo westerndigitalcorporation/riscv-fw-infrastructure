@@ -41,9 +41,9 @@
 void pspTrapUnhandled(void)
 {
 	u32_t local_mepc,local_mcause;
-	//exit(M_READ_CSR(mcause));
-	local_mepc = M_READ_CSR(mepc);
-	local_mcause = M_READ_CSR(mcause);
+	//exit(M_PSP_READ_CSR(mcause));
+	local_mepc = M_PSP_READ_CSR(mepc);
+	local_mcause = M_PSP_READ_CSR(mcause);
 	if (0 == local_mepc || 0 == local_mcause){}
 	//write(1, "Unhandeled exc\n", 15);
 	asm volatile ("ebreak" : : : );
@@ -75,7 +75,7 @@ void pspSetupTimerSingleRun(const unsigned int enable)
     if (D_PSP_TRUE == enable)
     {
         // Enable the Machine-Timer bit in MIE
-        M_SET_CSR(mie, D_MIP_MTIP);
+        M_PSP_SET_CSR(mie, D_MIP_MTIP);
     }
 }
 

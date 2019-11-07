@@ -55,6 +55,7 @@ c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF'] + Env['PUBLIC_DEF'] # add "+ ['D_
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
 public_includes = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'api_inc'),
+                   os.path.join(Env['ROOT_DIR'], rtosal_base, 'config', 'hifive-1'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),

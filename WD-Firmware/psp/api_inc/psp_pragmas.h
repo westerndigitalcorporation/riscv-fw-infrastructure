@@ -18,7 +18,7 @@
 * @file   psp_pragmas.h
 * @author Ofer Shinaar
 * @date   11/2019
-* @brief  The file defines the psp macros
+* @brief  The file defines the psp pragmas
 */
 #ifndef __PSP_PRAGMAS_H__
 #define __PSP_PRAGMAS_H__

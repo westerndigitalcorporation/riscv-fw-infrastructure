@@ -44,8 +44,8 @@ list_files_c=[
 ] + list_port_files_c[Env['TARGET_BOARD']]
 
 list_port_include_paths={
-    'hifive1'   : [os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'config', 'hifive-1'),     os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')],
-    'nexys_a7'  : [os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'config', 'nexys_a7_swerv1'),     os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')],
+    'hifive1'   : [os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'config', 'hifive-1'),     os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')],
+    'nexys_a7'  : [os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'config', 'nexys_a7_swerv1'),     os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')],
     'hifive-un' : [],
 }
 

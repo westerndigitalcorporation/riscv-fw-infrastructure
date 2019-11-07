@@ -155,8 +155,8 @@ void demoRtosalCreateTasks(void *pParam)
     pspExceptionCause_t cause;
 
     /* Disable the machine & timer interrupts until setup is done. */
-    M_CLEAR_CSR(mie, D_MIP_MEIP);
-    M_CLEAR_CSR(mie, D_MIP_MTIP);
+    M_PSP_CLEAR_CSR(mie, D_MIP_MEIP);
+    M_PSP_CLEAR_CSR(mie, D_MIP_MTIP);
     /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
@@ -172,7 +172,7 @@ void demoRtosalCreateTasks(void *pParam)
     /* pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
 
     /* Enable the Machine-External bit in MIE */
-    M_SET_CSR(mie, D_MIP_MEIP);
+    M_PSP_SET_CSR(mie, D_MIP_MEIP);
 
     /* Create the queue used by the send-msg and receive-msg tasks. */
     res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(uint32_t), NULL);
@@ -251,10 +251,10 @@ static void demoTimerCallback(void* xTimer)
     demoOutputLed(D_LED_BLUE_ON);
     demoOutputMsg("RTOS Timer Callback\n", 20);
 #else
-    M_NOP();
-    M_NOP();
-    M_NOP();
-    M_NOP();
+    M_PSP_NOP();
+    M_PSP_NOP();
+    M_PSP_NOP();
+    M_PSP_NOP();
 #endif
 }
 
