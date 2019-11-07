@@ -61,7 +61,7 @@ void pspSetupTimerSingleRun(const unsigned int enable)
     #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
        #error "MTIME/MTIMECMP address definition is missing"
     #endif
-    #if !defined(D_RTC_CLOCK_HZ) || !defined(D_TICK_RATE_HZ)
+    #if !defined(D_CLOCK_RATE) || !defined(D_TICK_TIME_MS)
        #error "Core frequency values definitions are missing"
     #endif
 
@@ -69,7 +69,7 @@ void pspSetupTimerSingleRun(const unsigned int enable)
     volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
     volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
     u64_t now = *mtime;
-    u64_t then = now + (D_RTC_CLOCK_HZ / D_TICK_RATE_HZ);
+    u64_t then = now + (D_CLOCK_RATE * D_TICK_TIME_MS / D_MSEC);
     *mtimecmp = then;
 
     if (D_PSP_TRUE == enable)

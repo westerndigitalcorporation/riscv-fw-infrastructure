@@ -32,6 +32,9 @@
 * definitions
 */
 
+/* there are 1000 msec in one second */
+#define D_MSEC 1000
+
 /* interrupt context indication values */
 #define D_PSP_NON_INT_CONTEXT              0
 #define D_PSP_INT_CONTEXT                  1
