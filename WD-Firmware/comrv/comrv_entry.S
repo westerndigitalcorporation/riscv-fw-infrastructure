@@ -34,7 +34,8 @@
 .equ D_COMRV_FUNC_OFFSET_MASK,              0x3FF
 
 .equ D_COMRV_TOKEN_INDICATION,              1
-.equ D_COMRV_PROFILING_INVOKE_VAL,          1
+.equ D_COMRV_INVOKE_CALLEE_BIT_0,           1
+.equ D_COMRV_RET_CALLER_BIT_0,              0
 .equ D_COMRV_THUNK_SHMT,                    4
 
 /*
@@ -70,6 +71,7 @@
    t4 - points to the free pool of stack frames
    t5 - holds the token we need to invoke (can be an actual address if callee
         is a non-overlay function) */
+
 comrv_entry:
     /* allocate a new stack frame from the stack frame pool - we unlink the next
        free frame from the stack frame pool (t4) and assign its address to t2.
@@ -109,12 +111,10 @@ comrv_entry:
     m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 in the next free stack frame */
     m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* current comrv stack frame is needed when calling a new overlay function so */
-    mv      a0, t3
     /* Add the indication we are calling a new overlay function
        this indication is required to calculate the correct offset
        when returning to an overlay function */
-    ori     a0, a0, D_COMRV_PROFILING_INVOKE_VAL
+    ori     t3, t3, D_COMRV_INVOKE_CALLEE_BIT_0
     /* search if the token (t5) is already loaded */
     jal     comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
@@ -123,10 +123,12 @@ comrv_entry:
     m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     m_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
+
 comrv_invoke_callee:
     /* call the function */
     jalr    t5
-comrv_skip_thunk:
+
+comrv_igonr_caller_thunk_stack_frame:
     /* load the return address */
     m_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay
@@ -162,7 +164,7 @@ comrv_skip_thunk:
     /* place thunk bit in the msb */
     slli    t2, t5, D_COMRV_THUNK_SHMT
     /* if thunk bit set (t2 negative) we skip current comrv stack frame */
-    bltz    t2, comrv_skip_thunk
+    bltz    t2, comrv_igonr_caller_thunk_stack_frame
     /* change sp for temporary storage */
     m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
@@ -170,10 +172,6 @@ comrv_skip_thunk:
     /* save ra as in the token as a placeholder - this field
        is no longer in use */
     m_STORE ra, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
-    /* the arg passed to comrvGetAddressFromToken holds
-       the return address - in that function
-       we will extract the return offset */
-    mv      a0, t3
     /* search if the token (t5) is already loaded */
     jal     comrvGetAddressFromToken
     /* an overlay function is now loaded and a0 holds the actual
@@ -183,6 +181,7 @@ comrv_skip_thunk:
     m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     m_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
+
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */
     ret

@@ -47,9 +47,16 @@
 #define D_COMRV_ENTRY_PROPERTIES_INIT_VALUE     0x04
 #define D_COMRV_ENTRY_PROPERTIES_RESET_MASK     0xC3
 #define D_COMRV_OFFSET_SCALE_VALUE              4
+#define D_COMRV_INVOKE_CALLEE_BIT_0              1
+#define D_COMRV_RET_CALLER_BIT_0                0
+
 /**
 * macros
 */
+/* read comrv stack register (t3) */
+#define M_COMRV_READ_STACK_REG(x)        asm volatile ("mv %0, t3" : "=r" (x)  : );
+/* write comrv stack register (t3) */
+#define M_COMRV_WRITE_STACK_REG(x)        asm volatile ("mv t3, %0" : : "r" (x) );
 /* read token register (t5) */
 #define M_COMRV_READ_TOKEN_REG(x)        asm volatile ("mv %0, t5" : "=r" (x)  : );
 /* set comrv entry engine address */
@@ -255,16 +262,17 @@ void comrvInit(void)
 /**
 * Search if current overlay token is already loaded
 *
-* @param pComrvStackFrame - address of current comrv stack frame
+* @param none
 *
 * @return void* - address of the overlay function/data
 */
-void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
+void* comrvGetAddressFromToken(void)
 {
    comrvOverlayToken_t token;
    comrvHeapEntry_t*   pEntry;
    u08_t               isInvoke;
    void*               pAddress;
+   comrvStackFrame_t*  pComrvStackFrame;
    u16_t               overlayGroupSize, offset;
    u08_t               numOfEvictionCandidates, index, sizeOfEvictionCandidates;
    u08_t               entryIndex, evictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
@@ -279,13 +287,22 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
    u16_t               selectedMultiGroupEntry;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
-   /* get the invoke indication */
-   isInvoke = (u32_t)pComrvStackFrame & D_COMRV_PROFILING_INVOKE_VAL;
+   /* read the requested token value */
+   M_COMRV_READ_TOKEN_REG(token.value);
+
+   /* read comrv stack register (t3) */
+   M_COMRV_READ_STACK_REG(pComrvStackFrame)
+
+   /* get the invoke callee indication */
+   isInvoke = (u32_t)pComrvStackFrame & D_COMRV_INVOKE_CALLEE_BIT_0;
    /* are we calling a new overlay function */
-   if (isInvoke == D_COMRV_PROFILING_INVOKE_VAL)
+   if (isInvoke == D_COMRV_INVOKE_CALLEE_BIT_0)
    {
       /* clear the invoke indication from pComrvStackFrame address */
       pComrvStackFrame = (comrvStackFrame_t*)((u32_t)pComrvStackFrame & (~D_COMRV_PROFILING_INVOKE_VAL));
+      /* write back the stack register after bit 0 was cleared*/
+      M_COMRV_WRITE_STACK_REG(pComrvStackFrame);
+
 #ifdef D_COMRV_FW_PROFILING
       profilingIndication = D_COMRV_NO_LOAD_AND_INVOKE_IND;
 #endif /* D_COMRV_FW_PROFILING */
@@ -297,9 +314,6 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
       profilingIndication = D_COMRV_NO_LOAD_AND_RETURN_IND;
 #endif /* D_COMRV_FW_PROFILING */
    }
-
-   /* read the requested token value */
-   M_COMRV_READ_TOKEN_REG(token.value);
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
@@ -465,7 +479,7 @@ void* comrvGetAddressFromToken(comrvStackFrame_t* pComrvStackFrame)
    offset = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(token);
 
    /* are we returning to an overlay function */
-   if (isInvoke != D_COMRV_PROFILING_INVOKE_VAL)
+   if (isInvoke == D_COMRV_RET_CALLER_BIT_0)
    {
       /* calculate the function return offset; at this point
          pComrvStackFrame->calleeToken holds the return address */
