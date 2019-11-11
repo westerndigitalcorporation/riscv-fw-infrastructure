@@ -114,8 +114,10 @@ typedef struct comrvToken
   u32_t overlayGroupID:16;
   /* data/function offset within the overlay group – 4 bytes granularity */
   u32_t offset:10;
-  /* 2 reserved bits */
-  u32_t reserved:2;
+  /* caller thunk indication */
+  u32_t thunk:1;
+  /* reserved */
+  u32_t reserved:1;
   /* specify the heap ID this overlay group belongs to */
   u32_t heapID:2;
   /* multi group indication */
