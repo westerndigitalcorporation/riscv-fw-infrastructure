@@ -42,7 +42,7 @@ Purely for reasons of backward compatibility the old method is still valid, but
 to make it clear that new projects should not use it, support for the port
 specific constants has been moved into the deprecated_definitions.h header
 file. */
-//#include "deprecated_definitions.h"
+#include "deprecated_definitions.h"
 
 /* If portENTER_CRITICAL is not defined then including deprecated_definitions.h
 did not result in a portmacro.h header file being included - and it should be
@@ -51,11 +51,6 @@ must be set in the compiler's include path. */
 #ifndef portENTER_CRITICAL
 	#include "portmacro.h"
 #endif
-
-extern int rtosalStartScheduler(void);
-#define pxPortInitialiseStack  rtosalInitializeStack
-#define xPortStartScheduler    rtosalStartScheduler
-#define vPortEndScheduler      rtosalEndScheduler
 
 #if portBYTE_ALIGNMENT == 32
 	#define portBYTE_ALIGNMENT_MASK ( 0x001f )
@@ -111,15 +106,15 @@ extern "C" {
  */
 #if( portUSING_MPU_WRAPPERS == 1 )
 	#if( portHAS_STACK_OVERFLOW_CHECKING == 1 )
-		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
+		StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
 	#else
-		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
+		StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters, BaseType_t xRunPrivileged ) PRIVILEGED_FUNCTION;
 	#endif
 #else
 	#if( portHAS_STACK_OVERFLOW_CHECKING == 1 )
-		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
+		StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, StackType_t *pxEndOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
 	#else
-		StackType_t *rtosalInitializeStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
+		StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters ) PRIVILEGED_FUNCTION;
 	#endif
 #endif
 
@@ -153,15 +148,18 @@ void vPortInitialiseBlocks( void ) PRIVILEGED_FUNCTION;
 size_t xPortGetFreeHeapSize( void ) PRIVILEGED_FUNCTION;
 size_t xPortGetMinimumEverFreeHeapSize( void ) PRIVILEGED_FUNCTION;
 
+/*
+ * Setup the hardware ready for the scheduler to take control.  This generally
+ * sets up a tick interrupt and sets timers for the correct tick frequency.
+ */
+BaseType_t xPortStartScheduler( void ) PRIVILEGED_FUNCTION;
 
 /*
- * Undo any hardware/ISR setup that was performed by rtosalStartScheduler() so
+ * Undo any hardware/ISR setup that was performed by xPortStartScheduler() so
  * the hardware is left in its original condition after the scheduler stops
  * executing.
  */
-void rtosalEndScheduler( void ) PRIVILEGED_FUNCTION;
-
-
+void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
 
 /*
  * The structures and methods of manipulating the MPU are contained within the

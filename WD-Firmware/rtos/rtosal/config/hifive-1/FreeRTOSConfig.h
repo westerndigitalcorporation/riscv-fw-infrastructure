@@ -86,7 +86,7 @@ your application. */
 #define configRTC_CLOCK_HZ						32768
 #define configTICK_RATE_HZ                      250
 #define configMAX_PRIORITIES                    3
-#define configMINIMAL_STACK_SIZE                450
+#define configMINIMAL_STACK_SIZE                450 /* [NatiR] check why in new config they gave it 2*70 */
 #define configMAX_TASK_NAME_LEN                 16
 #define configUSE_16_BIT_TICKS                  0
 #define configIDLE_SHOULD_YIELD                 1

@@ -30,8 +30,6 @@
    #include "FreeRTOSConfig.h"
 #endif
 
-//[OS]: TODO: need to add the min stack size for both RTOS
-   
 #ifdef D_USE_FREERTOS
    //   #include "FreeRTOS.h"
    #if (configSUPPORT_STATIC_ALLOCATION!=1) || (configSUPPORT_DYNAMIC_ALLOCATION!=0)
