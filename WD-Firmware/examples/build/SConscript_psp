@@ -28,7 +28,6 @@ list_files_c=[
 
 list_files_a=[
    [os.path.join('psp', 'src', 'psp_int_vect.S'), os.path.join(out_dir, 'psp_int_vect.o')],
-   [os.path.join('psp', 'src', 'psp_util.S'), os.path.join(out_dir, 'psp_util.o')],
 ]
 
 # compiler flags
