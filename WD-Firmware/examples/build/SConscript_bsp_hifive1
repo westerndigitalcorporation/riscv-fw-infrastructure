@@ -44,6 +44,7 @@ c_defines = Env['RTOSAL_DEF'] + Env['BSP_DEF'] + Env['PUBLIC_DEF']
 include_paths = [ 
   os.path.join(Env['ROOT_DIR'], bsp_base, 'include'),
   os.path.join(Env['ROOT_DIR'], bsp_base, 'include', 'sifive'),
+  os.path.join(Env['ROOT_DIR'], bsp_base, 'include', 'sifive', 'devices'),
   os.path.join(Env['ROOT_DIR'], bsp_base, 'drivers'),
   os.path.join(Env['ROOT_DIR'], bsp_base, 'drivers', 'plic'),
   os.path.join(Env['ROOT_DIR'], bsp_base, 'env'),

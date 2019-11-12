@@ -8,15 +8,15 @@
 #define MCAUSE_CAUSE       0x7FFFFFFF
 
 #include "const.h"
-#include "devices/aon.h"
-#include "devices/clint.h"
-#include "devices/gpio.h"
-#include "devices/otp.h"
-#include "devices/plic.h"
-#include "devices/prci.h"
-#include "devices/pwm.h"
-#include "devices/spi.h"
-#include "devices/uart.h"
+#include "aon.h"
+#include "clint.h"
+#include "gpio.h"
+#include "otp.h"
+#include "plic.h"
+#include "prci.h"
+#include "pwm.h"
+#include "spi.h"
+#include "uart.h"
 
 /****************************************************************************
  * Platform definitions

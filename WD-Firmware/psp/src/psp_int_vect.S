@@ -142,7 +142,7 @@ psp_exceptions_int:
 psp_m_soft_int:
 .ifdef D_PSP_VECT_TABLE
     M_PUSH_REGFILE                                  /* Push registers of current task onto stack */
-    M_CHANGE_SP_FROM_APP_TO_ISR_STACK               /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
+    M_CHANGE_SP_FROM_APP_TO_ISR_STACK               /* After RegFile is pushed onto application's-Stack, we change sp to point to ISR-Stack */
     M_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
 .endif /* D_PSP_VECT_TABLE */
     M_CALL_INT_HANDLER g_fptrIntMSoftIntHandler     /* Call the interrupt handler */
@@ -154,7 +154,7 @@ psp_m_soft_int:
 psp_m_timer_int:
 .ifdef D_PSP_VECT_TABLE
     M_PUSH_REGFILE                                   /* Push registers of current task onto stack */
-    M_CHANGE_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
+    M_CHANGE_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto application's-Stack, we change sp to point to ISR-Stack */
     M_SET_INT_CONTEXT                               /* Mark we are in interrupt context */
 .endif /* D_PSP_VECT_TABLE */
     M_CALL_INT_HANDLER g_fptrIntMTimerIntHandler    /* Call the interrupt handler */

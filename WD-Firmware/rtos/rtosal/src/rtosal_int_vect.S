@@ -90,7 +90,7 @@ rtosal_vect_table:
     M_PUSH_REGFILE
     M_SET_INT_CONTEXT
     M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0
-    M_CHANGE_SP_FROM_APP_TO_ISR_STACK  /* After RegFile is pushed onto Task's-Stack, we change sp to point to ISR-Stack */
+    M_CHANGE_SP_FROM_APP_TO_ISR_STACK  /* After RegFile is pushed onto application's-Stack, we change sp to point to ISR-Stack */
     csrr    t0, mcause
     bge     t0, zero, rtosal_vect_table_
     slli    t0, t0, 2
