@@ -85,10 +85,10 @@ This implementation supports riscv privileged v1.10
 //.extern vTaskSwitchContext
 
 xPortStartScheduler:
-    M_ADDI a0, x0, 1
+    M_PSP_ADDI a0, x0, 1
     jal pspSetupTimerSingleRun  /* call this function with indication to enable the Timer interrupt */
     M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
-    M_POP_REGFILE
+    M_PSP_POP_REGFILE
     mret
 
 vPortEndScheduler:
@@ -99,28 +99,28 @@ vPortEndScheduler:
 .func
 pxPortInitialiseStack:
 	csrr t0, mstatus					/* Obtain current mstatus value. */
-    M_ADDI t1, x0, 0x188                /* Generate the value 0x1880, which are -   */
+    M_PSP_ADDI t1, x0, 0x188                /* Generate the value 0x1880, which are -   */
 	slli t1, t1, 4                      /* the MPIE and MPP bits to set in mstatus. */
 	or t0, t0, t1						/* Set MPIE and MPP bits in mstatus value. */
 
-    M_ADDI a0, a0, -REGBYTES
-    M_STORE t0, 0(a0)                         /* mstatus onto the stack. */
-    M_ADDI a0, a0, -(22 * REGBYTES)           /* Space for registers x11-x31. */
-    M_STORE a2, 0(a0)                         /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
-    M_ADDI a0, a0, -(6 * REGBYTES)            /* Space for registers x5-x9. */
-    M_STORE x0, 0(a0)                         /* Return address onto the stack */
+    M_PSP_ADDI a0, a0, -REGBYTES
+    M_PSP_STORE t0, 0(a0)                         /* mstatus onto the stack. */
+    M_PSP_ADDI a0, a0, -(22 * REGBYTES)           /* Space for registers x11-x31. */
+    M_PSP_STORE a2, 0(a0)                         /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
+    M_PSP_ADDI a0, a0, -(6 * REGBYTES)            /* Space for registers x5-x9. */
+    M_PSP_STORE x0, 0(a0)                         /* Return address onto the stack */
 // The following is relevant only when there are "aditional registers" in the core to handle. For now irrelevant hence commented out */
 // It was left here commented as a reference only
-//    M_ADDI t0, x0, D_NUM_OF_ADDITIONAL_REGISTERS /* The number of chip specific additional registers. */
+//    M_PSP_ADDI t0, x0, D_NUM_OF_ADDITIONAL_REGISTERS /* The number of chip specific additional registers. */
 //chip_specific_stack_frame:                       /* First add any chip specific registers to the stack frame being created. */
 //    beq t0, x0, 1f                               /* No more chip specific registers to save. */
-//    M_ADDI a0, a0, -REGBYTES                     /* Make space for chip specific register. */
-//    M_STORE x0, 0(a0)                            /* Give the chip specific register an initial value of zero. */
-//    M_ADDI t0, t0, -1                            /* Decrement the count of chip specific registers remaining. */
+//    M_PSP_ADDI a0, a0, -REGBYTES                     /* Make space for chip specific register. */
+//    M_PSP_STORE x0, 0(a0)                            /* Give the chip specific register an initial value of zero. */
+//    M_PSP_ADDI t0, t0, -1                            /* Decrement the count of chip specific registers remaining. */
 //    j chip_specific_stack_frame                  /* Until no more chip specific registers. */
 //1:                                               */
-    M_ADDI a0, a0, -REGBYTES
-    M_STORE a1, 0(a0)                         /* mret value (pxCode parameter) onto the stack. */
+    M_PSP_ADDI a0, a0, -REGBYTES
+    M_PSP_STORE a1, 0(a0)                         /* mret value (pxCode parameter) onto the stack. */
     ret
 .endfunc
 

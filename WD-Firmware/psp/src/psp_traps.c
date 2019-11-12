@@ -69,13 +69,13 @@ void pspSetupTimerSingleRun(const unsigned int enable)
     volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
     volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
     u64_t now = *mtime;
-    u64_t then = now + (D_CLOCK_RATE * D_TICK_TIME_MS / D_MSEC);
+    u64_t then = now + (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
     *mtimecmp = then;
 
     if (D_PSP_TRUE == enable)
     {
         // Enable the Machine-Timer bit in MIE
-        M_PSP_SET_CSR(mie, D_MIP_MTIP);
+        M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
     }
 }
 
