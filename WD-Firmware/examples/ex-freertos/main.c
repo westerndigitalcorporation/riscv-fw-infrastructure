@@ -255,14 +255,14 @@ void demo_init(void *pMem)
     /* register exception handlers */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
     {
-        pspRegisterIsrExceptionHandler(pspTrapUnhandled, cause);
+        pspRegisterExceptionHandler(pspTrapUnhandled, cause);
     }
     /* register E_CALL exception handler */
-    pspRegisterIsrExceptionHandler(pspEcallHandler, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
+    pspRegisterExceptionHandler(pspEcallHandler, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
     /* install timer interrupt handler */
-    pspRegisterIsrCauseHandler(pspMTimerIntHandler, E_MACHINE_TIMER_CAUSE);
+    pspRegisterInterruptHandler(pspMTimerIntHandler, E_MACHINE_TIMER_CAUSE);
     /* install external interrupt handler */
-    pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE);
+    pspRegisterInterruptHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE);
     /* Enable the Machine-External bit in MIE */
     set_csr(mie, MIP_MEIP); // NatiR: why not re-enable MIP_MTIP too?
 #endif /* D_USE_RTOSAL */

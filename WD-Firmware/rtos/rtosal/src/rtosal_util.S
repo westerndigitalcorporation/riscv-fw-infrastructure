@@ -136,6 +136,7 @@ rtosalHandleEcall:
     /* 4. Write back the number to Task's stack (location 0) */
     M_STORE a0, D_MEPC_LOC_IN_STK(sp)
 #ifdef D_USE_FREERTOS
+//NatiR - remove the ifdef. in addition - contextSwitchFunc --> set as a macro
     M_CHANGE_SP_FROM_APP_TO_ISR_STACK
     jal contextSwitchFunc
 #else

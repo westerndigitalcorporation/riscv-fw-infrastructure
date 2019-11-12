@@ -36,7 +36,7 @@ list_files_c=[
 
 list_files_a=[
    [os.path.join(rtosal_base, 'src', 'rtosal_int_vect.S'), os.path.join(out_dir, 'rtosal_int_vect.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_asm_util.S'), os.path.join(out_dir, 'rtosal_asm_util.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_util.S'), os.path.join(out_dir, 'rtosal_util_asm.o')],
 ]
 
 rtos_core_define = {

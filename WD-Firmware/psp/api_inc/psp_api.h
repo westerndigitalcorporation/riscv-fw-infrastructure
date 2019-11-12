@@ -63,8 +63,8 @@
 * APIs
 */
 u32_t pspIsInterruptContext(void);
-pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
-pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
 
 
 

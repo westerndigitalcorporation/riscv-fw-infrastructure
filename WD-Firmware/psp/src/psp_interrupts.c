@@ -132,7 +132,7 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDef
 *
 * @return u32_t                   - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrInterruptHandler,
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler,
 		                                         pspInterruptCause_t eIntCause)
 {
    pspInterruptHandler_t pFptr;
@@ -205,7 +205,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterrupt
 *
 * @return u32_t                   - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
 		                                             pspExceptionCause_t eExcCause)
 {
    pspInterruptHandler_t pFptr;

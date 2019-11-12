@@ -76,16 +76,15 @@ u32_t g_rtosalContextSwitch = 0;
 */
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
+#ifdef D_USE_FREERTOS
     /* register E_CALL exception handler */
-    pspRegisterIsrExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
+    pspRegisterExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
 
     /* register timer interrupt handler */
-    pspRegisterIsrCauseHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
+    pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
 
-
-#ifdef D_USE_FREERTOS
-   fptrInit(NULL);
-   vTaskStartScheduler();
+    fptrInit(NULL);
+    vTaskStartScheduler();
 #elif D_USE_THREADX
    fptrAppInit = fptrInit;
    tx_kernel_enter();

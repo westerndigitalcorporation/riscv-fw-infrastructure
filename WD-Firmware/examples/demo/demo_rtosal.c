@@ -165,11 +165,11 @@ void demoRtosalCreateTasks(void *pParam)
     	{
     		continue;
     	}
-        pspRegisterIsrExceptionHandler(pspTrapUnhandled, cause);
+        pspRegisterExceptionHandler(pspTrapUnhandled, cause);
     }
 
     /* register external interrupt handler */
-    /* pspRegisterIsrCauseHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
+    /* pspRegisterInterruptHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
 
     /* Enable the Machine-External bit in MIE */
     M_PSP_SET_CSR(mie, D_MIP_MEIP);
