@@ -15,13 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   common_defines.h
-* @author Ronen Haen
-* @date   21.01.2019
-* @brief  The file defines the fw defines
+* @file   psp_intrinsics.h
+* @author Nati Rapaport
+* @date   12.11.2019
+* @brief  The psp intrinsics
+* 
 */
-#ifndef  __FW_DEFINES_H__
-#define  __FW_DEFINES_H__
+#ifndef  __PSP_INTRINSICS_H__
+#define  __PSP_INTRINSICS_H__
 
 /**
 * include files
@@ -30,29 +31,16 @@
 /**
 * definitions
 */
+#ifdef __cplusplus
+   #define  D_PSP_EXTERNC  extern "C"
+#else
+   #define  D_PSP_EXTERNC
+#endif
 
-/**
-* macros
-*/
 
-/**
-* types
-*/
+#define D_PSP_INLINE    inline
 
-/**
-* local prototypes
-*/
 
-/**
-* external prototypes
-*/
 
-/**
-* global variables
-*/
 
-/**
-* APIs
-*/
-
-#endif /* __FW_DEFINES_H__ */
+#endif /* __PSP_INTRINSICS_H__ */

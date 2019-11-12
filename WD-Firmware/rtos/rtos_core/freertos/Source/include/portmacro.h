@@ -35,6 +35,9 @@
 extern "C" {
 #endif
 
+#include "psp_macros.h"
+#include "psp_intrinsics.h"
+#include "psp_attributes.h"
 
 /*-----------------------------------------------------------
  * Port specific definitions.
@@ -85,9 +88,9 @@ not need to be guarded with a critical section. */
 
 
 /* Scheduler utilities. */
-#define portYIELD() __asm volatile( "ecall" );
+#define portYIELD()                              M_PSP_YIELD()
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired ) vTaskSwitchContext()
-#define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
+#define portYIELD_FROM_ISR( x )                  portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/
 
 
@@ -99,10 +102,10 @@ extern void vTaskExitCritical( void );
 #define portSET_INTERRUPT_MASK_FROM_ISR() 0
 
 #define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue ) ( void ) uxSavedStatusValue
-#define portDISABLE_INTERRUPTS()	__asm volatile( "csrc mstatus, 8" );
-#define portENABLE_INTERRUPTS()		__asm volatile( "csrs mstatus, 8" );
-#define portENTER_CRITICAL()	vTaskEnterCritical()
-#define portEXIT_CRITICAL()		vTaskExitCritical()
+#define portDISABLE_INTERRUPTS()	                            M_PSP_DISABLE_INTERRUPTS()
+#define portENABLE_INTERRUPTS()		                            M_PSP_ENABLE_INTERRUPTS()
+#define portENTER_CRITICAL()	                                vTaskEnterCritical()
+#define portEXIT_CRITICAL()		                                vTaskExitCritical()
 
 /*-----------------------------------------------------------*/
 
@@ -139,15 +142,13 @@ not necessary for to use this port.  They are defined so the common demo files
 
 /*-----------------------------------------------------------*/
 
-#define portNOP() __asm volatile 	( " nop " )
-
-#define portINLINE	__inline
-
+#define portNOP()              M_PSP_NOP()
+#define portINLINE	           D_PSP_INLINE
 #ifndef portFORCE_INLINE
-	#define portFORCE_INLINE inline __attribute__(( always_inline))
+	#define portFORCE_INLINE   D_PSP_ALWAYS_INLINE
 #endif
 
-#define portMEMORY_BARRIER() __asm volatile( "" ::: "memory" )
+#define portMEMORY_BARRIER()   M_PSP_MEMORY_BARRIER()
 
 #ifdef __cplusplus
 }

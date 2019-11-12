@@ -36,7 +36,7 @@
 
 /* The stack used by interrupt service routines */
 #ifdef D_ISR_STACK_SIZE_WORDS
-	/*D_PSP_DATA_SECTION*/ static D_16_ALIGNED pspStack_t xISRStack[ D_ISR_STACK_SIZE_WORDS ] = { 0 };
+	/*D_PSP_DATA_SECTION*/ static D_PSP_16_ALIGNED pspStack_t xISRStack[ D_ISR_STACK_SIZE_WORDS ] = { 0 };
 	const pspStack_t xISRStackTop = ( pspStack_t ) &( xISRStack[ ( D_ISR_STACK_SIZE_WORDS ) - 1 ] );
 #else
     #error "ISR Stack size is not defined"

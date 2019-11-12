@@ -85,8 +85,11 @@
     asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
   __tmp; })
 
-
-#define M_PSP_NOP() asm volatile ("nop");
+#define M_PSP_DISABLE_INTERRUPTS()	asm volatile( "csrc mstatus, 8" )
+#define M_PSP_ENABLE_INTERRUPTS()	asm volatile( "csrs mstatus, 8" )
+#define M_PSP_YIELD()               asm volatile( "ecall" )
+#define M_PSP_NOP()                 asm volatile ("nop")
+#define M_PSP_MEMORY_BARRIER()      asm volatile( "" ::: "memory" )
 
 
 

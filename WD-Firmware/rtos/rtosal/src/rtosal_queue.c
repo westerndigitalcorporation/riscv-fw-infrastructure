@@ -53,7 +53,7 @@
 /**
 * local prototypes
 */
-D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
                                        u32_t uiWaitTimeoutTicks, u32_t uiSendToFront);
 
 /**
@@ -173,7 +173,7 @@ RTOSAL_SECTION u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, con
 }
 
 #ifdef D_USE_FREERTOS
-D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
                                     u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
@@ -231,7 +231,7 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
    return uiRes;
 }
 #elif D_USE_THREADX
-D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
+D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
                                     u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
