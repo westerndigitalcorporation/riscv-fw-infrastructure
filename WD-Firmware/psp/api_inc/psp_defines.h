@@ -127,7 +127,7 @@
 #define D_PSP_MIP_MEIP            (1 << D_PSP_IRQ_M_EXT)
 
 #define D_PSP_MSTATUS_OFFSET      29
-#define D_PSP_MEPC_OFFSET         0 // ??
+#define D_PSP_MEPC_OFFSET         0
 
 
 
