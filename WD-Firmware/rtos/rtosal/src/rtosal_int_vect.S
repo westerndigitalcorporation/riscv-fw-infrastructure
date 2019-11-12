@@ -79,6 +79,7 @@ This implementation supports riscv privileged v1.10
 #include "rtosal_asm_macros.h"
 
 .global    pxCurrentTCB
+.global    rtosalHandleEcall
 
 .section  .text.entry
 .align 4
@@ -192,3 +193,23 @@ rtosa_reserved_int:
     nop
     nop
     j 1b
+
+
+/* Implements context-switch as a result of ECALL exception */
+rtosalHandleEcall:
+    /* Update & save MEPC contents on the Task's stack: */
+    /* 1. Use Task's stack (rather than ISR's stack) */
+    M_CHANGE_SP_FROM_ISR_TO_APP_STACK  pxCurrentTCB, 0
+    /* 2. Read MEPC content as saved on stack (location 0) */
+    M_LOAD  a0, D_MEPC_LOC_IN_STK(sp)
+    /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
+    M_ADDI  a0, a0, 4
+    /* 4. Write back the number to Task's stack (location 0) */
+    M_STORE a0, D_MEPC_LOC_IN_STK(sp)
+    M_CHANGE_SP_FROM_APP_TO_ISR_STACK
+    jal contextSwitchFunc
+    M_RESTORE_CONTEXT pxCurrentTCB, 0    /* This macro restors sp to the one used by current Task, and restores MEPC and MSTATUS CSRs*/
+    M_CLEAR_INT_CONTEXT
+    M_POP_REGFILE
+    mret
+
