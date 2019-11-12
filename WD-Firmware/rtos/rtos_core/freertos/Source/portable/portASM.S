@@ -87,7 +87,7 @@ This implementation supports riscv privileged v1.10
 xPortStartScheduler:
     M_ADDI a0, x0, 1
     jal pspSetupTimerSingleRun  /* call this function with indication to enable the Timer interrupt */
-    M_RESTORE_CONTEXT pxCurrentTCB, 0
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
     M_POP_REGFILE
     mret
 

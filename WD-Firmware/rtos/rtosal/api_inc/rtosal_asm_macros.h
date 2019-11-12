@@ -37,29 +37,29 @@
 
 
 /* this macro save mstatus and mepc CSRs on stack then store sp in the Application control block */
-.macro M_SAVE_CONTEXT  pAppCB, spLocationInAppCB
+.macro M_RTOSAL_SAVE_CONTEXT  pAppCB, spLocationInAppCB
     /* Store mstatus */
     csrr      t0, mstatus
-    M_STORE   t0, D_MSTATUS_LOC_IN_STK * REGBYTES(sp)
+    M_STORE   t0, D_RTOSAL_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
     M_LOAD    t0, \pAppCB
     M_STORE   sp, \spLocationInAppCB(t0)
     /* Store mepc */
 	csrr      t0, mepc
-    M_STORE   t0, D_MEPC_LOC_IN_STK(sp)
+    M_STORE   t0, D_RTOSAL_MEPC_LOC_IN_STK(sp)
 
 .endm
 
  /* this macro restore sp from the Application control block then restore mstatus and mepc CSRs from stack */
-.macro M_RESTORE_CONTEXT  pAppCB, spLocationInAppCB
+.macro M_RTOSAL_RESTORE_CONTEXT  pAppCB, spLocationInAppCB
     /* Load stack pointer from the current TCB */
     M_LOAD    sp, \pAppCB
     M_LOAD    sp, \spLocationInAppCB(sp)
     /* Load task program counter */
-    M_LOAD    t0, D_MEPC_LOC_IN_STK * REGBYTES(sp)
+    M_LOAD    t0, D_RTOSAL_MEPC_LOC_IN_STK * REGBYTES(sp)
     csrw      mepc, t0
     /* Load saved mstatus */
-    M_LOAD    t0, D_MSTATUS_LOC_IN_STK * REGBYTES(sp)
+    M_LOAD    t0, D_RTOSAL_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     csrw      mstatus, t0
 .endm
 
@@ -68,9 +68,9 @@
  * (2) If no - jump to 'branch_label'
  * (2) if yes - then
  *    (a) it clears the context-switch indication and
- *    (b) it calls contextSwitchFunc (OS function to do context-switch)
+ *    (b) it calls M_RTOSAL_SWITCH_CONTEXT (macro that calls OS function to do context-switch)
  */
-.macro M_END_CONTEXT_SWITCH_FROM_ISR branch_label
+.macro M_RTOSAL_END_CONTEXT_SWITCH_FROM_ISR branch_label
     /* save address of g_rtosalContextSwitch -> a0 */
     la        a0, g_rtosalContextSwitch
     /* load the value g_rtosalContextSwitch -> a1 */
@@ -81,6 +81,12 @@
     /* TODO: if bitmanip exist add bit set */
     M_STORE   zero, 0x0(a0)
     /* call OS to perform context switch */
-    jal     contextSwitchFunc
+	M_RTOSAL_SWITCH_CONTEXT
+.endm
+
+.macro M_RTOSAL_SWITCH_CONTEXT
+.if D_USE_FREERTOS
+   jal vTaskSwitchContext
+.endif
 .endm
 

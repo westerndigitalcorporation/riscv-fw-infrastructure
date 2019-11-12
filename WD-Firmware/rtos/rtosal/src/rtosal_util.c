@@ -155,7 +155,7 @@ RTOSAL_SECTION void rtosalTick(void)
 #ifdef D_USE_FREERTOS
    if (xTaskIncrementTick() == pdTRUE)
    {
-	   contextSwitchFunc();
+	   vTaskSwitchContext();
    }
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"

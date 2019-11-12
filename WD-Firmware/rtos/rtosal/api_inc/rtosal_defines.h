@@ -148,9 +148,8 @@
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
-   #define D_MEPC_LOC_IN_STK    0
-   #define D_MSTATUS_LOC_IN_STK 29
-   #define contextSwitchFunc vTaskSwitchContext
+   #define D_RTOSAL_MEPC_LOC_IN_STK    0
+   #define D_RTOSAL_MSTATUS_LOC_IN_STK 29
 #else
    #error "Define APIs per the RTOS in use"
 #endif
