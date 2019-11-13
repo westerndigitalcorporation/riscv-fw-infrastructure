@@ -65,9 +65,51 @@
 /**
 * APIs
 */
+
+/**
+* @brief check if in ISR context
+*
+* @param None
+*
+* @return u32_t            - D_NON_INT_CONTEXT
+*                          - non zero value - interrupt context
+*/
 u32_t pspIsInterruptContext(void);
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
+
+/**
+* The function installs an interrupt service routine per risc-v cause
+*
+* @param fptrInterruptHandler     – function pointer to the interrupt service routine
+* @param eIntCause                – interrupt source
+*
+* @return u32_t                   - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, pspInterruptCause_t eIntCause);
+
+
+/**
+* The function installs an exception handler per exception cause
+*
+* @param fptrInterruptHandler     – function pointer to the exception handler
+* @param eExcCause                – exception cause
+*
+* @return u32_t                   - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, pspExceptionCause_t eExcCause);
+
+/**
+*
+* Function that called upon unregistered Trap handler
+*/
+void pspTrapUnhandled(void);
+
+/**
+*
+* Setup function for Core's Timer for a single run
+*
+* @param enable     – indicates whether to enable timer interrupt or not
+*/
+void pspTimerSetupSingleRun(const unsigned int enableInterrupt);
 
 
 

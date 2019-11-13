@@ -54,7 +54,6 @@
 /**
 * external prototypes
 */
-extern void pspSetupTimerSingleRun(const unsigned int enable);
 
 /**
 * global variables
@@ -383,7 +382,7 @@ void rtosalTimerIntHandler(void)
 	M_PSP_CLR_TIMER_INT();
 
 	/* Indicate PSP to let the Timer run an additional cycle, without enable it - this is done later on here after Ticking the RTOS */
-	pspSetupTimerSingleRun(0);
+	pspTimerSetupSingleRun(0);
 
    /* Increment the RTOS tick. */
 	rtosalTick();

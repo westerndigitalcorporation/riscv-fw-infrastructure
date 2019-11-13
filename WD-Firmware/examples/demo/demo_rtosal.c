@@ -84,7 +84,6 @@ static void demoTimerCallback( void* xTimer );
 /**
 * external prototypes
 */
-extern void pspTrapUnhandled(void);
 
 
 /**

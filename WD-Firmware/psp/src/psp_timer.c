@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_traps.c
-* @author Ronen Haen
-* @date   10.05.2019
-* @brief  This file implements trap functions
+* @file   psp_timer.c
+* @author Nati Rapaport
+* @date   13.11.2019
+* @brief  This file implaments core's timer service functions
 *
 */
 
@@ -31,18 +31,32 @@
 
 /**
 *
-* @brief Function that called upon unregistered Trap handler
+* @brief Setup function for M-Timer in the CLINT (per priviliged spec)
 *
 ***************************************************************************************************/
-void pspTrapUnhandled(void)
+void pspTimerSetupSingleRun(const unsigned int enableInterrupt)
 {
-	u32_t local_mepc,local_mcause;
-	//exit(M_PSP_READ_CSR(mcause));
-	local_mepc = M_PSP_READ_CSR(mepc);
-	local_mcause = M_PSP_READ_CSR(mcause);
-	if (0 == local_mepc || 0 == local_mcause){}
-	//write(1, "Unhandeled exc\n", 15);
-	asm volatile ("ebreak" : : : );
+	//demoOutputMsg("SETUP Timer\n", 12);
+
+    #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
+       #error "MTIME/MTIMECMP address definition is missing"
+    #endif
+    #if !defined(D_CLOCK_RATE) || !defined(D_TICK_TIME_MS)
+       #error "Core frequency values definitions are missing"
+    #endif
+
+     // Set the machine timer
+    volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
+    volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+    u64_t now = *mtime;
+    u64_t then = now + (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
+    *mtimecmp = then;
+
+    if (D_PSP_TRUE == enableInterrupt)
+    {
+        // Enable the Machine-Timer interrupt bit in MIE CSR
+        M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
+    }
 }
 
 

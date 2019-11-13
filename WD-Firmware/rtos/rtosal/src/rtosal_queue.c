@@ -52,8 +52,10 @@
 /**
 * local prototypes
 */
-D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
-                                       u32_t uiWaitTimeoutTicks, u32_t uiSendToFront);
+ u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
+		            const void* pRtosalMsgQueueItem,
+                    u32_t uiWaitTimeoutTicks,
+					u32_t uiSendToFront);
 
 /**
 * external prototypes
@@ -172,8 +174,8 @@ RTOSAL_SECTION u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, con
 }
 
 #ifdef D_USE_FREERTOS
-D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
-                                    u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
+u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+                   u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
@@ -230,8 +232,8 @@ D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsg
    return uiRes;
 }
 #elif D_USE_THREADX
-D_PSP_INLINE D_PSP_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
-                                    u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
+u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
+                   u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
 
