@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_misc.c
+* @file   rtosal_util.c
 * @author Ronen Haen
 * @date   21.01.2019 
 * @brief  The file implements the RTOS AL misc API
@@ -55,43 +55,14 @@
 * external prototypes
 */
 extern void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode);
-extern void rtosalTimerIntHandler(void);
-extern void rtosalHandleEcall(void);
 
 
 /**
 * global variables
 */
 rtosalParamErrorNotification_t fptrParamErrorNotification = rtosalParamErrorNotification;
-rtosalApplicationInit_t  fptrAppInit = NULL;
 u32_t g_rtosalContextSwitch = 0;
 
-/**
-* This API initializes the RTOS and triggers the scheduler operation
-*
-* @param fptrInit - pointer to a function which creates the application
-*                   tasks, mutexs, semaphores, queues, etc.
-*
-* @return calling this function will never return
-*/
-RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
-{
-#ifdef D_USE_FREERTOS
-    /* register E_CALL exception handler */
-    pspRegisterExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
-
-    /* register timer interrupt handler */
-    pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
-
-    fptrInit(NULL);
-    vTaskStartScheduler();
-#elif D_USE_THREADX
-   fptrAppInit = fptrInit;
-   tx_kernel_enter();
-#else
-   #error "Add appropriate RTOS definitions"
-#endif /* #ifdef D_USE_FREERTOS */
-}
 
 /**
 * Set param error notification function
@@ -165,9 +136,4 @@ RTOSAL_SECTION void rtosalTick(void)
 }
 
 
-RTOSAL_SECTION void rtosalEndScheduler( void )
-{
-	/* Not implemented. */
-	for( ;; );
-}
 

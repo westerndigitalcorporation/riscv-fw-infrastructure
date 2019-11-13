@@ -34,6 +34,7 @@
 #include "psp_macros.h"
 #include "psp_interrupt_api.h"
 
+#include "rtosal_starter_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_defines.h"
 #include "rtosal_task_api.h"

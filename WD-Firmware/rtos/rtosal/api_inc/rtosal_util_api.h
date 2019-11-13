@@ -41,8 +41,6 @@
 /**
 * types
 */
-/* application specific initialization function */
-typedef void (*rtosalApplicationInit_t)(void *pParam);
 
 /* param error notification function */
 typedef void (*rtosalParamErrorNotification_t)(const void *pParam, u32_t uiErrorCode);
@@ -64,20 +62,12 @@ void rtosalContextSwitchIndicationClear(void);
 * APIs
 */
 
-/**
-* This API initializes the RTOS and triggers the scheduler operation
-*/
-void rtosalStart(rtosalApplicationInit_t fptrInit);
 
 /**
 * Set param error notification function
 */
 void rtosalParamErrorNotifyFuncSet(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification);
 
-/**
-* This function implements ending of scheduler activity
-*/
-void rtosalEndScheduler(void);
 
 
 #endif /* __RTOSAL_UTIL_API_H__ */

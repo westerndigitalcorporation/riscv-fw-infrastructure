@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_services_api.h
+* @file   rtosal_starter_api.h
 * @author Nati Rapaport
-* @date   18.09.2019
-* @brief  The file defines the RTOS AL services interfaces (minimal exposure)
+* @date   13.11.2019
+* @brief  The file defines the RTOS AL start and end interfaces
 */
-#ifndef __RTOSAL_SRV_API_H__
-#define __RTOSAL_SRV_API_H__
+#ifndef __RTOSAL_STARTER_API_H__
+#define __RTOSAL_STARTER_API_H__
 
 /**
 * include files
@@ -39,6 +39,9 @@
 * types
 */
 
+/* application specific initialization function */
+typedef void (*rtosalApplicationInit_t)(void *pParam);
+
 /**
 * local prototypes
 */
@@ -55,12 +58,16 @@
 * APIs
 */
 
+/**
+* Initialization of the RTOS and starting the scheduler operation
+*/
+void rtosalStart(rtosalApplicationInit_t fptrInit);
 
 /**
-* This function is invoked by the system timer interrupt
+* Ending of scheduler operation
 */
-void rtosalTick(void);
+void rtosalEndScheduler(void);
 
 
 
-#endif /* __RTOSAL_SRV_API_H__ */
+#endif // __RTOSAL_STARTER_API_H__

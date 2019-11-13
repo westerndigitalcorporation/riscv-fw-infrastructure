@@ -46,6 +46,11 @@
 void rtosalContextSwitchIndicationSet(void);
 
 /**
+* This function is invoked by the system timer interrupt
+*/
+void rtosalTick(void);
+
+/**
 * external prototypes
 */
 extern void (*fptrParamErrorNotification)(const void *pParam, u32_t uErrorCode);
