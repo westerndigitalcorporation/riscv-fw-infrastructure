@@ -124,12 +124,14 @@
 
 
 /* Macro for setting SP to use stack dedicated to ISRs */
+/* [NR] - To do: add stack check */
 .macro M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK
     /* Load sp register with the addres of current Task-CB */
     M_PSP_LOAD    sp, xISRStackTop
 .endm
 
 /* Macro for setting SP to use stack of current application */
+/* [NR] - To do: add stack check */
 .macro M_PSP_CHANGE_SP_FROM_ISR_TO_APP_STACK  pAppCB, spLocationInAppCB
     /* Load sp register with the address of current Application Control Block */
     M_PSP_LOAD    sp, \pAppCB
