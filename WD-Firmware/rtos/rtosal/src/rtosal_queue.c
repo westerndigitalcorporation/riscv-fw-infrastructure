@@ -31,7 +31,6 @@
 #include "rtosal_macro.h"
 #include "rtosal.h"
 #include "psp_api.h"
-#include "psp_attributes.h"
 #ifdef D_USE_FREERTOS
    #include "queue.h"
 #else

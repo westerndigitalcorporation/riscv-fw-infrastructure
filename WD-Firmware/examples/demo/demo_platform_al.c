@@ -24,8 +24,9 @@
 /**
 * include files
 */
+#include "common_types.h"
 #include "demo_platform_al.h"
-#include "psp_pragmas.h"
+#include "psp_api.h"
 
 #ifdef D_RV_HI_FIVE1
    #include <unistd.h>

@@ -31,8 +31,6 @@
 #include "demo_platform_al.h"
 
 #include "psp_api.h"
-#include "psp_macros.h"
-#include "psp_interrupt_api.h"
 
 #include "rtosal_starter_api.h"
 #include "rtosal_semaphore_api.h"

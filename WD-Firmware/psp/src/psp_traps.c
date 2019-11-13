@@ -28,9 +28,8 @@
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the RISC-V RV32 port.
  *----------------------------------------------------------*/
-#include "psp_macros.h"
-#include "psp_defines.h"
 #include "psp_types.h"
+#include "psp_api.h"
 
 
 /***************************************************************************************************

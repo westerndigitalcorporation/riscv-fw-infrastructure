@@ -67,6 +67,7 @@ c_defines = Env['RTOSAL_DEF'] + Env['BSP_DEF'] + Env['PUBLIC_DEF']
 Env['RTOS_INC_PATH'] = [
   os.path.join(Env['ROOT_DIR'], rtos_base, 'include'),
   os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'),
+  os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
 ] + list_port_include_paths[Env['TARGET_BOARD']]
 include_paths = Env['BSP_INC_PATH'] + Env['RTOS_INC_PATH']
 

@@ -31,6 +31,9 @@
 #include "psp_defines.h"
 #include "psp_interrupt_api.h"
 #include "psp_macros.h"
+#include "psp_attributes.h"
+#include "psp_intrinsics.h"
+#include "psp_pragmas.h"
 
 /**
 * definitions

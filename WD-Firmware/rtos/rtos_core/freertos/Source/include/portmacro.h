@@ -35,9 +35,8 @@
 extern "C" {
 #endif
 
-#include "psp_macros.h"
-#include "psp_intrinsics.h"
-#include "psp_attributes.h"
+#include "common_types.h"
+#include "psp_api.h"
 
 /*-----------------------------------------------------------
  * Port specific definitions.
