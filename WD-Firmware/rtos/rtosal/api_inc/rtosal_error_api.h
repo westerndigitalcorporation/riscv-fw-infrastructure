@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_util_api.h
-* @author Ronen Haen
-* @date   07.02.2019
-* @brief  The file defines the RTOS AL util interfaces
+* @file   rtosal_error_api.h
+* @author Nati Rapaport
+* @date   13.11.2019
+* @brief  The file supply service to handle error notification in RTOSAL
 */
-#ifndef __RTOSAL_UTIL_API_H__
-#define __RTOSAL_UTIL_API_H__
+#ifndef __RTOSAL_ERROR_API_H__
+#define __RTOSAL_ERROR_API_H__
 
 /**
 * include files
@@ -29,6 +29,7 @@
 #include "rtosal_config.h"
 #include "rtosal_defines.h"
 #include "rtosal_types.h"
+#include "common_types.h"
 
 /**
 * definitions
@@ -42,10 +43,12 @@
 * types
 */
 
+/* param error notification function */
+typedef void (*rtosalParamErrorNotification_t)(const void *pParam, u32_t uiErrorCode);
+
 /**
 * local prototypes
 */
-void rtosalContextSwitchIndicationClear(void);
 
 /**
 * external prototypes
@@ -60,5 +63,19 @@ void rtosalContextSwitchIndicationClear(void);
 */
 
 
+/**
+* Set param error notification function
+*/
+//void rtosalParamErrorNotifyFuncSet(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification);
 
-#endif /* __RTOSAL_UTIL_API_H__ */
+/**
+* Register notification function for a case of param error
+*
+* @param fptrRtosalParamErrorNotification - pointer to a notification function
+*
+* @return none
+*/
+void rtosalParamErrorNotifyFuncRegister(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification);
+
+
+#endif /* __RTOSAL_ERROR_API_H__ */

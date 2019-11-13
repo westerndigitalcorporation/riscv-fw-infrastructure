@@ -25,10 +25,6 @@
 /**
 * include files
 */
-#include "rtosal_config.h"
-#include "rtosal_defines.h"
-#include "rtosal_types.h"
-#include "rtosal_macro.h"
 
 /**
 * definitions
@@ -53,18 +49,4 @@
 /**
 * global variables
 */
-
-/**
-* default 'param error' notification function
-*
-* @param pParam      pointer of the invalid parameter
-* @param uiErrorCode  error code
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode)
-{
-   (void)pParam;
-   (void)uiErrorCode;
-}
 

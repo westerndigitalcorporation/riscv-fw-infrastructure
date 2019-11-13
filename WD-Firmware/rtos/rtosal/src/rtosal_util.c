@@ -54,27 +54,13 @@
 /**
 * external prototypes
 */
-extern void rtosalParamErrorNotification(const void *pParam, u32_t uiErrorCode);
-
 
 /**
 * global variables
 */
-rtosalParamErrorNotification_t fptrParamErrorNotification = rtosalParamErrorNotification;
 u32_t g_rtosalContextSwitch = 0;
 
 
-/**
-* Set param error notification function
-*
-* @param fptrRtosalParamErrorNotification - notification function
-*
-* @return none
-*/
-RTOSAL_SECTION void rtosalParamErrorNotifyFuncRegister(rtosalParamErrorNotification_t fptrRtosalParamErrorNotification)
-{
-   fptrParamErrorNotification = fptrRtosalParamErrorNotification;
-}
 
 /**
 *
