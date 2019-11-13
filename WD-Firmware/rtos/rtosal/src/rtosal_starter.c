@@ -26,7 +26,7 @@
 * include files
 */
 #include "rtosal_starter_api.h"
-#include "rtosal_macro.h"
+#include "rtosal_macros.h"
 #include "common_types.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS

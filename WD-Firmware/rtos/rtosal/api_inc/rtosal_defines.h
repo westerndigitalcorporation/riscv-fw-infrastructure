@@ -147,12 +147,5 @@
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
-#ifdef D_USE_FREERTOS
-   #define D_RTOSAL_MEPC_LOC_IN_STK    0
-   #define D_RTOSAL_MSTATUS_LOC_IN_STK 29
-#else
-   #error "Define APIs per the RTOS in use"
-#endif
-
 
 #endif /* __RTOSAL_DEFINES_H__ */

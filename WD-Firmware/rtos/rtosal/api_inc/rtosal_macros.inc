@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_asm_macros.inc
+* @file   rtosal_macros.inc
 * @author Nati Rapaport
 * @date   29.10.2019
 * @brief  The file defines the RTOS AL assembly macros

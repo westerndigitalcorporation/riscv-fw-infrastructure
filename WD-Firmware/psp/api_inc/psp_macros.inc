@@ -17,42 +17,6 @@
 
 .global xISRStackTop
 
-/* Basic macros that depend on whether the core is 32bits or 64bits */
-.if __riscv_xlen == 32
-    .equ REGBYTES, 4
-
-    .macro M_PSP_STORE operand1,operand2
-        sw \operand1, \operand2
-    .endm
-
-    .macro M_PSP_LOAD operand1,operand2
-        lw \operand1, \operand2
-    .endm
-
-    .macro M_PSP_ADDI operand1,operand2,operand3
-        addi \operand1, \operand2, \operand3
-    .endm
-
-.elseif __riscv_xlen == 64
-    .error "You must verify it is work correctly for 64 bit"
-
-    .equ REGBYTES, 8
-
-    .macro M_PSP_STORE operand1,operand2
-        sd \operand1, \operand2
-    .endm
-
-    .macro M_PSP_LOAD operand1,operand2
-        ld \operand1, \operand2
-    .endm
-
-    .macro M_PSP_ADDI operand1,operand2,operand3
-        addiw \operand1, \operand2, \operand3
-    .endm
-.endif
-
-
-
 /* Macro that sets indication of interrupt context */
 .macro M_PSP_SET_INT_CONTEXT
     /* save address of g_uiIsInterruptContext -> t0 */

@@ -73,9 +73,10 @@
 /*
 This implementation supports riscv privileged v1.10
 */
-#include "psp_asm_macros.inc"
-#include "rtosal_defines.h"
-#include "rtosal_asm_macros.inc"
+#include "psp_basic_macros.inc"
+.include "psp_macros.inc"
+#include "rtosal_defines.inc"
+#include "rtosal_macros.inc"
 
 .global pxCurrentTCB
 .global xPortStartScheduler

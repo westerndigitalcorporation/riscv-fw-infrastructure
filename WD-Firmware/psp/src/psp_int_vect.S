@@ -71,10 +71,8 @@
 */
 
 
-#include "psp_asm_macros.inc"
-
-
-
+#include "psp_basic_macros.inc"
+.include "psp_macros.inc"
 
 /*
 This implementation supports riscv privileged v1.10

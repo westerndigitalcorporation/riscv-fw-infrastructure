@@ -28,7 +28,7 @@
 #include "common_types.h"
 #include "common_defines.h"
 #include "rtosal_queue_api.h"
-#include "rtosal_macro.h"
+#include "rtosal_macros.h"
 #include "rtosal.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS

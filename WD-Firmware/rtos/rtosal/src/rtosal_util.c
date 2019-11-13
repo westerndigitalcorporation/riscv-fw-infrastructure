@@ -27,7 +27,7 @@
 */
 #include "rtosal_util_api.h"
 #include "rtosal.h"
-#include "rtosal_macro.h"
+#include "rtosal_macros.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
 #else

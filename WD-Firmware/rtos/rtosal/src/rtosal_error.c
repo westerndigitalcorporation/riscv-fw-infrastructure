@@ -26,7 +26,7 @@
 * include files
 */
 #include "rtosal_error_api.h"
-#include "rtosal_macro.h"
+#include "rtosal_macros.h"
 
 /**
 * definitions

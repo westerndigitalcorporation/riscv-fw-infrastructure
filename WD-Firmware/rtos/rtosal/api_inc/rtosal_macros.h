@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_macro.h
+* @file   rtosal_macros.h
 * @author Ronen Haen
 * @date   07.02.2019
 * @brief  The file defines the RTOS AL macros
