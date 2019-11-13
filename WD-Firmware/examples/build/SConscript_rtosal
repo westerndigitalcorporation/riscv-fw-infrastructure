@@ -33,7 +33,7 @@ list_files_c=[
    [os.path.join(rtosal_base, 'src', 'rtosal_default.c'), os.path.join(out_dir, 'rtosal_default.o')],
    [os.path.join(rtosal_base, 'src', 'rtosal_starter.c'), os.path.join(out_dir, 'rtosal_starter.o')],
    [os.path.join(rtosal_base, 'src', 'rtosal_error.c'), os.path.join(out_dir, 'rtosal_error.o')],
-#   [os.path.join(rtosal_base, 'src', 'rtosal_memory.c'), os.path.join(out_dir, 'rtosal_memory.o')],
+   [os.path.join(rtosal_base, 'src', 'rtosal_interrupt.c'), os.path.join(out_dir, 'rtosal_interrupt.o')],
 ]
 
 list_files_a=[
