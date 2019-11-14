@@ -229,7 +229,7 @@ void _init()
   use_pll(0, 0, 1, 31, 1);
   uart_init(115200);
 
-  uint32_t freq = (uint32_t)get_cpu_freq();
+ uint32_t freq = (uint32_t)get_cpu_freq();
  itoa(freq,freq_string,10);
  write(1, "core freq at: ", 14);
  write(1, freq_string, 9);
