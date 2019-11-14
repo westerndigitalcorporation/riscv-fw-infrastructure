@@ -98,7 +98,16 @@
 #define configCLINT_BASE_ADDRESS		        CLINT_CTRL_ADDR
 #define configUSE_PREEMPTION			        1
 #define configCPU_CLOCK_HZ				        265000000
-#define configTICK_RATE_HZ				        250
+#ifdef D_CLOCK_RATE
+   #define configRTC_CLOCK_HZ D_CLOCK_RATE      /* If the clock rate is already defined, take it here */
+#else
+   #define configRTC_CLOCK_HZ 32768
+#endif
+#ifdef D_TICK_TIME_MS                           /* If D_TICK_TIME_MS is already defined, use it to calculate configTICK_RATE_HZ */
+   #define configTICK_RATE_HZ				        1000/D_TICK_TIME_MS
+#else
+   #define configTICK_RATE_HZ				        250
+#endif
 #define configMAX_PRIORITIES			        3
 #define configMINIMAL_STACK_SIZE		        450 /* [NR] To-do check why in new config it is set to 2*70 */
 #define configMAX_TASK_NAME_LEN			        16
