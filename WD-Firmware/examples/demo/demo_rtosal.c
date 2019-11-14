@@ -24,8 +24,10 @@
 /**
 * include files
 */
-#include <stdlib.h>
-#include <unistd.h>
+
+#ifdef D_HI_FIVE1
+    #include <stdlib.h>
+#endif
 
 #include "common_types.h"
 #include "demo_platform_al.h"
@@ -44,13 +46,13 @@
 * definitions
 */
 
-/* The rate at which data is sent to the queue, specified in milliseconds, and
-converted to ticks using the pdMS_TO_TICKS() macro. */
-#define D_MAIN_QUEUE_SEND_PERIOD_MS            pdMS_TO_TICKS( 200 )
+/* The rate the data is sent to the queue, specified in milliseconds, and
+converted to ticks (using the definition of D_TICK_TIME_MS) */
+#define D_MAIN_QUEUE_SEND_PERIOD_TICKS            200/D_TICK_TIME_MS
 
 /* The period of the example software timer, specified in milliseconds, and
-converted to ticks using the pdMS_TO_TICKS() macro. */
-#define D_MAIN_SOFTWARE_TIMER_PERIOD_MS        pdMS_TO_TICKS( 1000 )
+converted to ticks (using the definition of D_TICK_TIME_MS) */
+#define D_MAIN_SOFTWARE_TIMER_PERIOD_TICKS        1000/D_TICK_TIME_MS
 
 /* The number of items the queue can hold.  This is 1 as the receive task
 has a higher priority than the send task, so will remove items as they are added,
@@ -59,9 +61,9 @@ meaning the send task should always find the queue empty. */
 
 /* Stack size of the tasks in this application */
 #define D_RX_TASK_STACK_SIZE  600
-#define D_TX_TASK_STACK_SIZE  configMINIMAL_STACK_SIZE
-#define D_SEM_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
-#define D_IDLE_TASK_SIZE      configMINIMAL_STACK_SIZE
+#define D_TX_TASK_STACK_SIZE  450
+#define D_SEM_TASK_STACK_SIZE 450
+#define D_IDLE_TASK_SIZE      450
 
 /**
 * macros
@@ -223,7 +225,7 @@ void demoRtosalCreateTasks(void *pParam)
 
     /* Create the software timer */
     res = rtosTimerCreate(&stLedTimer, (s08_t*)"LEDTimer", demoTimerCallback, 0,
-                         D_RTOSAL_AUTO_START, D_MAIN_SOFTWARE_TIMER_PERIOD_MS, pdTRUE);
+                         D_RTOSAL_AUTO_START, D_MAIN_SOFTWARE_TIMER_PERIOD_TICKS, pdTRUE);
     if (res != D_RTOSAL_SUCCESS)
     {
     	demoOutputMsg("Timer creation failed\n", 22);
@@ -240,7 +242,7 @@ void demoRtosalCreateTasks(void *pParam)
  */
 static void demoTimerCallback(void* xTimer)
 {
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
     /* The timer has expired.  Count the number of times this happens.  The
     timer that calls this function is an auto re-load timer, so it will
     execute periodically. */
@@ -249,6 +251,7 @@ static void demoTimerCallback(void* xTimer)
     demoOutputLed(D_LED_BLUE_ON);
     demoOutputMsg("RTOS Timer Callback\n", 20);
 #else
+    /* Developer: please add here implementation that fits your environment */
     M_PSP_NOP();
     M_PSP_NOP();
     M_PSP_NOP();
@@ -270,10 +273,9 @@ const uint32_t ulValueToSend = 100UL;
     for( ;; )
     {
         /* Place this task in the blocked state until it is time to run again.
-        The block time is specified in ticks, the constant used converts ticks
-        to ms.  The task will not consume any CPU time while it is in the
-        Blocked state. */
-        rtosalTaskSleep(D_MAIN_QUEUE_SEND_PERIOD_MS);
+        The block time is specified in ticks.
+        The task will not consume any CPU time while it is in the Blocked state. */
+        rtosalTaskSleep(D_MAIN_QUEUE_SEND_PERIOD_TICKS);
 
         demoOutputMsg("Sending to queue\n", 17);
         /* Send to the queue - causing the queue receive task to unblock and
@@ -296,15 +298,22 @@ static void demoReceiveMsgTask( void *pvParameters )
     char stringValue[10];
     for( ;; )
     {
-
+        rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
+     #ifdef D_HI_FIVE1
         /* Wait until something arrives in the queue - this task will block
         indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
         FreeRTOSConfig.h. */
-        rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
         itoa(ulReceivedValue,stringValue, 10);
         demoOutputMsg("Recieved: ", 10);
-		demoOutputMsg(stringValue, 3);
+        demoOutputMsg(stringValue, 3);
 		demoOutputMsg("\n",1);
+     #else
+		/* Developer: please add here implementation that fits your environment */
+		M_PSP_NOP();
+		M_PSP_NOP();
+		M_PSP_NOP();
+		M_PSP_NOP();
+     #endif
 
         /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */

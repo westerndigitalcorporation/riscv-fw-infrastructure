@@ -28,7 +28,7 @@
 #include "demo_platform_al.h"
 #include "psp_api.h"
 
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
    #include <unistd.h>
 #else
    PRE_COMPILED_MSG("no platform was defined")
@@ -73,7 +73,7 @@
 * */
 void demoLedsInit(void)
 {
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
 	GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
@@ -88,7 +88,7 @@ void demoLedsInit(void)
 
 void demoUartInit(void)
 {
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
 	/* Empty implementation */
 #endif
 }
@@ -103,7 +103,7 @@ void demoUartInit(void)
 * */
 void demoPlatformInit(void)
 {
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
 	_init();
 #endif
     demoLedsInit();
@@ -122,7 +122,7 @@ void demoPlatformInit(void)
 * */
 void demoOutputMsg(const void *str, size_t size)
 {
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
 	write(1, str, size);
 #endif
 }
@@ -138,7 +138,7 @@ void demoOutputMsg(const void *str, size_t size)
 * */
 void demoOutputLed(const int ledAct)
 {
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
 	switch (ledAct)
 	{
         case D_LED_GREEN_ON:
