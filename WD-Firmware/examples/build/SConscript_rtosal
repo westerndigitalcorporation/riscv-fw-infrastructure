@@ -30,7 +30,6 @@ list_files_c=[
    [os.path.join(rtosal_base, 'src', 'rtosal_semaphore.c'), os.path.join(out_dir, 'rtosal_semaphore.o')],
    [os.path.join(rtosal_base, 'src', 'rtosal_task.c'), os.path.join(out_dir, 'rtosal_task.o')],
    [os.path.join(rtosal_base, 'src', 'rtosal_time.c'), os.path.join(out_dir, 'rtosal_time.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_default.c'), os.path.join(out_dir, 'rtosal_default.o')],
    [os.path.join(rtosal_base, 'src', 'rtosal_error.c'), os.path.join(out_dir, 'rtosal_error.o')],
    [os.path.join(rtosal_base, 'src', 'rtosal_interrupt.c'), os.path.join(out_dir, 'rtosal_interrupt.o')],
 ]
