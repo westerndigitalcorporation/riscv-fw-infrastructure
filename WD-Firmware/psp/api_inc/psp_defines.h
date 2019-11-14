@@ -35,10 +35,6 @@
 /* there are 1000 msec in one second */
 #define D_PSP_MSEC 1000
 
-/* interrupt context indication values */
-#define D_PSP_NON_INT_CONTEXT              0
-#define D_PSP_INT_CONTEXT                  1
-
 /* function return codes */
 #define D_PSP_SUCCESS                      0x00
 #define D_PSP_FAIL                         0x01

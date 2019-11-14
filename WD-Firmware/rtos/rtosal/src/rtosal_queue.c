@@ -188,7 +188,7 @@ u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQu
    if (uiSendToFront == D_RTOSAL_TRUE)
    {
       /* msgQueueSend invoked from an ISR context */
-      if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+      if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
       {
          /* send the queue message */
          uiRes = xQueueSendToFrontFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
@@ -202,7 +202,7 @@ u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQu
    else
    {
       /* msgQueueSend invoked from an ISR context */
-      if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+      if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
       {
          uiRes = xQueueSendToBackFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
       }
@@ -291,7 +291,7 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
 #ifdef D_USE_FREERTOS
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueDstBuf, pRtosalMsgQueueDstBuf == NULL, D_RTOSAL_PTR_ERROR);
    /* rtosalMsgQueueRecieve invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xQueueReceiveFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, &xHigherPriorityTaskWoken);
    }

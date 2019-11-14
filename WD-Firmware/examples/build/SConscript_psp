@@ -42,7 +42,6 @@ c_defines = []+Env['PUBLIC_DEF'] + Env['RTOSAL_DEF']
 # include paths
 local_includes  = []
 public_includes = [
-  os.path.join(Env['ROOT_DIR'], 'psp', 'loc_inc'),
   os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
   os.path.join(Env['ROOT_DIR'], 'rtos', 'rtos_core', 'freertos', 'Source', 'include'),

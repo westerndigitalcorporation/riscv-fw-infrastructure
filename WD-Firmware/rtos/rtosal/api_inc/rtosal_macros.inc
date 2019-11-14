@@ -36,6 +36,30 @@
 .endif // D_USE_FREERTOS
 
 
+/* Macro that sets indication of interrupt context */
+.macro M_PSP_SET_INT_CONTEXT
+    /* save address of g_rtosalIsInterruptContext -> t0 */
+    la        a0, g_rtosalIsInterruptContext
+    /* load the value g_rtosalIsInterruptContext -> t1 */
+    M_PSP_LOAD    a1, 0x0(a0)
+    /* increment t1 by 1 */
+    M_PSP_ADDI    a1, a1, 1
+    /* store new value to g_rtosalIsInterruptContext */
+    M_PSP_STORE   a1, 0x0(a0)
+.endm
+
+/* Macro that clears indication of interrupt context */
+.macro M_PSP_CLEAR_INT_CONTEXT
+    /* save address of g_rtosalIsInterruptContext -> t0 */
+    la        a0, g_rtosalIsInterruptContext
+    /* load the value g_rtosalIsInterruptContext -> t1 */
+    M_PSP_LOAD    a1, 0x0(a0)
+    /* decrement t1 by 1 */
+    M_PSP_ADDI    a1, a1, -1
+    /* store new value to g_rtosalIsInterruptContext */
+    M_PSP_STORE   a1, 0x0(a0)
+.endm
+
 /* this macro save mstatus and mepc CSRs on stack then store sp in the Application control block */
 .macro M_RTOSAL_SAVE_CONTEXT  pAppCB, spLocationInAppCB
     /* Store mstatus */

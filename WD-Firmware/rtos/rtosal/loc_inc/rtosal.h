@@ -31,6 +31,9 @@
 /**
 * definitions
 */
+/* interrupt context indication values */
+#define D_RTOSAL_NON_INT_CONTEXT              0
+#define D_RTOSAL_INT_CONTEXT                  1
 
 /**
 * macros

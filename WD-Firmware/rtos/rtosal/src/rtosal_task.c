@@ -235,7 +235,7 @@ RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosalTaskResume invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       /* if we uiResume from an ISR */
       uiRes = xTaskResumeFromISR(pRtosalTaskCb->taskHandle);

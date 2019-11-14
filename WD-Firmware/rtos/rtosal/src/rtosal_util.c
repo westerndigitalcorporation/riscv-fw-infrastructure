@@ -59,6 +59,7 @@
 * global variables
 */
 u32_t g_rtosalContextSwitch = 0;
+u32_t g_rtosalIsInterruptContext = D_RTOSAL_NON_INT_CONTEXT;
 
 
 
@@ -87,18 +88,17 @@ RTOSAL_SECTION void rtosalContextSwitchIndicationClear(void)
 }
 
 /**
-* This API is ThreadX specific. It is invoked during ThreadX init flow
+* @brief check if in ISR context
 *
-* @param pMemory - pointer to memory used for the initial application init
+* @param None
 *
-* @return none
+* @return u32_t            - D_NON_INT_CONTEXT
+*                          - non zero value - interrupt context
 */
-#ifdef D_USE_THREADX
-RTOSAL_SECTION void tx_application_define(void *pMemory)
+D_PSP_TEXT_SECTION u32_t pspIsInterruptContext(void)
 {
-   fptrAppInit(pMemory);
+   return (g_rtosalIsInterruptContext > 0);
 }
-#endif /* #ifdef D_USE_THREADX */
 
 /**
 * This function is invoked by the system timer interrupt

@@ -17,30 +17,6 @@
 
 .global xISRStackTop
 
-/* Macro that sets indication of interrupt context */
-.macro M_PSP_SET_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
-    la        a0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
-    M_PSP_LOAD    a1, 0x0(a0)
-    /* increment t1 by 1 */
-    M_PSP_ADDI    a1, a1, 1
-    /* store new value to g_uiIsInterruptContext */
-    M_PSP_STORE   a1, 0x0(a0)
-.endm
-
-/* Macro that clears indication of interrupt context */
-.macro M_PSP_CLEAR_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
-    la        a0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
-    M_PSP_LOAD    a1, 0x0(a0)
-    /* decrement t1 by 1 */
-    M_PSP_ADDI    a1, a1, -1
-    /* store new value to g_uiIsInterruptContext */
-    M_PSP_STORE   a1, 0x0(a0)
-.endm
-
 .macro M_PSP_CALL_INT_HANDLER fptIntHandler
     /* load the address of provided fptIntHandler */
     la        a0, \fptIntHandler

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   psp_basic_macros.inc
+* @file   psp_core_base.inc
 * @author Nati Rapaport
 * @date   13.11.2019
 * @brief  The file defines psp macros that are used in Assembly code. These are the very basic macros that depend on the
