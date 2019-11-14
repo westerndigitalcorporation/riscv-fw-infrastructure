@@ -27,7 +27,7 @@
 */
 #include "rtosal_event_api.h"
 #include "rtosal_macros.h"
-#include "rtosal.h"
+#include "rtosal_util.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "event_groups.h"

@@ -25,10 +25,11 @@
 /**
 * include files
 */
-#include "rtosal_util_api.h"
-#include "rtosal.h"
+#include "psp_types.h"
+#include "rtosal_util.h"
 #include "rtosal_macros.h"
 #ifdef D_USE_FREERTOS
+   #include "FreeRTOS.h"
    #include "task.h"
 #else
    #error "Add appropriate RTOS definitions"
@@ -110,7 +111,7 @@ RTOSAL_SECTION u32_t rtosalIsInterruptContext(void)
 RTOSAL_SECTION void rtosalTick(void)
 {
 #ifdef D_USE_FREERTOS
-   if (xTaskIncrementTick() == pdTRUE)
+   if (xTaskIncrementTick() == D_PSP_TRUE)
    {
 	   vTaskSwitchContext();
    }

@@ -39,7 +39,6 @@
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
-#include "rtosal_util_api.h"
 
 /**
 * definitions
