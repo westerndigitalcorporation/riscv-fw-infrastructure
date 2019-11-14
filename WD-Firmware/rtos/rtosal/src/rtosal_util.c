@@ -95,7 +95,7 @@ RTOSAL_SECTION void rtosalContextSwitchIndicationClear(void)
 * @return u32_t            - D_NON_INT_CONTEXT
 *                          - non zero value - interrupt context
 */
-D_PSP_TEXT_SECTION u32_t pspIsInterruptContext(void)
+RTOSAL_SECTION u32_t rtosalIsInterruptContext(void)
 {
    return (g_rtosalIsInterruptContext > 0);
 }

@@ -34,7 +34,7 @@
 
 #include "psp_api.h"
 
-#include "rtosal_starter_api.h"
+#include "rtosal_task_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"

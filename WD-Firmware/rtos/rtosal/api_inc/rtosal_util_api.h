@@ -45,7 +45,6 @@
 /**
 * local prototypes
 */
-void rtosalContextSwitchIndicationClear(void);
 
 /**
 * external prototypes

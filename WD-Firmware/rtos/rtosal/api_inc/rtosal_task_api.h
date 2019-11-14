@@ -152,6 +152,12 @@ typedef struct rtosalTask
 /* task handler definition */
 typedef void (*rtosalTaskHandler_t)(entryPointParam_t);
 
+/* application specific initialization function */
+typedef void (*rtosalApplicationInit_t)(void *pParam);
+
+/* application specific timer-tick handler function */
+typedef void (*rtosalTimerTickHandler_t)(void);
+
 /**
 * local prototypes
 */
@@ -211,5 +217,20 @@ u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb);
 * Abort a task which is in currently blocked
 */
 u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb);
+
+/**
+* Initialization of the RTOS and starting the scheduler operation
+*/
+void rtosalStart(rtosalApplicationInit_t fptrInit);
+
+/**
+* Ending of scheduler operation
+*/
+void rtosalEndScheduler(void);
+
+/**
+* Registration for TimerTick handler function
+*/
+void rtosalRegisterTimerTickHandler(rtosalTimerTickHandler_t fptrHandler);
 
 #endif /* __RTOSAL_TASK_API_H__ */

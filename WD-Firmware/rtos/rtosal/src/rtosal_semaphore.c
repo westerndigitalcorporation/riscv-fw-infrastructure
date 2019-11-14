@@ -162,7 +162,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, 
 
 #ifdef D_USE_FREERTOS
    /* rtosalSemaphoreWait invoked from an ISR context */
-   if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xSemaphoreTakeFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
    }
@@ -218,7 +218,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreC
 
 #ifdef D_USE_FREERTOS
    /* rtosalSemaphoreRelease invoked from an ISR context */
-   if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xSemaphoreGiveFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
    }

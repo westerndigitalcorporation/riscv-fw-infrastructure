@@ -26,10 +26,10 @@
 /**
 * include files
 */
+#include "common_types.h"
 #include "rtosal_config.h"
 #include "rtosal_defines.h"
 #include "rtosal_types.h"
-#include "common_types.h"
 
 /**
 * definitions

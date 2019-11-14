@@ -54,11 +54,17 @@
 /**
 * external prototypes
 */
+extern void rtosalHandleEcall(void);
+extern void rtosalTimerIntHandler(void);
 
 /**
 * global variables
 */
+/* function pointer Application initialization. The function should be implemented by the application */
+rtosalApplicationInit_t  fptrAppInit = NULL;
 
+/* application specific timer-tick handler function. The function should be implemented by the application  */
+rtosalTimerTickHandler_t fptrTimerTickHandler ;
 
 /**
 * Task creation function
@@ -235,7 +241,7 @@ RTOSAL_SECTION u32_t rtosalTaskResume(rtosalTask_t* pRtosalTaskCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosalTaskResume invoked from an ISR context */
-   if (pspIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       /* if we uiResume from an ISR */
       uiRes = xTaskResumeFromISR(pRtosalTaskCb->taskHandle);
@@ -355,4 +361,56 @@ RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
+}
+
+/**
+* Initialization of the RTOS and starting the scheduler operation
+*
+* @param fptrInit - pointer to a function which creates the application
+*                   tasks, mutexs, semaphores, queues, etc.
+*
+* @return calling this function will never return
+*/
+RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
+{
+#ifdef D_USE_FREERTOS
+	/* Initialize the timer-tick handler function pointer to NULL */
+	fptrTimerTickHandler = NULL;
+
+	/* register E_CALL exception handler */
+    pspRegisterExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
+
+    /* register timer interrupt handler */
+    pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
+
+    fptrInit(NULL);
+    vTaskStartScheduler();
+#elif D_USE_THREADX
+   fptrAppInit = fptrInit;
+   tx_kernel_enter();
+#else
+   #error "Add appropriate RTOS definitions"
+#endif /* #ifdef D_USE_FREERTOS */
+}
+
+
+/**
+* End the activity of the scheduler
+*
+* @param  - none
+*
+* @return - none
+* */
+RTOSAL_SECTION void rtosalEndScheduler( void )
+{
+	/* Not implemented. */
+	for( ;; );
+}
+
+/**
+* Registration for TimerTick handler function
+*/
+void rtosalRegisterTimerTickHandler(rtosalTimerTickHandler_t fptrHandler)
+{
+	fptrTimerTickHandler = fptrHandler;
 }

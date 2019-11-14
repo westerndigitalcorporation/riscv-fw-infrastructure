@@ -46,12 +46,6 @@
 /**
 * local prototypes
 */
-void rtosalContextSwitchIndicationSet(void);
-
-/**
-* This function is invoked by the system timer interrupt
-*/
-void rtosalTick(void);
 
 /**
 * external prototypes
@@ -61,5 +55,45 @@ extern void (*fptrParamErrorNotification)(const void *pParam, u32_t uErrorCode);
 /**
 * global variables
 */
+
+
+/**
+ * API
+ */
+
+
+/**
+* @brief set indication that context-switch is required
+*
+* @param None
+*
+*/
+void rtosalContextSwitchIndicationSet(void);
+
+/**
+* @brief clear the context-switch indication
+*
+* @param None
+*
+*/
+void rtosalContextSwitchIndicationClear(void);
+
+/**
+* @brief Activated upon Timer-tick (and invokes context-switch in the OS)
+*
+* @param None
+*
+*/
+void rtosalTick(void);
+
+/**
+* @brief check if in ISR context
+*
+* @param None
+*
+* @return u32_t            - D_NON_INT_CONTEXT
+*                          - non zero value - interrupt context
+*/
+u32_t rtosalIsInterruptContext(void);
 
 #endif /* __RTOSAL_H__ */
