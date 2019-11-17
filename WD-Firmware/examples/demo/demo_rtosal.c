@@ -61,7 +61,6 @@ meaning the send task should always find the queue empty. */
 #define D_RX_TASK_STACK_SIZE  600
 #define D_TX_TASK_STACK_SIZE  450
 #define D_SEM_TASK_STACK_SIZE 450
-#define D_IDLE_TASK_SIZE      450
 
 /**
 * macros
@@ -114,8 +113,8 @@ static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static rtosalStackType_t uSemTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(uint32_t)];
 /* Idle-task and Timer-task are created by FreeRtos and not by this application */
-static rtosalTask_t stIdleTask;
-static rtosalStackType_t uIdleTaskStackBuffer[D_IDLE_TASK_SIZE];
+//static rtosalTask_t stIdleTask;
+//static rtosalStackType_t uIdleTaskStackBuffer[D_IDLE_TASK_SIZE];
 static rtosalTask_t stTimerTask;
 static rtosalStackType_t uTimerTaskStackBuffer[configTIMER_TASK_STACK_DEPTH];
 
@@ -354,6 +353,7 @@ static void demoSemaphoreTask( void *pvParameters )
  * vApplicationTickHook - Called from FreeRTOS upon any timer's tick
  *
  */
+extern void rtosalContextSwitchIndicationClear(void); /* Temporarily here! */
 void vApplicationTickHook( void )
 {
 static uint32_t ulCount = 0;
@@ -445,20 +445,6 @@ void vApplicationIdleHook( void )
 	/*demoOutputMsg("Idle Task Hook\n", 15);*/
 }
 
-/**
- * vApplicationGetIdleTaskMemory - Called from FreeRTOS upon Idle task creation, to get task's memory buffers
- *
- * rtosalStaticTask_t **ppxIdleTaskTCBBuffer - pointer to Task's Control-Block buffer (pointer to pointer as it is output parameter)
- * rtosalStack_t **ppxIdleTaskStackBuffer - pointer to Task's stack buffer  (pointer to pointer as it is output parameter)
- * uint32_t *pulIdleTaskStackSize - Task's stack size (pointer, as it is output parameter)
- *
- */
-void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rtosalStack_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
-{
-  *ppxIdleTaskTCBBuffer = (rtosalStaticTask_t*)&stIdleTask;
-  *ppxIdleTaskStackBuffer = (rtosalStack_t*)&uIdleTaskStackBuffer[0];
-  *pulIdleTaskStackSize = D_IDLE_TASK_SIZE;
-}
 
 /**
  * vApplicationGetTimerTaskMemory - Called from FreeRTOS upon Timer task creation, to get task's memory buffers

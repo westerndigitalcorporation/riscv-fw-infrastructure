@@ -28,6 +28,7 @@
 #include "psp_types.h"
 #include "rtosal_util.h"
 #include "rtosal_macros.h"
+#include "rtosal_task_api.h"
 #ifdef D_USE_FREERTOS
    #include "FreeRTOS.h"
    #include "task.h"
@@ -39,6 +40,7 @@
 /**
 * definitions
 */
+#define D_IDLE_TASK_SIZE      450
 
 /**
 * macros
@@ -62,6 +64,8 @@
 u32_t g_rtosalContextSwitch = 0;
 u32_t g_rtosalIsInterruptContext = D_RTOSAL_NON_INT_CONTEXT;
 
+static rtosalTask_t stIdleTask;
+static rtosalStackType_t uIdleTaskStackBuffer[D_IDLE_TASK_SIZE];
 
 
 /**
@@ -123,4 +127,18 @@ RTOSAL_SECTION void rtosalTick(void)
 }
 
 
+/**
+ * vApplicationGetIdleTaskMemory - Called from FreeRTOS upon Idle task creation, to get task's memory buffers
+ *
+ * rtosalStaticTask_t **ppxIdleTaskTCBBuffer - pointer to Task's Control-Block buffer (pointer to pointer as it is output parameter)
+ * rtosalStack_t **ppxIdleTaskStackBuffer - pointer to Task's stack buffer  (pointer to pointer as it is output parameter)
+ * uint32_t *pulIdleTaskStackSize - Task's stack size (pointer, as it is output parameter)
+ *
+ */
+void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rtosalStack_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
+{
+  *ppxIdleTaskTCBBuffer = (rtosalStaticTask_t*)&stIdleTask;
+  *ppxIdleTaskStackBuffer = (rtosalStack_t*)&uIdleTaskStackBuffer[0];
+  *pulIdleTaskStackSize = D_IDLE_TASK_SIZE;
+}
 
