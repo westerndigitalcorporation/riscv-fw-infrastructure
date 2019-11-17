@@ -58,7 +58,7 @@
 .equ D_COMRV_GROUP_SIZE_STACK_OFFSET,       D_COMRV_PREV_STACK_FRAME + 2
 
 
-.global   comrvEntry
+.global comrvEntry
 
 .section  .text.entry
 .align 4

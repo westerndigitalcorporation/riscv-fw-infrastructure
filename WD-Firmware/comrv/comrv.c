@@ -200,7 +200,7 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 */
 extern void  comrvEntry              (void);
 
-/* user hook functions */
+/* user hook functions - user application must implement the following 4 functions */
 extern void  comrvMemcpyHook         (void* pDest, void* pSrc, u32_t uiSizeInBytes);
 extern u32_t comrvCrcCalcHook        (void* pAddress, u16_t usMemSizeInBytes);
 extern void  comrvNotificationHook   (u32_t uiNotificationNum, u32_t uiToken);
