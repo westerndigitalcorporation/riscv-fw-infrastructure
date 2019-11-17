@@ -233,4 +233,21 @@ void rtosalEndScheduler(void);
 */
 void rtosalRegisterTimerTickHandler(rtosalTimerTickHandler_t fptrHandler);
 
+/**
+* @brief set indication that context-switch is required
+*
+* @param None
+*
+*/
+void rtosalContextSwitchIndicationSet(void);
+
+/**
+* @brief clear the context-switch indication
+*
+* @param None
+*
+*/
+void rtosalContextSwitchIndicationClear(void);
+
+
 #endif /* __RTOSAL_TASK_API_H__ */

@@ -29,6 +29,7 @@
 #include "rtosal_macros.h"
 #include "rtosal_util.h"
 #include "psp_api.h"
+#include "rtosal_task_api.h"
 #ifdef D_USE_FREERTOS
    #include "timers.h"
 #else

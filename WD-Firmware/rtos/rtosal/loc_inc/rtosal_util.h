@@ -61,23 +61,6 @@ extern void (*fptrParamErrorNotification)(const void *pParam, u32_t uErrorCode);
  * API
  */
 
-
-/**
-* @brief set indication that context-switch is required
-*
-* @param None
-*
-*/
-void rtosalContextSwitchIndicationSet(void);
-
-/**
-* @brief clear the context-switch indication
-*
-* @param None
-*
-*/
-void rtosalContextSwitchIndicationClear(void);
-
 /**
 * @brief Activated upon Timer-tick (and invokes context-switch in the OS)
 *

@@ -74,16 +74,16 @@ meaning the send task should always find the queue empty. */
 * local prototypes
 */
 static void demoRtosalCreateTasks(void *pParam);
-static void demoReceiveMsgTask( void *pvParameters );
-static void demoSendMsgTask( void *pvParameters );
-static void demoSemaphoreTask( void *pvParameters );
-static void demoTimerCallback( void* xTimer );
+static void demoRtosalReceiveMsgTask( void *pvParameters );
+static void demoRtosalSendMsgTask( void *pvParameters );
+static void demoRtosalSemaphoreTask( void *pvParameters );
+static void demoRtosalTimerCallback( void* xTimer );
+void demoRtosalTimerTickHandler(void);
 
 
 /**
 * external prototypes
 */
-
 
 /**
 * global variables
@@ -112,11 +112,6 @@ static rtosalStackType_t uRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
 static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static rtosalStackType_t uSemTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(uint32_t)];
-/* Idle-task and Timer-task are created by FreeRtos and not by this application */
-//static rtosalTask_t stIdleTask;
-//static rtosalStackType_t uIdleTaskStackBuffer[D_IDLE_TASK_SIZE];
-static rtosalTask_t stTimerTask;
-static rtosalStackType_t uTimerTaskStackBuffer[configTIMER_TASK_STACK_DEPTH];
 
 
 /**
@@ -181,7 +176,7 @@ void demoRtosalCreateTasks(void *pParam)
 
     /* Create the queue-receive task */
     res = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_29,
-    		      demoReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE, uRxTaskStackBuffer,
+    		      demoRtosalReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE, uRxTaskStackBuffer,
                   0, D_RTOSAL_AUTO_START, 0);
 	if (res != D_RTOSAL_SUCCESS)
 	{
@@ -191,7 +186,7 @@ void demoRtosalCreateTasks(void *pParam)
 
 	/* Create the queue-send task in exactly the same way */
     res = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_30,
-    		      demoSendMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
+    		      demoRtosalSendMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
 				  uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
 	if (res != D_RTOSAL_SUCCESS)
 	{
@@ -212,7 +207,7 @@ void demoRtosalCreateTasks(void *pParam)
 	/* Create the task that is synchronized with an interrupt using the
     stEventSemaphore semaphore. */
     res = rtosalTaskCreate(&stSemTask, (s08_t*)"SEM", E_RTOSAL_PRIO_29,
-    		      demoSemaphoreTask, (u32_t)NULL, D_SEM_TASK_STACK_SIZE,
+    		      demoRtosalSemaphoreTask, (u32_t)NULL, D_SEM_TASK_STACK_SIZE,
 				  uSemTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
 	if (res != D_RTOSAL_SUCCESS)
 	{
@@ -221,23 +216,69 @@ void demoRtosalCreateTasks(void *pParam)
 	}
 
     /* Create the software timer */
-    res = rtosTimerCreate(&stLedTimer, (s08_t*)"LEDTimer", demoTimerCallback, 0,
+    res = rtosTimerCreate(&stLedTimer, (s08_t*)"LEDTimer", demoRtosalTimerCallback, 0,
                          D_RTOSAL_AUTO_START, D_MAIN_SOFTWARE_TIMER_PERIOD_TICKS, pdTRUE);
     if (res != D_RTOSAL_SUCCESS)
     {
     	demoOutputMsg("Timer creation failed\n", 22);
         for(;;);
     }
+
+    /* Register Timer-Tick interrupt handler function */
+    rtosalRegisterTimerTickHandler(demoRtosalTimerTickHandler);
+
 }
 
 
 /**
- * demoTimerCallback - called each time the timer expires
+ * demoRtosalTimerTickHandler - called upon Timer-Tick interrupt. This module implements the handler and register
+ *                              it in RTOS-AL so it will be called upon each tick-interrupt
+ *
+ */
+void demoRtosalTimerTickHandler(void)
+{
+static uint32_t ulCount = 0;
+
+    /* The RTOS tick hook function is enabled by setting configUSE_TICK_HOOK to
+    1 in FreeRTOSConfig.h.
+
+    "Give" the semaphore on every 500th tick interrupt. */
+    ulCount++;
+    if( ulCount >= 500UL )
+    {
+         /* This function is called from an interrupt context (the RTOS tick interrupt),
+          * so only ISR safe API functions can be used (those that end in "FromISR()".
+
+         xHigherPriorityTaskWoken was initialized to pdFALSE, and will be set to
+         pdTRUE by xSemaphoreGiveFromISR() if giving the semaphore unblocked a
+         task that has equal or higher priority than the interrupted task.
+         NOTE: A semaphore is used for example purposes.  In a real application it
+         might be preferable to use a direct to task notification,
+         which will be faster and use less RAM. */
+
+         rtosalSemaphoreRelease(&stEventSemaphore);
+
+         /* the rtosalSemaphoreRelease will automatically handle the xHigherPriorityTaskWoken
+          * indication and in this case even if xHigherPriorityTaskWoken is true, we don't
+          * need to perform a context switch (we are in a context of the tick interrupt which
+          * is already handling context switch if required therefore we must clear the
+          * rtos al 'context switch' indication)
+         */
+         rtosalContextSwitchIndicationClear();
+         ulCount = 0UL;
+
+         demoOutputMsg("Giving Semaphore\n", 17);
+         demoOutputLed(D_LED_GREEN_ON);
+    }
+}
+
+/**
+ * demoRtosalTimerCallback - called each time the timer expires
  *
  * void* xTimer - not in use
  *
  */
-static void demoTimerCallback(void* xTimer)
+static void demoRtosalTimerCallback(void* xTimer)
 {
 #ifdef D_HI_FIVE1
     /* The timer has expired.  Count the number of times this happens.  The
@@ -257,12 +298,12 @@ static void demoTimerCallback(void* xTimer)
 }
 
 /**
- * demoSendMsgTask - Tx task function
+ * demoRtosalSendMsgTask - Tx task function
  *
  * void *pvParameters - not in use
  *
  */
-static void demoSendMsgTask( void *pvParameters )
+static void demoRtosalSendMsgTask( void *pvParameters )
 {
 const uint32_t ulValueToSend = 100UL;
 
@@ -284,12 +325,12 @@ const uint32_t ulValueToSend = 100UL;
 }
 
 /**
- * demoReceiveMsgTask - Rx task function
+ * demoRtosalReceiveMsgTask - Rx task function
  *
  * void *pvParameters - not in use
  *
  */
-static void demoReceiveMsgTask( void *pvParameters )
+static void demoRtosalReceiveMsgTask( void *pvParameters )
 {
     uint32_t ulReceivedValue;
     char stringValue[10];
@@ -323,12 +364,12 @@ static void demoReceiveMsgTask( void *pvParameters )
 }
 
 /**
- * demoSemaphoreTask - Semaphore task function
+ * demoRtosalSemaphoreTask - Semaphore task function
  *
  * void *pvParameters - not in use
  *
  */
-static void demoSemaphoreTask( void *pvParameters )
+static void demoRtosalSemaphoreTask( void *pvParameters )
 {
    u32_t res;
 
@@ -349,115 +390,6 @@ static void demoSemaphoreTask( void *pvParameters )
     }
 }
 
-/**
- * vApplicationTickHook - Called from FreeRTOS upon any timer's tick
- *
- */
-extern void rtosalContextSwitchIndicationClear(void); /* Temporarily here! */
-void vApplicationTickHook( void )
-{
-static uint32_t ulCount = 0;
-
-    /* The RTOS tick hook function is enabled by setting configUSE_TICK_HOOK to
-    1 in FreeRTOSConfig.h.
-
-    "Give" the semaphore on every 500th tick interrupt. */
-    ulCount++;
-    if( ulCount >= 500UL )
-    {
-    	/* This function is called from an interrupt context (the RTOS tick
-        interrupt),    so only ISR safe API functions can be used (those that end
-        in "FromISR()".
 
 
-        xHigherPriorityTaskWoken was initialized to pdFALSE, and will be set to
-        pdTRUE by xSemaphoreGiveFromISR() if giving the semaphore unblocked a
-        task that has equal or higher priority than the interrupted task.
-        NOTE: A semaphore is used for example purposes.  In a real application it
-        might be preferable to use a direct to task notification,
-        which will be faster and use less RAM. */
-
-      rtosalSemaphoreRelease(&stEventSemaphore);
-      /* the rtosalSemaphoreRelease will automatically handle the xHigherPriorityTaskWoken
-       * indication and in this case even if xHigherPriorityTaskWoken is true, we don't
-       * need to perform a context switch (we are in a context of the tick interrupt which
-       * is already handling context switch if required therefore we must clear the
-       * rtos al 'context switch' indication)
-       */
-      rtosalContextSwitchIndicationClear();
-      ulCount = 0UL;
-
-      demoOutputMsg("Giving Semaphore\n", 17);
-      demoOutputLed(D_LED_GREEN_ON);
-    }
-}
-
-/**
- * vApplicationMallocFailedHook - Called from FreeRTOS upon malloc failure
- *
- * Not in use
- *
- */
-void vApplicationMallocFailedHook( void )
-{
-    /* The malloc failed hook is enabled by setting
-    configUSE_MALLOC_FAILED_HOOK to 1 in FreeRTOSConfig.h.
-
-    Called if a call to pvPortMalloc() fails because there is insufficient
-    free memory available in the FreeRTOS heap.  pvPortMalloc() is called
-    internally by FreeRTOS API functions that create tasks, queues, software
-    timers, and semaphores.  The size of the FreeRTOS heap is set by the
-    configTOTAL_HEAP_SIZE configuration constant in FreeRTOSConfig.h. */
-	demoOutputMsg("malloc failed\n", 14);
-    for( ;; );
-}
-
-
-/**
- * vApplicationStackOverflowHook - Called from FreeRTOS upon stack-overflow
- *
- * void* xTask - not in use
- * signed char *pcTaskName - not in use
- *
- */
-void vApplicationStackOverflowHook(void* xTask, signed char *pcTaskName)
-{
-    ( void ) pcTaskName;
-    ( void ) xTask;
-
-    /* Run time stack overflow checking is performed if
-    configconfigCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
-    function is called if a stack overflow is detected.  pxCurrentTCB can be
-    inspected in the debugger if the task name passed into this function is
-    corrupt. */
-    demoOutputMsg("Stack Overflow\n", 15);
-    for( ;; );
-}
-
-/**
- * vApplicationStackOverflowHook - Called from FreeRTOS
- *
- * Currently empty function
- *
- */
-void vApplicationIdleHook( void )
-{
-	/*demoOutputMsg("Idle Task Hook\n", 15);*/
-}
-
-
-/**
- * vApplicationGetTimerTaskMemory - Called from FreeRTOS upon Timer task creation, to get task's memory buffers
- *
- * rtosalStaticTask_t **ppxTimerTaskTCBBuffer - pointer to Task's Control-Block buffer (pointer to pointer as it is output parameter)
- * rtosalStack_t **ppxTimerTaskStackBuffer - pointer to Task's stack buffer  (pointer to pointer as it is output parameter)
- * uint32_t *pulTimerTaskStackSize - Task's stack size (pointer, as it is output parameter)
- *
- */
-void vApplicationGetTimerTaskMemory(rtosalStaticTask_t **ppxTimerTaskTCBBuffer, rtosalStack_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
-{
-  *ppxTimerTaskTCBBuffer = (rtosalStaticTask_t*)&stTimerTask;
-  *ppxTimerTaskStackBuffer = (rtosalStack_t*)&uTimerTaskStackBuffer[0];
-  *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
-}
 
