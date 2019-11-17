@@ -64,6 +64,9 @@
  */
 #define _OVERLAY_  __attribute__((overlaycall)) __attribute__((noinline))
 
+#ifndef NULL
+#define NULL 0
+#endif /* NULL */
 /**
 * types
 */

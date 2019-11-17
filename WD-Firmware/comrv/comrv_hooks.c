@@ -99,7 +99,7 @@ void comrvNotificationHook(u32_t notificationNum, u32_t token)
 *
 * @return calculated CRC
 */
-u32_t comrvCrcCalcHook(void* pAddress, u16_t memprySize)
+u32_t comrvCrcCalcHook(void* pAddress, u16_t memSizeInBytes)
 {
    return 1;
 }

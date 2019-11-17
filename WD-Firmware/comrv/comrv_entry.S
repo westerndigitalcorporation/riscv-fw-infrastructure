@@ -58,7 +58,7 @@
 .equ D_COMRV_GROUP_SIZE_STACK_OFFSET,       D_COMRV_PREV_STACK_FRAME + 2
 
 
-.global   comrv_entry
+.global   comrvEntry
 
 .section  .text.entry
 .align 4
@@ -72,7 +72,7 @@
    t5 - holds the token we need to invoke (can be an actual address if callee
         is a non-overlay function) */
 
-comrv_entry:
+comrvEntry:
     /* allocate a new stack frame from the stack frame pool - we unlink the next
        free frame from the stack frame pool (t4) and assign its address to t2.
        t4 is updated with the next free stack frame */

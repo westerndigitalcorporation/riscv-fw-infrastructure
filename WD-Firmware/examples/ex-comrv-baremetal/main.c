@@ -4,8 +4,8 @@
 #define OVL_OverlayFunc0 _OVERLAY_
 #define OVL_OverlayFunc1 _OVERLAY_
 #define OVL_OverlayFunc2 _OVERLAY_
-#define OVL_benchmark
-#define OVL_jpegdct
+#define OVL_benchmark  //_OVERLAY_
+#define OVL_jpegdct  //_OVERLAY_
 
 //extern int OVL_benchmark benchmark(void);
 
@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 
    globalCount+=1;
    OverlayFunc0();
+   //benchmark();
    globalCount+=2;
    return 0;
 }

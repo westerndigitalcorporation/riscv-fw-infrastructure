@@ -12,6 +12,7 @@ MEMORY
      linker to place functions, and as the addresses of functions in debuginfo,
      but is never loaded onto the system. */
   ovltmp           : ORIGIN = 0xF0000000, LENGTH = 0x10000
+  ovl-grp          : ORIGIN = 0xE0000000, LENGTH = 0x10000
 }
 
 PHDRS
@@ -61,7 +62,6 @@ SECTIONS
 
   /* Overlay data */
   .ovlgrpdata       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_START__ = .;} >flash AT>flash :flash
-
 
   /* Overlay offset table */
   .ovlgrptbl      : {
