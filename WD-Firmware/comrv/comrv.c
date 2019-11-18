@@ -289,8 +289,6 @@ void comrvInit(void)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
    pStackStartAddr = (comrvStackFrame_t*)&pComrvCB->stOverlayCache[pComrvCB->ucNumOfOverlayEntries];
-   /* Init comrv stack - mark the last stack frame */
-   pStackStartAddr->ssOffsetPrevFrame = D_COMRV_END_OF_STACK;
    /* initialize all stack entries */
    for (pStackStartAddr++ ; pStackStartAddr < pStackEndAddr ; pStackStartAddr++)
    {
@@ -301,7 +299,10 @@ void comrvInit(void)
    /* set the address of COMRV stack and initialize it */
    pStackStartAddr--;
    M_COMRV_SET_STACK_ADDR(pStackStartAddr);
+   /* mark the last stack frame */
    pStackStartAddr->ssOffsetPrevFrame = D_COMRV_END_OF_STACK;
+   /* clear token field - bit 0 must be 0 to indicate we came
+      from non overlay function */
    pStackStartAddr->uiCalleeToken = 0;
 #endif /* D_COMRV_USE_OS */
 
