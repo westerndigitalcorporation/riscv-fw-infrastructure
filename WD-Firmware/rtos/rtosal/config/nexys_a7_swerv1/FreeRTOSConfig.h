@@ -71,7 +71,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "platform.h"
+/*#include "platform.h"*/
 
 /*
  * For some reason the standard demo timer demo/test tasks fail when executing
