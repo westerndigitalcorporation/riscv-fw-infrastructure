@@ -16,6 +16,7 @@ from sys import platform
 STR_VIVADO_PATH = "VIVADO_PATH"
 
 STR_TCL_FILE = "swerv_flush_fpga.tcl"
+STR_VIVADO_EXE = "vivado"
 STR_VIVADO_FLAGS = "-mode batch -source" 
 
 def HelpMessageforSetEnv():
@@ -33,17 +34,18 @@ def main():
 	exit(0)
 
     if STR_VIVADO_PATH not in os.environ.keys():
-        print "Please update environment variable VIVADO_EXE to the Vivado excecution file with path"
+        print "Please update environment variable VIVADO_PATH to the Vivado excecution file with path"
         HelpMessageforSetEnv()
         exit(0)
         
     elif os.environ[STR_VIVADO_PATH] == '':
-        print "Please update environment variable VIVADO_EXE to the Vivado excecution file with path"
+        print "Please update environment variable VIVADO_PATH to the Vivado excecution file with path"
         HelpMessageforSetEnv()
         exit(0)
         
     else:
-        VIVADO_EXE = os.environ[STR_VIVADO_PATH]
+        VIVADO_EXE = os.path.join(os.environ[STR_VIVADO_PATH], STR_VIVADO_EXE)
+    
     
     
     exeCmd = "%s %s %s" %(VIVADO_EXE, STR_VIVADO_FLAGS, STR_TCL_FILE)
