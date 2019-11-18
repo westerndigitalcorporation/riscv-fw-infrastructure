@@ -50,6 +50,39 @@
 #define D_COMRV_INVOKE_CALLEE_BIT_0             1
 #define D_COMRV_RET_CALLER_BIT_0                0
 
+/* if no profile was set */
+#if D_COMRV_PROFILE==0
+#define D_COMRV_PROFILE 1
+#endif
+
+#if D_COMRV_PROFILE == 1
+
+  #ifdef D_COMRV_EVICTION_LRU
+    /* bidirectional linked list - index of previous LRU item */
+    typedef u08_t lru_t;
+  #elif defined(D_COMRV_EVICTION_LFU)
+  #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+  #endif /* D_COMRV_EVICTION_LRU */
+
+#elif D_COMRV_PROFILE == 2
+
+  #ifdef D_COMRV_EVICTION_LRU
+    /* bidirectional linked list - index of previous LRU item */
+    typedef u16_t lru_t;
+  #elif defined(D_COMRV_EVICTION_LFU)
+  #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+  #endif /* D_COMRV_EVICTION_LRU */
+
+#elif D_COMRV_PROFILE == 3
+
+  #ifdef D_COMRV_EVICTION_LRU
+    /* bidirectional linked list - index of previous LRU item */
+    typedef u32_t lru_t;
+  #elif defined(D_COMRV_EVICTION_LFU)
+  #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+  #endif /* D_COMRV_EVICTION_LRU */
+
+#endif /* D_COMRV_PROFILE_1 */
 /**
 * macros
 */
@@ -157,9 +190,9 @@ typedef struct comrvOverlayHeapEntry
 {
 #ifdef D_COMRV_EVICTION_LRU
   /* bidirectional linked list - index of previous LRU item */
-  u08_t                  ucPrevIndex;
+  lru_t                  ucPrevIndex;
   /* bidirectional linked list - index of next LRU item */
-  u08_t                  ucNextIndex;
+  lru_t                  ucNextIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -176,9 +209,9 @@ typedef struct comrvCB
 {
 #ifdef D_COMRV_EVICTION_LRU
   /* holds the cache entry index of the LRU item */
-  u08_t             ucLruIndex;
+  lru_t             ucLruIndex;
   /* holds the cache entry index of the MRU item */
-  u08_t             ucMruIndex;
+  lru_t             ucMruIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -198,6 +231,8 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 /**
 * external prototypes
 */
+/* main comrv entry function - all overlay functions are invoked
+   through this function (the address of comrvEntry() is set in reg t6) */
 extern void  comrvEntry              (void);
 
 /* user hook functions - user application must implement the following 4 functions */
@@ -279,7 +314,12 @@ void comrvInit(void)
 }
 
 /**
-* Search if current overlay token is already loaded
+* This function is performing the following:
+* 1.  load requested token (from t5 register)
+* 2.  search for the requested token in the loaded cache
+* 2.a for multi group search for each multi group token
+* 3.  if group not loaded, load it
+* 4.  return the address of the function (call or return address)
 *
 * @param none
 *
@@ -298,15 +338,15 @@ void* comrvGetAddressFromToken(void)
 #ifdef D_COMRV_CRC
    u32_t               uiCrc;
 #endif /* D_COMRV_CRC */
-#ifdef D_COMRV_FW_PROFILING
+#ifdef D_COMRV_FW_INSTRUMENTATION
    u32_t               uiProfilingIndication;
-#endif /* D_COMRV_FW_PROFILING */
+#endif /* D_COMRV_FW_INSTRUMENTATION */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    u32_t               uiTemp;
    u16_t               usSelectedMultiGroupEntry;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
-   /* read the requested token value */
+   /* read the requested token value (t5) */
    M_COMRV_READ_TOKEN_REG(unToken.uiValue);
 
    /* read comrv stack register (t3) */
@@ -322,16 +362,16 @@ void* comrvGetAddressFromToken(void)
       /* write back the stack register after bit 0 was cleared*/
       M_COMRV_WRITE_STACK_REG(pComrvStackFrame);
 
-#ifdef D_COMRV_FW_PROFILING
+#ifdef D_COMRV_FW_INSTRUMENTATION
       uiProfilingIndication = D_COMRV_NO_LOAD_AND_INVOKE_IND;
-#endif /* D_COMRV_FW_PROFILING */
+#endif /* D_COMRV_FW_INSTRUMENTATION */
    }
    /* we are returning to an overlay function or accessing overlay data */
    else
    {
-#ifdef D_COMRV_FW_PROFILING
+#ifdef D_COMRV_FW_INSTRUMENTATION
       uiProfilingIndication = D_COMRV_NO_LOAD_AND_RETURN_IND;
-#endif /* D_COMRV_FW_PROFILING */
+#endif /* D_COMRV_FW_INSTRUMENTATION */
    }
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
@@ -346,16 +386,15 @@ void* comrvGetAddressFromToken(void)
    /* search for a multi-group overlay token */
    else
    {
-      pAddress = NULL;
       /* first ucEntryIndex to search from in the multi group table is determined by the overlayGroupID
          field of the requested token */
       ucEntryIndex = unToken.stFields.overlayGroupID;
       do
       {
          /* search for the token */
-         pAddress = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[ucEntryIndex]);
+         pAddress = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[ucEntryIndex++]);
       /* continue the search as long as the group wasn't found and we have additional tokens */
-      } while ((pAddress == NULL) && (pOverlayMultiGroupTokensTable[ucEntryIndex].ucValue != 0));
+      } while ((pAddress == NULL) && (pOverlayMultiGroupTokensTable[ucEntryIndex].uiValue != 0));
 
       /* save the selected multi group entry */
       usSelectedMultiGroupEntry = ucEntryIndex-1;
@@ -484,10 +523,10 @@ void* comrvGetAddressFromToken(void)
       }
 #endif /* D_COMRV_CRC */
 
-#ifdef D_COMRV_FW_PROFILING
+#ifdef D_COMRV_FW_INSTRUMENTATION
       /* update for FW profiling loaded the function */
       uiProfilingIndication |= D_COMRV_PROFILING_LOAD_VAL;
-#endif /* D_COMRV_FW_PROFILING */
+#endif /* D_COMRV_FW_INSTRUMENTATION */
    }
    else
    {
@@ -536,9 +575,9 @@ void* comrvGetAddressFromToken(void)
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    }
 
-#ifdef D_COMRV_FW_PROFILING
+#ifdef D_COMRV_FW_INSTRUMENTATION
    comrvNotificationHook(uiProfilingIndication , unToken.ucValue);
-#endif /* D_COMRV_FW_PROFILING */
+#endif /* D_COMRV_FW_INSTRUMENTATION */
 
    /* group is now loaded to memory so we can return the address of the data/function */
    return (void*)((u08_t*)pAddress + usOffset);
