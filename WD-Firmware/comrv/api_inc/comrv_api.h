@@ -83,6 +83,7 @@
 /**
 * APIs
 */
-void   comrvInit(void);
+void comrvInit(void);
+void comrvGetStatus(void);
 
 #endif /* __COMRV_TASK_API_H__ */

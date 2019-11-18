@@ -295,7 +295,6 @@ void comrvInit(void)
    for (pStackStartAddr++ ; pStackStartAddr < pStackEndAddr ; pStackStartAddr++)
    {
       pStackStartAddr->ssOffsetPrevFrame = (s16_t)-sizeof(comrvStackFrame_t);
-      pStackStartAddr->uiCalleeToken = 0;
    }
 
 #ifndef D_COMRV_USE_OS
@@ -303,6 +302,7 @@ void comrvInit(void)
    pStackStartAddr--;
    M_COMRV_SET_STACK_ADDR(pStackStartAddr);
    pStackStartAddr->ssOffsetPrevFrame = D_COMRV_END_OF_STACK;
+   pStackStartAddr->uiCalleeToken = 0;
 #endif /* D_COMRV_USE_OS */
 
    /* set the address of COMRV stack pool */
@@ -715,4 +715,16 @@ static void comrvUpdateHeapEntryAccess(u08_t ucEntryIndex)
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
+}
+
+/**
+* get comrv status
+*
+* @param none
+*
+* @return none
+*/
+void comrvGetStatus(void)
+{
+   // TODO: check comrv stack
 }
