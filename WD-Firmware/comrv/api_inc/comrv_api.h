@@ -85,5 +85,7 @@
 */
 void comrvInit(void);
 void comrvGetStatus(void);
+// TODO: ronen - use define for no inline
+__attribute__((noinline)) void comrvInitApplicationStack(void);
 
 #endif /* __COMRV_TASK_API_H__ */

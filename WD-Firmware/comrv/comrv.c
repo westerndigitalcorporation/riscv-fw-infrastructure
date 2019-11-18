@@ -86,12 +86,16 @@
 /**
 * macros
 */
+/* read token register (t5) */
+#define M_COMRV_READ_TOKEN_REG(x)         asm volatile ("mv %0, t5" : "=r" (x)  : );
+/* read stack pool register (t4) */
+#define M_COMRV_WRITE_POOL_REG(x)         asm volatile ("mv t4, %0" : : "r" (x) );
+/* read stack pool register (t4) */
+#define M_COMRV_READ_POOL_REG(x)         asm volatile ("mv %0, t4" : "=r" (x)  : );
 /* read comrv stack register (t3) */
 #define M_COMRV_READ_STACK_REG(x)        asm volatile ("mv %0, t3" : "=r" (x)  : );
 /* write comrv stack register (t3) */
 #define M_COMRV_WRITE_STACK_REG(x)       asm volatile ("mv t3, %0" : : "r" (x) );
-/* read token register (t5) */
-#define M_COMRV_READ_TOKEN_REG(x)        asm volatile ("mv %0, t5" : "=r" (x)  : );
 /* set comrv entry engine address */
 #define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la t6, "#address : : : );
 /* set the comrv stack pool and comrv stack registers */
@@ -295,23 +299,19 @@ void comrvInit(void)
       pStackStartAddr->ssOffsetPrevFrame = (s16_t)-sizeof(comrvStackFrame_t);
    }
 
-#ifndef D_COMRV_USE_OS
-   /* set the address of COMRV stack and initialize it */
-   pStackStartAddr--;
-   M_COMRV_SET_STACK_ADDR(pStackStartAddr);
-   /* mark the last stack frame */
-   pStackStartAddr->ssOffsetPrevFrame = D_COMRV_END_OF_STACK;
-   /* clear token field - bit 0 must be 0 to indicate we came
-      from non overlay function */
-   pStackStartAddr->uiCalleeToken = 0;
-#endif /* D_COMRV_USE_OS */
-
    /* set the address of COMRV stack pool */
    pStackStartAddr--;
    M_COMRV_SET_POOL_ADDR(pStackStartAddr);
 
    /* set the address of COMRV entry point */
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
+
+#ifndef D_COMRV_USE_OS
+   /* in os-less applications, stack register is initialized here;
+      this must be done after the stack pool register was
+      initialized (M_COMRV_SET_POOL_ADDR) */
+   comrvInitApplicationStack();
+#endif /* D_COMRV_USE_OS */
 }
 
 /**
@@ -728,4 +728,42 @@ static void comrvUpdateHeapEntryAccess(u08_t ucEntryIndex)
 void comrvGetStatus(void)
 {
    // TODO: check comrv stack
+}
+
+/**
+* initialize comrv stack - needs to be invoke by each task (if rtos exist)
+* when before initializing task stack.
+* in os-less apps, this function is called by comrv initialization function
+* and the user application doesn't need to do that.
+*
+* @param none
+*
+* @return none
+*/
+// TODO: ronen - use define for no inline
+__attribute__((noinline)) void comrvInitApplicationStack(void)
+{
+   volatile comrvStackFrame_t *pStackPool, *pStackFrame;
+
+   /* disable ints */
+   // TODO: disable ints
+
+   /* read stack pool register (t4) */
+   M_COMRV_READ_POOL_REG(pStackPool);
+   /* save the address of the next available stack frame */
+   pStackFrame = pStackPool;
+   /* update the next stack pool address */
+   pStackPool = (comrvStackFrame_t*)((u08_t*)pStackPool + pStackPool->ssOffsetPrevFrame);
+   /* write the new stack pool address */
+   M_COMRV_WRITE_POOL_REG(pStackPool);
+   /* set the address of COMRV stack in t3 */
+   M_COMRV_WRITE_STACK_REG(pStackFrame);
+   /* mark the last stack frame */
+   pStackFrame->ssOffsetPrevFrame = D_COMRV_END_OF_STACK;
+   /* clear token field - bit 0 must be 0 to indicate we came
+      from non overlay function */
+   pStackFrame->uiCalleeToken = 0;
+
+   /* enable ints */
+   // TODO: enable ints
 }
