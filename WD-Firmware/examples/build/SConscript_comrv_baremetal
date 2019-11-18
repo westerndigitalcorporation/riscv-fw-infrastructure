@@ -15,6 +15,7 @@
  limitations under the License.
 '''
 import os
+import utils
 Import('Env')
 
 #
@@ -24,8 +25,7 @@ Import('Env')
 
 # module output directory 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'comrv')
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
+utils.createFolder(out_dir)
 
 # list of c files to compile
 list_files_c=[

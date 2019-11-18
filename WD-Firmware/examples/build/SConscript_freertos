@@ -15,11 +15,11 @@
  limitations under the License.
 '''
 import os
+import utils
 Import('Env')
 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'freertos')
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
+utils.createFolder(out_dir)
 
 rtos_base=os.path.join('rtos', 'rtos_core', 'freertos', 'Source')
 list_port_files_c = {

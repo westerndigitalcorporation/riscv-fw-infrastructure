@@ -14,64 +14,41 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 '''
-# set imports and variables of sconstruct
-import sys
-import os
-import time
-import platform
-
-root_dir = os.path.join(os.getcwd(),"..", "..")
- 
-# this function creates a header string
-def header_create(str_arr):
-   header = '\n _______________________________________\n'
-   for line in str_arr:
-      header += '\n\t' + line
-   header += '\n _______________________________________\n'
-   return header
-
-# add 'size' util output to the map file
-def produce_sections_size(target, source, env):
-   global map_file_name
-   text = 'Sections size summary'
-   # check if there was any change in the .map file
-   if not text in open(map_file_name).read():
-      # .map was updated so add the sections size
-      elf_name = str(source[0])
-      size_util_name = os.path.join(Env['TOOLS_BASE_DIR'], 'riscv64-unknown-elf-size')
-      headere = header_create([text])
-      os.system('echo "' + headere + '" >> ' + map_file_name)
-      os.system(size_util_name + ' ' + elf_name + ' >> ' + map_file_name) 
-   return None
-
-tc_root_env_var_name = 'RISCV_TC_ROOT'
-tc_root_path = os.getenv(tc_root_env_var_name)
-# check if the TC environment variable is set or empty
-if tc_root_path == '' or tc_root_path == None:
-  print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV toolchain root")
-  exit(1)
-
-# under linux, verify installation dependencies
-if platform.uname()[0] == 'Linux':
-   dependency_list = ['libftdi1-2',]
-   for dependency in dependency_list:
-      os.system('dpkg -s '+ dependency +' > tmp.txt 2>&1')
-      if 'not installed' in open('tmp.txt').read():
-         print("please install missing library - " + dependency)
-         os.system('rm tmp.txt')
-         exit(1)
-   os.system('rm tmp.txt')
-else: 
-   # currently only linux is supported 
-   print("unsupported environment, please switch to a linux based machine")
-   exit(1)
 
 #### scons custom arguments ####
 tagretName = ARGUMENTS.get('target', '')
 exampleName = ARGUMENTS.get('example', '')
 #downloadFlag = ARGUMENTS.get('download', '0')
-#from EnvSnap import *
-#from saba_pkgScons.mdlSconsUtils import *
+
+# set imports and variables of sconstruct
+import sys
+import os
+import time
+
+import utils
+import demos.demo_factory
+
+objDemo = demos.demo_factory.generate(exampleName)
+objDemo.set_files_names(tagretName)
+
+root_dir = os.path.join(os.getcwd(),"..", "..")
+
+listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7']
+dependency_list = ['libftdi1-2',]
+
+#### scons verbose #####
+verbose = True
+
+tc_root_env_var_name = 'RISCV_TC_ROOT'
+tc_root_path = os.getenv(tc_root_env_var_name)
+# check if the TC environment variable is set or empty
+if not tc_root_path:
+  print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV toolchain root")
+  exit(1)
+  
+  
+utils.check_installed_dependencis(dependency_list)
+
 # set global environment
 
 # path to scons toolchain scripts
@@ -99,8 +76,7 @@ Env.Tool('as_rv')
 Env.Tool('cc_rv')
 Env.Tool('ar_rv')
 
-#### scons verbose #####
-verbose = True
+
 
 # set output file suffixes
 Env['OBJSUFFIX'] = '.o'
@@ -119,10 +95,10 @@ Env['PUBLIC_INC_PATH'] = []
 Env['PUBLIC_DEF']      = [] 
 Env['OUT_DIR_PATH']    = 'output'
 Env['TARGET_BOARD']    = tagretName
-Env['EXAMPLE_NAME']    = exampleName
-out_file_name = Env['TARGET_BOARD']+'-'+ exampleName 
-map_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.map'
-elf_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.elf'
+Env['EXAMPLE_NAME']    = objDemo.name
+
+Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], objDemo.map_file)
+
 
 cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
 Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + cc_options
@@ -141,8 +117,7 @@ if verbose == False:
 # for debug
 #print Env.Dump()
 
-if not os.path.exists(Env['OUT_DIR_PATH']):
-    os.makedirs(Env['OUT_DIR_PATH'])
+utils.createFolder(Env['OUT_DIR_PATH'])
 
 # linker flags
 Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc', '-Wl,--wrap=free', '-Wl,--wrap=open', '-Wl,--wrap=lseek', 
@@ -150,44 +125,33 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
                     '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
-                    '-Wl,-Map='+ map_file_name] + cc_options
+                    '-Wl,-Map='+ Env['MAP_FILE'] ] + cc_options
 
 #, LIBPATH='.'
 
-if Env['TARGET_BOARD'] != 'hifive1' and Env['TARGET_BOARD'] != 'hifive-un' and Env['TARGET_BOARD'] != 'nexys_a7':
-  print "missing target=[hifive1 | hifive-un | nexys_a7]"
+if Env['TARGET_BOARD'] not in listSupportedBoards:
+  print "missing target=%s" % " | ".join(listSupportedBoards)
   exit(1)
 
-size = Builder(action = produce_sections_size)
-Env['BUILDERS']['Size'] = size
+Env['BUILDERS']['Size'] = Builder(action = utils.produce_sections_size)
+Env['RTOS_CORE'] = objDemo.rtos_core
+Env['PUBLIC_DEF'] = objDemo.public_defs
+Env['TARGET_LIBS'] += ['c', 'gcc']
 
-arr_lib              = []
 if exampleName == 'ex-freertos':
-  Env['RTOS_CORE'] = 'freertos'
-  if Env['TARGET_BOARD'] == 'nexys_a7': # we need HW params for Nexys
-    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_NEXYS_A7', 'D_MTIME_ADDRESS=0x0200BFF8', 'D_MTIMECMP_ADDRESS=0x02004000', 'D_CLOCK_RATE=32768', 'D_TICK_TIME_MS=4', 'D_ISR_STACK_SIZE_WORDS=400']  ##[OS]: if this will keep beening here then we need new define
+  if Env['TARGET_BOARD'] == 'nexys_a7':
+    Env['PUBLIC_DEF'].append('D_NEXYS_A7')
   elif Env['TARGET_BOARD'] == 'hifive1':
-    Env['PUBLIC_DEF']= ['D_USE_RTOSAL', 'D_RV_HI_FIVE1', 'D_MTIME_ADDRESS=0x0200BFF8', 'D_MTIMECMP_ADDRESS=0x02004000', 'D_CLOCK_RATE=32768', 'D_TICK_TIME_MS=4', 'D_ISR_STACK_SIZE_WORDS=400']
-  else:
-    exit(1)
+    Env['PUBLIC_DEF'].append('D_RV_HI_FIVE1')
   
-  arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
-  arr_lib.append(SConscript('SConscript_'+ Env['RTOS_CORE'], exports='Env'))
-  arr_lib.append(SConscript('SConscript_rtosal', exports='Env'))
-  arr_lib.append(SConscript('SConscript_psp', exports='Env'))
-  Env['TARGET_LIBS'] += ['c', 'gcc']
-  
-elif exampleName == 'ex-comrv-baremetal':
-  Env['PUBLIC_DEF'] = ['D_BARE_METAL'] 
-  arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
-  arr_lib.append(SConscript('SConscript_psp', exports='Env'))
-  arr_lib.append(SConscript('SConscript_comrv_baremetal', exports='Env'))
-  Env['TARGET_LIBS'] += ['c', 'gcc']
-else:
-  print "missing example=[ex-freertos | ex-comrv_baremetal | TBD]"
-  exit(1)
+arr_lib = []
+arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
+for strModule in objDemo.moduls:
+  arr_lib.append(SConscript('SConscript_%s' % strModule, exports='Env'))
 
 arr_lib.append(SConscript('SConscript_demo_rtosal', exports='Env'))
+
+elf_file_name = os.path.join(Env['OUT_DIR_PATH'], objDemo.elf_file)
 example_bundle = Env.Program(elf_file_name, arr_lib, LIBS=Env['TARGET_LIBS'])
 Env.Size(source=example_bundle)
 

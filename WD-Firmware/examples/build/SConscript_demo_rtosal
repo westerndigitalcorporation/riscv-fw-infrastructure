@@ -15,11 +15,11 @@
  limitations under the License.
 '''
 import os
+import utils
 Import('Env')
 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], Env['EXAMPLE_NAME'])+'_example'
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
+utils.createFolder(out_dir)
 
 list_files_c=[
    [os.path.join('examples', 'demo' , 'main.c'), os.path.join(out_dir, 'main.o')],
