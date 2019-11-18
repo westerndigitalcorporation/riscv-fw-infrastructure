@@ -743,7 +743,7 @@ void comrvGetStatus(void)
 // TODO: ronen - use define for no inline
 __attribute__((noinline)) void comrvInitApplicationStack(void)
 {
-   volatile comrvStackFrame_t *pStackPool, *pStackFrame;
+   comrvStackFrame_t *pStackPool, *pStackFrame;
 
    /* disable ints */
    // TODO: disable ints
