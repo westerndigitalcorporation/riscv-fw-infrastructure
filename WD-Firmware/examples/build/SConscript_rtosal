@@ -38,17 +38,11 @@ list_files_a=[
    [os.path.join(rtosal_base, 'src', 'rtosal_int_vect.S'), os.path.join(out_dir, 'rtosal_int_vect.o')],
 ]
 
-rtos_core_define = {
-  'freertos' :  ['D_USE_FREERTOS'],
-  'threadx'  :  ['D_USE_THREADX'],
-}
-
 # compiler flags
 c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-Env['RTOSAL_DEF'] = rtos_core_define[Env['RTOS_CORE']]
 c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF'] + Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
 
 # include paths

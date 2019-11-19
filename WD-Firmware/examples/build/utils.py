@@ -37,6 +37,6 @@ def check_installed_dependencis(dependency_list):
     print("unsupported environment, please switch to a linux based machine")
     exit(1)   
  
- def createFolder(strPath)
-   if not os.path.exists(strPath):
+def createFolder(strPath):
+  if not os.path.exists(strPath):
     os.makedirs(strPath)

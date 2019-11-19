@@ -37,7 +37,7 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-Env['BSP_DEF'] = ['_HIFIVE']
+Env['BSP_DEF'] = [] #['_HIFIVE']
 c_defines = Env['RTOSAL_DEF'] + Env['BSP_DEF'] + Env['PUBLIC_DEF']
 
 # include paths

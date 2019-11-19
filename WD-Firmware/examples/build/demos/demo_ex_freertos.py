@@ -1,4 +1,4 @@
-from demo_abstract import clsdemo_abstract
+from abstract import clsdemo_abstract
 
 class demo(clsdemo_abstract):
   def __init__(self):
@@ -6,18 +6,21 @@ class demo(clsdemo_abstract):
     self.name = "ex_freertos"
     self.rtos_core = "freertos"
     
+    self.rtos_defines = ['D_USE_FREERTOS']
+    
     self.public_defs = [
         'D_USE_RTOSAL',
         'D_MTIME_ADDRESS=0x0200BFF8',
         'D_MTIMECMP_ADDRESS=0x02004000',
         'D_CLOCK_RATE=32768',
         'D_TICK_TIME_MS=4',
-        'D_ISR_STACK_SIZE_WORDS=400'
+        'D_ISR_STACK_SIZE=400'
     ]
     
     self.moduls = [
       'freertos',
       'rtosal',
-      'psp'
+      'psp',
+      'demo_rtosal'
     ]
   

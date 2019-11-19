@@ -1,4 +1,4 @@
-from demo_abstract import clsdemo_abstract
+from abstract import clsdemo_abstract
 
 class demo(clsdemo_abstract):
   def __init__(self):
