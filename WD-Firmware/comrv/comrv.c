@@ -434,8 +434,9 @@ void* comrvGetAddressFromToken(void)
       }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
-      /* disable ints */
-      // TODO: disable ints
+      /* we need to make sure that from this point
+         we won't have new overlay requests */
+      M_COMRV_ENTER_CRITICAL_SECTION();
 
       /* get eviction candidates according to the requested pOverlayGroupSize */
       ucNumOfEvictionCandidates = comrvGetEvictionCandidates(usOverlayGroupSize, ucEvictCandidateList);
@@ -465,8 +466,7 @@ void* comrvGetAddressFromToken(void)
                /* an overlay data is present when handling defragmentation */
                if (pEntry->unProperties.ucData)
                {
-                  /* enable ints */
-                  // TODO: enable ints
+                  M_COMRV_EXIT_CRITICAL_SECTION();
                   comrvNotificationHook(D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.ucValue);
                }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
@@ -486,8 +486,7 @@ void* comrvGetAddressFromToken(void)
       /* this means the end user locked all entries */
       else if (ucNumOfEvictionCandidates == 0)
       {
-         /* enable ints */
-         // TODO: enable ints
+         M_COMRV_EXIT_CRITICAL_SECTION();
          comrvNotificationHook(D_COMRV_NO_AVAILABLE_ENTRY_ERR, unToken.uiValue);
       }
       ucIndex = ucEvictCandidateList[ucEntryIndex];
@@ -515,10 +514,9 @@ void* comrvGetAddressFromToken(void)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
       }
-      /* TODO:Q: should I temporary mark it before load and unmark it after load, so the memory
-         won't move in case of context switch during the load */
-      /* enable ints */
-      // TODO
+      // TODO: protect the soon loaded ram
+      /* it is safe now to get new requests */
+      M_COMRV_EXIT_CRITICAL_SECTION();
       /* the group size in bytes */
       usOverlayGroupSize <<= 9;
       /* now we can load the overlay group */

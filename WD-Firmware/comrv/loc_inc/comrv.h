@@ -35,6 +35,8 @@
 /**
 * macros
 */
+#define M_COMRV_ENTER_CRITICAL_SECTION()
+#define M_COMRV_EXIT_CRITICAL_SECTION()
 
 /**
 * types
