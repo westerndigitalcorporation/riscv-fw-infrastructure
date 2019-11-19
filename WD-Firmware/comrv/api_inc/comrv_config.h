@@ -29,7 +29,17 @@
 /**
 * definitions
 */
-#define D_COMRV_OVL_GROUP_SIZE_MIN 512
-#define D_COMRV_OVL_GROUP_SIZE_MAX 4096
+/* minimum size of an overlay group */
+#define D_COMRV_OVL_GROUP_SIZE_MIN                          512
+/* maximum size of an overlay group */
+#define D_COMRV_OVL_GROUP_SIZE_MAX                          4096
+/* maximum number of overlay calls depth within the
+   entire application; if the application contains several tasks
+   this define must cover the max number at any given time */
+#define D_COMRV_CALL_STACK_DEPTH                            30
+/* size in bytes of the overlay cache - the size of the RAM provided
+   for loading and executing the overlay groups; granularity
+   expressed in D_COMRV_OVL_GROUP_SIZE_MIN */
+#define D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS   2
 
 #endif /* __COMRV_CONFIG_H__ */

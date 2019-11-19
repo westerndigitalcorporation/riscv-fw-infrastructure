@@ -30,10 +30,11 @@
 /**
 * definitions
 */
-#define D_COMRV_NO_AVAILABLE_ENTRY_ERR    0
-#define D_COMRV_LOAD_ERR                  1
-#define D_COMRV_OVL_DATA_DEFRAG_ERR       2
-#define D_COMRV_CRC_CHECK_ERR             3
+#define D_COMRV_INVALID_INIT_PARAMS_ERR   0
+#define D_COMRV_NO_AVAILABLE_ENTRY_ERR    1
+#define D_COMRV_LOAD_ERR                  2
+#define D_COMRV_OVL_DATA_DEFRAG_ERR       3
+#define D_COMRV_CRC_CHECK_ERR             4
 
 #define D_COMRV_PROFILE_BASE_IND          0xFC
 #define D_COMRV_PROFILING_INVOKE_VAL      1
@@ -67,6 +68,15 @@
 /**
 * types
 */
+typedef struct comrvInitArgs
+{
+   /* address the memory region which shall be used
+      for loading and executing overlay groups */
+   void* pCacheMemoeyAddress;
+   /* size in bytes of the memory pointed by pCacheMemoeyAddress
+      the size must be aligned to D_COMRV_OVL_GROUP_SIZE_MIN */
+   u32_t uiCacheSizeInBytes;
+}comrvInitArgs_t;
 
 /**
 * local prototypes
@@ -83,7 +93,7 @@
 /**
 * APIs
 */
-void comrvInit(void);
+void comrvInit(comrvInitArgs_t* pInitParams);
 void comrvGetStatus(void);
 // TODO: ronen - use define for no inline
 __attribute__((noinline)) void comrvInitApplicationStack(void);

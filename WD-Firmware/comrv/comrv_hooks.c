@@ -43,7 +43,7 @@
 /**
 * globals
 */
-extern void* __OVERLAY_START__;
+extern void* __OVERLAY_GROUPS_START__;
 
 /**
 * memory copy hook
@@ -77,7 +77,7 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 */
 void* comrvLoadOvlayGroupHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes)
 {
-   comrvMemcpyHook(pDest, (u08_t*)&__OVERLAY_START__ + groupOffset, sizeInBytes);
+   comrvMemcpyHook(pDest, (u08_t*)&__OVERLAY_GROUPS_START__ + groupOffset, sizeInBytes);
    return pDest;
 }
 

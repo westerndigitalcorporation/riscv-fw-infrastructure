@@ -7,7 +7,7 @@ MEMORY
   flash (rxai!w)   : ORIGIN = 0x20400000, LENGTH = 512M
   /*ovldata (rxai!w) : ORIGIN = 0x26800000, LENGTH = 12M*/
   ram (wxa!ri)     : ORIGIN = 0x80000000, LENGTH = 14K
-  ovl (wxa!ri)     : ORIGIN = 0x80003800, LENGTH = 2K
+  ovl (wxa!ri)     : ORIGIN = 0x80003800, LENGTH = 1K
   /* Temporary location for storing overlay functions. This is needed for the
      linker to place functions, and as the addresses of functions in debuginfo,
      but is never loaded onto the system. */
@@ -61,7 +61,7 @@ SECTIONS
   } >flash AT>flash :flash
 
   /* Overlay data */
-  .ovlgrpdata       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_START__ = .;} >flash AT>flash :flash
+  .ovlgrpdata       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_GROUPS_START__ = .;} >flash AT>flash :flash
 
   /* Overlay offset table */
   .ovlgrptbl      : {
@@ -192,12 +192,5 @@ SECTIONS
     __OVERLAY_SEC_START__ = .;
     . = 1K;
     __OVERLAY_SEC_END__ = .;
-  }  >ovl AT>ovl :ovl
-  
-  .ovl_stack ORIGIN(ovl) + LENGTH(ovl) - 1K :
-  {
-    __OVERLAY_STACK_START__ = .;
-    . = 1K;
-    __OVERLAY_STACK_END__ = .;
   }  >ovl AT>ovl :ovl
 }
