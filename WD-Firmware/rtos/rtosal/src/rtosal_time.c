@@ -27,8 +27,9 @@
 */
 #include "rtosal_time_api.h"
 #include "rtosal_macros.h"
-#include "rtosal.h"
+#include "rtosal_util.h"
 #include "psp_api.h"
+#include "rtosal_task_api.h"
 #ifdef D_USE_FREERTOS
    #include "timers.h"
 #else
@@ -194,7 +195,7 @@ RTOSAL_SECTION u32_t rtosTimerStart(rtosalTimer_t* pRtosalTimerCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosTimerStart invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xTimerStartFromISR(pRtosalTimerCb->timerHandle, &xHigherPriorityTaskWoken);
    }
@@ -250,7 +251,7 @@ RTOSAL_SECTION u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb)
 
 #ifdef D_USE_FREERTOS
    /* rtosTimerStop invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xTimerStopFromISR(pRtosalTimerCb->timerHandle, &xHigherPriorityTaskWoken);
    }
@@ -314,7 +315,7 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 
 #ifdef D_USE_FREERTOS
    /* rtosTimerModifyPeriod invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xTimerChangePeriodFromISR(pRtosalTimerCb->timerHandle, uiTicks, &xHigherPriorityTaskWoken);
    }

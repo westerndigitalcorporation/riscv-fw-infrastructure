@@ -27,7 +27,8 @@
 */
 #include "rtosal_event_api.h"
 #include "rtosal_macros.h"
-#include "rtosal.h"
+#include "rtosal_task_api.h"
+#include "rtosal_util.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "event_groups.h"
@@ -161,7 +162,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupSet(rtosalEventGroup_t* pRtosalEventGroupCb
 
 #ifdef D_USE_FREERTOS
    /* rtosalEventGroupSet invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xEventGroupSetBitsFromISR(pRtosalEventGroupCb->eventGroupHandle,
                                       stSetRtosalEventBits, &xHigherPriorityTaskWoken);
@@ -242,7 +243,7 @@ RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalEventBits, pRtosalEventBits == NULL, D_RTOSAL_GROUP_ERROR);
 
    /* invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       *pRtosalEventBits = xEventGroupGetBitsFromISR(pRtosalEventGroupCb->eventGroupHandle);
    }

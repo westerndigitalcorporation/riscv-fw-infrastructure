@@ -27,7 +27,8 @@
 */
 #include "rtosal_semaphore_api.h"
 #include "rtosal_macros.h"
-#include "rtosal.h"
+#include "rtosal_util.h"
+#include "rtosal_task_api.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "semphr.h"
@@ -162,7 +163,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, 
 
 #ifdef D_USE_FREERTOS
    /* rtosalSemaphoreWait invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xSemaphoreTakeFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
    }
@@ -218,7 +219,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreC
 
 #ifdef D_USE_FREERTOS
    /* rtosalSemaphoreRelease invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xSemaphoreGiveFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
    }

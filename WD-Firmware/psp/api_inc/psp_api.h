@@ -27,13 +27,13 @@
 * include files
 */
 
-#include "psp_config.h"
+#include "psp_intrinsics.h"
 #include "psp_defines.h"
+#include "psp_config.h"
 #include "psp_interrupt_api.h"
 #include "psp_macros.h"
-#include "psp_attributes.h"
-#include "psp_intrinsics.h"
 #include "psp_pragmas.h"
+#include "psp_attributes.h"
 
 /**
 * definitions
@@ -66,15 +66,6 @@
 * APIs
 */
 
-/**
-* @brief check if in ISR context
-*
-* @param None
-*
-* @return u32_t            - D_NON_INT_CONTEXT
-*                          - non zero value - interrupt context
-*/
-u32_t pspIsInterruptContext(void);
 
 /**
 * The function installs an interrupt service routine per risc-v cause

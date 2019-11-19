@@ -27,7 +27,7 @@
 */
 #include "rtosal_mutex_api.h"
 #include "rtosal_macros.h"
-#include "rtosal.h"
+#include "rtosal_util.h"
 #ifdef D_USE_FREERTOS
    #include "semphr.h"
 #else

@@ -34,38 +34,12 @@
 */
 
 /* The stack used by interrupt service routines */
-#ifdef D_ISR_STACK_SIZE_WORDS
-	/*D_PSP_DATA_SECTION*/ static D_PSP_16_ALIGNED pspStack_t xISRStack[ D_ISR_STACK_SIZE_WORDS ] = { 0 };
-	const pspStack_t xISRStackTop = ( pspStack_t ) &( xISRStack[ ( D_ISR_STACK_SIZE_WORDS ) - 1 ] );
+#ifdef D_ISR_STACK_SIZE
+	static /*D_PSP_DATA_SECTION*/ D_PSP_16_ALIGNED pspStack_t xISRStack[ D_ISR_STACK_SIZE ] ;
+	const pspStack_t xISRStackTop = ( pspStack_t ) &( xISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
 #else
     #error "ISR Stack size is not defined"
 #endif
-
-
-/* Set configCHECK_FOR_STACK_OVERFLOW to 3 to add ISR stack checking to task
-stack checking.  A problem in the ISR stack will trigger an assert, not call the
-stack overflow hook function (because the stack overflow hook is specific to a
-task stack, not the ISR stack). */
-#if( D_CHECK_FOR_STACK_OVERFLOW > 2 )
-	#warning This path not tested, or even compiled yet.
-	/* Don't use 0xa5 as the stack fill bytes as that is used by the kernerl for
-	the task stacks, and so will legitimately appear in many positions within
-	the ISR stack. */
-	#define D_PSP_ISR_STACK_FILL_BYTE	0xee
-
-	static const u08_t ucExpectedStackBytes[] = {
-									D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE,		\
-									D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE,		\
-									D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE,		\
-									D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE,		\
-									D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE, D_PSP_ISR_STACK_FILL_BYTE };	\
-
-	#define M_PSP_CHECK_ISR_STACK() configASSERT( ( memcmp( ( void * ) xISRStack, ( void * ) ucExpectedStackBytes, sizeof( ucExpectedStackBytes ) ) == 0 ) )
-#else
-	/* Define the function away. */
-	#define M_PSP_CHECK_ISR_STACK()
-#endif /* D_CHECK_FOR_STACK_OVERFLOW > 2 */
-
 
 /**
 * macros
@@ -74,7 +48,6 @@ task stack, not the ISR stack). */
 /**
 * types
 */
-u32_t g_uiIsInterruptContext = D_PSP_NON_INT_CONTEXT;
 
 /**
 * local prototypes
@@ -281,15 +254,3 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
 }
 
-/**
-* @brief check if in ISR context
-*
-* @param None
-*
-* @return u32_t            - D_NON_INT_CONTEXT
-*                          - non zero value - interrupt context
-*/
-D_PSP_TEXT_SECTION u32_t pspIsInterruptContext(void)
-{
-   return (g_uiIsInterruptContext > 0);
-}

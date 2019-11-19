@@ -54,7 +54,6 @@ include_paths = [
 
 Env['BSP_INC_PATH'] = include_paths
 
-Env['TARGET_LIBS'] += ['wrap-hifive1']
 
 # linker flags
 Env['LINKFLAGS'] += ['-T', os.path.join(Env['ROOT_DIR'], 'board', 'nexys_a7', 'link.lds'),'-L'+os.path.join(Env['ROOT_DIR'], 'board', 'nexys_a7')]

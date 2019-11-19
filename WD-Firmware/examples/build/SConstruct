@@ -18,22 +18,26 @@
 #### scons custom arguments ####
 tagretName = ARGUMENTS.get('target', '')
 exampleName = ARGUMENTS.get('example', '')
+
 #downloadFlag = ARGUMENTS.get('download', '0')
 
 # set imports and variables of sconstruct
 import sys
 import os
 import time
-
 import utils
-import demos.demo_factory
+from demos.factory import generate
 
-objDemo = demos.demo_factory.generate(exampleName)
-objDemo.set_files_names(tagretName)
+# generate the demo factory and set the demo 
+objFactory = generate(exampleName)
+objDemo = objFactory.setDemo()
+
+# set the output files for the demo
+objDemo.set_outputfiles_names(prefix=tagretName)
 
 root_dir = os.path.join(os.getcwd(),"..", "..")
 
-listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7']
+listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
 dependency_list = ['libftdi1-2',]
 
 #### scons verbose #####
@@ -45,7 +49,6 @@ tc_root_path = os.getenv(tc_root_env_var_name)
 if not tc_root_path:
   print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV toolchain root")
   exit(1)
-  
   
 utils.check_installed_dependencis(dependency_list)
 
@@ -99,7 +102,6 @@ Env['EXAMPLE_NAME']    = objDemo.name
 
 Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], objDemo.map_file)
 
-
 cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
 Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + cc_options
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + cc_options
@@ -134,22 +136,22 @@ if Env['TARGET_BOARD'] not in listSupportedBoards:
   exit(1)
 
 Env['BUILDERS']['Size'] = Builder(action = utils.produce_sections_size)
-Env['RTOS_CORE'] = objDemo.rtos_core
+#Env['RTOS_CORE'] = objDemo.rtos_core
+Env['RTOSAL_DEF'] = objDemo.rtos_defines
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
-if exampleName == 'ex-freertos':
-  if Env['TARGET_BOARD'] == 'nexys_a7':
+if objDemo.name == 'ex_freertos':
+  if Env['TARGET_BOARD'] == 'nexys_a7_swerv1':
     Env['PUBLIC_DEF'].append('D_NEXYS_A7')
   elif Env['TARGET_BOARD'] == 'hifive1':
-    Env['PUBLIC_DEF'].append('D_RV_HI_FIVE1')
-  
+    Env['PUBLIC_DEF'].append('D_HI_FIVE1')
+
 arr_lib = []
 arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
+
 for strModule in objDemo.moduls:
   arr_lib.append(SConscript('SConscript_%s' % strModule, exports='Env'))
-
-arr_lib.append(SConscript('SConscript_demo_rtosal', exports='Env'))
 
 elf_file_name = os.path.join(Env['OUT_DIR_PATH'], objDemo.elf_file)
 example_bundle = Env.Program(elf_file_name, arr_lib, LIBS=Env['TARGET_LIBS'])

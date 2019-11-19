@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-	
+
 
 #Simple start up file for the reference design
 
@@ -117,8 +117,8 @@ _start:
     li a1, 0
     call main
     
-    tail exit
+    #[OS]: no need for exit, just endless loop here.....was: tail atexit
 	# loop here
-#OS 2:  j 2b
+ 2:  j 2b
 
 

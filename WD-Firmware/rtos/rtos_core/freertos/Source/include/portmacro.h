@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#include "common_types.h"
+#include "psp_types.h"
 #include "psp_api.h"
 
 /*-----------------------------------------------------------

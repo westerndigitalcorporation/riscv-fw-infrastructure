@@ -26,7 +26,7 @@
 * include files
 */
 #include "rtosal_api.h"
-#include "rtosal.h"
+#include "rtosal_util.h"
 
 /**
 * definitions

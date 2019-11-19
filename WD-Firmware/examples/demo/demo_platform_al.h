@@ -26,7 +26,7 @@
 */
 #include "psp_pragmas.h"
 
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
    #include "encoding.h"
    #include "platform.h"
 #endif
@@ -35,7 +35,7 @@
 */
 
 /* LEDs outputs definition */
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
     #define D_LED_GREEN_ON 1
     #define D_LED_BLUE_ON  2
 #else
@@ -59,7 +59,7 @@
 /**
 * external prototypes
 */
-#ifdef D_RV_HI_FIVE1
+#ifdef D_HI_FIVE1
    extern void _init();
 #endif
 
