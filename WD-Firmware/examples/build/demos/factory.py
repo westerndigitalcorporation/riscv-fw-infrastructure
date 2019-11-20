@@ -2,39 +2,30 @@ import os
 import importlib
 
 class generate(object):
-  def __init__(self, strDemo):
-    self.listDemos = []
-    self.intDemo = -1
-    if strDemo:
-      self.listDemos.append("demo_%s" % strDemo.replace("-", "_"))
-      self.intDemo = 0
-    else:
-      self.scanDemos()
-      self.pickDemo()
-    
-  def scanDemos(self):
-    listFiles = os.listdir(os.path.join(os.getcwd(), "demos"))
-    for strFile in listFiles:
-      if strFile.startswith("demo_") and strFile.endswith(".py"):
-        self.listDemos.append(strFile)
-        
-  def pickDemo(self):
-    for strFile in self.listDemos:
-      print "%s: %s" % (self.listDemos.index(strFile), strFile.replace("demo_", "").replace(".py", ""))
-    
-    while(True):
-      strDemo = raw_input("Please select a demo:")
-      if not strDemo.isdigit():
-        print "Please enter the demo index!"
-      elif int(strDemo) > (len(self.listDemos) - 1):
-        print "Demo index out of range!"
-      else:
-        self.intDemo = int(strDemo)
-        break
+  def __init__(self):
+    self.strDemo = ""
+    self.getConfigure()
     
   def setDemo(self):
-    strModuleName = "demos." + self.listDemos[self.intDemo].replace(".py", "")
+    # if somehow the demo has not been set correctl break the build
+    if not self.strDemo:
+      print "No demo has been selected!"
+      print "Please run the config.sh from the buil folder."
+      exit(1)
+    # import the demo class accordig to the configure 
+    strModuleName = "demos.demo_" + self.strDemo
     mdlDemo = importlib.import_module(strModuleName)
     objClass = getattr(mdlDemo, "demo")
     return mdlDemo.demo()
+    
+  def getConfigure(self):
+    # if he configure file does not exist break the build
+    if not os.path.isfile("configure.txt"):
+      print "No configure file has been found!"
+      print "Please run the config.sh from the buil folder."
+      exit(1)
+    # read the configure file from he build folder and grab its info
+    f = open("configure.txt", "r")
+    self.strDemo = f.read()
+    f.close()
     

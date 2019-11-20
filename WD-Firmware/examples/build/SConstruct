@@ -17,7 +17,6 @@
 
 #### scons custom arguments ####
 tagretName = ARGUMENTS.get('target', '')
-exampleName = ARGUMENTS.get('example', '')
 
 #downloadFlag = ARGUMENTS.get('download', '0')
 
@@ -29,7 +28,7 @@ import utils
 from demos.factory import generate
 
 # generate the demo factory and set the demo 
-objFactory = generate(exampleName)
+objFactory = generate()
 objDemo = objFactory.setDemo()
 
 # set the output files for the demo

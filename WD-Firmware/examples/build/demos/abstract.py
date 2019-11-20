@@ -1,6 +1,7 @@
 
 
 class clsdemo_abstract(object):
+  # paren class of the demo classes
   def __init__(self):
     self.name = ""
     self.rtos_core = ""
@@ -9,8 +10,10 @@ class clsdemo_abstract(object):
     self.elf_file = ""
     self.public_defs = []
     self.moduls = []
+    self.rtos_defines = []
     
   def set_outputfiles_names(self, prefix = "", suffix = ""):
+    # format the artifacts files name for the current demo
     self.file_name = self.name
     if prefix:
       self.file_name = "%s-%s" % (prefix, self.name)
