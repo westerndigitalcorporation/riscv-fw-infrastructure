@@ -43,7 +43,6 @@
 /**
 * definitions
 */
-#define D_COMRV_NUM_OF_OVERLAY_ENTRIES          (((u08_t*)&__OVERLAY_SEC_END__ - (u08_t*)&__OVERLAY_SEC_START__)/D_COMRV_OVL_GROUP_SIZE_MIN)
 #define D_COMRV_END_OF_STACK                    0xDEAD
 #define D_COMRV_LRU_LAST_ITEM                   0xFF
 #define D_COMRV_LRU_FIRST_ITEM                  0xFF
@@ -97,9 +96,9 @@
 * macros
 */
 /* read token register (t5) */
-#define M_COMRV_READ_TOKEN_REG(x)         asm volatile ("mv %0, t5" : "=r" (x)  : );
+#define M_COMRV_READ_TOKEN_REG(x)        asm volatile ("mv %0, t5" : "=r" (x)  : );
 /* read stack pool register (t4) */
-#define M_COMRV_WRITE_POOL_REG(x)         asm volatile ("mv t4, %0" : : "r" (x) );
+#define M_COMRV_WRITE_POOL_REG(x)        asm volatile ("mv t4, %0" : : "r" (x) );
 /* read stack pool register (t4) */
 #define M_COMRV_READ_POOL_REG(x)         asm volatile ("mv %0, t4" : "=r" (x)  : );
 /* read comrv stack register (t3) */
@@ -199,15 +198,15 @@ typedef union comrvEntryProperties
 /* overlay cache entry */
 typedef union comrvEvictionLru
 {
-   struct comrvEvictionLruFields
+   struct comrvEvictionLruFields_t
    {
       /* bidirectional linked list - index of previous LRU item */
-      lru_t       typPrevIndex;
+      lru_t     typPrevIndex;
       /* bidirectional linked list - index of next LRU item */
-      lru_t       typNextIndex;
+      lru_t     typNextIndex;
    } stFields;
    /* value of both lru fields in a single value */
-   lruIndexes_t   typValue;
+   lruIndexes_t typValue;
 } comrvEvictionLru_u;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
@@ -462,12 +461,19 @@ void* comrvGetAddressFromToken(void)
       ucNumOfEvictionCandidates = comrvGetEvictionCandidates(usOverlayGroupSize, ucEvictCandidateList);
 
       ucEntryIndex = 0;
-      /* we need to handle cache fragmentation since we got more
-         than 1 eviction candidate */
-      if (ucNumOfEvictionCandidates > 1)
+
+      /* if you have no candidates */
+      if (ucNumOfEvictionCandidates == 0)
+      {
+         M_COMRV_EXIT_CRITICAL_SECTION();
+         comrvNotificationHook(D_COMRV_NO_AVAILABLE_ENTRY_ERR, unToken.uiValue);
+      }
+      /* we need to handle cache fragmentation since we got more than 1 eviction candidate */
+      else
       {
          /* no handling to the last eviction candidate */
          ucNumOfEvictionCandidates--;
+         /* loop all eviction candidates entries */
          while (ucEntryIndex < ucNumOfEvictionCandidates)
          {
             // TODO: consider calculating the pFixedEntryAddress instead of having it fixed
@@ -513,13 +519,8 @@ void* comrvGetAddressFromToken(void)
          /* increment the number of candidates so ucNumOfEvictionCandidates
             points now to the eviction entry that contains the total eviction size */
          ucNumOfEvictionCandidates++;
-      } /* if (ucNumOfEvictionCandidates > 1) */
-      /* this means the end user locked all entries */
-      else if (ucNumOfEvictionCandidates == 0)
-      {
-         M_COMRV_EXIT_CRITICAL_SECTION();
-         comrvNotificationHook(D_COMRV_NO_AVAILABLE_ENTRY_ERR, unToken.uiValue);
-      }
+      } /* if (ucNumOfEvictionCandidates == 0) */
+      /* at this point we will have only one entry left (w/ or w/o fragmentation) */
       ucIndex = ucEvictCandidateList[ucEntryIndex];
       /* update the entry access */
       comrvUpdateCacheEntryAccess(ucIndex);
