@@ -203,9 +203,9 @@ typedef union comrvEvictionLru
    struct comrvEvictionLruFields_t
    {
       /* bidirectional linked list - index of previous LRU item */
-      lru_t     typPrevIndex;
+      lru_t     typPrevLruIndex;
       /* bidirectional linked list - index of next LRU item */
-      lru_t     typNextIndex;
+      lru_t     typNextLruIndex;
    } stFields;
    /* value of both lru fields in a single value */
    lruIndexes_t typValue;
@@ -307,15 +307,15 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    {
       pCacheEntry = &stComrvCB.stOverlayCache[ucIndex];
       /* initially each entry points to the previous and next neighbor cells */
-      pCacheEntry->unLru.stFields.typPrevIndex = ucIndex-1;
-      pCacheEntry->unLru.stFields.typNextIndex = ucIndex+1;
+      pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
+      pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
       pCacheEntry->unToken.uiValue            = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
       pCacheEntry->unProperties.ucValue       = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
       pCacheEntry->pFixedEntryAddress         = pBaseAddress;
       pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
-   stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextIndex = D_COMRV_LRU_LAST_ITEM;
+   stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextLruIndex = D_COMRV_LRU_LAST_ITEM;
    /* set the index of the list LRU and MRU */
    stComrvCB.ucLruIndex = 0;
    stComrvCB.ucMruIndex = ucIndex-1;
@@ -510,7 +510,7 @@ void* comrvGetAddressFromToken(void)
                stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = pEntry->unToken.uiValue;
 #ifdef D_COMRV_EVICTION_LRU
                /* we also need to align the LRU list */
-               stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevIndex].unLru.typValue = pEntry->unLru.typValue;
+               stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevLruIndex].unLru.typValue = pEntry->unLru.typValue;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -543,13 +543,13 @@ void* comrvGetAddressFromToken(void)
          pEntry->unProperties.ucValue = D_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(ucSizeOfEvictionCandidates);
 #ifdef D_COMRV_EVICTION_LRU
          /* update the cache entry 'next lru' field of the previous lru */
-         stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevIndex].unLru.stFields.typNextIndex =
-               pEntry->unLru.stFields.typNextIndex;
+         stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex =
+               pEntry->unLru.stFields.typNextLruIndex;
          /* update the cache entry 'next lru' field */
-         pEntry->unLru.stFields.typNextIndex = ucIndex;
+         pEntry->unLru.stFields.typNextLruIndex = ucIndex;
          /* update the cache entry 'previous lru' field - now it is the first lru as
             it is now considered 'evicted/empty' */
-         pEntry->unLru.stFields.typPrevIndex = D_COMRV_LRU_FIRST_ITEM;
+         pEntry->unLru.stFields.typPrevLruIndex = D_COMRV_LRU_FIRST_ITEM;
          /* update the global lru index */
          stComrvCB.ucLruIndex = ucIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
@@ -674,7 +674,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
          uiEvictCandidateMap[ucEntryIndex/D_COMRV_DWORD_IN_BITS] |= (1 << ucEntryIndex);
       }
       /* move to the next LRU candidate */
-      ucEntryIndex = stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextIndex;
+      ucEntryIndex = stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextLruIndex;
    /* loop as long as we didn't get to the requested eviction size or we reached end of the list
       (means that all entries are locked) */
    } while (ucAccumulatedSize < ucRequestedEvictionSize && ucEntryIndex != D_COMRV_LRU_LAST_ITEM);
@@ -754,22 +754,22 @@ static void comrvUpdateCacheEvectionParams(u08_t ucEntryIndex)
       if (ucEntryIndex !=  stComrvCB.ucLruIndex)
       {
          /* update previous item's 'next index' */
-         stComrvCB.stOverlayCache[pCacheEntry->unLru.stFields.typPrevIndex].unLru.stFields.typNextIndex =
-               pCacheEntry->unLru.stFields.typNextIndex;
+         stComrvCB.stOverlayCache[pCacheEntry->unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex =
+               pCacheEntry->unLru.stFields.typNextLruIndex;
       }
       else
       {
          /* update the global lru index */
-         stComrvCB.ucLruIndex = pCacheEntry->unLru.stFields.typNextIndex;
+         stComrvCB.ucLruIndex = pCacheEntry->unLru.stFields.typNextLruIndex;
          /* update the lru item with the previous item index */
-         stComrvCB.stOverlayCache[stComrvCB.ucLruIndex].unLru.stFields.typPrevIndex = D_COMRV_LRU_FIRST_ITEM;
+         stComrvCB.stOverlayCache[stComrvCB.ucLruIndex].unLru.stFields.typPrevLruIndex = D_COMRV_LRU_FIRST_ITEM;
       }
       /* update ucEntryIndex previous index */
-      pCacheEntry->unLru.stFields.typPrevIndex = stComrvCB.ucMruIndex;
+      pCacheEntry->unLru.stFields.typPrevLruIndex = stComrvCB.ucMruIndex;
       /* update ucEntryIndex next index - last item (MRU)*/
-      pCacheEntry->unLru.stFields.typNextIndex = D_COMRV_LRU_LAST_ITEM;
+      pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_LRU_LAST_ITEM;
       /* update the old mru's next index */
-      stComrvCB.stOverlayCache[stComrvCB.ucMruIndex].unLru.stFields.typNextIndex = ucEntryIndex;
+      stComrvCB.stOverlayCache[stComrvCB.ucMruIndex].unLru.stFields.typNextLruIndex = ucEntryIndex;
       /* update the new MRU */
       stComrvCB.ucMruIndex = ucEntryIndex;
    }
