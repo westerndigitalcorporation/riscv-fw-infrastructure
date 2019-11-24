@@ -266,7 +266,7 @@ extern void  comrvEntry              (void);
 extern void  comrvMemcpyHook         (void* pDest, void* pSrc, u32_t uiSizeInBytes);
 extern u32_t comrvCrcCalcHook        (void* pAddress, u16_t usMemSizeInBytes);
 extern void  comrvNotificationHook   (u32_t uiNotificationNum, u32_t uiToken);
-extern void* comrvLoadOvlayGroupHook (u32_t uiGroupOffset, void* pDest, u32_t uiSizeInBytes);
+extern void* comrvLoadOvlayGroupHook (comrvLoadArgs_t* pLoadArgs);
 
 /**
 * global variables
@@ -364,12 +364,13 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 */
 void* comrvGetAddressFromToken(void)
 {
-   comrvCacheEntry_t*   pEntry;
+   comrvCacheEntry_t   *pEntry;
    comrvOverlayToken_t  unToken;
-   void                *pAddress, *pNextEvictCandidateCacheAddress;
+   comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
    u16_t                usOverlayGroupSize, usOffset;
+   void                *pAddress, *pNextEvictCandidateCacheAddress;
    u08_t                ucNumOfEvictionCandidates, ucIndex, ucSizeOfEvictionCandidates;
    u08_t                ucEntryIndex, ucEvictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
 #ifdef D_COMRV_CRC
@@ -566,8 +567,10 @@ void* comrvGetAddressFromToken(void)
       /* the group size in bytes */
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
       /* now we can load the overlay group */
-      pAddress = comrvLoadOvlayGroupHook(M_COMRV_GET_GROUP_OFFSET_IN_BYTES(stComrvCB.stOverlayCache[ucIndex].unToken),
-            stComrvCB.stOverlayCache[ucIndex].pFixedEntryAddress, usOverlayGroupSize);
+      stLoadArgs.uiSizeInBytes = usOverlayGroupSize;
+      stLoadArgs.pDest         = stComrvCB.stOverlayCache[ucIndex].pFixedEntryAddress;
+      stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(stComrvCB.stOverlayCache[ucIndex].unToken);
+      pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
       /* if group wasn't loaded */
       if (pAddress == NULL)
       {

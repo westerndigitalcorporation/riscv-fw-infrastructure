@@ -78,6 +78,17 @@ typedef struct comrvInitArgs
    u32_t uiCacheSizeInBytes;
 }comrvInitArgs_t;
 
+/* comrv load arguments */
+typedef struct comrvLoadArgs
+{
+   /* offset in bytes of the group to be loaded */
+   u32_t uiGroupOffset;
+   /* size in bytes of the group to be loaded */
+   u32_t uiSizeInBytes;
+   /* destination address to copy to the loaded group */
+   void* pDest;
+}comrvLoadArgs_t;
+
 /**
 * local prototypes
 */
