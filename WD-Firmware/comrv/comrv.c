@@ -63,13 +63,13 @@
 /* if no profile was set */
 #if D_COMRV_PROFILE==0
 #define D_COMRV_PROFILE 1
-#endif
+#endif /* D_COMRV_PROFILE==0 */
 
 #if D_COMRV_PROFILE == 1
 
   #ifdef D_COMRV_EVICTION_LRU
-    /* bidirectional linked list - index of previous LRU item */
     typedef u08_t lru_t;
+    typedef u16_t lruIndexes_t;
   #elif defined(D_COMRV_EVICTION_LFU)
   #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
   #endif /* D_COMRV_EVICTION_LRU */
@@ -77,8 +77,8 @@
 #elif D_COMRV_PROFILE == 2
 
   #ifdef D_COMRV_EVICTION_LRU
-    /* bidirectional linked list - index of previous LRU item */
     typedef u16_t lru_t;
+    typedef u32_t lruIndexes_t;
   #elif defined(D_COMRV_EVICTION_LFU)
   #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
   #endif /* D_COMRV_EVICTION_LRU */
@@ -86,8 +86,8 @@
 #elif D_COMRV_PROFILE == 3
 
   #ifdef D_COMRV_EVICTION_LRU
-    /* bidirectional linked list - index of previous LRU item */
     typedef u32_t lru_t;
+    typedef u64_t lruIndexes_t;
   #elif defined(D_COMRV_EVICTION_LFU)
   #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
   #endif /* D_COMRV_EVICTION_LRU */
@@ -163,8 +163,8 @@ typedef struct comrvTokenFields
   u32_t thunk:1;
   /* reserved */
   u32_t reserved:1;
-  /* specify the heap ID this overlay group belongs to */
-  u32_t heapID:2;
+  /* specify the cache ID this overlay group belongs to */
+  u32_t cacheID:2;
   /* multi group indication */
   u32_t multiGroup:1;
 } comrvTokenFields_t;
@@ -195,14 +195,29 @@ typedef union comrvEntryProperties
   comrvPropertiesFields_t stFields;
 } comrvEntryProperties_t;
 
+#ifdef D_COMRV_EVICTION_LRU
 /* overlay cache entry */
-typedef struct comrvOverlayHeapEntry
+typedef union comrvEvictionLru
+{
+   struct comrvEvictionLruFields
+   {
+      /* bidirectional linked list - index of previous LRU item */
+      lru_t       typPrevIndex;
+      /* bidirectional linked list - index of next LRU item */
+      lru_t       typNextIndex;
+   } stFields;
+   /* value of both lru fields in a single value */
+   lruIndexes_t   typValue;
+} comrvEvictionLru_u;
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
+
+/* overlay cache entry */
+typedef struct comrvCacheEntrycomrvCacheEntry
 {
 #ifdef D_COMRV_EVICTION_LRU
-  /* bidirectional linked list - index of previous LRU item */
-  lru_t                  ucPrevIndex;
-  /* bidirectional linked list - index of next LRU item */
-  lru_t                  ucNextIndex;
+   comrvEvictionLru_u unLru;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -232,7 +247,7 @@ typedef struct comrvCB
 /**
 * local prototypes
 */
-static void  comrvUpdateHeapEntryAccess      (u08_t ucEntryIndex);
+static void  comrvUpdateCacheEntryAccess     (u08_t ucEntryIndex);
 static u08_t comrvGetEvictionCandidates      (u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList);
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 
@@ -272,6 +287,7 @@ comrvOverlayToken_t *pOverlayMultiGroupTokensTable = (comrvOverlayToken_t*)&over
 */
 void comrvInit(comrvInitArgs_t* pInitArgs)
 {
+   comrvCacheEntry_t *pCacheEntry;
    u08_t              ucIndex;
    void*              pBaseAddress = pInitArgs->pCacheMemoeyAddress;
    comrvStackFrame_t* pStackPool   = stComrvStackPool;
@@ -285,19 +301,20 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 #endif /* D_COMRV_VERIFY_ARGS */
 
 #ifdef D_COMRV_EVICTION_LRU
-   /* initialize all heap entries */
+   /* initialize all cache entries */
    for (ucIndex = 0 ; ucIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucIndex++)
    {
+      pCacheEntry = &stComrvCB.stOverlayCache[ucIndex];
       /* initially each entry points to the previous and next neighbor cells */
-      stComrvCB.stOverlayCache[ucIndex].ucPrevIndex          = ucIndex-1;
-      stComrvCB.stOverlayCache[ucIndex].ucNextIndex          = ucIndex+1;
-      stComrvCB.stOverlayCache[ucIndex].unToken.uiValue      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
-      stComrvCB.stOverlayCache[ucIndex].unProperties.ucValue = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
-      stComrvCB.stOverlayCache[ucIndex].pFixedEntryAddress   = pBaseAddress;
+      pCacheEntry->unLru.stFields.typPrevIndex = ucIndex-1;
+      pCacheEntry->unLru.stFields.typNextIndex = ucIndex+1;
+      pCacheEntry->unToken.uiValue            = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+      pCacheEntry->unProperties.ucValue       = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+      pCacheEntry->pFixedEntryAddress         = pBaseAddress;
       pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
-   stComrvCB.stOverlayCache[ucIndex-1].ucNextIndex = D_COMRV_LRU_LAST_ITEM;
+   stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextIndex = D_COMRV_LRU_LAST_ITEM;
    /* set the index of the list LRU and MRU */
    stComrvCB.ucLruIndex = 0;
    stComrvCB.ucMruIndex = ucIndex-1;
@@ -442,7 +459,7 @@ void* comrvGetAddressFromToken(void)
       ucNumOfEvictionCandidates = comrvGetEvictionCandidates(usOverlayGroupSize, ucEvictCandidateList);
 
       ucEntryIndex = 0;
-      /* we need to handle heap fragmentation since we got more
+      /* we need to handle cache fragmentation since we got more
          than 1 eviction candidate */
       if (ucNumOfEvictionCandidates > 1)
       {
@@ -481,9 +498,8 @@ void* comrvGetAddressFromToken(void)
                stComrvCB.stOverlayCache[ucIndex].unProperties = pEntry->unProperties;
                stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = pEntry->unToken.uiValue;
 #ifdef D_COMRV_EVICTION_LRU
-               /* we need also to align the LRU list */
-               stComrvCB.stOverlayCache[pEntry->ucPrevIndex].ucNextIndex = ucIndex;
-               stComrvCB.stOverlayCache[pEntry->ucNextIndex].ucPrevIndex = ucIndex;
+               /* we also need to align the LRU list */
+               stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevIndex].unLru.typValue = pEntry->unLru.typValue;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -503,10 +519,10 @@ void* comrvGetAddressFromToken(void)
       }
       ucIndex = ucEvictCandidateList[ucEntryIndex];
       /* update the entry access */
-      comrvUpdateHeapEntryAccess(ucIndex);
-      /* update the heap entry with the new token */
+      comrvUpdateCacheEntryAccess(ucIndex);
+      /* update the cache entry with the new token */
       stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = unToken.uiValue;
-      /* update the heap entry properties with the group size */
+      /* update the cache entry properties with the group size */
       stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits = usOverlayGroupSize;
       /* if evicted size is larger than requested size we need to update the remaining tail*/
       ucSizeOfEvictionCandidates = ucEvictCandidateList[ucNumOfEvictionCandidates] - usOverlayGroupSize;
@@ -515,9 +531,10 @@ void* comrvGetAddressFromToken(void)
          ucEntryIndex += usOverlayGroupSize;
          stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits = ucSizeOfEvictionCandidates;
 #ifdef D_COMRV_EVICTION_LRU
-         stComrvCB.stOverlayCache[stComrvCB.stOverlayCache[ucEntryIndex].ucPrevIndex].ucNextIndex = stComrvCB.stOverlayCache[ucEntryIndex].ucNextIndex;
-         stComrvCB.stOverlayCache[ucEntryIndex].ucNextIndex           = ucIndex;
-         stComrvCB.stOverlayCache[ucEntryIndex].ucPrevIndex           = D_COMRV_LRU_FIRST_ITEM;
+         stComrvCB.stOverlayCache[stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typPrevIndex].unLru.stFields.typNextIndex =
+               stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextIndex;
+         stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextIndex = ucIndex;
+         stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typPrevIndex = D_COMRV_LRU_FIRST_ITEM;
          /* mark the group ID so that it won't pop in the next search */
          stComrvCB.stOverlayCache[ucEntryIndex].unToken.uiValue       = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
          stComrvCB.stOverlayCache[ucEntryIndex].unProperties.ucValue &= D_COMRV_ENTRY_PROPERTIES_RESET_MASK;
@@ -610,11 +627,11 @@ void* comrvGetAddressFromToken(void)
 }
 
 /**
-* Get comrv heap eviction candidates according to a given size
+* Get comrv cache eviction candidates according to a given size
 *
 * @param requestedEvictionSize - size requested for eviction; expressed in
 *                                units of D_COMRV_OVL_GROUP_SIZE_MIN
-*        pEvictCandidatesList  - output eviction candidate list of comrv heap indexes
+*        pEvictCandidatesList  - output eviction candidate list of comrv cache indexes
 * @return number of eviction candidates in the output list
 */
 u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList)
@@ -644,7 +661,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
          uiEvictCandidateMap[ucEntryIndex/D_COMRV_DWORD_IN_BITS] |= (1 << ucEntryIndex);
       }
       /* move to the next LRU candidate */
-      ucEntryIndex = stComrvCB.stOverlayCache[ucEntryIndex].ucNextIndex;
+      ucEntryIndex = stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextIndex;
    /* loop as long as we didn't get to the requested eviction size or we reached end of the list
       (means that all entries are locked) */
    } while (ucAccumulatedSize < ucRequestedEvictionSize && ucEntryIndex != D_COMRV_LRU_LAST_ITEM);
@@ -653,7 +670,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
 
-   /* now we have eviction uiCandidates bitmap of heap entries - lets create
+   /* now we have eviction uiCandidates bitmap of cache entries - lets create
       an output sorted list of these entries */
    for (ucEntryIndex = 0 ; ucIndex != ucNumberOfCandidates && ucEntryIndex < D_COMRV_EVICT_CANDIDATE_MAP_SIZE ; ucEntryIndex++)
    {
@@ -677,7 +694,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 }
 
 /**
-* search if a specific token is already loaded to the heap
+* search if a specific token is already loaded to the cache
 *
 * @param token - the token to search for
 * @return if the token is loaded the return value is set to the loaded address
@@ -694,7 +711,7 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
       if (stComrvCB.stOverlayCache[ucEntryIndex].unToken.stFields.overlayGroupID == unToken.stFields.overlayGroupID)
       {
          /* update that the entry was accessed */
-         comrvUpdateHeapEntryAccess(ucEntryIndex);
+         comrvUpdateCacheEntryAccess(ucEntryIndex);
          /* return the actual function location within the loaded overlay group */
          return stComrvCB.stOverlayCache[ucEntryIndex].pFixedEntryAddress;
       }
@@ -704,40 +721,46 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
 }
 
 /**
-* Update a given comrv heap entry was accessed
+* Update a given comrv cache entry was accessed
 *
-* @param entryIndex - the comrv heap entry being accessed
+* @param entryIndex - the comrv cache entry being accessed
 *
 * @return none
 */
-static void comrvUpdateHeapEntryAccess(u08_t ucEntryIndex)
+static void comrvUpdateCacheEntryAccess(u08_t ucEntryIndex)
 {
+   comrvCacheEntry_t *pCacheEntry;
+
 #ifdef D_COMRV_EVICTION_LRU
+
    /* there is no need to update if ucEntryIndex is already MRU */
    if (ucEntryIndex !=  stComrvCB.ucMruIndex)
    {
+      pCacheEntry = &stComrvCB.stOverlayCache[ucEntryIndex];
       /* ucEntryIndex is not the ucLruIndex */
       if (ucEntryIndex !=  stComrvCB.ucLruIndex)
       {
          /* update previous item's 'next index' */
-         stComrvCB.stOverlayCache[stComrvCB.stOverlayCache[ucEntryIndex].ucPrevIndex].ucNextIndex = stComrvCB.stOverlayCache[ucEntryIndex].ucNextIndex;
+         stComrvCB.stOverlayCache[pCacheEntry->unLru.stFields.typPrevIndex].unLru.stFields.typNextIndex =
+               pCacheEntry->unLru.stFields.typNextIndex;
       }
       else
       {
          /* update the global lru index */
-         stComrvCB.ucLruIndex = stComrvCB.stOverlayCache[ucEntryIndex].ucNextIndex;
+         stComrvCB.ucLruIndex = pCacheEntry->unLru.stFields.typNextIndex;
          /* update the lru item with the previous item index */
-         stComrvCB.stOverlayCache[stComrvCB.ucLruIndex].ucPrevIndex = D_COMRV_LRU_FIRST_ITEM;
+         stComrvCB.stOverlayCache[stComrvCB.ucLruIndex].unLru.stFields.typPrevIndex = D_COMRV_LRU_FIRST_ITEM;
       }
       /* update ucEntryIndex previous index */
-      stComrvCB.stOverlayCache[ucEntryIndex].ucPrevIndex = stComrvCB.ucMruIndex;
+      pCacheEntry->unLru.stFields.typPrevIndex = stComrvCB.ucMruIndex;
       /* update ucEntryIndex next index - last item (MRU)*/
-      stComrvCB.stOverlayCache[ucEntryIndex].ucNextIndex = D_COMRV_LRU_LAST_ITEM;
+      pCacheEntry->unLru.stFields.typNextIndex = D_COMRV_LRU_LAST_ITEM;
       /* update the old mru's next index */
-      stComrvCB.stOverlayCache[stComrvCB.ucMruIndex].ucNextIndex = ucEntryIndex;
+      stComrvCB.stOverlayCache[stComrvCB.ucMruIndex].unLru.stFields.typNextIndex = ucEntryIndex;
       /* update the new MRU */
       stComrvCB.ucMruIndex = ucEntryIndex;
    }
+
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
