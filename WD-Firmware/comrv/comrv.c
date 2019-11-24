@@ -446,7 +446,10 @@ void* comrvGetAddressFromToken(void)
       {
          /* for now we take the first token in the list of tokens */
          unToken = pOverlayMultiGroupTokensTable[unToken.stFields.overlayGroupID];
-         /* save the selected multi group entry */
+         /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
+            update comrv stack frame with the loaded multi group table entry.
+            It is used to calculate the actual return offset in case we
+            are returning to a multi group token */
          usSelectedMultiGroupEntry = unToken.stFields.overlayGroupID;
       }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
