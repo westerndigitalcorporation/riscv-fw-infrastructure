@@ -343,23 +343,23 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 */
 void* comrvGetAddressFromToken(void)
 {
-   comrvCacheEntry_t*  pEntry;
-   comrvOverlayToken_t unToken;
-   void*               pAddress;
-   u08_t               ucIsInvoke;
-   comrvStackFrame_t*  pComrvStackFrame;
-   u16_t               usOverlayGroupSize, usOffset;
-   u08_t               ucNumOfEvictionCandidates, ucIndex, ucSizeOfEvictionCandidates;
-   u08_t               ucEntryIndex, ucEvictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
+   comrvCacheEntry_t*   pEntry;
+   comrvOverlayToken_t  unToken;
+   void                *pAddress, *pNextEvictCandidateCacheAddress;
+   u08_t                ucIsInvoke;
+   comrvStackFrame_t   *pComrvStackFrame;
+   u16_t                usOverlayGroupSize, usOffset;
+   u08_t                ucNumOfEvictionCandidates, ucIndex, ucSizeOfEvictionCandidates;
+   u08_t                ucEntryIndex, ucEvictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
 #ifdef D_COMRV_CRC
-   u32_t               uiCrc;
+   u32_t                uiCrc;
 #endif /* D_COMRV_CRC */
 #ifdef D_COMRV_FW_INSTRUMENTATION
-   u32_t               uiProfilingIndication;
+   u32_t                uiProfilingIndication;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-   u32_t               uiTemp;
-   u16_t               usSelectedMultiGroupEntry;
+   u32_t                uiTemp;
+   u16_t                usSelectedMultiGroupEntry;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
    /* read the requested token value (t5) */
@@ -450,39 +450,51 @@ void* comrvGetAddressFromToken(void)
          ucNumOfEvictionCandidates--;
          while (ucEntryIndex < ucNumOfEvictionCandidates)
          {
+            // TODO: consider calculating the pFixedEntryAddress instead of having it fixed
+            //       it will also save memory
             /* get the candidate entry */
             pEntry = &stComrvCB.stOverlayCache[ucEvictCandidateList[ucEntryIndex]];
-            /* calc the source address */
+            /* calc the source address - we point here to the cache area
+               from which we want to copy the overlay group:
+               current-entry-fixed-address + current-entry-group-size = address of the neighbour cache entry  */
             pAddress = ((u08_t*)pEntry->pFixedEntryAddress + M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(pEntry->unToken));
-            /* perform code copy */
-            comrvMemcpyHook(pEntry->pFixedEntryAddress, pAddress,
-                  stComrvCB.stOverlayCache[ucEvictCandidateList[ucEntryIndex]].pFixedEntryAddress - pAddress);
+            /* get the cache address of the next evict candidate - it is used to calculate
+               the amount of memory to copy */
+            pNextEvictCandidateCacheAddress = stComrvCB.stOverlayCache[ucEvictCandidateList[ucEntryIndex+1]].pFixedEntryAddress;
+            /* perform code copy - from neighbour cache entry (pAddress) to current evict cache entry */
+            comrvMemcpyHook(pEntry->pFixedEntryAddress, pAddress, pNextEvictCandidateCacheAddress - pAddress);
 
             /* after code copy we need to align the entries structures */
-            for(ucIndex = ucEvictCandidateList[ucEntryIndex] ; ucIndex < ucEvictCandidateList[ucEntryIndex+1] ; ucIndex++)
+            for (ucIndex = ucEvictCandidateList[ucEntryIndex] ; ucIndex < ucEvictCandidateList[ucEntryIndex+1] ; ucIndex++)
             {
+               /* pEntry will point to the CB entry we want to copy from */
                pEntry = &stComrvCB.stOverlayCache[ucIndex + stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits];
 #ifdef D_COMRV_OVL_DATA_SUPPORT
-               /* an overlay data is present when handling defragmentation */
+               /* an overlay data is present when handling de-fragmentation */
                if (pEntry->unProperties.ucData)
                {
                   M_COMRV_EXIT_CRITICAL_SECTION();
                   comrvNotificationHook(D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.ucValue);
                }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
+               /* now we copy the cache entry properties and token */
                stComrvCB.stOverlayCache[ucIndex].unProperties = pEntry->unProperties;
                stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = pEntry->unToken.uiValue;
 #ifdef D_COMRV_EVICTION_LRU
+               /* we need also to align the LRU list */
                stComrvCB.stOverlayCache[pEntry->ucPrevIndex].ucNextIndex = ucIndex;
                stComrvCB.stOverlayCache[pEntry->ucNextIndex].ucPrevIndex = ucIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
-            }
+            } /* end of loop -> for (ucIndex = ... */
+            /* now we move to handle the next eviction candidate */
             ucEntryIndex++;
-         }
+         } /* end of loop -> while (ucEntryIndex < ... */
+         /* increment the number of candidates so ucNumOfEvictionCandidates
+            points now to the eviction entry that contains the total eviction size */
          ucNumOfEvictionCandidates++;
-      }
+      } /* if (ucNumOfEvictionCandidates > 1) */
       /* this means the end user locked all entries */
       else if (ucNumOfEvictionCandidates == 0)
       {
@@ -513,7 +525,7 @@ void* comrvGetAddressFromToken(void)
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
-      }
+      } /* if (ucSizeOfEvictionCandidates != 0) */
       // TODO: protect the soon loaded ram
       /* it is safe now to get new requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
@@ -541,7 +553,7 @@ void* comrvGetAddressFromToken(void)
       /* update for FW profiling loaded the function */
       uiProfilingIndication |= D_COMRV_PROFILING_LOAD_VAL;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
-   }
+   } /* if (pAddress == NULL) */
    else
    {
       usOverlayGroupSize <<= 9;
