@@ -59,7 +59,7 @@
 #define D_COMRV_RET_CALLER_BIT_0                      0
 #define D_COMRV_NUM_OF_CACHE_ENTRIES                  D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS
 #define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
-#define D_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)   (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
+#define D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT          9
 
 /* if no profile was set */
 #if D_COMRV_PROFILE==0
@@ -128,7 +128,10 @@
 #define M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken)   ((unToken.stFields.offset) * D_COMRV_OFFSET_SCALE_VALUE)
 /* overlay group offset in bytes */
 #define M_COMRV_GET_GROUP_OFFSET_IN_BYTES(unToken)   ((pOverlayOffsetTable[unToken.stFields.overlayGroupID]) << 9)
-
+/* convert a given entry size in to an entry properties value */
+#define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)   (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
+/* */
+#define M_COMRV_GROUP_SIZE_TO_BYTES(groupSize)        ((groupSize) << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)
 /**
 * types
 */
@@ -309,9 +312,9 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
       /* initially each entry points to the previous and next neighbor cells */
       pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
       pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
-      pCacheEntry->unToken.uiValue            = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
-      pCacheEntry->unProperties.ucValue       = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
-      pCacheEntry->pFixedEntryAddress         = pBaseAddress;
+      pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+      pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+      pCacheEntry->pFixedEntryAddress             = pBaseAddress;
       pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
@@ -446,6 +449,7 @@ void* comrvGetAddressFromToken(void)
       if (unToken.stFields.multiGroup != 0)
       {
          /* for now we take the first token in the list of tokens */
+         // TODO: need to have a more sophisticated way to select the multi-group */
          unToken = pOverlayMultiGroupTokensTable[unToken.stFields.overlayGroupID];
          /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
             update comrv stack frame with the loaded multi group table entry.
@@ -540,7 +544,7 @@ void* comrvGetAddressFromToken(void)
          /* mark the group ID so that it won't pop in the next search */
          pEntry->unToken.uiValue      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
          /* update the cache entry new size - this will also clear remaining properties */
-         pEntry->unProperties.ucValue = D_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(ucSizeOfEvictionCandidates);
+         pEntry->unProperties.ucValue = M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(ucSizeOfEvictionCandidates);
 #ifdef D_COMRV_EVICTION_LRU
          /* update the cache entry 'next lru' field of the previous lru */
          stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex =
@@ -560,7 +564,7 @@ void* comrvGetAddressFromToken(void)
       /* it is safe now to get new requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
       /* the group size in bytes */
-      usOverlayGroupSize <<= 9;
+      usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
       /* now we can load the overlay group */
       pAddress = comrvLoadOvlayGroupHook(M_COMRV_GET_GROUP_OFFSET_IN_BYTES(stComrvCB.stOverlayCache[ucIndex].unToken),
             stComrvCB.stOverlayCache[ucIndex].pFixedEntryAddress, usOverlayGroupSize);
@@ -586,7 +590,8 @@ void* comrvGetAddressFromToken(void)
    } /* if (pAddress == NULL) */
    else
    {
-      usOverlayGroupSize <<= 9;
+      /* the group size in bytes */
+	  usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    }
 
    /* get actual function/data offset */
