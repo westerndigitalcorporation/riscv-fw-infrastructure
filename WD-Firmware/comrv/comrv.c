@@ -43,21 +43,23 @@
 /**
 * definitions
 */
-#define D_COMRV_END_OF_STACK                    0xDEAD
-#define D_COMRV_LRU_LAST_ITEM                   0xFF
-#define D_COMRV_LRU_FIRST_ITEM                  0xFF
-#define D_COMRV_MAX_GROUP_NUM                   0xFFFF
-#define D_COMRV_EVICT_CANDIDATE_MAP_SIZE        4
-#define D_COMRV_DWORD_IN_BITS                   32
-#define D_COMRV_ENTRY_LOCKED                    1
-#define D_COMRV_CANDIDATE_LIST_SIZE             (1+(D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN))
-#define D_COMRV_ENTRY_TOKEN_INIT_VALUE          0x0001FFFE
-#define D_COMRV_ENTRY_PROPERTIES_INIT_VALUE     0x04
-#define D_COMRV_ENTRY_PROPERTIES_RESET_MASK     0xC3
-#define D_COMRV_OFFSET_SCALE_VALUE              4
-#define D_COMRV_INVOKE_CALLEE_BIT_0             1
-#define D_COMRV_RET_CALLER_BIT_0                0
-#define D_COMRV_NUM_OF_CACHE_ENTRIES            D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS
+#define D_COMRV_END_OF_STACK                          0xDEAD
+#define D_COMRV_LRU_LAST_ITEM                         0xFF
+#define D_COMRV_LRU_FIRST_ITEM                        0xFF
+#define D_COMRV_MAX_GROUP_NUM                         0xFFFF
+#define D_COMRV_EVICT_CANDIDATE_MAP_SIZE              4
+#define D_COMRV_DWORD_IN_BITS                         32
+#define D_COMRV_ENTRY_LOCKED                          1
+#define D_COMRV_CANDIDATE_LIST_SIZE                   (1+(D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN))
+#define D_COMRV_ENTRY_TOKEN_INIT_VALUE                0x0001FFFE
+#define D_COMRV_ENTRY_PROPERTIES_INIT_VALUE           0x04
+#define D_COMRV_ENTRY_PROPERTIES_RESET_MASK           0xC3
+#define D_COMRV_OFFSET_SCALE_VALUE                    4
+#define D_COMRV_INVOKE_CALLEE_BIT_0                   1
+#define D_COMRV_RET_CALLER_BIT_0                      0
+#define D_COMRV_NUM_OF_CACHE_ENTRIES                  D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS
+#define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
+#define D_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)   (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
 
 /* if no profile was set */
 #if D_COMRV_PROFILE==0
@@ -246,7 +248,7 @@ typedef struct comrvCB
 /**
 * local prototypes
 */
-static void  comrvUpdateCacheEntryAccess     (u08_t ucEntryIndex);
+static void  comrvUpdateCacheEvectionParams     (u08_t ucEntryIndex);
 static u08_t comrvGetEvictionCandidates      (u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList);
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 
@@ -523,25 +525,32 @@ void* comrvGetAddressFromToken(void)
       /* at this point we will have only one entry left (w/ or w/o fragmentation) */
       ucIndex = ucEvictCandidateList[ucEntryIndex];
       /* update the entry access */
-      comrvUpdateCacheEntryAccess(ucIndex);
+      comrvUpdateCacheEvectionParams(ucIndex);
       /* update the cache entry with the new token */
       stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = unToken.uiValue;
       /* update the cache entry properties with the group size */
       stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits = usOverlayGroupSize;
-      /* if evicted size is larger than requested size we need to update the remaining tail*/
+      /* if evicted size is larger than requested size we need to update the CB remaining space */
       ucSizeOfEvictionCandidates = ucEvictCandidateList[ucNumOfEvictionCandidates] - usOverlayGroupSize;
+      /* check if the evicted size was bigger than the requested size */
       if (ucSizeOfEvictionCandidates != 0)
       {
-         ucEntryIndex += usOverlayGroupSize;
-         stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits = ucSizeOfEvictionCandidates;
-#ifdef D_COMRV_EVICTION_LRU
-         stComrvCB.stOverlayCache[stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typPrevIndex].unLru.stFields.typNextIndex =
-               stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextIndex;
-         stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextIndex = ucIndex;
-         stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typPrevIndex = D_COMRV_LRU_FIRST_ITEM;
+         /* point to the CB cache entry to be updated */
+         pEntry = &stComrvCB.stOverlayCache[ucEntryIndex + usOverlayGroupSize];
          /* mark the group ID so that it won't pop in the next search */
-         stComrvCB.stOverlayCache[ucEntryIndex].unToken.uiValue       = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
-         stComrvCB.stOverlayCache[ucEntryIndex].unProperties.ucValue &= D_COMRV_ENTRY_PROPERTIES_RESET_MASK;
+         pEntry->unToken.uiValue      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+         /* update the cache entry new size - this will also clear remaining properties */
+         pEntry->unProperties.ucValue = D_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(ucSizeOfEvictionCandidates);
+#ifdef D_COMRV_EVICTION_LRU
+         /* update the cache entry 'next lru' field of the previous lru */
+         stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevIndex].unLru.stFields.typNextIndex =
+               pEntry->unLru.stFields.typNextIndex;
+         /* update the cache entry 'next lru' field */
+         pEntry->unLru.stFields.typNextIndex = ucIndex;
+         /* update the cache entry 'previous lru' field - now it is the first lru as
+            it is now considered 'evicted/empty' */
+         pEntry->unLru.stFields.typPrevIndex = D_COMRV_LRU_FIRST_ITEM;
+         /* update the global lru index */
          stComrvCB.ucLruIndex = ucIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
@@ -714,8 +723,8 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
       /* if token already loaded */
       if (stComrvCB.stOverlayCache[ucEntryIndex].unToken.stFields.overlayGroupID == unToken.stFields.overlayGroupID)
       {
-         /* update that the entry was accessed */
-         comrvUpdateCacheEntryAccess(ucEntryIndex);
+         /* update eviction parameters */
+         comrvUpdateCacheEvectionParams(ucEntryIndex);
          /* return the actual function location within the loaded overlay group */
          return stComrvCB.stOverlayCache[ucEntryIndex].pFixedEntryAddress;
       }
@@ -731,7 +740,7 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
 *
 * @return none
 */
-static void comrvUpdateCacheEntryAccess(u08_t ucEntryIndex)
+static void comrvUpdateCacheEvectionParams(u08_t ucEntryIndex)
 {
    comrvCacheEntry_t *pCacheEntry;
 
