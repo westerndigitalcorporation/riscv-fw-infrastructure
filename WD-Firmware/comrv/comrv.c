@@ -58,12 +58,13 @@
 #define D_COMRV_NUM_BITS_DWORD                        32
 #define D_COMRV_NUM_OF_CACHE_ENTRIES                  D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS
 #if (D_COMRV_NUM_OF_CACHE_ENTRIES % D_COMRV_NUM_BITS_DWORD)
-  #define D_COMRV_EVICT_CANDIDATE_MAP_SIZE              ((D_COMRV_NUM_OF_CACHE_ENTRIES/sizeof(u32_t)) + 1)
+  #define D_COMRV_EVICT_CANDIDATE_MAP_SIZE            ((D_COMRV_NUM_OF_CACHE_ENTRIES/sizeof(u32_t)) + 1)
 #else
-  #define D_COMRV_EVICT_CANDIDATE_MAP_SIZE              (D_COMRV_NUM_OF_CACHE_ENTRIES/sizeof(u32_t))
+  #define D_COMRV_EVICT_CANDIDATE_MAP_SIZE            (D_COMRV_NUM_OF_CACHE_ENTRIES/sizeof(u32_t))
 #endif
 #define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
 #define D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT          9
+#define D_COMRV_INVALID_TOKEN                         0xFFFFFFFF
 
 /* if no profile was set */
 #if D_COMRV_PROFILE==0
@@ -255,7 +256,7 @@ typedef struct comrvCB
 /**
 * local prototypes
 */
-void* comrvMemset                     (void* pMemory, s32_t siVal, u32_t uiSizeInDwords);
+void*        comrvMemset                     (void* pMemory, s32_t siVal, u32_t uiSizeInDwords);
 static u08_t comrvGetEvictionCandidates      (u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList);
 static void  comrvUpdateCacheEvectionParams  (u08_t ucEntryIndex);
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
@@ -265,13 +266,16 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 */
 /* main comrv entry function - all overlay functions are invoked
    through this function (the address of comrvEntry() is set in reg t6) */
-extern void  comrvEntry              (void);
+extern void  comrvEntry               (void);
 
-/* user hook functions - user application must implement the following 4 functions */
-extern void  comrvMemcpyHook         (void* pDest, void* pSrc, u32_t uiSizeInBytes);
-extern u32_t comrvCrcCalcHook        (void* pAddress, u16_t usMemSizeInBytes);
-extern void  comrvNotificationHook   (u32_t uiNotificationNum, u32_t uiToken);
-extern void* comrvLoadOvlayGroupHook (comrvLoadArgs_t* pLoadArgs);
+/* user hook functions - user application must implement the following functions */
+extern void  comrvErrorHook           (const comrvErrorArgs_t* pErrorArgs);
+extern void  comrvMemcpyHook          (void* pDest, void* pSrc, u32_t uiSizeInBytes);
+extern u32_t comrvCrcCalcHook         (void* pAddress, u16_t usMemSizeInBytes);
+extern void* comrvLoadOvlayGroupHook  (comrvLoadArgs_t* pLoadArgs);
+#ifdef D_COMRV_FW_INSTRUMENTATION
+extern void  comrvInstrumentationHook (const comrvInstrumentationArgs_t* pInstArgs);
+#endif /* D_COMRV_FW_INSTRUMENTATION */
 
 /**
 * global variables
@@ -300,12 +304,17 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    u08_t              ucIndex;
    void*              pBaseAddress = pInitArgs->pCacheMemoeyAddress;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
+#ifdef D_COMRV_VERIFY_ARGS
+   comrvErrorArgs_t   stErrArgs;
+#endif /* D_COMRV_VERIFY_ARGS */
 
-#ifndef D_COMRV_VERIFY_ARGS
+#ifdef D_COMRV_VERIFY_ARGS
    /* verify input parameters */
    if ((!pInitArgs) || (pInitArgs->uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN))
    {
-      comrvNotificationHook(D_COMRV_INVALID_INIT_PARAMS_ERR, 0);
+      stErrArgs.uiErrorNum = D_COMRV_INVALID_INIT_PARAMS_ERR;
+      stErrArgs.uiToken    = D_COMRV_INVALID_TOKEN;
+      comrvErrorHook(&stErrArgs);
    }
 #endif /* D_COMRV_VERIFY_ARGS */
 
@@ -371,6 +380,7 @@ void* comrvGetAddressFromToken(void)
 {
    comrvCacheEntry_t   *pEntry;
    comrvOverlayToken_t  unToken;
+   comrvErrorArgs_t     stErrArgs;
    comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
@@ -382,6 +392,7 @@ void* comrvGetAddressFromToken(void)
    u32_t                uiCrc;
 #endif /* D_COMRV_CRC */
 #ifdef D_COMRV_FW_INSTRUMENTATION
+   comrvInstrumentationArgs_t stInstArgs;
    u32_t                uiProfilingIndication;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
@@ -401,7 +412,7 @@ void* comrvGetAddressFromToken(void)
    if (ucIsInvoke == D_COMRV_INVOKE_CALLEE_BIT_0)
    {
       /* clear the invoke indication from pComrvStackFrame address */
-      pComrvStackFrame = (comrvStackFrame_t*)((u32_t)pComrvStackFrame & (~D_COMRV_PROFILING_INVOKE_VAL));
+      pComrvStackFrame = (comrvStackFrame_t*)((u32_t)pComrvStackFrame & (~D_COMRV_PROFILING_INVOKE_BIT));
       /* write back the stack register after bit 0 was cleared*/
       M_COMRV_WRITE_STACK_REG(pComrvStackFrame);
 
@@ -478,7 +489,9 @@ void* comrvGetAddressFromToken(void)
       if (ucNumOfEvictionCandidates == 0)
       {
          M_COMRV_EXIT_CRITICAL_SECTION();
-         comrvNotificationHook(D_COMRV_NO_AVAILABLE_ENTRY_ERR, unToken.uiValue);
+         stErrArgs.uiErrorNum = D_COMRV_NO_AVAILABLE_ENTRY_ERR;
+         stErrArgs.uiToken    = unToken.uiValue;
+         comrvErrorHook(&stErrArgs);
       }
       /* we need to handle cache fragmentation since we got more than 1 eviction candidate */
       else
@@ -512,7 +525,7 @@ void* comrvGetAddressFromToken(void)
                if (pEntry->unProperties.ucData)
                {
                   M_COMRV_EXIT_CRITICAL_SECTION();
-                  comrvNotificationHook(D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.ucValue);
+                  comrvErrorHook(D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.ucValue);
                }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
                /* now we copy the cache entry properties and token */
@@ -579,7 +592,9 @@ void* comrvGetAddressFromToken(void)
       /* if group wasn't loaded */
       if (!pAddress)
       {
-         comrvNotificationHook(D_COMRV_LOAD_ERR, unToken.uiValue);
+         stErrArgs.uiErrorNum = D_COMRV_LOAD_ERR;
+         stErrArgs.uiToken    = unToken.uiValue;
+         comrvErrorHook(&stErrArgs);
       }
 
 #ifdef D_COMRV_CRC
@@ -587,13 +602,13 @@ void* comrvGetAddressFromToken(void)
       uiCrc = comrvCrcCalcHook(pAddress, usOverlayGroupSize-sizeof(u32_t));
       if (uiCrc != *((u08_t*)pAddress + (usOverlayGroupSize-sizeof(u32_t))))
       {
-         comrvNotificationHook(D_COMRV_CRC_CHECK_ERR, unToken.ucValue);
+         comrvErrorHook(D_COMRV_CRC_CHECK_ERR, unToken.ucValue);
       }
 #endif /* D_COMRV_CRC */
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
       /* update for FW profiling loaded the function */
-      uiProfilingIndication |= D_COMRV_PROFILING_LOAD_VAL;
+      uiProfilingIndication |= D_COMRV_PROFILING_LOAD_BIT;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
    } /* if (pAddress == NULL) */
    else
@@ -647,7 +662,9 @@ void* comrvGetAddressFromToken(void)
    }
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
-   comrvNotificationHook(uiProfilingIndication , unToken.ucValue);
+   stInstArgs.uiInstNum  = uiProfilingIndication;
+   stInstArgs.uiToken    = unToken.uiValue;
+   comrvInstrumentationHook(&stInstArgs);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 
    /* group is now loaded to memory so we can return the address of the data/function */

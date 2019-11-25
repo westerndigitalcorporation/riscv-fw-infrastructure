@@ -45,6 +45,11 @@
 */
 extern void* __OVERLAY_GROUPS_START__;
 
+#ifdef D_COMRV_FW_INSTRUMENTATION
+comrvInstrumentationArgs_t g_stInstArgs;
+#endif /* D_COMRV_FW_INSTRUMENTATION */
+
+
 /**
 * memory copy hook
 *
@@ -84,12 +89,28 @@ void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 /**
 * notification hook
 *
-* @param  none
+* @param  pInstArgs - pointer to instrumentation arguments
 *
 * @return none
 */
-void comrvNotificationHook(u32_t notificationNum, u32_t token)
+#ifdef D_COMRV_FW_INSTRUMENTATION
+void comrvInstrumentationHook(const comrvInstrumentationArgs_t* pInstArgs)
 {
+   g_stInstArgs = *pInstArgs;
+}
+#endif /* D_COMRV_FW_INSTRUMENTATION */
+
+/**
+* error hook
+*
+* @param  pErrorArgs - pointer to error arguments
+*
+* @return none
+*/
+void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
+{
+   /* we can't continue so loop forever */
+   while (1);
 }
 
 /**
