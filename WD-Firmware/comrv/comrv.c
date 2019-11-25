@@ -34,7 +34,8 @@
 #ifndef D_COMRV_EVICTION_LRU
  #ifndef D_COMRV_EVICTION_LFU
   #ifndef D_COMRV_EVICTION_MIX_LRU_LFU
-   #error "comrv: eviction algorithm not defined (use D_COMRV_EVICTION_LRU / D_COMRV_EVICTION_LFU / D_COMRV_EVICTION_MIX_LRU_LFU)"
+   /* default eviction algorithm */
+   #define D_COMRV_EVICTION_LRU
   #endif /* D_COMRV_EVICTION_MIX_LRU_LFU */
  #endif /* D_COMRV_EVICTION_LFU */
 #endif /* D_COMRV_EVICTION_LRU */
@@ -65,6 +66,8 @@
 #define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
 #define D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT          9
 #define D_COMRV_INVALID_TOKEN                         0xFFFFFFFF
+#define D_COMRV_GROUP_NOT_FOUND                       0xFFFF
+#define D_COMRV_LAST_MULTI_GROUP_ENTRY                0
 
 /* if no profile was set */
 #if D_COMRV_PROFILE==0
@@ -259,7 +262,7 @@ typedef struct comrvCB
 void*        comrvMemset                     (void* pMemory, s32_t siVal, u32_t uiSizeInDwords);
 static u08_t comrvGetEvictionCandidates      (u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList);
 static void  comrvUpdateCacheEvectionParams  (u08_t ucEntryIndex);
-static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
+static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 
 /**
 * external prototypes
@@ -304,11 +307,11 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    u08_t              ucIndex;
    void*              pBaseAddress = pInitArgs->pCacheMemoeyAddress;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
-#ifdef D_COMRV_VERIFY_ARGS
+#ifdef D_COMRV_VERIFY_INIT_ARGS
    comrvErrorArgs_t   stErrArgs;
-#endif /* D_COMRV_VERIFY_ARGS */
+#endif /* D_COMRV_VERIFY_INIT_ARGS */
 
-#ifdef D_COMRV_VERIFY_ARGS
+#ifdef D_COMRV_VERIFY_INIT_ARGS
    /* verify input parameters */
    if ((!pInitArgs) || (pInitArgs->uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN))
    {
@@ -316,7 +319,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
       stErrArgs.uiToken    = D_COMRV_INVALID_TOKEN;
       comrvErrorHook(&stErrArgs);
    }
-#endif /* D_COMRV_VERIFY_ARGS */
+#endif /* D_COMRV_VERIFY_INIT_ARGS */
 
 #ifdef D_COMRV_EVICTION_LRU
    /* initialize all cache entries */
@@ -384,8 +387,8 @@ void* comrvGetAddressFromToken(void)
    comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
-   u16_t                usOverlayGroupSize, usOffset;
    void                *pAddress, *pNextEvictCandidateCacheAddress;
+   u16_t                usOverlayGroupSize, usOffset, usSearchResultIndex;
    u08_t                ucNumOfEvictionCandidates, ucIndex, ucSizeOfEvictionCandidates;
    u08_t                ucEntryIndex, ucEvictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
 #ifdef D_COMRV_CRC
@@ -427,14 +430,13 @@ void* comrvGetAddressFromToken(void)
       uiProfilingIndication = D_COMRV_NO_LOAD_AND_RETURN_IND;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
    }
-
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
    if (unToken.stFields.multiGroup == 0)
    {
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
       /* search for token */
-      pAddress = comrvSearchForLoadedOverlayGroup(unToken);
+      usSearchResultIndex = comrvSearchForLoadedOverlayGroup(unToken);
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    }
    /* search for a multi-group overlay token */
@@ -446,9 +448,9 @@ void* comrvGetAddressFromToken(void)
       do
       {
          /* search for the token */
-         pAddress = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[ucEntryIndex++]);
+         usSearchResultIndex = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[ucEntryIndex++]);
       /* continue the search as long as the group wasn't found and we have additional tokens */
-      } while ((pAddress == NULL) && (pOverlayMultiGroupTokensTable[ucEntryIndex].uiValue != 0));
+      } while ((usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) && (pOverlayMultiGroupTokensTable[ucEntryIndex].uiValue != D_COMRV_LAST_MULTI_GROUP_ENTRY));
 
       /* save the selected multi group entry */
       usSelectedMultiGroupEntry = ucEntryIndex-1;
@@ -459,7 +461,7 @@ void* comrvGetAddressFromToken(void)
    usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
 
    /* if the data/function is not loaded we need to evict and load it */
-   if (!pAddress)
+   if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND)
    {
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       /* if the requested token is a multi-group token */
@@ -522,7 +524,7 @@ void* comrvGetAddressFromToken(void)
                pEntry = &g_stComrvCB.stOverlayCache[ucIndex + g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits];
 #ifdef D_COMRV_OVL_DATA_SUPPORT
                /* an overlay data is present when handling de-fragmentation */
-               if (pEntry->unProperties.ucData)
+               if (pEntry->unProperties.stFields.ucData)
                {
                   M_COMRV_EXIT_CRITICAL_SECTION();
                   stErrArgs.uiErrorNum = D_COMRV_OVL_DATA_DEFRAG_ERR;
@@ -614,12 +616,14 @@ void* comrvGetAddressFromToken(void)
       /* update for FW profiling loaded the function */
       uiProfilingIndication |= D_COMRV_PROFILING_LOAD_BIT;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
-   } /* if (pAddress == NULL) */
+   } /* overlay group is already loaded */
    else
    {
-      /* the group size in bytes */
+     /* get the loaded address */
+     pAddress = g_stComrvCB.stOverlayCache[usSearchResultIndex].pFixedEntryAddress;
+     /* the group size in bytes */
 	  usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
-   }
+   } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
 
    /* get actual function/data offset */
    usOffset = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken);
@@ -752,7 +756,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 * @return if the token is loaded the return value is set to the loaded address
 *         otherwise NULL
 */
-static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
+static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
 {
    u08_t              ucEntryIndex;
    comrvCacheEntry_t *pCacheEntry;
@@ -764,15 +768,13 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
       /* if token already loaded */
       if (pCacheEntry->unToken.stFields.overlayGroupID == unToken.stFields.overlayGroupID)
       {
-         /* update eviction parameters */
-         comrvUpdateCacheEvectionParams(ucEntryIndex);
          /* return the actual function location within the loaded overlay group */
-         return pCacheEntry->pFixedEntryAddress;
+         return ucEntryIndex;
       }
    }
 
    /* overlay group not loaded */
-   return 0;
+   return D_COMRV_GROUP_NOT_FOUND;
 }
 
 /**

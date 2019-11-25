@@ -45,8 +45,12 @@ c_flags = Env['C_FLAGS']
 a_flags = Env['A_FLAGS']
 
 # defines
-Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU']#, 'D_COMRV_MULTI_GROUP_SUPPORT', 'D_COMRV_FW_INSTRUMENTATION']
-
+Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU']
+'''
+Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU', 'D_COMRV_MULTI_GROUP_SUPPORT', 
+                    'D_COMRV_FW_INSTRUMENTATION', 'D_COMRV_VERIFY_INIT_ARGS',
+                    'D_COMRV_OVL_DATA_SUPPORT', 'D_COMRV_CRC']
+'''
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),
                    os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
