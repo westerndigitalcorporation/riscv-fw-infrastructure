@@ -2,7 +2,7 @@
 <?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295" moduleId="org.eclipse.cdt.core.settings" name="hifive1_ex_freertos">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295" moduleId="org.eclipse.cdt.core.settings" name="hifive1_freertos">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="Hifive running RV freertos demo using RTOS-AL" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295" name="hifive1_ex_freertos" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="Hifive running RV freertos demo using RTOS-AL" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295" name="hifive1_freertos" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1096648574" name="/" resourcePath="">
 						<toolChain id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.175261499" name="RISC-V Cross GCC" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base">
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix.1882525389" name="Prefix" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix" value="riscv64-unknown-elf-" valueType="string"/>
@@ -90,7 +90,7 @@
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other.1806771975" name="Other debugging flags" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other"/>
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab.975273117" name="showDevicesTab" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform.556550527" isAbstract="false" osList="all" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform"/>
-							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/examples/build}" cleanBuildTarget="-c target=hifive1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.1895885439" incrementalBuildTarget="target=hifive1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
+							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/demo/build}" cleanBuildTarget="-c target=hifive1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.1895885439" incrementalBuildTarget="target=hifive1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
 							<tool id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.12062715" name="GNU RISC-V Cross Assembler" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler">
 								<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor.514723590" name="Use preprocessor" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input.1719392974" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input"/>
@@ -223,7 +223,7 @@
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other.774781903" name="Other debugging flags" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other"/>
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab.1790167513" name="showDevicesTab" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform.866159695" isAbstract="false" osList="all" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform"/>
-							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/examples/build}" cleanBuildTarget="-c target=hifive1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.337150438" incrementalBuildTarget="target=hifive1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
+							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/demo/build}" cleanBuildTarget="-c target=hifive1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.337150438" incrementalBuildTarget="target=hifive1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
 							<tool id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.2027978710" name="GNU RISC-V Cross Assembler" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler">
 								<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor.1225014086" name="Use preprocessor" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input.414440050" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input"/>
@@ -268,7 +268,7 @@
 			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs"/>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" moduleId="org.eclipse.cdt.core.settings" name="nexys_a7_swerv_ex_freertos">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" moduleId="org.eclipse.cdt.core.settings" name="nexys_a7_swerv_freertos">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -280,7 +280,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="Hifive running RV freertos demo using RTOS-AL" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" name="nexys_a7_swerv_ex_freertos" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="Hifive running RV freertos demo using RTOS-AL" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" name="nexys_a7_swerv_freertos" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917." name="/" resourcePath="">
 						<toolChain id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.2001892976" name="RISC-V Cross GCC" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base">
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix.2071338471" name="Prefix" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix" value="riscv64-unknown-elf-" valueType="string"/>
@@ -356,7 +356,7 @@
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other.1773884396" name="Other debugging flags" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other"/>
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab.854882028" name="showDevicesTab" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform.997246183" isAbstract="false" osList="all" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform"/>
-							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/examples/build}" cleanBuildTarget="-c target=nexys_a7_swerv1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.481022460" incrementalBuildTarget="target=nexys_a7_swerv1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
+							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/demo/build}" cleanBuildTarget="-c target=nexys_a7_swerv1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.481022460" incrementalBuildTarget="target=nexys_a7_swerv1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
 							<tool id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.1215563418" name="GNU RISC-V Cross Assembler" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler">
 								<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor.858703597" name="Use preprocessor" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input.261154970" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input"/>
@@ -548,6 +548,8 @@
 		<configuration configurationName="test">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
+		<configuration configurationName="nexys_a7_swerv_freertos"/>
+		<configuration configurationName="hifive1_freertos"/>
 		<configuration configurationName="comrv-baremetal"/>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
