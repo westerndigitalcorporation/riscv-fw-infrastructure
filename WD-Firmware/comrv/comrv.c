@@ -735,11 +735,17 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
       /* convert each candidate to an actual value in pEvictCandidatesList */
       while (uiCandidates)
       {
+
          /* get the lsb that is set */
          pEvictCandidatesList[ucIndex] = uiCandidates & (-uiCandidates);
          /* subtract the lsb that is set */
-         uiCandidates -= pEvictCandidatesList[ucIndex]--;
-         pEvictCandidatesList[ucIndex++] += ucEntryIndex*D_COMRV_DWORD_IN_BITS;
+         uiCandidates -= pEvictCandidatesList[ucIndex];
+         /* decrement by 1 to get the actual zero based value */
+         pEvictCandidatesList[ucIndex]--;
+         /* add the location of the bit - pEvictCandidatesList[ucIndex] will hold the group number */
+         pEvictCandidatesList[ucIndex] += ucEntryIndex*D_COMRV_DWORD_IN_BITS;
+         /* move to the next entry in pEvictCandidatesList */
+         ucIndex++;
       }
    }
 
