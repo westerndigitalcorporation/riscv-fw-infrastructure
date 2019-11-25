@@ -1,0 +1,68 @@
+'''
+ SPDX-License-Identifier: Apache-2.0
+ Copyright 2019 Western Digital Corporation or its affiliates.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http:www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+'''
+import os
+import utils
+Import('Env')
+
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'psp')
+utils.fnCreateFolder(strOutDir)
+
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+listCFiles=[
+   (os.path.join('psp', 'src', 'psp_interrupts.c'), os.path.join(strOutDir, 'psp_interrupts.o')),
+   (os.path.join('psp', 'src', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
+   (os.path.join('psp', 'src', 'psp_timer.c'), os.path.join(strOutDir, 'psp_timer.o')),
+]
+
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[
+   (os.path.join('psp', 'src', 'psp_int_vect.S'), os.path.join(strOutDir, 'psp_int_vect.o')),
+]
+
+# compiler directivs
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
+
+# compilation defines (-D_)
+listCompilationDefines = []+Env['PUBLIC_DEF']
+
+# public includes
+Env['PUBLIC_INC'] += [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
+]
+
+# privte includes
+listIncPaths = [ ] + Env['PUBLIC_INC']
+
+
+if not Env["Scan"]:
+  # for objects
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+
+  # asm file objects
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+
+  # for libraries
+  objPspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'psp.a'), source=listObjects)
+
+  # return the psp lib
+  Return('objPspLib')

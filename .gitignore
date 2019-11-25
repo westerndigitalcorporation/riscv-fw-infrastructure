@@ -6,7 +6,8 @@
 *.sconsign.dblite
 *.org.eclipse.cdt.core.prefs
 *.language.settings.xml
-*.cproject
+*.log
+*.jou
 
 
 lto1

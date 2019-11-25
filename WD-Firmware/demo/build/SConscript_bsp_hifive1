@@ -1,0 +1,80 @@
+'''
+ SPDX-License-Identifier: Apache-2.0
+ Copyright 2019 Western Digital Corporation or its affiliates.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http:www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+'''
+import os
+import utils
+Import('Env')
+
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'bsp')
+utils.fnCreateFolder(strOutDir)
+
+strBspBase=os.path.join('board', 'hifive1', 'bsp')
+
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+
+listCFiles=[
+   (os.path.join(strBspBase, 'env', 'freedom-e300-hifive1', 'init.c')    , os.path.join(strOutDir, 'init.o')),
+   (os.path.join(strBspBase, 'drivers', 'plic', 'plic_driver.c'), os.path.join(strOutDir, 'plic_driver.o'))
+]
+
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[
+   (os.path.join('board', 'hifive1', 'start.S'), os.path.join(strOutDir, 'start.o')),
+]
+
+# compiler directivs
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
+
+# compilation defines (-D_)
+Env['PUBLIC_DEF'] += ['D_HI_FIVE1']
+listCompilationDefines = [ ] + Env['PUBLIC_DEF']
+
+# public includes
+Env['PUBLIC_INC'] += [ 
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'include', 'sifive'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'include', 'sifive', 'devices'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'env'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'env', 'freedom-e300-hifive1'),
+]
+
+# privte includes
+listIncPaths = [ 
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'include'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers', 'plic')
+] + Env['PUBLIC_INC']
+
+# add a library to the link command board/hifive1/psb/libwrap-hifive1.a
+Env['TARGET_LIBS'] += ['wrap-hifive1']
+
+if not Env["Scan"]:
+  # c file objects
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+
+  # asm file objects
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+
+  # create the bsp library from he objects
+  objBspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=listObjects)
+
+  # return the bsp library
+  Return('objBspLib')

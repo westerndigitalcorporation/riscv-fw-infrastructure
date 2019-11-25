@@ -41,6 +41,8 @@
    #define M_SEMAPHORE_CB_SIZE_IN_BYTES   sizeof(StaticSemaphore_t)
 #elif D_USE_THREADX
    #define M_SEMAPHORE_CB_SIZE_IN_BYTES   sizeof(TBD)  // size of the CB struct 
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -51,6 +53,8 @@ typedef struct rtosalSemaphore
 {
 #ifdef D_USE_FREERTOS
    void* semaphoreHandle;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    s08_t cSemaphoreCB[M_SEMAPHORE_CB_SIZE_IN_BYTES];
 } rtosalSemaphore_t;

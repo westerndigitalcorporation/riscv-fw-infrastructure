@@ -1,0 +1,152 @@
+'''
+ SPDX-License-Identifier: Apache-2.0
+ Copyright 2019 Western Digital Corporation or its affiliates.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http:www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+'''
+
+# set imports and variables of sconstruct
+import sys
+import os
+import time
+import utils
+from demos.config import clsGenerate
+
+strRiscvTchainRoot = 'RISCV_TC_ROOT'
+listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
+listDependencies = ['libftdi1-2',]
+
+#### scons custom arguments ####
+strTargetName = ARGUMENTS.get('target', '')
+#downloadFlag = ARGUMENTS.get('download', '0')
+
+# generate the demo factory and set the demo 
+objFactory = clsGenerate()
+objDemo = objFactory.setDemo()
+
+# set the output files for the demo
+strMap_file, strElf_file = utils.set_outputfiles_names(objDemo.strName, prefix=strTargetName)
+
+#### scons verbose #####
+verbose = True
+
+strTCRootPath = os.getenv(strRiscvTchainRoot)
+# check if the TC environment variable is set or empty
+if not strTCRootPath:
+  print ("Set environment variable '" + strRiscvTchainRoot + "' to point to the RISCV toolchain root")
+  exit(1)
+  
+utils.fnCheckInstalledDependencis(listDependencies)
+
+# set global environment
+
+# path to scons toolchain scripts
+Env = Environment(toolpath = ['toolchain'])
+
+#def download(target, source, env):
+#   print repr(source)
+#   return None
+
+#Env['BUILDERS']['Download'] = Builder(action = download)
+
+# path to the RV toolchain 'bin' directory
+Env['TOOLS_BASE_DIR'] = os.path.join(strTCRootPath, 'bin')
+
+# Tool c compiler execution
+Env['CC_BIN'] = "riscv64-unknown-elf-gcc"
+# Tool assembler compiler execution
+Env['AS_BIN'] = "riscv64-unknown-elf-gcc"
+# Tool archiver execution
+Env['AR_BIN'] = "riscv64-unknown-elf-ar"
+# Tool archiver execution
+Env['RANLIB_BIN'] = "riscv64-unknown-elf-ranlib"
+
+Env.Tool('as_rv')
+Env.Tool('cc_rv')
+Env.Tool('ar_rv')
+
+# set output file suffixes
+Env['OBJSUFFIX'] = '.o'
+Env['LIBSUFFIX'] = '.a'
+Env['PROGSUFFIX'] = '.elf'
+
+Env['ROOT_DIR']               = os.path.join(os.getcwd(),"..", "..")
+Env['TARGET_LIBS']          = []
+Env['RTOS_CORE']            = []
+Env['PUBLIC_DEF']            = [] 
+Env['PUBLIC_INC']             = [os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
+Env['OUT_DIR_PATH']       = 'output'
+Env['TARGET_BOARD']     = strTargetName
+Env['EXAMPLE_NAME']     = objDemo.strName
+
+
+Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strMap_file)
+
+listCCOptions = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
+Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + listCCOptions
+Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + listCCOptions
+
+if verbose == False:
+  # set output to minimal mode
+  Env['CCCOMSTR'] = 'Compiling $SOURCES'
+  Env['LINKCOMSTR'] = 'Linking $TARGET'
+  Env['ASCOMSTR'] = 'Compiling $SOURCES'
+  Env['ARCOMSTR'] = 'Archiving $TARGET'
+
+# to solve long command line problems (in win32)
+#SetupSpawn(Env)
+
+# for debug
+#print Env.Dump()
+
+utils.fnCreateFolder(Env['OUT_DIR_PATH'])
+
+# linker flags
+Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc', '-Wl,--wrap=free', '-Wl,--wrap=open', '-Wl,--wrap=lseek', 
+                    '-Wl,--wrap=read', '-Wl,--wrap=write', '-Wl,--wrap=fstat', '-Wl,--wrap=stat', '-Wl,--wrap=close', 
+                    '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
+                    '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
+                    '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
+                    '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions
+
+strBoardFolder = os.path.join(Env['ROOT_DIR'], 'board', Env['TARGET_BOARD'])
+strLinkerScriptFile = os.path.join(strBoardFolder, 'link.lds')
+Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
+#, LIBPATH='.'
+
+if Env['TARGET_BOARD'] not in listSupportedBoards:
+  print "missing target=%s" % " | ".join(listSupportedBoards)
+  exit(1)
+
+Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
+Env['PUBLIC_DEF'] = objDemo.public_defs
+Env['TARGET_LIBS'] += ['c', 'gcc']
+
+Env["Scan"] = True
+SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env')
+for strSconscript in objDemo.listSconscripts:
+  SConscript('SConscript_%s' % strSconscript, exports='Env')
+
+arrLibs = []
+Env["Scan"] = False
+arrLibs.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
+for strSconscript in objDemo.listSconscripts:
+  arrLibs.append(SConscript('SConscript_%s' % strSconscript, exports='Env'))
+  
+strElfFileName = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
+objBundle = Env.Program(strElfFileName, arrLibs, LIBS=Env['TARGET_LIBS'])
+Env.Size(source=objBundle)
+
+#append to the map file the   
+#if downloadFlag != '0':
+#  Env.Download(source=objBundle)
