@@ -53,9 +53,7 @@ listCompilationDefines = [] + Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']
 # include paths
 Env['PUBLIC_INC'] += [
   os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'api_inc'),
-  os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'config', 'hifive1'),
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'),
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'config', Env['TARGET_BOARD'] ),
+  os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'config', Env['TARGET_BOARD'] ),
 ]
 
 listIncPaths =  [
