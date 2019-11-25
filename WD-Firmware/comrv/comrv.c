@@ -754,20 +754,23 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 */
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
 {
-   u08_t ucEntryIndex;
+   u08_t              ucEntryIndex;
+   comrvCacheEntry_t *pCacheEntry;
 
    /* loop all entries */
-   for (ucEntryIndex = 0 ; ucEntryIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucEntryIndex++)
+   for (ucEntryIndex = 0 ; ucEntryIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucEntryIndex+=pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits)
    {
+      pCacheEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex];
       /* if token already loaded */
-      if (g_stComrvCB.stOverlayCache[ucEntryIndex].unToken.stFields.overlayGroupID == unToken.stFields.overlayGroupID)
+      if (pCacheEntry->unToken.stFields.overlayGroupID == unToken.stFields.overlayGroupID)
       {
          /* update eviction parameters */
          comrvUpdateCacheEvectionParams(ucEntryIndex);
          /* return the actual function location within the loaded overlay group */
-         return g_stComrvCB.stOverlayCache[ucEntryIndex].pFixedEntryAddress;
+         return pCacheEntry->pFixedEntryAddress;
       }
    }
+
    /* overlay group not loaded */
    return 0;
 }
