@@ -644,7 +644,7 @@ void* comrvGetAddressFromToken(void)
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 
    /* group is now loaded to memory so we can return the address of the data/function */
-   return (void*)((u08_t*)pAddress + usOffset);
+   return ((u08_t*)pAddress + usOffset);
 }
 
 /**
