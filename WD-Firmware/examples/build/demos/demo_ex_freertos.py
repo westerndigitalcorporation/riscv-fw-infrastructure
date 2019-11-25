@@ -5,8 +5,6 @@ class demo(object):
     self.strName = "ex_freertos"
     self.rtos_core = "freertos"
     
-    self.rtos_defines = ['D_USE_FREERTOS']
-    
     self.public_defs = [
         'D_USE_RTOSAL',
         'D_MTIME_ADDRESS=0x0200BFF8',

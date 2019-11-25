@@ -79,5 +79,5 @@ class clsGenerate(object):
     f.close()
 
 if __name__ == "__main__":
-  objConfigure= generate()
+  objConfigure= clsGenerate()
   objConfigure.setConfig()

@@ -18,62 +18,68 @@ import os
 import utils
 Import('Env')
 
-out_dir = os.path.join(Env['OUT_DIR_PATH'], 'rtosal')
-utils.fnCreateFolder(out_dir)
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'rtosal')
+utils.fnCreateFolder(strOutDir)
 
-rtosal_base = os.path.join('rtos', 'rtosal')
-list_files_c=[
-   [os.path.join(rtosal_base, 'src', 'rtosal_event.c'), os.path.join(out_dir, 'rtosal_event.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_util.c'), os.path.join(out_dir, 'rtosal_util.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_mutex.c'), os.path.join(out_dir, 'rtosal_mutex.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_queue.c'), os.path.join(out_dir, 'rtosal_queue.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_semaphore.c'), os.path.join(out_dir, 'rtosal_semaphore.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_task.c'), os.path.join(out_dir, 'rtosal_task.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_time.c'), os.path.join(out_dir, 'rtosal_time.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_error.c'), os.path.join(out_dir, 'rtosal_error.o')],
-   [os.path.join(rtosal_base, 'src', 'rtosal_interrupt.c'), os.path.join(out_dir, 'rtosal_interrupt.o')],
+strRtosAlBase = os.path.join('rtos', 'rtosal')
+
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+listCFiles=[
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_event.c'), os.path.join(strOutDir, 'rtosal_event.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_util.c'), os.path.join(strOutDir, 'rtosal_util.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_mutex.c'), os.path.join(strOutDir, 'rtosal_mutex.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_queue.c'), os.path.join(strOutDir, 'rtosal_queue.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_semaphore.c'), os.path.join(strOutDir, 'rtosal_semaphore.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_task.c'), os.path.join(strOutDir, 'rtosal_task.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_time.c'), os.path.join(strOutDir, 'rtosal_time.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_error.c'), os.path.join(strOutDir, 'rtosal_error.o')),
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_interrupt.c'), os.path.join(strOutDir, 'rtosal_interrupt.o')),
 ]
 
-list_files_a=[
-   [os.path.join(rtosal_base, 'src', 'rtosal_int_vect.S'), os.path.join(out_dir, 'rtosal_int_vect.o')],
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[
+   (os.path.join(strRtosAlBase, 'src', 'rtosal_int_vect.S'), os.path.join(strOutDir, 'rtosal_int_vect.o')),
 ]
 
 # compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
-# defines
-c_defines = Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
+# compilation defines (-D_)
+listCompilationDefines = [] + Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
 
 # include paths
-local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
-public_includes = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], rtosal_base, 'config', 'hifive1'),
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'api_inc'),
+                   os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'config', 'hifive1'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], 'examples', 'demo'),]
-                   
-Env['RTOSAL_INC_PATH'] = public_includes
-include_paths = Env['PUBLIC_INC'] + public_includes + local_includes
+                   os.path.join(Env['ROOT_DIR'], 'examples', 'demo'),
+]
+
+listIncPaths =  [
+  os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'loc_inc'),
+] + Env['PUBLIC_INC']
+                  
 
 # linker flags
 Env['LINKFLAGS'] += []
 
 if not Env["Scan"]:
   # for objects
-  objects = []
-  for list_file in list_files_c:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # asm file objects
-  for list_file in list_files_a:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'rtosal.a'), source=objects)
+  objRtosalLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'rtosal.a'), source=listObjects)
 
   #print Env.Dump()
 
   # return the rtosal lib
-  Return('rtosal_lib')
+  Return('objRtosalLib')

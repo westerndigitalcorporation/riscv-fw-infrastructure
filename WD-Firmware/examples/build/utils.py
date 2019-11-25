@@ -50,3 +50,4 @@ def set_outputfiles_names(name, prefix = "", suffix = ""):
 def fnCreateFolder(strPath):
   if not os.path.exists(strPath):
     os.makedirs(strPath)
+  

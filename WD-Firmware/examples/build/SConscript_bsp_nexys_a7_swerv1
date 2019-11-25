@@ -18,46 +18,42 @@ import os
 import utils
 Import('Env')
 
-out_dir = os.path.join(Env['OUT_DIR_PATH'], 'bsp')
-utils.fnCreateFolder(out_dir)
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'bsp')
+utils.fnCreateFolder(strOutDir)
     
-bsp_base=os.path.join('board', 'nexys_a7_swerv1', 'bsp')
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+listCFiles = []
 
-# C language source and out files in list of lists
-# [sourcefile.c, outputfile.o]
-list_files_c=[]
-
-# Assembly language source and out files in list of lists
-# [sourcefile.S, outputfile.o]
-list_files_a=[
-   [os.path.join('board', 'nexys_a7_swerv1', 'startup.S'), os.path.join(out_dir, 'startup.o')],
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles = [
+   (os.path.join('board', 'nexys_a7_swerv1', 'startup.S'), os.path.join(strOutDir, 'startup.o')),
 ]
 
 # compiler flags
-c_compiler_directives = [ ] + Env['C_FLAGS']
-a_compiler_directives = [ ] + Env['A_FLAGS']
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
-# defines
+# compilation defines (-D_)
 Env['PUBLIC_DEF'] += ['D_NEXYS_A7']
-c_defines = [ ] + Env['PUBLIC_DEF']
+listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 # include paths
-include_paths = [ ]
-
-Env['PUBLIC_INC'] += include_paths
+listIncPaths = [ ] + Env['PUBLIC_INC']
 
 if not Env["Scan"]:
   # c file objects
-  objects = []
-  for list_file in list_files_c:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], listFile[0]), target=listFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # asm file objects
-  for list_file in list_files_a:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], listFile[0]), target=listFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  bsp_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=objects)
+  objBspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=listObjects)
 
   # return the bsp lib
-  Return('bsp_lib')
+  objBspLib('objBspLib')

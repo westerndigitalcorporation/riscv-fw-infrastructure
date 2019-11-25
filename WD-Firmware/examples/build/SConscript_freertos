@@ -18,34 +18,35 @@ import os
 import utils
 Import('Env')
 
-out_dir = os.path.join(Env['OUT_DIR_PATH'], 'freertos')
-utils.fnCreateFolder(out_dir)
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'freertos')
+utils.fnCreateFolder(strOutDir)
 
 rtos_base=os.path.join('rtos', 'rtos_core', 'freertos', 'Source')
 
-# C language source and out files in list of lists
-# [sourcefile.c, outputfile.o]
-list_files_c=[
-   [os.path.join(rtos_base, 'croutine.c'), os.path.join(out_dir, 'croutine.o')],
-   [os.path.join(rtos_base, 'list.c'), os.path.join(out_dir, 'list.o')],
-   [os.path.join(rtos_base, 'queue.c'), os.path.join(out_dir, 'queue.o')],
-   [os.path.join(rtos_base, 'tasks.c'), os.path.join(out_dir, 'tasks.o')],
-   [os.path.join(rtos_base, 'timers.c'), os.path.join(out_dir, 'timers.o')],
-   #[os.path.join(rtos_base, 'portable', 'MemMang', 'heap_4.c'), os.path.join(out_dir, 'heap_4.o')],
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+listCFiles=[
+   (os.path.join(rtos_base, 'croutine.c'), os.path.join(strOutDir, 'croutine.o')),
+   (os.path.join(rtos_base, 'list.c'), os.path.join(strOutDir, 'list.o')),
+   (os.path.join(rtos_base, 'queue.c'), os.path.join(strOutDir, 'queue.o')),
+   (os.path.join(rtos_base, 'tasks.c'), os.path.join(strOutDir, 'tasks.o')),
+   (os.path.join(rtos_base, 'timers.c'), os.path.join(strOutDir, 'timers.o')),
+   #[os.path.join(rtos_base, 'portable', 'MemMang', 'heap_4.c'), os.path.join(strOutDir, 'heap_4.o')],
 ]
 
-# Assembly language source and out files in list of lists
-# [sourcefile.S, outputfile.o]
-list_files_a=[
-   [os.path.join(rtos_base, 'portable', 'portASM.S'), os.path.join(out_dir, 'portASM.o')],
+
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[
+   (os.path.join(rtos_base, 'portable', 'portASM.S'), os.path.join(strOutDir, 'portASM.o')),
 ]
 
 # compiler directivs
-c_compiler_directives = [] + Env['C_FLAGS']
-a_compiler_directives = [] + Env['A_FLAGS']
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
-# defines
-c_defines = [ ] + Env['PUBLIC_DEF']
+# compilation defines (-D_)
+listCompilationDefines = [ ] + Env['PUBLIC_DEF']
 
 # include paths
 Env['PUBLIC_INC'] += [
@@ -55,23 +56,20 @@ Env['PUBLIC_INC'] += [
 ]
 
 # privte includes
-include_paths = [ ] + Env['PUBLIC_INC']
+listIncPaths = [ ] + Env['PUBLIC_INC']
 
 if not Env["Scan"]:
   # for objects
-  objects = []
-  for list_file in list_files_c:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # asm file objects
-  for list_file in list_files_a:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
-
-  #for list_file in list_port_files_a[Env['TARGET_BOARD']]:
-  #  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  freertos_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'freertos.a'), source=objects)
+  objFreertosLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'freertos.a'), source=listObjects)
 
   # return the freertos lib
-  Return('freertos_lib')
+  Return('objFreertosLib')

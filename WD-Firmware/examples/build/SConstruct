@@ -37,11 +37,8 @@ objDemo = objFactory.setDemo()
 # set the output files for the demo
 strMap_file, strElf_file = utils.set_outputfiles_names(objDemo.strName, prefix=strTargetName)
 
-
-
 #### scons verbose #####
 verbose = True
-
 
 strTCRootPath = os.getenv(strRiscvTchainRoot)
 # check if the TC environment variable is set or empty
@@ -84,7 +81,6 @@ Env['LIBSUFFIX'] = '.a'
 Env['PROGSUFFIX'] = '.elf'
 
 Env['ROOT_DIR']               = os.path.join(os.getcwd(),"..", "..")
-Env['RTOSAL_INC_PATH'] = []
 Env['TARGET_LIBS']          = []
 Env['RTOS_CORE']            = []
 Env['PUBLIC_DEF']            = [] 
@@ -133,11 +129,8 @@ if Env['TARGET_BOARD'] not in listSupportedBoards:
   exit(1)
 
 Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
-Env['RTOSAL_DEF'] = objDemo.rtos_defines
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
-
-
 
 Env["Scan"] = True
 SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env')

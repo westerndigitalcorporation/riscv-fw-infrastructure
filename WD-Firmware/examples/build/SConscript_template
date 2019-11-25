@@ -23,50 +23,49 @@ Import('Env')
 #   
 
 # module output directory 
-out_dir = os.path.join(Env['OUT_DIR_PATH'], 'module_name')
-utils.fnCreateFolder(out_dir)
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'module_name')
+utils.fnCreateFolder(strOutDir)
 
 
-# list of c files to compile
-list_files_c=[
-#  ['location of c file to compile', 'location of resulting object file']
-   [os.path.join('module_name', 'xxx.c'), os.path.join(out_dir, 'xxx.o')],
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+listCFiles=[
+   [os.path.join('module_name', 'xxx.c'), os.path.join(strOutDir, 'xxx.o')],
 ]
 
-# list of assembly files to compile
-list_files_a=[
-#  ['location of assembly file to compile', 'location of resulting object file']
-   [os.path.join('module_name', 'yyy.S'), os.path.join(out_dir, 'yyy.o')],
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[
+   (os.path.join('module_name', 'yyy.S'), os.path.join(strOutDir, 'yyy.o')),
 ]
 
 # compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
-# defines
-Env['MODULE_NAME_DEF'] = []
+# compilation defines (-D_)
+listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 # include paths
-local_includes  = [os.path.join(Env['ROOT_DIR'], 'module_name', 'loc_inc'),]
-public_includes = [Env['PUBLIC_INC_PATH'], os.path.join(Env['ROOT_DIR'], 'module_name', 'api_inc'),]
-Env['MODULE_NAME_INC_PATH'] = public_includes
-include_paths = public_includes + local_includes
+Env['PUBLIC_INC_PATH'] += [os.path.join(Env['ROOT_DIR'], 'module_name', 'api_inc')]
 
-# linker flags
-Env['LINKFLAGS'] += []
+listIncPaths  = [
+  os.path.join(Env['ROOT_DIR'], 'module_name', 'loc_inc'),
+] + Env['PUBLIC_INC_PATH']
+
 
 if not Env["Scan"]:
   # loop the list of c files and compile them
-  objects = []
-  for list_file in list_files_c:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # loop the list of assembly files and compile them
-  for list_file in list_files_a:
-    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  module_name_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'module_name.a', source=objects)
+  objModuleNameLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'module_name.a', source=listObjects)
 
   # return the module_name lib
-  Return('module_name_lib')
+  Return('objModuleNameLib')

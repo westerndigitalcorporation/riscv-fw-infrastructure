@@ -18,45 +18,46 @@ import os
 import utils
 Import('Env')
 
-out_dir = os.path.join(Env['OUT_DIR_PATH'], 'bsp')
-utils.fnCreateFolder(out_dir)
-    
-bsp_base=os.path.join('board', 'hifive1', 'bsp')
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'bsp')
+utils.fnCreateFolder(strOutDir)
 
-# C language source and out files in list of lists
-# [sourcefile.c, outputfile.o]
-list_files_c=[
-   [os.path.join(bsp_base, 'env', 'freedom-e300-hifive1', 'init.c'), os.path.join(out_dir, 'init.o')],
-   [os.path.join(bsp_base, 'drivers', 'plic', 'plic_driver.c'), os.path.join(out_dir, 'plic_driver.o')],
+strBspBase=os.path.join('board', 'hifive1', 'bsp')
+
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+
+listCFiles=[
+   (os.path.join(strBspBase, 'env', 'freedom-e300-hifive1', 'init.c')    , os.path.join(strOutDir, 'init.o')),
+   (os.path.join(strBspBase, 'drivers', 'plic', 'plic_driver.c'), os.path.join(strOutDir, 'plic_driver.o'))
 ]
 
-# Assembly language source and out files in list of lists
-# [sourcefile.S, outputfile.o]
-list_files_a=[
-   [os.path.join('board', 'hifive1', 'start.S'), os.path.join(out_dir, 'start.o')],
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[
+   (os.path.join('board', 'hifive1', 'start.S'), os.path.join(strOutDir, 'start.o')),
 ]
 
 # compiler directivs
-c_compiler_directives = [] + Env['C_FLAGS']
-a_compiler_directives = [] + Env['A_FLAGS']
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
-# defines
+# compilation defines (-D_)
 Env['PUBLIC_DEF'] += ['D_HI_FIVE1']
-c_defines = [ ] + Env['PUBLIC_DEF']
+listCompilationDefines = [ ] + Env['PUBLIC_DEF']
 
 # public includes
 Env['PUBLIC_INC'] += [ 
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'include', 'sifive'),
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'include', 'sifive', 'devices'),
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'env'),
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'env', 'freedom-e300-hifive1'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'include', 'sifive'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'include', 'sifive', 'devices'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'env'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'env', 'freedom-e300-hifive1'),
 ]
 
 # privte includes
-include_paths = [ 
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'include'),
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'drivers'),
-  os.path.join(Env['ROOT_DIR'], bsp_base, 'drivers', 'plic')
+listIncPaths = [ 
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'include'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers'),
+  os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers', 'plic')
 ] + Env['PUBLIC_INC']
 
 # add a library to the link command board/hifive1/psb/libwrap-hifive1.a
@@ -65,15 +66,15 @@ Env['TARGET_LIBS'] += ['wrap-hifive1']
 if not Env["Scan"]:
   # c file objects
   listObjects = []
-  for list_file in list_files_c:
-    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # asm file objects
-  for list_file in list_files_a:
-    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # create the bsp library from he objects
-  bsp_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=listObjects)
+  objBspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=listObjects)
 
   # return the bsp library
-  Return('bsp_lib')
+  Return('objBspLib')
