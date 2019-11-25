@@ -609,7 +609,7 @@ void* comrvGetAddressFromToken(void)
       /* In multi group token we need to get the offset from previously loaded token */
       if (pComrvStackFrame->usCalleeMultiGroupTableEntry)
       {
-         /* we now are at the point of loading a multi-group toke so we need to take the
+         /* we now are at the point of loading a multi-group token so we need to take the
             previous token for which the return address refers to */
          unToken = pOverlayMultiGroupTokensTable[pComrvStackFrame->usCalleeMultiGroupTableEntry];
          /* get the offset */
@@ -618,6 +618,8 @@ void* comrvGetAddressFromToken(void)
          usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(unToken);
          /* calculate the actual return offset */
          usOffset += ((u32_t)(pComrvStackFrame->uiCalleeToken) - uiTemp) & (--usOverlayGroupSize);
+         /* clear the save multi token so it won't be reused */
+         pComrvStackFrame->usCalleeMultiGroupTableEntry = 0;
       }
       else
       {
