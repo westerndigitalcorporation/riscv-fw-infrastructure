@@ -19,46 +19,44 @@ import utils
 Import('Env')
 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], Env['EXAMPLE_NAME'])+'_example'
-utils.createFolder(out_dir)
+utils.fnCreateFolder(out_dir)
 
+# C language source and out files in list of lists
+# [sourcefile.c, outputfile.o]
 list_files_c=[
    [os.path.join('examples', 'demo' , 'main.c'), os.path.join(out_dir, 'main.o')],
    [os.path.join('examples', 'demo' , 'demo_platform_al.c'), os.path.join(out_dir, 'demo_platform_al.o')],
    [os.path.join('examples', 'demo' , 'demo_rtosal.c'), os.path.join(out_dir, 'demo_rtosal.o')],
 ]
 
+# Assembly language source and out files in list of lists
+# [sourcefile.S, outputfile.o]
 list_files_a=[]
 
-# compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
+# compiler directivs
+c_compiler_directives = [] + Env['C_FLAGS']
+a_compiler_directives = [] + Env['A_FLAGS']
 
 # defines
-c_defines = Env['BSP_DEF'] + Env['PUBLIC_DEF'] + Env['RTOSAL_DEF']
+c_defines = [] + Env['PUBLIC_DEF']
 
-# include paths
-include_paths = [ 
-  Env['BSP_INC_PATH'],
-  Env['RTOS_INC_PATH'],
-  Env['RTOSAL_INC_PATH'],
-]
+# public includes
+include_paths = [ ] + Env['PUBLIC_INC']  + Env['RTOSAL_INC_PATH']
 
-# linker flags
-Env['LINKFLAGS'] += []
+if not Env["Scan"]:
+  # for objects
+  objects = []
+  for list_file in list_files_c:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
 
-# for objects
-objects = []
-for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+  # asm file objects
+  for list_file in list_files_a:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
 
-# asm file objects
-for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  # for libraries
+  example_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['EXAMPLE_NAME']+'_example.a'), source=objects)
 
-# for libraries
-example_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['EXAMPLE_NAME']+'_example.a'), source=objects)
+  #print Env.Dump()
 
-#print Env.Dump()
-
-# return the example lib
-Return('example_lib')
+  # return the example lib
+  Return('example_lib')

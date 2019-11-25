@@ -19,7 +19,7 @@ import utils
 Import('Env')
 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'rtosal')
-utils.createFolder(out_dir)
+utils.fnCreateFolder(out_dir)
 
 rtosal_base = os.path.join('rtos', 'rtosal')
 list_files_c=[
@@ -43,36 +43,37 @@ c_flags = [] + Env['C_FLAGS']
 a_flags = [] + Env['A_FLAGS']
 
 # defines
-c_defines = Env['BSP_DEF'] + Env['RTOSAL_DEF'] + Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
+c_defines = Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
 
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'loc_inc'),]
 public_includes = [os.path.join(Env['ROOT_DIR'], rtosal_base, 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], rtosal_base, 'config', 'hifive-1'),
+                   os.path.join(Env['ROOT_DIR'], rtosal_base, 'config', 'hifive1'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'examples', 'demo'),]
                    
 Env['RTOSAL_INC_PATH'] = public_includes
-include_paths = Env['BSP_INC_PATH'] + Env['RTOS_INC_PATH'] + public_includes + local_includes
+include_paths = Env['PUBLIC_INC'] + public_includes + local_includes
 
 # linker flags
 Env['LINKFLAGS'] += []
 
-# for objects
-objects = []
-for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+if not Env["Scan"]:
+  # for objects
+  objects = []
+  for list_file in list_files_c:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
 
-# asm file objects
-for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  # asm file objects
+  for list_file in list_files_a:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
-# for libraries
-rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'rtosal.a'), source=objects)
+  # for libraries
+  rtosal_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'rtosal.a'), source=objects)
 
-#print Env.Dump()
+  #print Env.Dump()
 
-# return the rtosal lib
-Return('rtosal_lib')
+  # return the rtosal lib
+  Return('rtosal_lib')

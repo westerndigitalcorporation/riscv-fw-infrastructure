@@ -15,41 +15,41 @@
  limitations under the License.
 '''
 
-#### scons custom arguments ####
-tagretName = ARGUMENTS.get('target', '')
-
-#downloadFlag = ARGUMENTS.get('download', '0')
-
 # set imports and variables of sconstruct
 import sys
 import os
 import time
 import utils
-from demos.factory import generate
+from demos.config import clsGenerate
+
+strRiscvTchainRoot = 'RISCV_TC_ROOT'
+listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
+listDependencies = ['libftdi1-2',]
+
+#### scons custom arguments ####
+strTargetName = ARGUMENTS.get('target', '')
+#downloadFlag = ARGUMENTS.get('download', '0')
 
 # generate the demo factory and set the demo 
-objFactory = generate()
+objFactory = clsGenerate()
 objDemo = objFactory.setDemo()
 
 # set the output files for the demo
-objDemo.set_outputfiles_names(prefix=tagretName)
+strMap_file, strElf_file = utils.set_outputfiles_names(objDemo.strName, prefix=strTargetName)
 
-root_dir = os.path.join(os.getcwd(),"..", "..")
 
-listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
-dependency_list = ['libftdi1-2',]
 
 #### scons verbose #####
 verbose = True
 
-tc_root_env_var_name = 'RISCV_TC_ROOT'
-tc_root_path = os.getenv(tc_root_env_var_name)
+
+strTCRootPath = os.getenv(strRiscvTchainRoot)
 # check if the TC environment variable is set or empty
-if not tc_root_path:
-  print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV toolchain root")
+if not strTCRootPath:
+  print ("Set environment variable '" + strRiscvTchainRoot + "' to point to the RISCV toolchain root")
   exit(1)
   
-utils.check_installed_dependencis(dependency_list)
+utils.fnCheckInstalledDependencis(listDependencies)
 
 # set global environment
 
@@ -63,7 +63,7 @@ Env = Environment(toolpath = ['toolchain'])
 #Env['BUILDERS']['Download'] = Builder(action = download)
 
 # path to the RV toolchain 'bin' directory
-Env['TOOLS_BASE_DIR'] = os.path.join(tc_root_path, 'bin')
+Env['TOOLS_BASE_DIR'] = os.path.join(strTCRootPath, 'bin')
 
 # Tool c compiler execution
 Env['CC_BIN'] = "riscv64-unknown-elf-gcc"
@@ -78,32 +78,27 @@ Env.Tool('as_rv')
 Env.Tool('cc_rv')
 Env.Tool('ar_rv')
 
-
-
 # set output file suffixes
 Env['OBJSUFFIX'] = '.o'
 Env['LIBSUFFIX'] = '.a'
 Env['PROGSUFFIX'] = '.elf'
 
-Env['ROOT_DIR']        = root_dir
-Env['BSP_DEF']         = []
-Env['RTOSAL_DEF']      = []
+Env['ROOT_DIR']               = os.path.join(os.getcwd(),"..", "..")
 Env['RTOSAL_INC_PATH'] = []
-Env['RTOS_INC_PATH']   = []
-Env['BSP_INC_PATH']    = []
-Env['TARGET_LIBS']     = []
-Env['RTOS_CORE']       = []
-Env['PUBLIC_INC_PATH'] = []
-Env['PUBLIC_DEF']      = [] 
-Env['OUT_DIR_PATH']    = 'output'
-Env['TARGET_BOARD']    = tagretName
-Env['EXAMPLE_NAME']    = objDemo.name
+Env['TARGET_LIBS']          = []
+Env['RTOS_CORE']            = []
+Env['PUBLIC_DEF']            = [] 
+Env['PUBLIC_INC']             = [os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
+Env['OUT_DIR_PATH']       = 'output'
+Env['TARGET_BOARD']     = strTargetName
+Env['EXAMPLE_NAME']     = objDemo.strName
 
-Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], objDemo.map_file)
 
-cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
-Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + cc_options
-Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + cc_options
+Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strMap_file)
+
+listCCOptions = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
+Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + listCCOptions
+Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + listCCOptions
 
 if verbose == False:
   # set output to minimal mode
@@ -118,7 +113,7 @@ if verbose == False:
 # for debug
 #print Env.Dump()
 
-utils.createFolder(Env['OUT_DIR_PATH'])
+utils.fnCreateFolder(Env['OUT_DIR_PATH'])
 
 # linker flags
 Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc', '-Wl,--wrap=free', '-Wl,--wrap=open', '-Wl,--wrap=lseek', 
@@ -126,36 +121,39 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
                     '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
-                    '-Wl,-Map='+ Env['MAP_FILE'] ] + cc_options
+                    '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions
 
+strBoardFolder = os.path.join(Env['ROOT_DIR'], 'board', Env['TARGET_BOARD'])
+strLinkerScriptFile = os.path.join(strBoardFolder, 'link.lds')
+Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
 #, LIBPATH='.'
 
 if Env['TARGET_BOARD'] not in listSupportedBoards:
   print "missing target=%s" % " | ".join(listSupportedBoards)
   exit(1)
 
-Env['BUILDERS']['Size'] = Builder(action = utils.produce_sections_size)
-#Env['RTOS_CORE'] = objDemo.rtos_core
+Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
 Env['RTOSAL_DEF'] = objDemo.rtos_defines
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
-if objDemo.name == 'ex_freertos':
-  if Env['TARGET_BOARD'] == 'nexys_a7_swerv1':
-    Env['PUBLIC_DEF'].append('D_NEXYS_A7')
-  elif Env['TARGET_BOARD'] == 'hifive1':
-    Env['PUBLIC_DEF'].append('D_HI_FIVE1')
 
-arr_lib = []
-arr_lib.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
 
-for strModule in objDemo.moduls:
-  arr_lib.append(SConscript('SConscript_%s' % strModule, exports='Env'))
+Env["Scan"] = True
+SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env')
+for strSconscript in objDemo.listSconscripts:
+  SConscript('SConscript_%s' % strSconscript, exports='Env')
 
-elf_file_name = os.path.join(Env['OUT_DIR_PATH'], objDemo.elf_file)
-example_bundle = Env.Program(elf_file_name, arr_lib, LIBS=Env['TARGET_LIBS'])
-Env.Size(source=example_bundle)
+arrLibs = []
+Env["Scan"] = False
+arrLibs.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
+for strSconscript in objDemo.listSconscripts:
+  arrLibs.append(SConscript('SConscript_%s' % strSconscript, exports='Env'))
+  
+strElfFileName = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
+objBundle = Env.Program(strElfFileName, arrLibs, LIBS=Env['TARGET_LIBS'])
+Env.Size(source=objBundle)
 
 #append to the map file the   
 #if downloadFlag != '0':
-#  Env.Download(source=example_bundle)
+#  Env.Download(source=objBundle)

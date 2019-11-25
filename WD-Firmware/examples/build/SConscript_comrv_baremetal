@@ -25,47 +25,50 @@ Import('Env')
 
 # module output directory 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'comrv')
-utils.createFolder(out_dir)
+utils.fnCreateFolder(out_dir)
 
-# list of c files to compile
+# C language source and out files in list of lists
+# [sourcefile.c, outputfile.o]
 list_files_c=[
 #  ['location of c file to compile', 'location of resulting object file']
    [os.path.join('comrv', 'comrv.c'), os.path.join(out_dir, 'comrv.o')],
+   [os.path.join('examples', 'ex-comrv-baremetal', 'main.c'), os.path.join(out_dir, 'main.o')],
 ]
 
-# list of assembly files to compile
+# Assembly language source and out files in list of lists
+# [sourcefile.S, outputfile.o]
 list_files_a=[
 #  ['location of assembly file to compile', 'location of resulting object file']
    [os.path.join('comrv', 'comrv_asm.S'), os.path.join(out_dir, 'comrv_asm.o')],
 ]
 
-# compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
+# compiler directives
+c_compiler_directives = [] + Env['C_FLAGS']
+a_compiler_directives = [] + Env['A_FLAGS']
 
 # defines
-Env['COMRV_DEF'] = []
+c_defines = [] + Env['PUBLIC_DEF']
 
 # include paths
-local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),]
-public_includes = [Env['PUBLIC_INC_PATH'], os.path.join(Env['ROOT_DIR'], 'comrv', 'api_inc'),]
-Env['COMRV_INC_PATH'] = public_includes
-include_paths = public_includes + local_includes
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'comrv', 'api_inc'),]
 
-# linker flags
-Env['LINKFLAGS'] += []
+include_paths =  [
+  os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),
+] + Env['PUBLIC_INC']
 
-# loop the list of c files and compile them
-objects = []
-for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=Env['COMRV_DEF']))
 
-# loop the list of assembly files and compile them
-for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=Env['COMRV_DEF']))
+if not Env["Scan"]:
+  # loop the list of c files and compile them
+  objects = []
+  for list_file in list_files_c:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
 
-# for libraries
-comrv_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'comrv.a'), source=objects)
+  # loop the list of assembly files and compile them
+  for list_file in list_files_a:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
 
-# return the comrv lib
-Return('comrv_lib')
+  # for libraries
+  comrv_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'comrv.a'), source=objects)
+
+  # return the comrv lib
+  Return('comrv_lib')

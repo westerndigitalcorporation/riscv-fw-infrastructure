@@ -19,14 +19,12 @@ import utils
 Import('Env')
 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'freertos')
-utils.createFolder(out_dir)
+utils.fnCreateFolder(out_dir)
 
 rtos_base=os.path.join('rtos', 'rtos_core', 'freertos', 'Source')
 
-list_port_files_c = []
-  
-list_port_files_a = []
-
+# C language source and out files in list of lists
+# [sourcefile.c, outputfile.o]
 list_files_c=[
    [os.path.join(rtos_base, 'croutine.c'), os.path.join(out_dir, 'croutine.o')],
    [os.path.join(rtos_base, 'list.c'), os.path.join(out_dir, 'list.o')],
@@ -34,53 +32,46 @@ list_files_c=[
    [os.path.join(rtos_base, 'tasks.c'), os.path.join(out_dir, 'tasks.o')],
    [os.path.join(rtos_base, 'timers.c'), os.path.join(out_dir, 'timers.o')],
    #[os.path.join(rtos_base, 'portable', 'MemMang', 'heap_4.c'), os.path.join(out_dir, 'heap_4.o')],
-] + list_port_files_c
+]
 
+# Assembly language source and out files in list of lists
+# [sourcefile.S, outputfile.o]
 list_files_a=[
    [os.path.join(rtos_base, 'portable', 'portASM.S'), os.path.join(out_dir, 'portASM.o')],
 ]
 
-
-list_port_include_paths=[
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'config', Env['TARGET_BOARD'] ),     
-  os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')
-]
-
-
-# compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
-
+# compiler directivs
+c_compiler_directives = [] + Env['C_FLAGS']
+a_compiler_directives = [] + Env['A_FLAGS']
 
 # defines
-Env['RTOSAL_DEF'] = ['D_USE_FREERTOS']
-c_defines = Env['RTOSAL_DEF'] + Env['BSP_DEF'] + Env['PUBLIC_DEF']
+c_defines = [ ] + Env['PUBLIC_DEF']
 
 # include paths
-Env['RTOS_INC_PATH'] = [
+Env['PUBLIC_INC'] += [
   os.path.join(Env['ROOT_DIR'], rtos_base, 'include'),
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'),
-  os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
-] + list_port_include_paths
-include_paths = Env['BSP_INC_PATH'] + Env['RTOS_INC_PATH']
+  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'), # shoudl be moved to sconscript_rtosal
+  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'config', Env['TARGET_BOARD'] ), # shoudl be moved to sconscript_rtosal
+]
 
-# linker flags
-Env['LINKFLAGS'] += []
+# privte includes
+include_paths = [ ] + Env['PUBLIC_INC']
 
-# for objects
-objects = []
-for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+if not Env["Scan"]:
+  # for objects
+  objects = []
+  for list_file in list_files_c:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
 
-# asm file objects
-for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  # asm file objects
+  for list_file in list_files_a:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
 
-#for list_file in list_port_files_a[Env['TARGET_BOARD']]:
-#  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  #for list_file in list_port_files_a[Env['TARGET_BOARD']]:
+  #  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
-# for libraries
-freertos_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'freertos.a'), source=objects)
+  # for libraries
+  freertos_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'freertos.a'), source=objects)
 
-# return the freertos lib
-Return('freertos_lib')
+  # return the freertos lib
+  Return('freertos_lib')

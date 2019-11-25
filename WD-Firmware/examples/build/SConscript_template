@@ -24,8 +24,8 @@ Import('Env')
 
 # module output directory 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'module_name')
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
+utils.fnCreateFolder(out_dir)
+
 
 # list of c files to compile
 list_files_c=[
@@ -55,17 +55,18 @@ include_paths = public_includes + local_includes
 # linker flags
 Env['LINKFLAGS'] += []
 
-# loop the list of c files and compile them
-objects = []
-for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+if not Env["Scan"]:
+  # loop the list of c files and compile them
+  objects = []
+  for list_file in list_files_c:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
 
-# loop the list of assembly files and compile them
-for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  # loop the list of assembly files and compile them
+  for list_file in list_files_a:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
 
-# for libraries
-module_name_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'module_name.a', source=objects)
+  # for libraries
+  module_name_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'module_name.a', source=objects)
 
-# return the module_name lib
-Return('module_name_lib')
+  # return the module_name lib
+  Return('module_name_lib')

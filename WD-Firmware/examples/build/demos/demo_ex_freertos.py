@@ -1,9 +1,8 @@
-from abstract import clsdemo_abstract
 
-class demo(clsdemo_abstract):
+
+class demo(object):
   def __init__(self):
-    clsdemo_abstract.__init__(self)
-    self.name = "ex_freertos"
+    self.strName = "ex_freertos"
     self.rtos_core = "freertos"
     
     self.rtos_defines = ['D_USE_FREERTOS']
@@ -14,13 +13,14 @@ class demo(clsdemo_abstract):
         'D_MTIMECMP_ADDRESS=0x02004000',
         'D_CLOCK_RATE=32768',
         'D_TICK_TIME_MS=4',
-        'D_ISR_STACK_SIZE=400'
+        'D_ISR_STACK_SIZE=400',
+        'D_USE_FREERTOS'
     ]
-    
-    self.moduls = [
+   
+    self.listSconscripts = [
       'freertos',
-      'rtosal',
       'psp',
+      'rtosal',
       'demo_rtosal'
     ]
   

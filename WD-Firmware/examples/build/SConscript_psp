@@ -19,50 +19,49 @@ import utils
 Import('Env')
 
 out_dir = os.path.join(Env['OUT_DIR_PATH'], 'psp')
-utils.createFolder(out_dir)
+utils.fnCreateFolder(out_dir)
 
+# C language source and out files in list of lists
+# [sourcefile.c, outputfile.o]
 list_files_c=[
    [os.path.join('psp', 'src', 'psp_interrupts.c'), os.path.join(out_dir, 'psp_interrupts.o')],
    [os.path.join('psp', 'src', 'psp_traps.c'), os.path.join(out_dir, 'psp_traps.o')],
    [os.path.join('psp', 'src', 'psp_timer.c'), os.path.join(out_dir, 'psp_timer.o')],
 ]
 
+# Assembly language source and out files in list of lists
+# [sourcefile.S, outputfile.o]
 list_files_a=[
    [os.path.join('psp', 'src', 'psp_int_vect.S'), os.path.join(out_dir, 'psp_int_vect.o')],
 ]
 
-# compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
-
+# compiler directivs
+c_compiler_directives = [] + Env['C_FLAGS']
+a_compiler_directives = [] + Env['A_FLAGS']
 
 # defines
-c_defines = []+Env['PUBLIC_DEF'] + Env['RTOSAL_DEF']
+c_defines = []+Env['PUBLIC_DEF']
 
-# include paths
-local_includes  = []
-public_includes = [
+# public includes
+Env['PUBLIC_INC'] += [
   os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
-  os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'loc_inc'),
-  os.path.join(Env['ROOT_DIR'], 'psp', 'psp_specific', 'api_inc'),
 ]
 
-include_paths = public_includes + local_includes
+# privte includes
+include_paths = [ ] + Env['PUBLIC_INC']
 
-# linker flags
-Env['LINKFLAGS'] += []
+if not Env["Scan"]:
+  # for objects
+  objects = []
+  for list_file in list_files_c:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_compiler_directives, CPPDEFINES=c_defines))
 
-# for objects
-objects = []
-for list_file in list_files_c:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=c_flags, CPPDEFINES=c_defines))
+  # asm file objects
+  for list_file in list_files_a:
+    objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_compiler_directives, CPPDEFINES=c_defines))
 
-# asm file objects
-for list_file in list_files_a:
-  objects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], list_file[0]), target=list_file[1], CPPPATH=include_paths, CCFLAGS=a_flags, CPPDEFINES=c_defines))
+  # for libraries
+  psp_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'psp.a'), source=objects)
 
-# for libraries
-psp_lib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'psp.a'), source=objects)
-
-# return the psp lib
-Return('psp_lib')
+  # return the psp lib
+  Return('psp_lib')
