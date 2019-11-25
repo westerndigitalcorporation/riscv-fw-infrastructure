@@ -51,8 +51,6 @@ listCompilationDefines = [ ] + Env['PUBLIC_DEF']
 # include paths
 Env['PUBLIC_INC'] += [
   os.path.join(Env['ROOT_DIR'], rtos_base, 'include'),
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'api_inc'), # shoudl be moved to sconscript_rtosal
-  os.path.join(Env['ROOT_DIR'], 'rtos', 'rtosal', 'config', Env['TARGET_BOARD'] ), # shoudl be moved to sconscript_rtosal
 ]
 
 # privte includes

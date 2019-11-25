@@ -41,6 +41,7 @@ listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 listCompilationDefines = [] + Env['PUBLIC_DEF']
 
 # public includes
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
 listIncPaths = [ ] + Env['PUBLIC_INC']
 
 if not Env["Scan"]:
