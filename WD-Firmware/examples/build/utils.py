@@ -40,9 +40,9 @@ def fnCheckInstalledDependencis(listDependencis):
 def set_outputfiles_names(name, prefix = "", suffix = ""):
     # format the artifacts files name for the current demo
     if prefix:
-      name = "%s-%s" % (prefix, name)
+      name = "%s_%s" % (prefix, name)
     if suffix:
-      name = "%s-%s" % (name, suffix)
+      name = "%s_%s" % (name, suffix)
     map_file = name + ".map"
     elf_file = name + ".elf"
     return map_file, elf_file
