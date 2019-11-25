@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="Hifive running RV freertos demo using RTOS-AL" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295" name="hifive1_ex_freertos" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="Hifive running RV freertos demo using RTOS-AL" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295" name="hifive1_ex_freertos" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1096648574" name="/" resourcePath="">
 						<toolChain id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.175261499" name="RISC-V Cross GCC" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base">
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix.1882525389" name="Prefix" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix" value="riscv64-unknown-elf-" valueType="string"/>
