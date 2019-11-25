@@ -46,14 +46,14 @@ if not Env["Scan"]:
   # c file objects
   listObjects = []
   for tplFile in listCFiles:
-    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], listFile[0]), target=listFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # asm file objects
   for tplFile in listAssemblyFiles:
-    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], listFile[0]), target=listFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
   objBspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=listObjects)
 
   # return the bsp lib
-  objBspLib('objBspLib')
+  Return('objBspLib')

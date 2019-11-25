@@ -55,7 +55,7 @@ Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], strRtosAlBase, 'config', 'hifive1'),
                    os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
                    os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
-                   os.path.join(Env['ROOT_DIR'], 'examples', 'demo'),
+                   os.path.join(Env['ROOT_DIR'], 'demo'),
 ]
 
 listIncPaths =  [
