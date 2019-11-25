@@ -2,7 +2,7 @@
 
 class demo(object):
   def __init__(self):
-    self.strName = "ex_freertos"
+    self.strName = "freertos"
     self.rtos_core = "freertos"
     
     self.public_defs = [

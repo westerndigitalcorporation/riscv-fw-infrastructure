@@ -2,7 +2,7 @@
 
 class demo(object):
   def __init__(self):
-    self.strName = "ex_comrv_baremetal"    
+    self.strName = "comrv_baremetal"    
     self.public_defs = [
         'D_BARE_METAL',
         'D_MTIME_ADDRESS=0x0200BFF8',
