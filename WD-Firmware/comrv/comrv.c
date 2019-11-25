@@ -303,7 +303,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 
 #ifndef D_COMRV_VERIFY_ARGS
    /* verify input parameters */
-   if ((pInitArgs == NULL) || (pInitArgs->uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN))
+   if ((!pInitArgs) || (pInitArgs->uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN))
    {
       comrvNotificationHook(D_COMRV_INVALID_INIT_PARAMS_ERR, 0);
    }
@@ -448,7 +448,7 @@ void* comrvGetAddressFromToken(void)
    usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
 
    /* if the data/function is not loaded we need to evict and load it */
-   if (pAddress == NULL)
+   if (!pAddress)
    {
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       /* if the requested token is a multi-group token */
@@ -577,7 +577,7 @@ void* comrvGetAddressFromToken(void)
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
       /* if group wasn't loaded */
-      if (pAddress == NULL)
+      if (!pAddress)
       {
          comrvNotificationHook(D_COMRV_LOAD_ERR, unToken.uiValue);
       }
@@ -664,6 +664,7 @@ void* comrvGetAddressFromToken(void)
 */
 u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList)
 {
+   comrvCacheEntry_t *pCacheEntry;
    u08_t ucAccumulatedSize = 0, ucIndex = 0;
    u08_t ucEntryIndex, ucNumberOfCandidates = 0;
    u32_t uiEvictCandidateMap[D_COMRV_EVICT_CANDIDATE_MAP_SIZE], uiCandidates;
@@ -678,18 +679,20 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
       reaches the requested eviction size */
    do
    {
+      /* point to the cache entry CB */
+      pCacheEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex];
       /* verify the entry isn't locked */
-      if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucLocked != D_COMRV_ENTRY_LOCKED)
+      if (pCacheEntry->unProperties.stFields.ucLocked != D_COMRV_ENTRY_LOCKED)
       {
          /* count the number of uiCandidates */
          ucNumberOfCandidates++;
          /* accumulate size */
-         ucAccumulatedSize += g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits;
+         ucAccumulatedSize += pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits;
          /* set the eviction candidate in the eviction map */
          uiEvictCandidateMap[ucEntryIndex/D_COMRV_DWORD_IN_BITS] |= (1 << ucEntryIndex);
       }
       /* move to the next LRU candidate */
-      ucEntryIndex = g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.stFields.typNextLruIndex;
+      ucEntryIndex = pCacheEntry->unLru.stFields.typNextLruIndex;
    /* loop as long as we didn't get to the requested eviction size or we reached end of the list
       (means that all entries are locked) */
    } while (ucAccumulatedSize < ucRequestedEvictionSize && ucEntryIndex != D_COMRV_LRU_LAST_ITEM);
