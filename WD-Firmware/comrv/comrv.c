@@ -748,7 +748,7 @@ static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
       }
    }
    /* overlay group not loaded */
-   return NULL;
+   return 0;
 }
 
 /**
