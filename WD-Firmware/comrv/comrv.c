@@ -43,8 +43,8 @@
 * definitions
 */
 #define D_COMRV_END_OF_STACK                          0xDEAD
-#define D_COMRV_LRU_LAST_ITEM                         0xFF
-#define D_COMRV_LRU_FIRST_ITEM                        0xFF
+#define D_COMRV_MRU_ITEM                              0xFF
+#define D_COMRV_LRU_ITEM                        0xFF
 #define D_COMRV_MAX_GROUP_NUM                         0xFFFF
 #define D_COMRV_DWORD_IN_BITS                         32
 #define D_COMRV_ENTRY_LOCKED                          1
@@ -332,7 +332,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
       pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
-   g_stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextLruIndex = D_COMRV_LRU_LAST_ITEM;
+   g_stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
    /* set the index of the list LRU and MRU */
    g_stComrvCB.ucLruIndex = 0;
    g_stComrvCB.ucMruIndex = ucIndex-1;
@@ -572,7 +572,7 @@ void* comrvGetAddressFromToken(void)
          pEntry->unLru.stFields.typNextLruIndex = ucIndex;
          /* update the cache entry 'previous lru' field - now it is the first lru as
             it is now considered 'evicted/empty' */
-         pEntry->unLru.stFields.typPrevLruIndex = D_COMRV_LRU_FIRST_ITEM;
+         pEntry->unLru.stFields.typPrevLruIndex = D_COMRV_LRU_ITEM;
          /* update the global lru index */
          g_stComrvCB.ucLruIndex = ucIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
@@ -712,7 +712,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
       ucEntryIndex = pCacheEntry->unLru.stFields.typNextLruIndex;
    /* loop as long as we didn't get to the requested eviction size or we reached end of the list
       (means that all entries are locked) */
-   } while (ucAccumulatedSize < ucRequestedEvictionSize && ucEntryIndex != D_COMRV_LRU_LAST_ITEM);
+   } while (ucAccumulatedSize < ucRequestedEvictionSize && ucEntryIndex != D_COMRV_MRU_ITEM);
 
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
@@ -797,12 +797,12 @@ static void comrvUpdateCacheEvectionParams(u08_t ucEntryIndex)
          /* update the global lru index */
          g_stComrvCB.ucLruIndex = pCacheEntry->unLru.stFields.typNextLruIndex;
          /* update the lru item with the previous item index */
-         g_stComrvCB.stOverlayCache[g_stComrvCB.ucLruIndex].unLru.stFields.typPrevLruIndex = D_COMRV_LRU_FIRST_ITEM;
+         g_stComrvCB.stOverlayCache[g_stComrvCB.ucLruIndex].unLru.stFields.typPrevLruIndex = D_COMRV_LRU_ITEM;
       }
       /* update ucEntryIndex previous index */
       pCacheEntry->unLru.stFields.typPrevLruIndex = g_stComrvCB.ucMruIndex;
       /* update ucEntryIndex next index - last item (MRU)*/
-      pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_LRU_LAST_ITEM;
+      pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
       /* update the old mru's next index */
       g_stComrvCB.stOverlayCache[g_stComrvCB.ucMruIndex].unLru.stFields.typNextLruIndex = ucEntryIndex;
       /* update the new MRU */
