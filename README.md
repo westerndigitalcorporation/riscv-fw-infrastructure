@@ -35,24 +35,26 @@ The structure of WD Firmware package allows quick and easy integration for more 
 
 Coming soon: more FW features and more Platform supports 
 
-The following README file describes how to setup a build environment for the WD RISC-V firmware with HiFive1 board; It will build an example application - FreeRTOS demo and describe how to download and debug it. The flow was verified with VMWare player v. 15 hosting Debian 9.6. This demo is based on the work done here https://github.com/sifive/freedom-e-sdk/tree/FreeRTOS/software/FreeRTOSv9.0.0
+The following README file describes how to setup a build environment for the WD RISC-V firmware with HiFive1 board; It will build an example application - FreeRTOS demo and describe how to download and debug it. The flow was verified with VMWare player v. 15 hosting Debian 9.6. This demo was based on SiFive code which was ported official FreeRTOS maintement.
 
 ### Source tree structure 
 ```javascript
 WD-Firmware
-     |-board                                <-- supported boards
-          |-hifive-1                        
-          |-hifive-unleashed
-     |-common                               <-- common source
-     |-examples                             <-- examples source 
-          |-build                           <-- examples build scripts
-          |-ex-freertos                     <-- FreeRTOS example
-     |-psp                                  <-- psp functionality
-     |-rtos
-          |-rtosal                          <-- rtos abstraction layer
-          |-rtos_core                       <-- specific rtos source code
-                |-freertos
-                |-....
+     ├── board                                <-- supported boards
+          ├── hifive-1                        
+          ├── ihfive-unleashed (not supported yet)
+          ├── nexys_a7 (Support for SweRV v1)
+     ├── common                               <-- common source
+     ├── demos                                <-- demos source 
+          ├── build                           <-- examples build scripts
+          ├── demo_rtosal.c                   <-- Abstruction Layer (AL) demo on FreeRTOS
+          ├── main.c                          <-- The main of all demos
+     ├── psp                                  <-- psp functionality
+     ├── rtos
+          ├── rtosal                          <-- rtos abstraction layer
+          ├── rtos_core                       <-- specific rtos source code
+                ├── freertos
+                ├── ....
 ```
 
 ### Additional downloads
@@ -71,6 +73,10 @@ WD-Firmware
       $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
 - Download and install Java SE Runtime Environment
 
+- For RISC-V OpenOCD, you will need to following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
+                
+      $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
+
 ### Building for source
 - Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
 
@@ -85,9 +91,16 @@ WD-Firmware
 	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
 	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
 	- Press *'Finish'* button
-- From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*
+- From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
+- You you will need to choose a specific ***demo*** for building a full sultion:
 
-### Downloading & debugging the firmware image of HiFive1
+        from the eclipse terminal or console:
+        $ python .....the python script.....
+        
+        Then you will be asked to choose a demo.
+    For more explnation on adding new demos please read the readme file on ***'/demos'***
+
+### Downloading & debugging the firmware image (FTDI over USB)
 - #### Setting up the hardware (taken from SiFive Freedom Studio Manual v1p6).
 	- Connect to your HiFive1 debug interface and type "lsusb" to see if FT2232C is connected:
 
@@ -105,32 +118,51 @@ WD-Firmware
             $ groups
             ... plugdev ...
 	- Power off/on Debian station
+ - #### Setting up Nexys-A7 for SweRV
+    Note: If you are not using SweRV core with Nexys-A7 you can skip this section.
     
+    Since Nexys-A7 is an FPGA platform it need special handling...
+    - ***Prerequisite***: Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
+        - For FPGA image flushing we will need Vivado.
+        - Follow the instruction to download Vivado [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga):
+            
+                https://github.com/westerndigitalcorporation/swerv_eh1_fpga
+        - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
+        - pin layout for Nexys Pmod JD header with Olimex:
+        
+                H4 = TDO
+                H1 = nTRST
+                G1 = TCK
+                H2 = TDI
+                G4 = TMS
+                G2 = nRST
+
+    - **Download/flush**: for downloading the bit file image, we need to run ***flush_fpga_image.py*** from board/nexys_a7:
+    
+            $ set VIVADO_PATH=<your path to vivado executable>
+            $ cd /board/nexys_a7
+            $ python flush_fpga_image.py
+
+
 - #### Eclipse MCU configuration:
-	- From the 'Eclipse MCU' menu bar press File->Properties->C/C++ Build->Settings, select the *Toolchain path* with bin folder: [Toolchain-root]/bin
-    - From the Eclipse MCU menu bar select *'Run'* -> *'Debug Configuration'*
-	- Create a New launch configuration for 'GDB OpenOCD Debugging', now on this configuration do the following:
-        - Under *'Main tab'* Verify that the selected project is set to *WD-Firmware* if not, click the *'Browse...'* button and select it
-        - Under *'Debugger tab'* verify on the *'OpenOCD Setup'* that the *'Actual executable'* is correct, should be: [Eclipse-MCU-root]/openocd/0.10.0-11-20190118-1134/bin/openocd
-	    - Under *'Debugger tab'* under the *'OpenOCD Setup'* section, set the following to the *'Config options'* section 
+    - From the 'Eclipse MCU' menu bar press File->Properties->C/C++ Build->Settings, select the *Toolchain path* with bin folder: [Toolchain-root]/bin
 
-                -f [WD-firmware-root]/WD-Firmware/board/hifive-1/wd-freedom-e300-hifive1.cfg 
-            
-	    - Under *'Debugger tab'* under the 'GDB Client Setup' section, set the following on the *'Commands'* window:
-
-                set mem inaccessible-by-default off
-                set arch riscv:rv32
-                set remotetimeout 250             
-            
-	    - Under *'Startup tab'* uncheck the *'Pre-Run/Restart reset'* in the *'Run/Restart commands'* section
     
-- Now that everything is set up, select from the *'Eclipse MCU'* menu bar *'Run'* -> *'Debug'*; this will download the WD firmware image and halt at the main() function.
+- #### Eclipse MCU Debug:
+    - Select from the ***'Eclipse MCU'*** menu bar ***'Run' -> 'Debug Configurations...'***; 
+    - Choose the platform you wish to runs on, from **'GDB OpenOCD Debugging'** menu
+    - Current support
+
+            - hifive1
+            - nexys_a7_Swerv1
+            
+
 
 ### Adding new source modules
 
-The folder WD-Firmware/examples/build/ contains a template file (SConscript_template) which can be used.
+The folder WD-Firmware/demos/build/ contains a template file (SConscript_template) which can be used.
 
-# GCC Releases
+# Supporting GCC Releases
 - #### RISCV GCC 8.2
 	- Initial RISCV official 8.2 GCC release
 - #### RISCV GCC 8.3
