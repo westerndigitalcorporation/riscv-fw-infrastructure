@@ -26,7 +26,6 @@
 * include files
 */
 #include "common_types.h"
-#include "string.h"
 #include "comrv.h"
 #include "comrv_config.h"
 #include "comrv_api.h"
@@ -47,7 +46,6 @@
 #define D_COMRV_LRU_LAST_ITEM                         0xFF
 #define D_COMRV_LRU_FIRST_ITEM                        0xFF
 #define D_COMRV_MAX_GROUP_NUM                         0xFFFF
-#define D_COMRV_EVICT_CANDIDATE_MAP_SIZE              4
 #define D_COMRV_DWORD_IN_BITS                         32
 #define D_COMRV_ENTRY_LOCKED                          1
 #define D_COMRV_CANDIDATE_LIST_SIZE                   (1+(D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN))
@@ -57,13 +55,19 @@
 #define D_COMRV_OFFSET_SCALE_VALUE                    4
 #define D_COMRV_INVOKE_CALLEE_BIT_0                   1
 #define D_COMRV_RET_CALLER_BIT_0                      0
+#define D_COMRV_NUM_BITS_DWORD                        32
 #define D_COMRV_NUM_OF_CACHE_ENTRIES                  D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS
+#if (D_COMRV_NUM_OF_CACHE_ENTRIES % D_COMRV_NUM_BITS_DWORD)
+  #define D_COMRV_EVICT_CANDIDATE_MAP_SIZE              ((D_COMRV_NUM_OF_CACHE_ENTRIES/sizeof(u32_t)) + 1)
+#else
+  #define D_COMRV_EVICT_CANDIDATE_MAP_SIZE              (D_COMRV_NUM_OF_CACHE_ENTRIES/sizeof(u32_t))
+#endif
 #define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
 #define D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT          9
 
 /* if no profile was set */
 #if D_COMRV_PROFILE==0
-#define D_COMRV_PROFILE 1
+  #define D_COMRV_PROFILE 1
 #endif /* D_COMRV_PROFILE==0 */
 
 #if D_COMRV_PROFILE == 1
@@ -251,8 +255,9 @@ typedef struct comrvCB
 /**
 * local prototypes
 */
-static void  comrvUpdateCacheEvectionParams     (u08_t ucEntryIndex);
+void* comrvMemset                     (void* pMemory, s32_t siVal, u32_t uiSizeInDwords);
 static u08_t comrvGetEvictionCandidates      (u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList);
+static void  comrvUpdateCacheEvectionParams  (u08_t ucEntryIndex);
 static void* comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
 
 /**
@@ -664,7 +669,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
    u32_t uiEvictCandidateMap[D_COMRV_EVICT_CANDIDATE_MAP_SIZE], uiCandidates;
 
    /* first lets clear the uiCandidates list */
-   memset(uiEvictCandidateMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
+   comrvMemset(uiEvictCandidateMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
 
 #ifdef D_COMRV_EVICTION_LRU
    /* get the first lru entry */
@@ -837,4 +842,26 @@ __attribute__((noinline)) void comrvInitApplicationStack(void)
 
    /* enable ints */
    // TODO: enable ints
+}
+
+/**
+* comrv version of memcoy - copy dwords only
+*
+* @param pMemory - address of the memory to be initialized
+*        siVal   - pattern to initialize
+*        uiSizeInDwords - number of dword to initialize
+*
+* @return address of the initialized memory
+*/
+void* comrvMemset(void* pMemory, s32_t siVal, u32_t uiSizeInDwords)
+{
+   u32_t uiIndex;
+
+   /* memory initialization loop */
+   for (uiIndex = 0 ; uiIndex < uiSizeInDwords ; uiIndex++)
+   {
+      *((u32_t*)pMemory + uiIndex) = siVal;
+   }
+
+   return pMemory;
 }

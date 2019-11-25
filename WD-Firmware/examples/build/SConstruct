@@ -45,7 +45,7 @@ def produce_sections_size(target, source, env):
       # uncomment the following 3 lines to create a dumpfile 
       objdump_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.dmp'
       objdump_util_name = os.path.join(Env['SECONDARY_TOOLS_BASE_DIR'], Env['TOOLS_PREFIX']+'-unknown-elf-objdump')
-      os.system(objdump_util_name + ' ' + elf_name + ' -D > ' + objdump_file_name)
+      os.system(objdump_util_name + ' ' + elf_name + ' -DSh > ' + objdump_file_name)
    return None
 
 tc_root_env_var_name = 'RISCV_TC_ROOT'

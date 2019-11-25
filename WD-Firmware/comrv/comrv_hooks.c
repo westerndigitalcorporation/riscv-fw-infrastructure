@@ -27,7 +27,7 @@
 */
 #include "common_types.h"
 #include "string.h"
-
+#include "comrv_api.h"
 /**
 * definitions
 */
@@ -75,10 +75,10 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 *
 * @return none
 */
-void* comrvLoadOvlayGroupHook(u32_t groupOffset, void* pDest, u32_t sizeInBytes)
+void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 {
-   comrvMemcpyHook(pDest, (u08_t*)&__OVERLAY_GROUPS_START__ + groupOffset, sizeInBytes);
-   return pDest;
+   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_GROUPS_START__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
+   return pLoadArgs->pDest;
 }
 
 /**
