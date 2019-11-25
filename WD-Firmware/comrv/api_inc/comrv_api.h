@@ -51,19 +51,10 @@
 /**
 * macros
 */
-/* this macro is used to imitate the compiler and it replaces
- * the call to any overlay func() with saving the address of func() to x31
- * and jumping to x31 (which is set to comrv entry point).
- * The addi is for making the address an 'address token' differentiating it
- * from regular address
- */
-/* TODO:
- * asm volatile ("la t6, "#func :  :  : );
- * is a workaround, should be
- * asm volatile ("la t6, %0" :  : "i"(func) : );
- * This is due to a bug in clang
- */
-#define _OVERLAY_  __attribute__((overlaycall)) __attribute__((noinline))
+// TODO: ronen - use psp defines
+#define D_COMRV_INLINE     __attribute__((inline))
+#define D_COMRV_NO_INLINE  __attribute__((noinline))
+#define _OVERLAY_          __attribute__((overlaycall)) D_COMRV_NO_INLINE
 
 /**
 * types
@@ -123,9 +114,8 @@ typedef struct comrvInstrumentationArgs
 /**
 * APIs
 */
-void comrvInit(comrvInitArgs_t* pInitParams);
-void comrvGetStatus(void);
-// TODO: ronen - use define for no inline
-__attribute__((noinline)) void comrvInitApplicationStack(void);
+void                    comrvGetStatus(void);
+void                    comrvInit(comrvInitArgs_t* pInitParams);
+D_COMRV_NO_INLINE void  comrvInitApplicationStack(void);
 
 #endif /* __COMRV_TASK_API_H__ */

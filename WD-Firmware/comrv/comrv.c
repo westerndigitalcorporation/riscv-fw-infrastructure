@@ -836,8 +836,7 @@ void comrvGetStatus(void)
 *
 * @return none
 */
-// TODO: ronen - use define for no inline
-__attribute__((noinline)) void comrvInitApplicationStack(void)
+D_COMRV_NO_INLINE void comrvInitApplicationStack(void)
 {
    comrvStackFrame_t *pStackPool, *pStackFrame;
 
