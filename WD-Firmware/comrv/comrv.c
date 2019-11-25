@@ -525,7 +525,9 @@ void* comrvGetAddressFromToken(void)
                if (pEntry->unProperties.ucData)
                {
                   M_COMRV_EXIT_CRITICAL_SECTION();
-                  comrvErrorHook(D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.ucValue);
+                  stErrArgs.uiErrorNum = D_COMRV_OVL_DATA_DEFRAG_ERR;
+                  stErrArgs.uiToken    = unToken.uiValue;
+                  comrvErrorHook(&stErrArgs);
                }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
                /* now we copy the cache entry properties and token */
@@ -602,7 +604,9 @@ void* comrvGetAddressFromToken(void)
       uiCrc = comrvCrcCalcHook(pAddress, usOverlayGroupSize-sizeof(u32_t));
       if (uiCrc != *((u08_t*)pAddress + (usOverlayGroupSize-sizeof(u32_t))))
       {
-         comrvErrorHook(D_COMRV_CRC_CHECK_ERR, unToken.ucValue);
+         stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;
+         stErrArgs.uiToken    = unToken.uiValue;
+         comrvErrorHook(&stErrArgs);
       }
 #endif /* D_COMRV_CRC */
 
