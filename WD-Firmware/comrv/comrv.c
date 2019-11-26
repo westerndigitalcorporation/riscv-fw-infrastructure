@@ -747,7 +747,6 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
       /* convert each candidate to an actual value in pEvictCandidatesList */
       while (uiCandidates)
       {
-
          /* get the lsb that is set */
          pEvictCandidatesList[ucIndex] = uiCandidates & (-uiCandidates);
          /* subtract the lsb that is set */

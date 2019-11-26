@@ -78,6 +78,8 @@ comrvEntry:
        t4 is updated with the next free stack frame */
     /* disable interrupts */
     m_COMRV_DISABLE_INTS
+    /* workaround for HiFive1 */
+    fence.i
     /* save the address of the next free stack frame in t2 - new stack frame
        for this engine call */
     mv      t2, t4
