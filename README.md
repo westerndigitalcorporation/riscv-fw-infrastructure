@@ -95,10 +95,11 @@ WD-Firmware
 - You you will need to choose a specific ***demo*** for building a full sultion:
 
         from the eclipse terminal or console:
-        $ python .....the python script.....
+        $ cd [WD-firmware-root]/WD-Firmware/demo/build
+        $ python ./config.sh
         
         Then you will be asked to choose a demo.
-    For more explnation on adding new demos please read the readme file on ***'/demos'***
+    For more explnation on adding new demos please read the readme file on ***'/demo'***
 
 ### Downloading & debugging the firmware image (FTDI over USB)
 - #### Setting up the hardware (taken from SiFive Freedom Studio Manual v1p6).
@@ -124,9 +125,10 @@ WD-Firmware
     Since Nexys-A7 is an FPGA platform it need special handling...
     - ***Prerequisite***: Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
         - For FPGA image flushing we will need Vivado.
-        - Follow the instruction to download Vivado [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga):
+        - To Obtain Vivado please follow the instructions at this link: Digilent [Board Files](https://reference.digilentinc.com/vivado/installing-vivado/start)
+          
+			Note: To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
             
-                https://github.com/westerndigitalcorporation/swerv_eh1_fpga
         - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
         - pin layout for Nexys Pmod JD header with Olimex:
         
@@ -139,7 +141,7 @@ WD-Firmware
 
     - **Download/flush**: for downloading the bit file image, we need to run ***flush_fpga_image.py*** from board/nexys_a7:
     
-            $ set VIVADO_PATH=<your path to vivado executable>
+            $ export VIVADO_PATH=<your path to vivado executable folder>
             $ cd /board/nexys_a7
             $ python flush_fpga_image.py
 
