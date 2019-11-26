@@ -26,8 +26,8 @@
 * include files
 */
 #include "common_types.h"
-#include "string.h"
 #include "comrv_api.h"
+
 /**
 * definitions
 */
@@ -43,7 +43,7 @@
 /**
 * globals
 */
-extern void* __OVERLAY_GROUPS_START__;
+extern void* __OVERLAY_STORAGE_START__ADDRESS__;
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
@@ -76,13 +76,13 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 /**
 * load overlay group hook
 *
-* @param
+* @param pLoadArgs - refer to comrvLoadArgs_t for exact args
 *
-* @return none
+* @return loaded address or NULL if unable to load
 */
 void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 {
-   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_GROUPS_START__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
+   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_STORAGE_START__ADDRESS__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
    return pLoadArgs->pDest;
 }
 
@@ -116,7 +116,8 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 /**
 * crc calculation hook
 *
-* @param
+* @param pAddress       - memory address to calculate
+*        memSizeInBytes - number of bytes to calculate
 *
 * @return calculated CRC
 */

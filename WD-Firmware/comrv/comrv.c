@@ -107,7 +107,7 @@
 */
 /* read token register (t5) */
 #define M_COMRV_READ_TOKEN_REG(x)        asm volatile ("mv %0, t5" : "=r" (x)  : );
-/* read stack pool register (t4) */
+/* write stack pool register (t4) */
 #define M_COMRV_WRITE_POOL_REG(x)        asm volatile ("mv t4, %0" : : "r" (x) );
 /* read stack pool register (t4) */
 #define M_COMRV_READ_POOL_REG(x)         asm volatile ("mv %0, t4" : "=r" (x)  : );
@@ -844,9 +844,9 @@ void comrvGetStatus(void)
 /**
 * initialize comrv stack - needs to be invoke by each task (if rtos exist)
 * when before initializing task stack.
-* in os-less apps, this function is called by comrv initialization function
+* in bare-metal apps, this function is called by comrv initialization function
 * and the user application doesn't need to do that.
-*
+*f
 * @param none
 *
 * @return none
@@ -857,6 +857,8 @@ D_COMRV_NO_INLINE void comrvInitApplicationStack(void)
 
    /* disable ints */
    // TODO: disable ints
+   // TODO: with rtosal, implement condition check if scheduler
+   //       is running or not, if running use RTOS sync api
 
    /* read stack pool register (t4) */
    M_COMRV_READ_POOL_REG(pStackPool);
@@ -876,10 +878,12 @@ D_COMRV_NO_INLINE void comrvInitApplicationStack(void)
 
    /* enable ints */
    // TODO: enable ints
+   // TODO: with rtosal, implement condition check if scheduler
+   //       is running or not, if running use RTOS sync api
 }
 
 /**
-* comrv version of memcoy - copy dwords only
+* comrv version of memset - set dwords only
 *
 * @param pMemory - address of the memory to be initialized
 *        siVal   - pattern to initialize

@@ -61,7 +61,7 @@ SECTIONS
   } >flash AT>flash :flash
 
   /* Overlay data */
-  .ovlgrpdata       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_GROUPS_START__ = .;} >flash AT>flash :flash
+  .ovlgrpdata       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_STORAGE_START__ADDRESS__ = .;} >flash AT>flash :flash
 
   /* Overlay offset table */
   .ovlgrptbl      : {
