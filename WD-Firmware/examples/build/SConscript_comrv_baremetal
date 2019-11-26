@@ -49,7 +49,7 @@ Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU']
 '''
 Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU', 'D_COMRV_MULTI_GROUP_SUPPORT', 
                     'D_COMRV_FW_INSTRUMENTATION', 'D_COMRV_VERIFY_INIT_ARGS',
-                    'D_COMRV_OVL_DATA_SUPPORT', 'D_COMRV_CRC']
+                    'D_COMRV_OVL_DATA_SUPPORT', 'D_COMRV_CRC', 'D_COMRV_DEBUG']
 '''
 # include paths
 local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),

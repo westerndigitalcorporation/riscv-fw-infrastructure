@@ -152,6 +152,12 @@
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)
 #endif /* D_COMRV_CRC */
 
+#ifdef D_COMRV_DEBUG
+#define M_COMRV_ASSERT(conditionMet) if (conditionMet) \
+                                     { while(1);}
+#else
+#define M_COMRV_ASSERT(conditionMet)
+#endif /* D_COMRV_DEBUG */
 /**
 * types
 */
@@ -729,6 +735,10 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
+
+   /* make sure we don't have more than the maximum available entries
+      to accommodate one group */
+   M_COMRV_ASSERT(ucNumberOfCandidates > (D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN));
 
    /* now we have eviction uiCandidates bitmap of cache entries - lets create
       an output sorted list of these entries */
