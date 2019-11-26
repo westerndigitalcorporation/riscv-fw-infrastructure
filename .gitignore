@@ -9,7 +9,6 @@
 *.log
 *.jou
 *.project
-*.cproject
 
 
 lto1
