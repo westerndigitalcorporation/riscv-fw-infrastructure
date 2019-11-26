@@ -8,6 +8,8 @@
 *.language.settings.xml
 *.log
 *.jou
+*.project
+*.cproject
 
 
 lto1
