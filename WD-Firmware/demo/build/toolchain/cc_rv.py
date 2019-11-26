@@ -1,12 +1,3 @@
-"""SCons.Tool.cc
-
-Tool-specific initialization for generic Posix C compilers.
-
-There normally shouldn't be any need to import this module directly.
-It will usually be imported through the generic SCons.Tool.Tool()
-selection method.
-"""
-
 #
 # Copyright (c) 2001 - 2015 The SCons Foundation
 #
@@ -29,6 +20,16 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+
+"""SCons.Tool.cc
+
+Tool-specific initialization for generic Posix C compilers.
+
+There normally shouldn't be any need to import this module directly.
+It will usually be imported through the generic SCons.Tool.Tool()
+selection method.
+"""
+
 
 __revision__ = "src/engine/SCons/Tool/cc.py rel_2.4.1:3453:73fefd3ea0b0 2015/11/09 03:25:05 bdbaddog"
 
