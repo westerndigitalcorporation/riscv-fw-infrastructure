@@ -114,16 +114,17 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 }
 
 /**
-* crc calculation hook
+* crc calculation hook (itt)
 *
-* @param pAddress       - memory address to calculate
-*        memSizeInBytes - number of bytes to calculate
+* @param pAddress         - memory address to calculate
+*        memSizeInBytes   - number of bytes to calculate
+*        uiExpectedResult - expected crc result
 *
 * @return calculated CRC
 */
-u32_t comrvCrcCalcHook(void* pAddress, u16_t memSizeInBytes)
+u32_t comrvCrcCalcHook (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult)
 {
-   return 1;
+   return 0;
 }
 
 /******************** start temporary build issue workaround ****************/

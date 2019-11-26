@@ -125,7 +125,6 @@
  #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
                                          asm volatile ("lw t3, 0x0(t3)"  : : : );
 #endif
-
 /* overlay group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
 #define M_COMRV_GET_OVL_GROUP_SIZE(unToken)          (pOverlayOffsetTable[unToken.stFields.overlayGroupID+1] - \
                                                       pOverlayOffsetTable[unToken.stFields.overlayGroupID])
@@ -140,6 +139,19 @@
 #define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)   (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
 /* */
 #define M_COMRV_GROUP_SIZE_TO_BYTES(groupSize)        ((groupSize) << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)
+/* macro for verifying overlay group CRC */
+#ifdef D_COMRV_CRC
+#define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)   \
+      if (comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult))  \
+      {                                                                          \
+         stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;                           \
+         stErrArgs.uiToken    = unToken.uiValue;                                 \
+         comrvErrorHook(&stErrArgs);                                             \
+      }
+#else
+#define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)
+#endif /* D_COMRV_CRC */
+
 /**
 * types
 */
@@ -274,8 +286,10 @@ extern void  comrvEntry               (void);
 /* user hook functions - user application must implement the following functions */
 extern void  comrvErrorHook           (const comrvErrorArgs_t* pErrorArgs);
 extern void  comrvMemcpyHook          (void* pDest, void* pSrc, u32_t uiSizeInBytes);
-extern u32_t comrvCrcCalcHook         (void* pAddress, u16_t usMemSizeInBytes);
 extern void* comrvLoadOvlayGroupHook  (comrvLoadArgs_t* pLoadArgs);
+#ifdef D_COMRV_CRC
+extern u32_t comrvCrcCalcHook         (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult);
+#endif /* D_COMRV_CRC */
 #ifdef D_COMRV_FW_INSTRUMENTATION
 extern void  comrvInstrumentationHook (const comrvInstrumentationArgs_t* pInstArgs);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
@@ -391,9 +405,6 @@ void* comrvGetAddressFromToken(void)
    u16_t                usOverlayGroupSize, usOffset, usSearchResultIndex;
    u08_t                ucNumOfEvictionCandidates, ucIndex, ucSizeOfEvictionCandidates;
    u08_t                ucEntryIndex, ucEvictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
-#ifdef D_COMRV_CRC
-   u32_t                uiCrc;
-#endif /* D_COMRV_CRC */
 #ifdef D_COMRV_FW_INSTRUMENTATION
    comrvInstrumentationArgs_t stInstArgs;
    u32_t                uiProfilingIndication;
@@ -601,16 +612,8 @@ void* comrvGetAddressFromToken(void)
          comrvErrorHook(&stErrArgs);
       }
 
-#ifdef D_COMRV_CRC
-      /* calculate crc */
-      uiCrc = comrvCrcCalcHook(pAddress, usOverlayGroupSize-sizeof(u32_t));
-      if (uiCrc != *((u08_t*)pAddress + (usOverlayGroupSize-sizeof(u32_t))))
-      {
-         stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;
-         stErrArgs.uiToken    = unToken.uiValue;
-         comrvErrorHook(&stErrArgs);
-      }
-#endif /* D_COMRV_CRC */
+      M_COMRV_VERIFY_CRC(pAddress, usOverlayGroupSize-sizeof(u32_t),
+                        *((u08_t*)pAddress + (usOverlayGroupSize-sizeof(u32_t))));
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
       /* update for FW profiling loaded the function */
