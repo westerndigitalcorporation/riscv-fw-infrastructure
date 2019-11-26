@@ -32,11 +32,11 @@
 */
 /* comrv errors */
 #define D_COMRV_INVALID_INIT_PARAMS_ERR   0
-#define D_COMRV_NO_AVAILABLE_ENTRY_ERR    1
+#define D_COMRV_NOT_ENOUGH_ENTRIES        1
 #define D_COMRV_LOAD_ERR                  2
 #define D_COMRV_OVL_DATA_DEFRAG_ERR       3
 #define D_COMRV_CRC_CHECK_ERR             4
-#define D_COMRV_NOT_ENOUGH_ENTRIES        5
+
 
 /* comrv defines */
 #define D_COMRV_PROFILE_BASE_IND          0xFC

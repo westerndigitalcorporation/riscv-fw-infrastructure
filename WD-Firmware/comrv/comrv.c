@@ -498,11 +498,11 @@ void* comrvGetAddressFromToken(void)
 
       ucEntryIndex = 0;
 
-      /* if you have no candidates */
+      /* if you have no/some candidates */
       if (ucNumOfEvictionCandidates == 0)
       {
          M_COMRV_EXIT_CRITICAL_SECTION();
-         stErrArgs.uiErrorNum = D_COMRV_NO_AVAILABLE_ENTRY_ERR;
+         stErrArgs.uiErrorNum = D_COMRV_NOT_ENOUGH_ENTRIES;
          stErrArgs.uiToken    = unToken.uiValue;
          comrvErrorHook(&stErrArgs);
       }
@@ -692,8 +692,6 @@ void* comrvGetAddressFromToken(void)
 */
 u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCandidatesList)
 {
-   comrvOverlayToken_t unToken;
-   comrvErrorArgs_t    stErrorArgs;
    comrvCacheEntry_t  *pCacheEntry;
    u32_t               uiCandidates;
    u08_t               ucAccumulatedSize = 0, ucIndex = 0;
@@ -732,15 +730,6 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
 
-   /* verify we do have enough memory */
-   if (ucAccumulatedSize < ucRequestedEvictionSize)
-   {
-      M_COMRV_READ_TOKEN_REG(unToken.uiValue);
-      stErrorArgs.uiErrorNum = D_COMRV_NOT_ENOUGH_ENTRIES;
-      stErrorArgs.uiToken    = unToken.uiValue;
-      comrvErrorHook(&stErrorArgs);
-   }
-
    /* now we have eviction uiCandidates bitmap of cache entries - lets create
       an output sorted list of these entries */
    for (ucEntryIndex = 0 ; ucIndex != ucNumberOfCandidates && ucEntryIndex < D_COMRV_EVICT_CANDIDATE_MAP_SIZE ; ucEntryIndex++)
@@ -761,6 +750,14 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
          /* move to the next entry in pEvictCandidatesList */
          ucIndex++;
       }
+   }
+
+   /* at this point we may have 0, some or all needed memory
+      if we don't have all memory we mark as if we have no
+      memory but will return the available size if applicable */
+   if (ucAccumulatedSize < ucRequestedEvictionSize)
+   {
+      ucNumberOfCandidates = 0;
    }
 
    /* set the total size of eviction candidates in the last entry */
