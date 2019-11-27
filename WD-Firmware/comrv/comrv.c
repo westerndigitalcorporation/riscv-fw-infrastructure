@@ -209,7 +209,7 @@ typedef union comrvOverlayToken
 /* cache entry properties */
 typedef struct comrvPropertiesFields
 {
-  /* entry is ucData - can't be evicted */
+  /* entry is ucData or locked by the end user - can't be evicted */
   u08_t ucLocked:1;
   /* entry is overlay data */
   u08_t ucData:1;
@@ -247,7 +247,7 @@ typedef union comrvEvictionLru
 typedef struct comrvCacheEntrycomrvCacheEntry
 {
 #ifdef D_COMRV_EVICTION_LRU
-   comrvEvictionLru_u unLru;
+   comrvEvictionLru_u    unLru;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
