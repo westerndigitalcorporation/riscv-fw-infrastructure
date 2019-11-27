@@ -142,7 +142,7 @@ WD-Firmware
     - **Download/flush**: for downloading the bit file image, we need to run ***flush_fpga_image.py*** from board/nexys_a7:
     
             $ export VIVADO_PATH=<your path to vivado executable folder>
-            $ cd /board/nexys_a7
+            $ cd [WD-firmware-root]/WD-Firmware/board/nexys_a7
             $ python flush_fpga_image.py
 
 
