@@ -26,7 +26,7 @@
 * include files
 */
 #include "rtosal_api.h"
-#include "rtosal.h"
+#include "rtosal_util.h"
 
 /**
 * definitions
@@ -51,21 +51,3 @@
 /**
 * global variables
 */
-
-/**
-*
-*
-* @param 
-*
-* @return u32_t            - D_RTOSAL_SUCCESS
-*                          - D_RTOSAL_DELETED
-*/
-u32_t rtosalMsgQueueRecieve (rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
-                             u32_t uiWaitTimeoutTicks)
-{
-#ifdef D_USE_FREERTOS
-
-#elif D_USE_THREADX
-
-#endif
-}

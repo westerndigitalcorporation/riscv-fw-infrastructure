@@ -29,7 +29,7 @@
 #include "rtosal_config.h"
 #include "rtosal_defines.h"
 #include "rtosal_types.h"
-#include "rtosal_macro.h"
+#include "rtosal_macros.h"
 /**
 * definitions
 */
@@ -41,12 +41,16 @@
    #define M_TASK_CB_SIZE_IN_BYTES        sizeof(StaticTask_t)
 #elif D_USE_THREADX
    #define M_TASK_CB_SIZE_IN_BYTES        sizeof(TBD)  // size of the CB struct 
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
    #define D_MAX_PRIORITY                 (configMAX_PRIORITIES-1)
 #elif D_USE_THREADX
    #define D_MAX_PRIORITY                 (TBD)  // size of the CB struct 
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -57,6 +61,8 @@
 #elif D_USE_THREADX
 #error *** TODO: need to define the TBD ***
    typedef TBD   entryPointParam_t;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 typedef enum rtosalPriority
@@ -127,6 +133,8 @@ typedef enum rtosalPriority
    E_RTOSAL_PRIO_29 = 29,
    E_RTOSAL_PRIO_30 = 30,
    E_RTOSAL_PRIO_31 = 31,
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    E_RTOSAL_PRIO_MAX = E_RTOSAL_PRIO_31
 } rtosalPriority_t;
@@ -135,12 +143,20 @@ typedef struct rtosalTask
 {
 #ifdef D_USE_FREERTOS
    void* taskHandle;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    s08_t cTaskCB[M_TASK_CB_SIZE_IN_BYTES];
 } rtosalTask_t;
 
 /* task handler definition */
 typedef void (*rtosalTaskHandler_t)(entryPointParam_t);
+
+/* application specific initialization function */
+typedef void (*rtosalApplicationInit_t)(void *pParam);
+
+/* application specific timer-tick handler function */
+typedef void (*rtosalTimerTickHandler_t)(void);
 
 /**
 * local prototypes
@@ -201,5 +217,37 @@ u32_t rtosalTaskSuspend(rtosalTask_t* pRtosalTaskCb);
 * Abort a task which is in currently blocked
 */
 u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb);
+
+/**
+* Initialization of the RTOS and starting the scheduler operation
+*/
+void rtosalStart(rtosalApplicationInit_t fptrInit);
+
+/**
+* Ending of scheduler operation
+*/
+void rtosalEndScheduler(void);
+
+/**
+* Registration for TimerTick handler function
+*/
+void rtosalRegisterTimerTickHandler(rtosalTimerTickHandler_t fptrHandler);
+
+/**
+* @brief set indication that context-switch is required
+*
+* @param None
+*
+*/
+void rtosalContextSwitchIndicationSet(void);
+
+/**
+* @brief clear the context-switch indication
+*
+* @param None
+*
+*/
+void rtosalContextSwitchIndicationClear(void);
+
 
 #endif /* __RTOSAL_TASK_API_H__ */
