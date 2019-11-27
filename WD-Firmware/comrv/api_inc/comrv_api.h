@@ -24,7 +24,7 @@
 #define __COMRV_TASK_API_H__
 
 #ifndef __clang__
-#error "comrv can compile only with llvm"
+#error comrv can compile only with llvm
 #endif // #ifndef __clang__
 
 /**
@@ -40,19 +40,26 @@
 #define D_COMRV_NO_INLINE  __attribute__((noinline))
 #define _OVERLAY_          __attribute__((overlaycall)) D_COMRV_NO_INLINE
 
-/* make sure eviction algorithm defined */
-#ifndef D_COMRV_EVICTION_LRU
- #ifndef D_COMRV_EVICTION_LFU
-  #ifndef D_COMRV_EVICTION_MIX_LRU_LFU
-   /* default eviction algorithm */
-   #define D_COMRV_EVICTION_LRU
-  #endif /* D_COMRV_EVICTION_MIX_LRU_LFU */
- #endif /* D_COMRV_EVICTION_LFU */
-#endif /* D_COMRV_EVICTION_LRU */
+#define D_COMRV_NUM_OF_CACHE_ENTRIES      (D_COMRV_OVL_CACHE_SIZE_IN_BYTES/D_COMRV_OVL_GROUP_SIZE_MIN)
 
-/* if no profile was set */
-#if D_COMRV_PROFILE==0
-  #define D_COMRV_PROFILE 1
+/* eviction algorithm definition */
+#if (D_COMRV_EVICTION_POLICY == 0)
+   #define D_COMRV_EVICTION_LRU
+#elif (D_COMRV_EVICTION_POLICY == 1)
+   #define D_COMRV_EVICTION_LRU
+#elif (D_COMRV_EVICTION_POLICY == 2)
+   #define D_COMRV_EVICTION_LFU
+#elif (D_COMRV_EVICTION_POLICY == 3)
+   #define D_COMRV_EVICTION_MIX_LRU_LFU
+#endif /* */
+
+/* profile selection */
+#if D_COMRV_NUM_OF_CACHE_ENTRIES < 0xFF
+   #define D_COMRV_PROFILE 1
+#elif D_COMRV_NUM_OF_CACHE_ENTRIES < 0xFFFF
+   #define D_COMRV_PROFILE 2
+#else
+   #define D_COMRV_PROFILE 3
 #endif /* D_COMRV_PROFILE==0 */
 
 #if D_COMRV_PROFILE == 1
@@ -103,8 +110,6 @@
 #define D_COMRV_LOAD_AND_RETURN_IND       (D_COMRV_PROFILE_BASE_IND | D_COMRV_PROFILING_LOAD_BIT)
 /* return from an overlay function w/o loading */
 #define D_COMRV_NO_LOAD_AND_RETURN_IND    (D_COMRV_PROFILE_BASE_IND)
-
-#define D_COMRV_NUM_OF_CACHE_ENTRIES      (D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS)
 
 /**
 * macros

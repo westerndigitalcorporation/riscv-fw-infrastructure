@@ -223,7 +223,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
 
 #ifndef D_COMRV_USE_OS
-   /* in os-less applications, stack register is initialized here;
+   /* in baremetal applications, stack register is initialized here;
       this must be done after the stack pool register was
       initialized (M_COMRV_WRITE_POOL_REG) */
    comrvInitApplicationStack();

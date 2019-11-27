@@ -45,9 +45,9 @@ c_flags = Env['C_FLAGS']
 a_flags = Env['A_FLAGS']
 
 # defines
-Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU']
+Env['COMRV_DEF'] = ['']
 '''
-Env['COMRV_DEF'] = ['D_COMRV_EVICTION_LRU', 'D_COMRV_MULTI_GROUP_SUPPORT', 
+Env['COMRV_DEF'] = ['D_COMRV_EVICTION_POLICY=1', 'D_COMRV_MULTI_GROUP_SUPPORT', 
                     'D_COMRV_FW_INSTRUMENTATION', 'D_COMRV_VERIFY_INIT_ARGS',
                     'D_COMRV_OVL_DATA_SUPPORT', 'D_COMRV_CRC', 'D_COMRV_DEBUG']
 '''

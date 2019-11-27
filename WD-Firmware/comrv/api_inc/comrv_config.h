@@ -36,10 +36,10 @@
 /* maximum number of overlay calls depth within the
    entire application; if the application contains several tasks
    this define must cover the max number at any given time */
-#define D_COMRV_CALL_STACK_DEPTH                            30
+#define D_COMRV_CALL_STACK_DEPTH                            10
 /* size of the overlay cache - the size of the RAM provided
    for loading and executing the overlay groups; granularity
-   expressed in D_COMRV_OVL_GROUP_SIZE_MIN */
-#define D_COMRV_SIZE_OF_OVL_CACHE_IN_MIN_GROUP_SIZE_UNITS   2
+   expressed in bytes */
+#define D_COMRV_OVL_CACHE_SIZE_IN_BYTES                  1024
 
 #endif /* __COMRV_CONFIG_H__ */
