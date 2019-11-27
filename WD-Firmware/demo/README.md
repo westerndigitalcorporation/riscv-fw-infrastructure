@@ -39,5 +39,3 @@ class demo(object):
 
 Once done with setting up the demo, it will appear in the list shown to the user when running *config.sh* and the user can pick it up by entering it's index.
 
-The user may also add other attributes to the demo class if there is a need to. but these attributes must not put to use in shared sconscripts, so they will not break the build for other demos.
-

@@ -24,15 +24,15 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join('psp', 'src', 'psp_interrupts.c'), os.path.join(strOutDir, 'psp_interrupts.o')),
-   (os.path.join('psp', 'src', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
-   (os.path.join('psp', 'src', 'psp_timer.c'), os.path.join(strOutDir, 'psp_timer.o')),
+   (os.path.join('psp', 'psp_interrupts.c'), os.path.join(strOutDir, 'psp_interrupts.o')),
+   (os.path.join('psp', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
+   (os.path.join('psp', 'psp_timer.c'), os.path.join(strOutDir, 'psp_timer.o')),
 ]
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles=[
-   (os.path.join('psp', 'src', 'psp_int_vect.S'), os.path.join(strOutDir, 'psp_int_vect.o')),
+   (os.path.join('psp', 'psp_int_vect.S'), os.path.join(strOutDir, 'psp_int_vect.o')),
 ]
 
 # compiler directivs

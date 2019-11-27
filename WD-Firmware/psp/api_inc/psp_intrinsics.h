@@ -24,6 +24,8 @@
 #ifndef  __PSP_INTRINSICS_H__
 #define  __PSP_INTRINSICS_H__
 
+#if defined (__GNUC__) || defined (__clang__)
+
 /**
 * include files
 */
@@ -41,6 +43,6 @@
 #define D_PSP_INLINE    inline
 
 
-
+#endif /* defined (__GNUC__) || defined (__clang__) */
 
 #endif /* __PSP_INTRINSICS_H__ */

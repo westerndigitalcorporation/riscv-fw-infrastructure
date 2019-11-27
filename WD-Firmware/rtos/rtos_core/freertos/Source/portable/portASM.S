@@ -71,6 +71,11 @@
 */
 
 /*
+   The file contents was modified by Western-Digital (Nati Rapaport) to support
+   HiFive core with WD FW-infrastructure
+*/
+
+/*
 This implementation supports riscv privileged v1.10
 */
 #include "psp_core_base.inc"

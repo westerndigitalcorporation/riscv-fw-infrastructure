@@ -26,21 +26,21 @@ strRtosAlBase = os.path.join('rtos', 'rtosal')
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_event.c'), os.path.join(strOutDir, 'rtosal_event.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_util.c'), os.path.join(strOutDir, 'rtosal_util.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_mutex.c'), os.path.join(strOutDir, 'rtosal_mutex.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_queue.c'), os.path.join(strOutDir, 'rtosal_queue.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_semaphore.c'), os.path.join(strOutDir, 'rtosal_semaphore.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_task.c'), os.path.join(strOutDir, 'rtosal_task.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_time.c'), os.path.join(strOutDir, 'rtosal_time.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_error.c'), os.path.join(strOutDir, 'rtosal_error.o')),
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_interrupt.c'), os.path.join(strOutDir, 'rtosal_interrupt.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_event.c'), os.path.join(strOutDir, 'rtosal_event.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_util.c'), os.path.join(strOutDir, 'rtosal_util.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_mutex.c'), os.path.join(strOutDir, 'rtosal_mutex.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_queue.c'), os.path.join(strOutDir, 'rtosal_queue.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_semaphore.c'), os.path.join(strOutDir, 'rtosal_semaphore.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_task.c'), os.path.join(strOutDir, 'rtosal_task.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_time.c'), os.path.join(strOutDir, 'rtosal_time.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_error.c'), os.path.join(strOutDir, 'rtosal_error.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_interrupt.c'), os.path.join(strOutDir, 'rtosal_interrupt.o')),
 ]
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles=[
-   (os.path.join(strRtosAlBase, 'src', 'rtosal_int_vect.S'), os.path.join(strOutDir, 'rtosal_int_vect.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_int_vect.S'), os.path.join(strOutDir, 'rtosal_int_vect.o')),
 ]
 
 # compiler flags

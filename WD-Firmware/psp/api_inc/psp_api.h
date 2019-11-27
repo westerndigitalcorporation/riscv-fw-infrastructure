@@ -42,9 +42,8 @@
 /**
 * macros
 */
-#define	M_PSP_CLR_TIMER_INT()      M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
+#define M_PSP_CLR_TIMER_INT()      M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
 #define M_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
-// NatiR - add additional macros for more CSRs
 
 /**
 * types
