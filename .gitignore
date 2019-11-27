@@ -10,7 +10,7 @@
 *.jou
 *.project
 *.cproject
-
+WD-Firmware/demo/build/configure.txt
 
 lto1
 
