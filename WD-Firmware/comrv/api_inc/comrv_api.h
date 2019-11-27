@@ -23,6 +23,10 @@
 #ifndef __COMRV_TASK_API_H__
 #define __COMRV_TASK_API_H__
 
+#ifndef __clang__
+#error "comrv can compile only with llvm"
+#endif // #ifndef __clang__
+
 /**
 * include files
 */
