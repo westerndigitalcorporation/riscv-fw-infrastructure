@@ -109,6 +109,8 @@ void comrvInstrumentationHook(const comrvInstrumentationArgs_t* pInstArgs)
 */
 void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 {
+   comrvStatus_t stComrvStatus;
+   comrvGetStatus(&stComrvStatus);
    /* we can't continue so loop forever */
    while (1);
 }
