@@ -275,7 +275,7 @@ void* comrvGetAddressFromToken(void)
    if (ucIsInvoke == D_COMRV_INVOKE_CALLEE_BIT_0)
    {
       /* clear the invoke indication from pComrvStackFrame address */
-      pComrvStackFrame = (comrvStackFrame_t*)((u32_t)pComrvStackFrame & (~D_COMRV_PROFILING_INVOKE_BIT));
+      pComrvStackFrame = (comrvStackFrame_t*)((u32_t)pComrvStackFrame & (~D_COMRV_INVOKE_CALLEE_BIT_0));
       /* write back the stack register after bit 0 was cleared*/
       M_COMRV_WRITE_STACK_REG(pComrvStackFrame);
 
