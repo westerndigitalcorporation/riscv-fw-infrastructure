@@ -30,6 +30,8 @@
 #include "common_types.h"
 #ifdef D_USE_FREERTOS
    #include "FreeRTOS.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 /**
 * types
@@ -39,6 +41,8 @@
 #elif D_USE_THREADX
    #error *** TODO: need to define the TBD ***
    typedef TBD   rtosalStackType_t;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
@@ -46,6 +50,8 @@
 #elif D_USE_THREADX
    #error *** TODO: need to define the TBD ***
    typedef TBD        rtosalStaticTask_t;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 #ifdef D_USE_FREERTOS
@@ -53,6 +59,8 @@
 #elif D_USE_THREADX
    #error *** TODO: need to define the TBD ***
    typedef TBD         rtosalStack_t;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* __RTOSAL_TYPES_H__ */
 
 #endif /* __RTOSAL_TYPES_H__ */

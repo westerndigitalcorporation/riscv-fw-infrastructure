@@ -27,10 +27,13 @@
 * include files
 */
 
-#include "psp_config.h"
-#include "psp_macro.h"
+#include "psp_intrinsics.h"
 #include "psp_defines.h"
+#include "psp_config.h"
 #include "psp_interrupt_api.h"
+#include "psp_macros.h"
+#include "psp_pragmas.h"
+#include "psp_attributes.h"
 
 /**
 * definitions
@@ -39,6 +42,8 @@
 /**
 * macros
 */
+#define M_PSP_CLR_TIMER_INT()      M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
+#define M_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
 
 /**
 * types
@@ -59,8 +64,43 @@
 /**
 * APIs
 */
-u32_t pspIsInterruptContext(void);
-pspInterruptHandler_t pspRegisterIsrCauseHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspInterruptCause_t eIntCause);
-pspInterruptHandler_t pspRegisterIsrExceptionHandler(pspInterruptHandler_t fptrRtosalInterruptHandler, pspExceptionCause_t eExcCause);
+
+
+/**
+* The function installs an interrupt service routine per risc-v cause
+*
+* @param fptrInterruptHandler     – function pointer to the interrupt service routine
+* @param eIntCause                – interrupt source
+*
+* @return u32_t                   - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, pspInterruptCause_t eIntCause);
+
+
+/**
+* The function installs an exception handler per exception cause
+*
+* @param fptrInterruptHandler     – function pointer to the exception handler
+* @param eExcCause                – exception cause
+*
+* @return u32_t                   - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, pspExceptionCause_t eExcCause);
+
+/**
+*
+* Function that called upon unregistered Trap handler
+*/
+void pspTrapUnhandled(void);
+
+/**
+*
+* Setup function for Core's Timer for a single run
+*
+* @param enable     – indicates whether to enable timer interrupt or not
+*/
+void pspTimerSetupSingleRun(const unsigned int enableInterrupt);
+
+
 
 #endif /* __PSP_API_H__ */

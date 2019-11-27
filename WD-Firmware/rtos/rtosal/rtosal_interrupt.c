@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   rtosal_event.c
+* @file   rtosal_interrupt.c
 * @author Ronen Haen
 * @date   21.01.2019 
 * @brief  The file implements the RTOS AL interrupt API
@@ -26,10 +26,7 @@
 * include files
 */
 #include "rtosal_interrupt_api.h"
-#include "rtosal.h"
-#ifdef D_USE_FREERTOS
-   #include "task.h"
-#endif /* #ifdef D_USE_FREERTOS */
+#include "rtosal_util.h"
 
 /**
 * definitions
@@ -56,26 +53,7 @@
 */
 
 /**
-* This function is invoked by the system timer interrupt
-*
-* @param  none
-*
-* @return none
-*/
-void rtosalTick(void)
-{
-#ifdef D_USE_FREERTOS
-   if (xTaskIncrementTick() == pdTRUE)
-   {
-      vTaskSwitchContext();
-   }
-#elif D_USE_THREADX
-   tx_timer_interrupt();
-#endif /* #ifdef D_USE_FREERTOS */
-}
-
-/**
-* The function installs an interrupt service routine per risc-v cuase
+* The function installs an interrupt service routine per risc-v cause
 *
 * @param fptrRtosalInterruptHandler – function pointer to the interrupt 
 *                                   service routine

@@ -41,6 +41,8 @@
    #define M_TIMER_CB_SIZE_IN_BYTES       sizeof(StaticTimer_t)
 #elif D_USE_THREADX
    #define M_TIMER_CB_SIZE_IN_BYTES       sizeof(TBD)  // size of the CB struct 
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -51,6 +53,8 @@
 #elif D_USE_THREADX
 #error *** TODO: need to define the TBD ***
    typedef TBD   timerHandlerParam_t;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /* timer */
@@ -58,6 +62,8 @@ typedef struct rtosalTimer
 {
 #ifdef D_USE_FREERTOS
    void* timerHandle;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
    s08_t cTimerCB[M_TIMER_CB_SIZE_IN_BYTES];
 }rtosalTimer_t;

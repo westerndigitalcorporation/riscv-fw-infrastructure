@@ -23,18 +23,14 @@
 #ifndef  __RTOSAL_CONFIG_H__
 #define  __RTOSAL_CONFIG_H__
 
+#ifdef D_USE_FREERTOS
+
+#define configSUPPORT_STATIC_ALLOCATION  1
+#define configSUPPORT_DYNAMIC_ALLOCATION 0
 /**
 * include files
 */
-
-//[OS]: TODO: need to add the min stack size for both RTOS
-   
-#ifdef D_USE_FREERTOS
-//   #include "FreeRTOS.h"
-#if (configSUPPORT_STATIC_ALLOCATION!=1) || (configSUPPORT_DYNAMIC_ALLOCATION!=0)
-//   #error *** RTOSAL port to FreeRTOS supports only static allocation ***
-//   #error *** please set configSUPPORT_STATIC_ALLOCATION to 1 and configSUPPORT_DYNAMIC_ALLOCATION to 0 in FreeRTOSConfig.h ***
-#endif /* #if (configSUPPORT_STATIC_ALLOCATION!=1) || (configSUPPORT_DYNAMIC_ALLOCATION!=0) */
+   #include "FreeRTOSConfig.h"
 
 #elif D_USE_THREADX
    #include "TBD: the root api"
@@ -49,6 +45,8 @@
    #define D_RTOSAL_ERROR_CHECK                  0
 #elif D_USE_THREADX
    #define D_RTOSAL_ERROR_CHECK                  TBD_TAKE_VAL_FROM_TX
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 #endif /* __RTOSAL_CONFIG_H__ */
