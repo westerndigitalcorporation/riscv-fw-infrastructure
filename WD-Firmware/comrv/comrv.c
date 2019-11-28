@@ -387,8 +387,9 @@ void* comrvGetAddressFromToken(void)
          /* loop all eviction candidates entries */
          while (ucEntryIndex < ucNumOfEvictionCandidates)
          {
+            /* get the candidate entry index */
             ucIndex = ucEvictCandidateList[ucEntryIndex];
-            /* get the candidate entry */
+            /* get the candidate cache entry address */
             pDestinationAddress = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
             /* calc the source address - we point here to the cache area
                from which we want to copy the overlay group:
