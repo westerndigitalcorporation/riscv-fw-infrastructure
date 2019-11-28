@@ -114,7 +114,7 @@ WD-Firmware
             For more explanation on adding new demos please read the readme file on ***'/demos'***
             
     - From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
-    - Since the building process SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
+    - Since the building process use SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
 
 ### Downloading & debugging the firmware image (FTDI over USB)
 - #### Setting up the hardware (taken from SiFive Freedom Studio Manual v1p6).
