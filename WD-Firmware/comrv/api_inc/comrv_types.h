@@ -160,12 +160,6 @@ typedef struct comrvStatus
 /* comrv init arguments */
 typedef struct comrvInitArgs
 {
-   /* address the memory region which shall be used
-      for loading and executing overlay groups */
-   void* pCacheMemoeyAddress;
-   /* size in bytes of the memory pointed by pCacheMemoeyAddress
-      the size must be aligned to D_COMRV_OVL_GROUP_SIZE_MIN */
-   u32_t uiCacheSizeInBytes;
 }comrvInitArgs_t;
 
 /* comrv load arguments */

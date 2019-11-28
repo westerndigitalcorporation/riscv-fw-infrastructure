@@ -53,6 +53,5 @@
 /**
 * global variables
 */
-extern void *overlayOffsetTable, *overlayMultiGroupTokensTable;
 
 #endif /* __COMRV_H__ */

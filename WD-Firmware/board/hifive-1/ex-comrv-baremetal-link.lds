@@ -189,8 +189,8 @@ SECTIONS
 
   .overlay_sec ORIGIN(ovl) :
   {
-    __OVERLAY_SEC_START__ = .;
+    __OVERLAY_CACHE_START__ = .;
     . = 1K;
-    __OVERLAY_SEC_END__ = .;
+    __OVERLAY_CACHE_END__ = .;
   }  >ovl AT>ovl :ovl
 }

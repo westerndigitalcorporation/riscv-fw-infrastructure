@@ -1,7 +1,6 @@
 #include "common_types.h"
 #include "comrv_api.h"
 
-extern void *__OVERLAY_SEC_START__, *__OVERLAY_SEC_END__;
 
 #define OVL_OverlayFunc0 _OVERLAY_
 #define OVL_OverlayFunc1 _OVERLAY_
@@ -48,7 +47,7 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
 
 int main(int argc, char **argv)
 {
-   comrvInitArgs_t stComrvInitArgs = { &__OVERLAY_SEC_START__, (u08_t*)&__OVERLAY_SEC_END__ - (u08_t*)&__OVERLAY_SEC_START__ };
+   comrvInitArgs_t stComrvInitArgs;
 
    comrvInit(&stComrvInitArgs);
 

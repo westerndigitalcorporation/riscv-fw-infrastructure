@@ -112,6 +112,20 @@
 #else
 #define M_COMRV_ASSERT(conditionMet)
 #endif /* D_COMRV_DEBUG */
+
+#define M_COMRV_CACHE_SIZE_IN_BYTES()   ((u08_t*)&__OVERLAY_CACHE_END__ - (u08_t*)&__OVERLAY_CACHE_START__)
+/* this macro is only for code readability (the symbol '__OVERLAY_CACHE_START__'
+   is defined in the linker script and defines the start address of comrv cache) */
+#define pComrvCacheBaseAddress (&__OVERLAY_CACHE_START__)
+/* this macro is only for code readability (the symbol overlayOffsetTable
+   is taken from the linker script */
+// TODO: remove once we get the tables in group 0
+#define pOverlayOffsetTable   ((u16_t*)&overlayOffsetTable)
+/* this macro is only for code readability (the symbol overlayMultiGroupTokensTable
+   is taken from the linker script */
+// TODO: remove once we get the tables in group 0
+#define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)&overlayMultiGroupTokensTable)
+
 /**
 * types
 */
@@ -150,16 +164,22 @@ static comrvCB_t         g_stComrvCB;
 /* global comrv stack pool */
 static comrvStackFrame_t g_stComrvStackPool[D_COMRV_CALL_STACK_DEPTH];
 
-// TODO: ronen - put pointer to tables in comrvCB_t?
-u16_t *pOverlayOffsetTable = (u16_t*)&overlayOffsetTable;
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-comrvOverlayToken_t *pOverlayMultiGroupTokensTable = (comrvOverlayToken_t*)&overlayMultiGroupTokensTable;
+/* linker symbols defining the addresses of offset and multigroup tables */
+// TODO: remove once we get the tables in group 0
+   extern void *overlayMultiGroupTokensTable;
+//comrvOverlayToken_t *pOverlayMultiGroupTokensTable = (comrvOverlayToken_t*)&overlayMultiGroupTokensTable;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+/* linker symbols defining the addresses of offset and multigroup tables */
+// TODO: remove once we get the tables in group 0
+extern void *overlayOffsetTable;
+/* linker symbols defining the start and end of the overlay cache */
+extern void *__OVERLAY_CACHE_START__, *__OVERLAY_CACHE_END__;
 
 /**
 * COM-RV initialization function
 *
-* @param  pInitParams - initialization parameters
+* @param  pInitParams - initialization parameters (currently no args)
 *
 * @return none
 */
@@ -167,15 +187,18 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 {
    comrvCacheEntry_t *pCacheEntry;
    u08_t              ucIndex;
-   void*              pBaseAddress = pInitArgs->pCacheMemoeyAddress;
+   void*              pBaseAddress = pComrvCacheBaseAddress;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
-#ifdef D_COMRV_VERIFY_INIT_ARGS
+#ifndef D_COMRV_VERIFY_INIT_ARGS
    comrvErrorArgs_t   stErrArgs;
+   u32_t              uiCacheSizeInBytes;
 #endif /* D_COMRV_VERIFY_INIT_ARGS */
 
-#ifdef D_COMRV_VERIFY_INIT_ARGS
-   /* verify input parameters */
-   if ((!pInitArgs) || (pInitArgs->uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN))
+#ifndef D_COMRV_VERIFY_INIT_ARGS
+   uiCacheSizeInBytes = M_COMRV_CACHE_SIZE_IN_BYTES();
+   /* verify cache configuration - size and alignment to D_COMRV_OVL_GROUP_SIZE_MIN */
+   if (uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
+       uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN)
    {
       stErrArgs.uiErrorNum = D_COMRV_INVALID_INIT_PARAMS_ERR;
       stErrArgs.uiToken    = D_COMRV_INVALID_TOKEN;

@@ -22,7 +22,7 @@
 *
 */
 #include "psp_asm_macros.h"
-.include "comrv_asm_macros.h"
+.include "comrv_macros.inc"
 
 /* total size of used stack */
 .equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
