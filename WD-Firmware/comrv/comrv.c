@@ -388,7 +388,6 @@ void* comrvGetAddressFromToken(void)
          while (ucEntryIndex < ucNumOfEvictionCandidates)
          {
             ucIndex = ucEvictCandidateList[ucEntryIndex];
-            //       it will also save memory
             /* get the candidate entry */
             pDestinationAddress = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
             /* calc the source address - we point here to the cache area
