@@ -56,7 +56,7 @@ WD-Firmware
           ├── nexys_a7 (Support for SweRV v1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
-          ├── build                           <-- examples build scripts
+          ├── build                           <-- example build scripts
           ├── demo_rtosal.c                   <-- Abstruction Layer (AL) demo on FreeRTOS
           ├── main.c                          <-- The main of all demos
           ├──  ....
