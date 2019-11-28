@@ -45,9 +45,21 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
+// TODO: remove this once I add our psp interface
+#if 0
+   extern void psp_vect_table();
+   #define CSRW(reg, val) asm volatile ("csrw " #reg ", %0" :: "r"(val));
+#else
+   #define CSRW(reg, val);
+#endif
+
 int main(int argc, char **argv)
 {
    comrvInitArgs_t stComrvInitArgs;
+
+   /* set the mtvec - used only in debug */
+   // TODO: change to our psp
+   CSRW(mtvec, &psp_vect_table);
 
    comrvInit(&stComrvInitArgs);
 

@@ -129,8 +129,6 @@ typedef struct comrvCacheEntrycomrvCacheEntry
   comrvEntryProperties_t unProperties;
   /* loaded token */
   comrvOverlayToken_t    unToken;
-  /* fixed RAM address that this cache entry refers to */
-  void*                  pFixedEntryAddress;
 } comrvCacheEntry_t;
 
 /* comrv control block */
@@ -160,6 +158,7 @@ typedef struct comrvStatus
 /* comrv init arguments */
 typedef struct comrvInitArgs
 {
+   // currently no args for init
 }comrvInitArgs_t;
 
 /* comrv load arguments */

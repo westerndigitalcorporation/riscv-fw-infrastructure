@@ -113,6 +113,9 @@
 #define M_COMRV_ASSERT(conditionMet)
 #endif /* D_COMRV_DEBUG */
 
+/* calculate the cache address for a given cache entry */
+#define M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucEntryIndex) ((u08_t*)pComrvCacheBaseAddress + (ucEntryIndex<<9))
+
 #define M_COMRV_CACHE_SIZE_IN_BYTES()   ((u08_t*)&__OVERLAY_CACHE_END__ - (u08_t*)&__OVERLAY_CACHE_START__)
 /* this macro is only for code readability (the symbol '__OVERLAY_CACHE_START__'
    is defined in the linker script and defines the start address of comrv cache) */
@@ -216,7 +219,6 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
       pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
       pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
       pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
-      pCacheEntry->pFixedEntryAddress             = pBaseAddress;
       pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
@@ -272,7 +274,7 @@ void* comrvGetAddressFromToken(void)
    comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
-   void                *pAddress, *pNextEvictCandidateCacheAddress;
+   void                *pAddress, *pNextEvictCandidateCacheAddress, *pDestinationAddress;
    u16_t                usOverlayGroupSize, usOffset, usSearchResultIndex;
    u08_t                ucNumOfEvictionCandidates, ucIndex, ucSizeOfEvictionCandidates;
    u08_t                ucEntryIndex, ucEvictCandidateList[D_COMRV_CANDIDATE_LIST_SIZE];
@@ -385,22 +387,22 @@ void* comrvGetAddressFromToken(void)
          /* loop all eviction candidates entries */
          while (ucEntryIndex < ucNumOfEvictionCandidates)
          {
-            // TODO: consider calculating the pFixedEntryAddress instead of having it fixed
+            ucIndex = ucEvictCandidateList[ucEntryIndex];
             //       it will also save memory
             /* get the candidate entry */
-            pEntry = &g_stComrvCB.stOverlayCache[ucEvictCandidateList[ucEntryIndex]];
+            pDestinationAddress = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
             /* calc the source address - we point here to the cache area
                from which we want to copy the overlay group:
-               current-entry-fixed-address + current-entry-group-size = address of the neighbour cache entry  */
-            pAddress = ((u08_t*)pEntry->pFixedEntryAddress + M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(pEntry->unToken));
+               cache-entry-address + current-entry-group-size = address of the neighbour cache entry  */
+            pAddress = pDestinationAddress + M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(pEntry->unToken);
             /* get the cache address of the next evict candidate - it is used to calculate
                the amount of memory to copy */
-            pNextEvictCandidateCacheAddress = g_stComrvCB.stOverlayCache[ucEvictCandidateList[ucEntryIndex+1]].pFixedEntryAddress;
+            pNextEvictCandidateCacheAddress = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucEvictCandidateList[ucEntryIndex+1]);
             /* perform code copy - from neighbour cache entry (pAddress) to current evict cache entry */
-            comrvMemcpyHook(pEntry->pFixedEntryAddress, pAddress, pNextEvictCandidateCacheAddress - pAddress);
+            comrvMemcpyHook(pDestinationAddress, pAddress, pNextEvictCandidateCacheAddress - pAddress);
 
             /* after code copy we need to align the entries structures */
-            for (ucIndex = ucEvictCandidateList[ucEntryIndex] ; ucIndex < ucEvictCandidateList[ucEntryIndex+1] ; ucIndex++)
+            for ( ; ucIndex < ucEvictCandidateList[ucEntryIndex+1] ; ucIndex++)
             {
                /* pEntry will point to the CB entry we want to copy from */
                pEntry = &g_stComrvCB.stOverlayCache[ucIndex + g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits];
@@ -472,7 +474,7 @@ void* comrvGetAddressFromToken(void)
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
       /* now we can load the overlay group */
       stLoadArgs.uiSizeInBytes = usOverlayGroupSize;
-      stLoadArgs.pDest         = g_stComrvCB.stOverlayCache[ucIndex].pFixedEntryAddress;
+      stLoadArgs.pDest         = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
       /* if group wasn't loaded */
@@ -494,7 +496,7 @@ void* comrvGetAddressFromToken(void)
    else
    {
      /* get the loaded address */
-     pAddress = g_stComrvCB.stOverlayCache[usSearchResultIndex].pFixedEntryAddress;
+     pAddress           = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(usSearchResultIndex);
      /* the group size in bytes */
 	  usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
