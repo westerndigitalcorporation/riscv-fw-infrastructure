@@ -96,7 +96,7 @@
 /* macro for verifying overlay group CRC */
 #ifdef D_COMRV_CRC
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)   \
-      if (comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult))  \
+      if (_BUILTIN_EXPECT(comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult),0))  \
       {                                                                          \
          stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;                           \
          stErrArgs.uiToken    = unToken.uiValue;                                 \
@@ -192,16 +192,16 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    u08_t              ucIndex;
    void*              pBaseAddress = pComrvCacheBaseAddress;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
-#ifndef D_COMRV_VERIFY_INIT_ARGS
+#ifdef D_COMRV_VERIFY_INIT_ARGS
    comrvErrorArgs_t   stErrArgs;
    u32_t              uiCacheSizeInBytes;
 #endif /* D_COMRV_VERIFY_INIT_ARGS */
 
-#ifndef D_COMRV_VERIFY_INIT_ARGS
+#ifdef D_COMRV_VERIFY_INIT_ARGS
    uiCacheSizeInBytes = M_COMRV_CACHE_SIZE_IN_BYTES();
    /* verify cache configuration - size and alignment to D_COMRV_OVL_GROUP_SIZE_MIN */
-   if (uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
-       uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN)
+   if (_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
+       uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN, 0))
    {
       stErrArgs.uiErrorNum = D_COMRV_INVALID_INIT_PARAMS_ERR;
       stErrArgs.uiToken    = D_COMRV_INVALID_TOKEN;
@@ -372,7 +372,7 @@ void* comrvGetAddressFromToken(void)
       ucEntryIndex = 0;
 
       /* if you have no/some candidates */
-      if (ucNumOfEvictionCandidates == 0)
+      if (_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0))
       {
          M_COMRV_EXIT_CRITICAL_SECTION();
          stErrArgs.uiErrorNum = D_COMRV_NOT_ENOUGH_ENTRIES;
@@ -408,7 +408,7 @@ void* comrvGetAddressFromToken(void)
                pEntry = &g_stComrvCB.stOverlayCache[ucIndex + g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits];
 #ifdef D_COMRV_OVL_DATA_SUPPORT
                /* an overlay data is present when handling de-fragmentation */
-               if (pEntry->unProperties.stFields.ucData)
+               if (_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
                {
                   M_COMRV_EXIT_CRITICAL_SECTION();
                   stErrArgs.uiErrorNum = D_COMRV_OVL_DATA_DEFRAG_ERR;
@@ -478,7 +478,7 @@ void* comrvGetAddressFromToken(void)
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
       /* if group wasn't loaded */
-      if (!pAddress)
+      if (_BUILTIN_EXPECT(pAddress == 0,0))
       {
          stErrArgs.uiErrorNum = D_COMRV_LOAD_ERR;
          stErrArgs.uiToken    = unToken.uiValue;

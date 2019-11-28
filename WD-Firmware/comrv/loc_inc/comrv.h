@@ -37,6 +37,8 @@
 */
 #define M_COMRV_ENTER_CRITICAL_SECTION()
 #define M_COMRV_EXIT_CRITICAL_SECTION()
+// TODO: use our psp
+#define _BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
 
 /**
 * types
