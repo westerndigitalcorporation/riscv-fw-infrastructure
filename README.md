@@ -55,7 +55,7 @@ WD-Firmware
           ├── ihfive-unleashed (not supported yet)
           ├── nexys_a7 (Support for SweRV v1)
      ├── common                               <-- common source
-     ├── demos                                <-- demos source 
+     ├── demo                                 <-- demos source 
           ├── build                           <-- examples build scripts
           ├── demo_rtosal.c                   <-- Abstruction Layer (AL) demo on FreeRTOS
           ├── main.c                          <-- The main of all demos
@@ -84,33 +84,37 @@ WD-Firmware
       $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
 - Download and install Java SE Runtime Environment
 
-- For RISC-V OpenOCD, you will need to following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
+- For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
                 
       $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
 
 ### Building for source
-- Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
-
-      $ sudo -H gedit /etc/environment
-
-      RISCV_TC_ROOT=/path to [Toolchain-root]
-      
-- Reboot your machine for changes to take affect
-- Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
-- Import WD firmware code:
-	- From 'Eclipse MCU' menu bar select *File* -> *Import*
-	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
-	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
-	- Press *'Finish'* button
-- From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
-- You will need to choose a specific ***demo*** for building a full solution:
-
-        from the eclipse terminal or console:
-        $ cd [WD-firmware-root]/WD-Firmware/demo/build
-        $ ./config.sh
-        
-        Then you will be asked to choose a demo.
-    For more explanation on adding new demos please read the readme file on ***'/demos'***
+- #### Preparations 
+    - Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
+    
+          $ sudo -H gedit /etc/environment
+    
+          RISCV_TC_ROOT=/path to [Toolchain-root]
+          
+    - Reboot your machine for changes to take affect
+    - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
+    - Import WD firmware code:
+    	- From 'Eclipse MCU' menu bar select *File* -> *Import*
+    	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
+    	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
+    	- Press *'Finish'* button
+- #### Build - compile and link 
+    - You will need to choose a specific ***demo*** for building a full solution:
+    
+            From the eclipse terminal or console:
+            $ cd [WD-firmware-root]/WD-Firmware/demo/build
+            $ ./config.sh
+            
+            Then you will be asked to choose a demo.
+            For more explanation on adding new demos please read the readme file on ***'/demos'***
+            
+    - From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
+    - Since the building process SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
 
 ### Downloading & debugging the firmware image (FTDI over USB)
 - #### Setting up the hardware (taken from SiFive Freedom Studio Manual v1p6).
@@ -171,7 +175,7 @@ WD-Firmware
 
 ### Adding new source modules
 
-The folder WD-Firmware/demos/build/ contains a template file (SConscript_template) which can be used.
+The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
 
 # Supporting GCC Releases
 - #### RISCV GCC 8.2
