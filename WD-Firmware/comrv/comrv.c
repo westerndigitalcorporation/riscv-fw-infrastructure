@@ -83,8 +83,7 @@
 #define M_COMRV_GET_OVL_GROUP_SIZE(unToken)          (pOverlayOffsetTable[unToken.stFields.overlayGroupID+1] - \
                                                       pOverlayOffsetTable[unToken.stFields.overlayGroupID])
 /* overlay group size in bytes */
-#define M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(unToken) ((pOverlayOffsetTable[unToken.stFields.overlayGroupID+1] - \
-                                                       pOverlayOffsetTable[unToken.stFields.overlayGroupID]) << 9)
+#define M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(unToken) (M_COMRV_GET_OVL_GROUP_SIZE(unToken) << 9)
 /* token offset in bytes */
 #define M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken)   ((unToken.stFields.offset) * D_COMRV_OFFSET_SCALE_VALUE)
 /* overlay group offset in bytes */
@@ -260,7 +259,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 * 2.  search for the requested token in the loaded cache
 * 2.a for multi group search for each multi group token
 * 3.  if group not loaded, load it
-* 4.  return the address of the function (call or return address)
+* 4.  return the address of the function (call or return address) or dada
 *
 * @param none
 *
@@ -394,7 +393,7 @@ void* comrvGetAddressFromToken(void)
             /* calc the source address - we point here to the cache area
                from which we want to copy the overlay group:
                cache-entry-address + current-entry-group-size = address of the neighbour cache entry  */
-            pAddress = pDestinationAddress + M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(pEntry->unToken);
+            pAddress = pDestinationAddress + M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
             /* get the cache address of the next evict candidate - it is used to calculate
                the amount of memory to copy */
             pNextEvictCandidateCacheAddress = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucEvictCandidateList[ucEntryIndex+1]);
