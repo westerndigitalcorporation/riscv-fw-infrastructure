@@ -189,7 +189,6 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 {
    comrvCacheEntry_t *pCacheEntry;
    u08_t              ucIndex;
-   void*              pBaseAddress = pComrvCacheBaseAddress;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
 #ifdef D_COMRV_VERIFY_INIT_ARGS
    comrvErrorArgs_t   stErrArgs;
@@ -218,7 +217,6 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
       pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
       pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
       pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
-      pBaseAddress = ((u08_t*)pBaseAddress + D_COMRV_OVL_GROUP_SIZE_MIN);
    }
    /* mark the last entry in the LRU list */
    g_stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
