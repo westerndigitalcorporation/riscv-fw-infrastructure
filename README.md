@@ -28,14 +28,24 @@ This repo is WD RISC-V Firmware package, holds:
 See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
 
 # WD Firmware     
-The “WD Firmware package” contains an Abstraction Layer (AL) on embedded small footprint real time operation systems (RTOS). The target is to provide homogenies API for the developer usage, so the kernel can be replaced for several different RTOS’s, without any need from the developer to change its application code.
+The “WD Firmware package” constitutes an SDK FW. It contains Firmware applications and Processor Support Package (PSP) for various cores, alongside demos which support all features.
+The following README file describes how to setup a build environment for the WD RISC-V firmware. It guides how to build the program, downloading it, and debugging it on the supported platforms and cores.
+The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. This demo was based on 
 
-Currently this AL supports FreeRTOS and ThreadX (only API's, without core) with a real running demo for FreeRTOS. 
-The structure of WD Firmware package allows quick and easy integration for more RTOS’s, Platforms, boards and new firmware features. 
 
-Coming soon: more FW features and more Platform supports 
+#### Current FW support:
+- **RTOS-AL** 
+    Abstraction Layer (AL) on embedded small footprint real time operation systems (RTOS). The target is to provide homogenies API for the developer usage, so the kernel can be replaced for several different RTOS’s, without any need from the developer to change its application code. 
+    Currently this AL supports FreeRTOS and ThreadX (only API's, without core) with a real running demo for FreeRTOS. 
+    The structure of WD Firmware package allows quick and easy integration for more RTOS’s, Platforms, boards and new firmware features. 
+    Demos is based on HiFive FW example, by SiFIve. Cuurrently the reference is part of FreeRTOS maintenance 
 
-The following README file describes how to setup a build environment for the WD RISC-V firmware with HiFive1 board; It will build an example application - FreeRTOS demo and describe how to download and debug it. The flow was verified with VMWare player v. 15 hosting Debian 9.6. This demo was based on SiFive code which was ported official FreeRTOS maintement.
+- **Coming soon**: more FW features and more Platform supports 
+
+#### Current Platform and Core support:
+- **HiFive1** 
+- **SweRV** - running on *Nexys-A7 FPGA*
+
 
 ### Source tree structure 
 ```javascript
@@ -45,10 +55,11 @@ WD-Firmware
           ├── ihfive-unleashed (not supported yet)
           ├── nexys_a7 (Support for SweRV v1)
      ├── common                               <-- common source
-     ├── demos                                <-- demos source 
+     ├── demo                                 <-- demos source 
           ├── build                           <-- examples build scripts
           ├── demo_rtosal.c                   <-- Abstruction Layer (AL) demo on FreeRTOS
           ├── main.c                          <-- The main of all demos
+          ├──  ....
      ├── psp                                  <-- psp functionality
      ├── rtos
           ├── rtosal                          <-- rtos abstraction layer
@@ -73,33 +84,37 @@ WD-Firmware
       $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
 - Download and install Java SE Runtime Environment
 
-- For RISC-V OpenOCD, you will need to following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
+- For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
                 
       $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
 
 ### Building for source
-- Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
-
-      $ sudo -H gedit /etc/environment
-
-      RISCV_TC_ROOT=/path to [Toolchain-root]
-      
-- Reboot your machine for changes to take affect
-- Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
-- Import WD firmware code:
-	- From 'Eclipse MCU' menu bar select *File* -> *Import*
-	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
-	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
-	- Press *'Finish'* button
-- From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
-- You you will need to choose a specific ***demo*** for building a full sultion:
-
-        from the eclipse terminal or console:
-        $ cd [WD-firmware-root]/WD-Firmware/demo/build
-        $ python ./config.sh
-        
-        Then you will be asked to choose a demo.
-    For more explnation on adding new demos please read the readme file on ***'/demo'***
+- #### Preparations 
+    - Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
+    
+          $ sudo -H gedit /etc/environment
+    
+          RISCV_TC_ROOT=/path to [Toolchain-root]
+          
+    - Reboot your machine for changes to take affect
+    - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
+    - Import WD firmware code:
+    	- From 'Eclipse MCU' menu bar select *File* -> *Import*
+    	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
+    	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
+    	- Press *'Finish'* button
+- #### Build - compile and link 
+    - You will need to choose a specific ***demo*** for building a full solution:
+    
+            From the eclipse terminal or console:
+            $ cd [WD-firmware-root]/WD-Firmware/demo/build
+            $ ./config.sh
+            
+            Then you will be asked to choose a demo.
+            For more explanation on adding new demos please read the readme file on ***'/demos'***
+            
+    - From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
+    - Since the building process use SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
 
 ### Downloading & debugging the firmware image (FTDI over USB)
 - #### Setting up the hardware (taken from SiFive Freedom Studio Manual v1p6).
@@ -124,13 +139,11 @@ WD-Firmware
     
     Since Nexys-A7 is an FPGA platform it need special handling...
     - ***Prerequisite***: Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
-        - For FPGA image flushing we will need Vivado.
+        - For FPGA image flushing we will need 
         - To Obtain Vivado please follow the instructions at this link: Digilent [Board Files](https://reference.digilentinc.com/vivado/installing-vivado/start)
-          
-			Note: To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
-            
+        - Note: To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
         - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
-        - pin layout for Nexys Pmod JD header with Olimex:
+        - Pin layout for Nexys Pmod JD header with Olimex:
         
                 H4 = TDO
                 H1 = nTRST
@@ -141,8 +154,13 @@ WD-Firmware
 
     - **Download/flush**: for downloading the bit file image, we need to run ***flush_fpga_image.py*** from board/nexys_a7:
     
+<<<<<<< HEAD
             $ export VIVADO_PATH=<your path to vivado executable folder>
             $ cd [WD-firmware-root]/WD-Firmware/board/nexys_a7
+=======
+            $ set VIVADO_PATH=<your path to vivado executable>
+            $ cd /board/nexys_a7
+>>>>>>> 11d2ee01795ca5adf4f986014cccd154e80d673f
             $ python flush_fpga_image.py
 
 
@@ -156,13 +174,13 @@ WD-Firmware
     - Current support
 
             - hifive1
-            - nexys_a7_Swerv1
+            - nexys_A7_Swerv1
             
 
 
 ### Adding new source modules
 
-The folder WD-Firmware/demos/build/ contains a template file (SConscript_template) which can be used.
+The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
 
 # Supporting GCC Releases
 - #### RISCV GCC 8.2
