@@ -1,6 +1,6 @@
 # Build:
 ## Build from *IDE*
-* if you haven't pick a demo yest then you should go to terminal and run the config script
+* if you haven't pick a demo yet then you should go to terminal and run the config script
   ```
   $ [WD-firmware-root]/WD-Firmware/demo/build
   $ ./config.h
@@ -14,12 +14,12 @@ the building process is based on [Scons](https://scons.org/) system. therefore t
   $ cd [WD-firmware-root]/WD-Firmware/demo/build
   ```
 
-* if you haven't pick a demo yest then you should run the config command:
+* if you haven't pick a demo yet then you should run the config command:
 	```
 	$ ./config.h
 	```
 
-* after the demo is set, then the build can be done by invoking the scons from terminal:
+* after the demo is set, then the build can be done by invoking the scons command:
   ```
   $ scons target="my_target"
   ```
