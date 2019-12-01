@@ -18,14 +18,19 @@
 * @file   comrv_api.h
 * @author Ronen Haen
 * @date   11.06.2019
-* @brief  The file defines the COM RV interfaces
+* @brief  The file defines the COM-RV interfaces
 */
 #ifndef __COMRV_TASK_API_H__
 #define __COMRV_TASK_API_H__
 
+#ifndef __clang__
+#error comrv can compile only with llvm
+#endif // #ifndef __clang__
+
 /**
 * include files
 */
+#include "comrv_types.h"
 
 /**
 * definitions
@@ -54,5 +59,8 @@
 /**
 * APIs
 */
+void                   comrvInit(comrvInitArgs_t* pInitParams);
+void                   comrvGetStatus(comrvStatus_t* pComrvStatus);
+D_COMRV_NO_INLINE void comrvInitApplicationStack(void);
 
 #endif /* __COMRV_TASK_API_H__ */

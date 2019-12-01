@@ -1,141 +1,71 @@
-/* This file is based on led_blink code sample from FreedomStudio package
- * (/FreedomStudio/SiFive/Examples/HiFive1/led_blink) */
+#include "common_types.h"
+#include "comrv_api.h"
 
-// See LICENSE for license details.
 
-// This is the program which ships on the HiFive1
-// board, executing out of SPI Flash at 0x20400000.
+#define OVL_OverlayFunc0 _OVERLAY_
+#define OVL_OverlayFunc1 _OVERLAY_
+#define OVL_OverlayFunc2 _OVERLAY_
+#define OVL_benchmark  //_OVERLAY_
+#define OVL_jpegdct  //_OVERLAY_
 
-#include <stdint.h>
-#include "platform.h"
+//extern int OVL_benchmark benchmark(void);
 
-#ifndef _SIFIVE_HIFIVE1_H
-#error "'led_fade' is designed to run on HiFive1 and/or E300 Arty Dev Kit."
+volatile u32_t globalCount = 0;
+volatile u32_t gOverlayFunc0 = 0;
+volatile u32_t gOverlayFunc1 = 0;
+volatile u32_t gOverlayFunc2 = 0;
+
+/* overlay function 2 */
+void OVL_OverlayFunc2 OverlayFunc2(void)
+{
+   gOverlayFunc2+=3;
+}
+
+/* non overlay function */
+__attribute__((noinline)) void NonOverlayFunc(void)
+{
+   globalCount+=1;
+   OverlayFunc2();
+   globalCount+=2;
+}
+
+/* overlay function 1 */
+void OVL_OverlayFunc1 OverlayFunc1(void)
+{
+   gOverlayFunc1+=3;
+   NonOverlayFunc();
+   gOverlayFunc1+=4;
+}
+
+/* overlay function 0 */
+void OVL_OverlayFunc0 OverlayFunc0(void)
+{
+   gOverlayFunc0+=1;
+   OverlayFunc1();
+   gOverlayFunc0+=2;
+}
+
+// TODO: remove this once I add our psp interface
+#if 0
+   extern void psp_vect_table();
+   #define CSRW(reg, val) asm volatile ("csrw " #reg ", %0" :: "r"(val));
+#else
+   #define CSRW(reg, val);
 #endif
 
-static const char led_msg[] = "\a\n\r\n\r\
-55555555555555555555555555555555555555555555555\n\r\
-5555555 Are the LEDs Changing? [y/n]  555555555\n\r\
-55555555555555555555555555555555555555555555555\n\r";
+int main(int argc, char **argv)
+{
+   comrvInitArgs_t stComrvInitArgs;
 
+   /* set the mtvec - used only in debug */
+   // TODO: change to our psp
+   CSRW(mtvec, &psp_vect_table);
 
-static void _putc(char c) {
-  while ((int32_t) UART0_REG(UART_REG_TXFIFO) < 0);
-  UART0_REG(UART_REG_TXFIFO) = c;
-}
+   comrvInit(&stComrvInitArgs);
 
-int _getc(char * c){
-  int32_t val = (int32_t) UART0_REG(UART_REG_RXFIFO);
-  if (val > 0) {
-    *c =  val & 0xFF;
-    return 1;
-  }
-  return 0;
-}
-
-
-static void _puts(const char * s) {
-  while (*s != '\0'){
-    _putc(*s++);
-  }
-}
-
-int main (void){
-
-  // Make sure the HFROSC is on before the next line:
-  PRCI_REG(PRCI_HFROSCCFG) |= ROSC_EN(1);
-  // Run off 16 MHz Crystal for accuracy. Note that the
-  // first line is 
-  PRCI_REG(PRCI_PLLCFG) = (PLL_REFSEL(1) | PLL_BYPASS(1));
-  PRCI_REG(PRCI_PLLCFG) |= (PLL_SEL(1));
-  // Turn off HFROSC to save power
-  PRCI_REG(PRCI_HFROSCCFG) &= ~(ROSC_EN(1));
-  
-  // Configure UART to print
-  GPIO_REG(GPIO_OUTPUT_VAL) |= IOF0_UART0_MASK;
-  GPIO_REG(GPIO_OUTPUT_EN)  |= IOF0_UART0_MASK;
-  GPIO_REG(GPIO_IOF_SEL)    &= ~IOF0_UART0_MASK;
-  GPIO_REG(GPIO_IOF_EN)     |= IOF0_UART0_MASK;
-
-  // 115200 Baud Rate
-  UART0_REG(UART_REG_DIV) = 138;
-  UART0_REG(UART_REG_TXCTRL) = UART_TXEN;
-  UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
-
-  // Wait a bit to avoid corruption on the UART.
-  // (In some cases, switching to the IOF can lead
-  // to output glitches, so need to let the UART
-  // reciever time out and resynchronize to the real 
-  // start of the stream.
-  volatile int i=0;
-  while(i < 10000){i++;}
-
-  //_puts(sifive_msg);
-  //_puts("Config String:\n\r");
-  //_puts(*((const char **) 0x100C));
-  //_puts("\n\r");
-  _puts(led_msg);
-  
-  uint16_t r=0xFF;
-  uint16_t g=0;
-  uint16_t b=0;
-  char c = 0;
-  
-  // Set up RGB PWM
-  
-  PWM1_REG(PWM_CFG)   = 0;
-  // To balance the power consumption, make one left, one right, and one center aligned.
-  PWM1_REG(PWM_CFG)   = (PWM_CFG_ENALWAYS) | (PWM_CFG_CMP2CENTER);
-  PWM1_REG(PWM_COUNT) = 0;
-  
-  // Period is approximately 244 Hz
-  // the LEDs are intentionally left somewhat dim, 
-  // as the full brightness can be painful to look at.
-  PWM1_REG(PWM_CMP0)  = 0;
-
-  GPIO_REG(GPIO_IOF_SEL)    |= ( (1 << GREEN_LED_OFFSET) | (1 << BLUE_LED_OFFSET) | (1 << RED_LED_OFFSET));
-  GPIO_REG(GPIO_IOF_EN )    |= ( (1 << GREEN_LED_OFFSET) | (1 << BLUE_LED_OFFSET) | (1 << RED_LED_OFFSET));
-  GPIO_REG(GPIO_OUTPUT_XOR) &= ~( (1 << GREEN_LED_OFFSET) | (1 << BLUE_LED_OFFSET));
-  GPIO_REG(GPIO_OUTPUT_XOR) |= (1 << RED_LED_OFFSET);
-
-  while(1){
-    volatile uint64_t *  now = (volatile uint64_t*)(CLINT_CTRL_ADDR + CLINT_MTIME);
-    volatile uint64_t then = *now + 100;
-    while (*now < then) { }
-  
-    if(r > 0 && b == 0){
-      r--;
-      g++;
-    }
-    if(g > 0 && r == 0){
-      g--;
-      b++;
-    }
-    if(b > 0 && g == 0){
-      r++;
-      b--;
-    }
-    
-    uint32_t G = g;
-    uint32_t R = r;
-    uint32_t B = b;
-    
-    PWM1_REG(PWM_CMP1)  = G << 4;            // PWM is low on the left, GPIO is low on the left side, LED is ON on the left.
-    PWM1_REG(PWM_CMP2)  = (B << 1) << 4;     // PWM is high on the middle, GPIO is low in the middle, LED is ON in the middle.
-    PWM1_REG(PWM_CMP3)  = 0xFFFF - (R << 4); // PWM is low on the left, GPIO is low on the right, LED is on on the right.
-  
-    // Check for user input
-    if (c == 0){
-      if (_getc(&c) != 0){
-        _putc(c);
-        _puts("\n\r");
-        
-        if ((c == 'y') || (c == 'Y')){
-          _puts("PASS\n\r");
-        } else{
-          _puts("FAIL\n\r");
-        }
-      }
-    }
-  }
+   globalCount+=1;
+   OverlayFunc0();
+   //benchmark();
+   globalCount+=2;
+   return 0;
 }

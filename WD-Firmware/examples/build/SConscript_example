@@ -23,6 +23,7 @@ if not os.path.exists(out_dir):
 
 list_files_c=[
    [os.path.join('examples', Env['EXAMPLE_NAME'], 'main.c'), os.path.join(out_dir, 'main.o')],
+#   [os.path.join('examples', Env['EXAMPLE_NAME'], 'src_edn_libedn.c'), os.path.join(out_dir, 'src_edn_libedn.o')],
 ]
 
 list_files_a=[]
@@ -39,6 +40,8 @@ include_paths = [
   Env['BSP_INC_PATH'],
   Env['RTOS_INC_PATH'],
   Env['RTOSAL_INC_PATH'],
+  Env['COMRV_INC_PATH'],
+  os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),
 ]
 
 # linker flags

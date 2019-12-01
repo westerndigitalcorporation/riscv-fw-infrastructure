@@ -31,29 +31,35 @@ if not os.path.exists(out_dir):
 list_files_c=[
 #  ['location of c file to compile', 'location of resulting object file']
    [os.path.join('comrv', 'comrv.c'), os.path.join(out_dir, 'comrv.o')],
+   [os.path.join('comrv', 'comrv_hooks.c'), os.path.join(out_dir, 'comrv_hooks.o')],
 ]
 
 # list of assembly files to compile
 list_files_a=[
 #  ['location of assembly file to compile', 'location of resulting object file']
-   [os.path.join('comrv', 'comrv_asm.S'), os.path.join(out_dir, 'comrv_asm.o')],
+   [os.path.join('comrv', 'comrv_entry.S'), os.path.join(out_dir, 'comrv_entry.o')],
 ]
 
 # compiler flags
-c_flags = [] + Env['C_FLAGS']
-a_flags = [] + Env['A_FLAGS']
+c_flags = Env['C_FLAGS']
+a_flags = Env['A_FLAGS']
 
 # defines
-Env['COMRV_DEF'] = []
-
+Env['COMRV_DEF'] = ['']
+'''
+Env['COMRV_DEF'] = ['D_COMRV_EVICTION_POLICY=1', 'D_COMRV_MULTI_GROUP_SUPPORT', 
+                    'D_COMRV_FW_INSTRUMENTATION', 'D_COMRV_VERIFY_INIT_ARGS',
+                    'D_COMRV_OVL_DATA_SUPPORT', 'D_COMRV_CRC', 'D_COMRV_DEBUG']
+'''
 # include paths
-local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),]
+local_includes  = [os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),
+                   os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
 public_includes = [Env['PUBLIC_INC_PATH'], os.path.join(Env['ROOT_DIR'], 'comrv', 'api_inc'),]
 Env['COMRV_INC_PATH'] = public_includes
-include_paths = public_includes + local_includes
+include_paths = public_includes + local_includes + [os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc')]
 
 # linker flags
-Env['LINKFLAGS'] += []
+Env['LINKFLAGS'] += ['-Wl,--grouping-file=comrv-baremetal.csv']
 
 # loop the list of c files and compile them
 objects = []

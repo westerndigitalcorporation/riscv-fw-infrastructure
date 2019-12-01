@@ -20,7 +20,8 @@
 * @date   11.06.2019
 * @brief  The file defines the COM-RV configuration
 */
-
+#ifndef __COMRV_CONFIG_H__
+#define __COMRV_CONFIG_H__
 /**
 * include files
 */
@@ -28,5 +29,17 @@
 /**
 * definitions
 */
+/* minimum size of an overlay group */
+#define D_COMRV_OVL_GROUP_SIZE_MIN                          512
+/* maximum size of an overlay group */
+#define D_COMRV_OVL_GROUP_SIZE_MAX                          4096
+/* maximum number of overlay calls depth within the
+   entire application; if the application contains several tasks
+   this define must cover the max number at any given time */
+#define D_COMRV_CALL_STACK_DEPTH                            10
+/* size of the overlay cache - the size of the RAM provided
+   for loading and executing the overlay groups; granularity
+   expressed in bytes */
+#define D_COMRV_OVL_CACHE_SIZE_IN_BYTES                     1024
 
 #endif /* __COMRV_CONFIG_H__ */

@@ -40,22 +40,22 @@
 .endif
 
 .macro m_SET_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
+    /* save address of g_uiIsInterruptContext -> a0 */
     la        a0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
+    /* load the value g_uiIsInterruptContext -> a1 */
     m_LOAD    a1, 0x0(a0)
-    /* increment t1 by 1 */
+    /* increment a1 by 1 */
     m_ADDI    a1, a1, 1
     /* store new value to g_uiIsInterruptContext */
     m_STORE   a1, 0x0(a0)
 .endm
 
 .macro m_CLEAR_INT_CONTEXT
-    /* save address of g_uiIsInterruptContext -> t0 */
+    /* save address of g_uiIsInterruptContext -> a0 */
     la        a0, g_uiIsInterruptContext
-    /* load the value g_uiIsInterruptContext -> t1 */
+    /* load the value g_uiIsInterruptContext -> a1 */
     m_LOAD    a1, 0x0(a0)
-    /* decrement t1 by 1 */
+    /* decrement a1 by 1 */
     m_ADDI    a1, a1, -1
     /* store new value to g_uiIsInterruptContext */
     m_STORE   a1, 0x0(a0)

@@ -38,10 +38,14 @@ def produce_sections_size(target, source, env):
    if not text in open(map_file_name).read():
       # .map was updated so add the sections size
       elf_name = str(source[0])
-      size_util_name = os.path.join(Env['TOOLS_BASE_DIR'], 'riscv64-unknown-elf-size')
+      size_util_name = os.path.join(Env['SECONDARY_TOOLS_BASE_DIR'], Env['TOOLS_PREFIX']+'-unknown-elf-size')
       headere = header_create([text])
       os.system('echo "' + headere + '" >> ' + map_file_name)
       os.system(size_util_name + ' ' + elf_name + ' >> ' + map_file_name) 
+      # uncomment the following 3 lines to create a dumpfile 
+      objdump_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.dmp'
+      objdump_util_name = os.path.join(Env['SECONDARY_TOOLS_BASE_DIR'], Env['TOOLS_PREFIX']+'-unknown-elf-objdump')
+      os.system(objdump_util_name + ' ' + elf_name + ' -DSh > ' + objdump_file_name)
    return None
 
 tc_root_env_var_name = 'RISCV_TC_ROOT'
@@ -87,14 +91,31 @@ Env = Environment(toolpath = ['toolchain'])
 # path to the RV toolchain 'bin' directory
 Env['TOOLS_BASE_DIR'] = os.path.join(tc_root_path, 'bin')
 
+# determine tools prefix 
+for file in os.listdir(Env['TOOLS_BASE_DIR']):
+    if file.startswith("riscv64"):
+        Env['TOOLS_PREFIX'] = 'riscv64'
+        break
+    elif file.startswith("riscv32"):
+        Env['TOOLS_PREFIX'] = 'riscv32'
+        break
+
 # Tool c compiler execution
-Env['CC_BIN'] = "riscv64-unknown-elf-gcc"
+Env['CC_BIN']     = Env['TOOLS_PREFIX'] + "-unknown-elf-gcc"
 # Tool assembler compiler execution
-Env['AS_BIN'] = "riscv64-unknown-elf-gcc"
+#Env['AS_BIN']    = Env['TOOLS_PREFIX'] + "-unknown-elf-gcc"
 # Tool archiver execution
-Env['AR_BIN'] = "riscv64-unknown-elf-ar"
+Env['AR_BIN']     = Env['TOOLS_PREFIX'] + "-unknown-elf-ar"
 # Tool archiver execution
-Env['RANLIB_BIN'] = "riscv64-unknown-elf-ranlib"
+Env['RANLIB_BIN'] = Env['TOOLS_PREFIX'] + "-unknown-elf-ranlib"
+
+# get cc name
+os.system(os.path.join(Env['TOOLS_BASE_DIR'],Env['CC_BIN']) + ' --version > tmp.txt 2>&1')
+if 'clang' in open('tmp.txt').read():
+  Env['COMPILER_NAME'] = 'clang'
+else:
+  Env['COMPILER_NAME'] = 'gcc'
+os.system('rm tmp.txt')
 
 Env.Tool('as_rv')
 Env.Tool('cc_rv')
@@ -107,7 +128,6 @@ verbose = True
 Env['OBJSUFFIX'] = '.o'
 Env['LIBSUFFIX'] = '.a'
 Env['PROGSUFFIX'] = '.elf'
-
 Env['ROOT_DIR']        = root_dir
 Env['BSP_DEF']         = []
 Env['RTOSAL_DEF']      = []
@@ -118,6 +138,7 @@ Env['TARGET_LIBS']     = []
 Env['RTOS_CORE']       = []
 Env['PUBLIC_INC_PATH'] = []
 Env['PUBLIC_DEF']      = [] 
+Env['COMRV_INC_PATH']  = []
 Env['OUT_DIR_PATH']    = 'output'
 Env['TARGET_BOARD']    = tagretName
 Env['EXAMPLE_NAME']    = exampleName
@@ -125,8 +146,24 @@ out_file_name = Env['TARGET_BOARD']+'-'+ exampleName
 map_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.map'
 elf_file_name = os.path.join(Env['OUT_DIR_PATH'], out_file_name) + '.elf'
 
-cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
-Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + cc_options
+# add compiler specific options 
+if Env['COMPILER_NAME'] == 'clang':
+  tc_root_env_var_name = 'RISCV_TC_ROOT_SECONDARY'
+  secondary_tc_root_path = os.getenv(tc_root_env_var_name)
+  # check if the TC environment variable is set or empty
+  if secondary_tc_root_path == '' or secondary_tc_root_path == None:
+    print ("Set environment variable '" + tc_root_env_var_name + "' to point to the RISCV secondary toolchain root")
+    exit(1)
+  cc_specific_options = ['--gcc-toolchain='+secondary_tc_root_path, '--sysroot=' + os.path.join(secondary_tc_root_path,Env['TOOLS_PREFIX']) + '-unknown-elf/']
+  #cc_specific_options = ['-foverlay-functions',
+  Env['SECONDARY_TOOLS_BASE_DIR'] = os.path.join(secondary_tc_root_path,'bin')
+else:
+  cc_specific_options = ['-mcmodel=medany']
+  # in case we use pure gcc the secondary toolchain is the same as the base
+  Env['SECONDARY_TOOLS_BASE_DIR'] = Env['TOOLS_BASE_DIR']  
+  
+cc_options = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac'] + cc_specific_options 
+Env['C_FLAGS'] = ['-foverlay-functions', '-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf', '-include', 'sys/cdefs.h', '-ffixed-x31', '-ffixed-x30', '-ffixed-x29', '-ffixed-x28'] + cc_options
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + cc_options
 
 if verbose == False:

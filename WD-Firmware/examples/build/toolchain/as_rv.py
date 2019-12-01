@@ -63,7 +63,7 @@ def generate(env):
         static_obj.add_emitter(suffix, SCons.Defaults.StaticObjectEmitter)
         shared_obj.add_emitter(suffix, SCons.Defaults.SharedObjectEmitter)
 
-    env['AS']        = os.path.join("$TOOLS_BASE_DIR", "$AS_BIN")
+    env['AS']        = os.path.join("$SECONDARY_TOOLS_BASE_DIR", "$AS_BIN")
     env['ASFLAGS']   = SCons.Util.CLVar('')
     env['ASCOM']     = '$AS $ASFLAGS -o $TARGET $_CCCOMCOM $SOURCES'
     env['ASPPFLAGS'] = '$ASFLAGS'

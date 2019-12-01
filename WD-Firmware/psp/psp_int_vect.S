@@ -74,7 +74,7 @@
 This implementation supports riscv privileged v1.10
 */
 
-.include "psp_asm_macros.h"
+#include "psp_asm_macros.h"
 
 .section  .text.entry
 .align 4
