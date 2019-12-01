@@ -59,19 +59,19 @@ typedef struct comrvStackFrame
 typedef struct comrvTokenFields
 {
   /* overlay token indication 0: address; 1: overlay token */
-  u32_t overlayAddressToken:1;
+  u32_t uiOverlayAddressToken:1;
   /* overlay group ID the function resides in */
-  u32_t overlayGroupID:16;
+  u32_t uiOverlayGroupID:16;
   /* data/function offset within the overlay group – 4 bytes granularity */
-  u32_t offset:10;
+  u32_t uiOffset:10;
   /* caller thunk indication */
-  u32_t thunk:1;
+  u32_t uiThunk:1;
   /* reserved */
-  u32_t reserved:1;
+  u32_t uiReserved:1;
   /* specify the cache ID this overlay group belongs to */
-  u32_t cacheID:2;
+  u32_t uiCacheID:2;
   /* multi group indication */
-  u32_t multiGroup:1;
+  u32_t uiMultiGroup:1;
 } comrvTokenFields_t;
 
 /* overlay token */
@@ -90,7 +90,7 @@ typedef struct comrvPropertiesFields
   u08_t ucData:1;
   /* loaded group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
   u08_t ucSizeInMinGroupSizeUnits:4;
-  u08_t reserved:2;
+  u08_t ucReserved:2;
 } comrvPropertiesFields_t;
 
 /* cache entry */

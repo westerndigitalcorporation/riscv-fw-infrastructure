@@ -80,14 +80,14 @@
                                          asm volatile ("lw t3, 0x0(t3)"  : : : );
 #endif
 /* overlay group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
-#define M_COMRV_GET_OVL_GROUP_SIZE(unToken)          (pOverlayOffsetTable[unToken.stFields.overlayGroupID+1] - \
-                                                      pOverlayOffsetTable[unToken.stFields.overlayGroupID])
+#define M_COMRV_GET_OVL_GROUP_SIZE(unToken)          (pOverlayOffsetTable[unToken.stFields.uiOverlayGroupID+1] - \
+                                                      pOverlayOffsetTable[unToken.stFields.uiOverlayGroupID])
 /* overlay group size in bytes */
 #define M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(unToken) (M_COMRV_GET_OVL_GROUP_SIZE(unToken) << 9)
 /* token offset in bytes */
-#define M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken)   ((unToken.stFields.offset) * D_COMRV_OFFSET_SCALE_VALUE)
+#define M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken)   ((unToken.stFields.uiOffset) * D_COMRV_OFFSET_SCALE_VALUE)
 /* overlay group offset in bytes */
-#define M_COMRV_GET_GROUP_OFFSET_IN_BYTES(unToken)   ((pOverlayOffsetTable[unToken.stFields.overlayGroupID]) << 9)
+#define M_COMRV_GET_GROUP_OFFSET_IN_BYTES(unToken)   ((pOverlayOffsetTable[unToken.stFields.uiOverlayGroupID]) << 9)
 /* convert a given entry size in to an entry properties value */
 #define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)   (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
 /* */
@@ -313,7 +313,7 @@ void* comrvGetAddressFromToken(void)
    }
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
-   if (unToken.stFields.multiGroup == 0)
+   if (unToken.stFields.uiMultiGroup == 0)
    {
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
       /* search for token */
@@ -325,7 +325,7 @@ void* comrvGetAddressFromToken(void)
    {
       /* first ucEntryIndex to search from in the multi group table is determined by the overlayGroupID
          field of the requested token */
-      ucEntryIndex = unToken.stFields.overlayGroupID;
+      ucEntryIndex = unToken.stFields.uiOverlayGroupID;
       do
       {
          /* search for the token */
@@ -346,16 +346,16 @@ void* comrvGetAddressFromToken(void)
    {
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       /* if the requested token is a multi-group token */
-      if (unToken.stFields.multiGroup != 0)
+      if (unToken.stFields.uiMultiGroup != 0)
       {
          /* for now we take the first token in the list of tokens */
          // TODO: need to have a more sophisticated way to select the multi-group */
-         unToken = pOverlayMultiGroupTokensTable[unToken.stFields.overlayGroupID];
+         unToken = pOverlayMultiGroupTokensTable[unToken.stFields.uiOverlayGroupID];
          /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
             update comrv stack frame with the loaded multi group table entry.
             It is used to calculate the actual return offset in case we
             are returning to a multi group token */
-         usSelectedMultiGroupEntry = unToken.stFields.overlayGroupID;
+         usSelectedMultiGroupEntry = unToken.stFields.uiOverlayGroupID;
       }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
@@ -657,7 +657,7 @@ static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
    {
       pCacheEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex];
       /* if token already loaded */
-      if (pCacheEntry->unToken.stFields.overlayGroupID == unToken.stFields.overlayGroupID)
+      if (pCacheEntry->unToken.stFields.uiOverlayGroupID == unToken.stFields.uiOverlayGroupID)
       {
          /* return the actual function location within the loaded overlay group */
          return ucEntryIndex;
