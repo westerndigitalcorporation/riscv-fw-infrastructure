@@ -55,6 +55,7 @@ typedef struct comrvStackFrame
 } comrvStackFrame_t;
 
 /* overlay token fields */
+//TODO: check without bitfield
 typedef struct comrvTokenFields
 {
   /* overlay token indication 0: address; 1: overlay token */
