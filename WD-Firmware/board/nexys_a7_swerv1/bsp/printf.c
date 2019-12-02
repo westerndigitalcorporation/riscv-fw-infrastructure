@@ -379,18 +379,9 @@ int printfNexys( const char* format, ... )
 		va_end( argp);
 	}
 
+	uart_putchar('\n');
 	return res;
 }
 
-/* [OS]: resovled symbols if needed.... need triple check */
-/*
-void _sbrk() {}
-void _write(){}
-void _close(){}
-void _fstat(){}
-void _isatty(){}
-void _lseek(){}
-void _read(){}
-*/
 
 

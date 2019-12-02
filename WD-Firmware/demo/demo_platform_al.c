@@ -30,6 +30,10 @@
 
 #ifdef D_HI_FIVE1
    #include <unistd.h>
+#endif
+
+#ifdef D_NEXYS_A7
+   #include "printf.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
@@ -90,6 +94,12 @@ void demoUartInit(void)
 {
 #ifdef D_HI_FIVE1
 	/* Empty implementation */
+#endif
+#ifdef D_NEXYS_A7
+	printfNexys("------------------------------------------");
+	printfNexys("Hello from SweRV core running on NexysA7  ");
+	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
+	printfNexys("------------------------------------------");
 #endif
 }
 
