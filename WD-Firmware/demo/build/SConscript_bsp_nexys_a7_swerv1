@@ -23,7 +23,10 @@ utils.fnCreateFolder(strOutDir)
     
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
-listCFiles = []
+listCFiles = [
+   (os.path.join('board', 'nexys_a7_swerv1', 'bsp', 'printf.c'), os.path.join(strOutDir, 'printf.o')),
+]
+
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
@@ -39,8 +42,13 @@ listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 Env['PUBLIC_DEF'] += ['D_NEXYS_A7']
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
+
 # include paths
-listIncPaths = [ ] + Env['PUBLIC_INC']
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'board', 'nexys_a7_swerv1', 'bsp')]
+             
+# privte includes
+listIncPaths = [] + Env['PUBLIC_INC']
+
 
 if not Env["Scan"]:
   # c file objects

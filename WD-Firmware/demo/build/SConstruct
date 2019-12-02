@@ -22,9 +22,15 @@ import time
 import utils
 from demos.config import clsGenerate
 
-strRiscvTchainRoot = 'RISCV_TC_ROOT'
+strRiscvTchainRoot  = 'RISCV_TC_ROOT'
+strLinkerScriptFile = "link.lds"
+strStartHeader      = "\n-----------------------------------"
+strEndHeader        = "-----------------------------------\n"
+strBin              = 'bin'
+strBsp              = 'bsp_'
+strSconscriptPrefix = 'SConscript_'
 listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
-listDependencies = ['libftdi1-2',]
+listDependencies    = ['libftdi1-2']
 
 #### scons custom arguments ####
 strTargetName = ARGUMENTS.get('target', '')
@@ -60,7 +66,7 @@ Env = Environment(toolpath = ['toolchain'])
 #Env['BUILDERS']['Download'] = Builder(action = download)
 
 # path to the RV toolchain 'bin' directory
-Env['TOOLS_BASE_DIR'] = os.path.join(strTCRootPath, 'bin')
+Env['TOOLS_BASE_DIR'] = os.path.join(strTCRootPath, strBin)
 
 # Tool c compiler execution
 Env['CC_BIN'] = "riscv64-unknown-elf-gcc"
@@ -76,18 +82,18 @@ Env.Tool('cc_rv')
 Env.Tool('ar_rv')
 
 # set output file suffixes
-Env['OBJSUFFIX'] = '.o'
-Env['LIBSUFFIX'] = '.a'
+Env['OBJSUFFIX']  = '.o'
+Env['LIBSUFFIX']  = '.a'
 Env['PROGSUFFIX'] = '.elf'
 
-Env['ROOT_DIR']               = os.path.join(os.getcwd(),"..", "..")
-Env['TARGET_LIBS']          = []
-Env['RTOS_CORE']            = []
-Env['PUBLIC_DEF']            = [] 
-Env['PUBLIC_INC']             = [os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
-Env['OUT_DIR_PATH']       = 'output'
-Env['TARGET_BOARD']     = strTargetName
-Env['EXAMPLE_NAME']     = objDemo.strName
+Env['ROOT_DIR']     = os.path.join(os.getcwd(),"..", "..")
+Env['TARGET_LIBS']  = []
+Env['RTOS_CORE']    = []
+Env['PUBLIC_DEF']   = [] 
+Env['PUBLIC_INC']   = [os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
+Env['OUT_DIR_PATH'] = 'output'
+Env['TARGET_BOARD'] = strTargetName
+Env['EXAMPLE_NAME'] = objDemo.strName
 
 
 Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strMap_file)
@@ -98,10 +104,10 @@ Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cp
 
 if verbose == False:
   # set output to minimal mode
-  Env['CCCOMSTR'] = 'Compiling $SOURCES'
+  Env['CCCOMSTR']   = 'Compiling $SOURCES'
   Env['LINKCOMSTR'] = 'Linking $TARGET'
-  Env['ASCOMSTR'] = 'Compiling $SOURCES'
-  Env['ARCOMSTR'] = 'Archiving $TARGET'
+  Env['ASCOMSTR']   = 'Compiling $SOURCES'
+  Env['ARCOMSTR']   = 'Archiving $TARGET'
 
 # to solve long command line problems (in win32)
 #SetupSpawn(Env)
@@ -112,7 +118,7 @@ if verbose == False:
 utils.fnCreateFolder(Env['OUT_DIR_PATH'])
 
 # linker flags
-Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc', '-Wl,--wrap=free', '-Wl,--wrap=open', '-Wl,--wrap=lseek', 
+Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc', '-Wl,--wrap=free', '-Wl,--wrap=open', '-Wl,--wrap=lseek', 
                     '-Wl,--wrap=read', '-Wl,--wrap=write', '-Wl,--wrap=fstat', '-Wl,--wrap=stat', '-Wl,--wrap=close', 
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
@@ -120,7 +126,7 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib',  '-Wl,--wrap=malloc
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions
 
 strBoardFolder = os.path.join(Env['ROOT_DIR'], 'board', Env['TARGET_BOARD'])
-strLinkerScriptFile = os.path.join(strBoardFolder, 'link.lds')
+strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
 Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
 #, LIBPATH='.'
 
@@ -132,16 +138,22 @@ Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
-Env["Scan"] = True
-SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env')
-for strSconscript in objDemo.listSconscripts:
-  SConscript('SConscript_%s' % strSconscript, exports='Env')
+#prepare all Sconscripts for build
+objDemo.listSconscripts.append(strBsp+ Env['TARGET_BOARD']) 
 
+Env["Scan"] = True
+for strSconscript in objDemo.listSconscripts:
+  SConscript(strSconscriptPrefix +'%s' % strSconscript, exports='Env')
+  
+ 
 arrLibs = []
 Env["Scan"] = False
-arrLibs.append(SConscript('SConscript_bsp_'+ Env['TARGET_BOARD'], exports='Env'))
+# print all SConscripts build files
+print strStartHeader
+print "Building SConscripts files:\n\n-%s" % "\n-".join(objDemo.listSconscripts)
+print strEndHeader
 for strSconscript in objDemo.listSconscripts:
-  arrLibs.append(SConscript('SConscript_%s' % strSconscript, exports='Env'))
+  arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
   
 strElfFileName = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
 objBundle = Env.Program(strElfFileName, arrLibs, LIBS=Env['TARGET_LIBS'])

@@ -366,7 +366,10 @@ const u32_t ulValueToSend = 100UL;
 static void demoRtosalReceiveMsgTask( void *pvParameters )
 {
 	u32_t ulReceivedValue;
-    char stringValue[10];
+    #ifdef D_HI_FIVE1
+     char stringValue[10];
+    #endif
+
     for( ;; )
     {
         rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
