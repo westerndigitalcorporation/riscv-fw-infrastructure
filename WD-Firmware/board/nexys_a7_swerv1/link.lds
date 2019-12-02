@@ -26,7 +26,7 @@ ENTRY( _start )
 MEMORY
 {
   /* --------  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M --------  */
-  ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64K
+  ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 128K
 }
 
 /*----------------------------------------------------------------------*/
