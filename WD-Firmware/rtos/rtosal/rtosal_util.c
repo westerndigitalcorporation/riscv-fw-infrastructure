@@ -141,10 +141,10 @@ RTOSAL_SECTION void rtosalTick(void)
  *
  * rtosalStaticTask_t **ppxIdleTaskTCBBuffer - pointer to Task's Control-Block buffer (pointer to pointer as it is output parameter)
  * rtosalStack_t **ppxIdleTaskStackBuffer - pointer to Task's stack buffer  (pointer to pointer as it is output parameter)
- * uint32_t *pulIdleTaskStackSize - Task's stack size (pointer, as it is output parameter)
+ * u32_t *pulIdleTaskStackSize - Task's stack size (pointer, as it is output parameter)
  *
  */
-void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rtosalStack_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize)
+void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rtosalStack_t **ppxIdleTaskStackBuffer, u32_t *pulIdleTaskStackSize)
 {
   *ppxIdleTaskTCBBuffer = (rtosalStaticTask_t*)&stIdleTask;
   *ppxIdleTaskStackBuffer = (rtosalStack_t*)&uIdleTaskStackBuffer[0];
@@ -156,10 +156,10 @@ void vApplicationGetIdleTaskMemory(rtosalStaticTask_t **ppxIdleTaskTCBBuffer, rt
  *
  * rtosalStaticTask_t **ppxTimerTaskTCBBuffer - pointer to Task's Control-Block buffer (pointer to pointer as it is output parameter)
  * rtosalStack_t **ppxTimerTaskStackBuffer - pointer to Task's stack buffer  (pointer to pointer as it is output parameter)
- * uint32_t *pulTimerTaskStackSize - Task's stack size (pointer, as it is output parameter)
+ * u32_t *pulTimerTaskStackSize - Task's stack size (pointer, as it is output parameter)
  *
  */
-void vApplicationGetTimerTaskMemory(rtosalStaticTask_t **ppxTimerTaskTCBBuffer, rtosalStack_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize)
+void vApplicationGetTimerTaskMemory(rtosalStaticTask_t **ppxTimerTaskTCBBuffer, rtosalStack_t **ppxTimerTaskStackBuffer, u32_t *pulTimerTaskStackSize)
 {
   *ppxTimerTaskTCBBuffer = (rtosalStaticTask_t*)&stTimerTask;
   *ppxTimerTaskStackBuffer = (rtosalStack_t*)&uTimerTaskStackBuffer[0];
