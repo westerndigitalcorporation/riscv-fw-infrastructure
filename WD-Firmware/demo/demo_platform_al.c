@@ -28,11 +28,9 @@
 #include "demo_platform_al.h"
 #include "psp_api.h"
 
-#ifdef D_HI_FIVE1
+#if defined(D_HI_FIVE1)
    #include <unistd.h>
-#endif
-
-#ifdef D_NEXYS_A7
+#elif defined(D_NEXYS_A7)
    #include "printf.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
