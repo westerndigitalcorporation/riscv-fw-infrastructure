@@ -28,8 +28,10 @@
 #include "demo_platform_al.h"
 #include "psp_api.h"
 
-#ifdef D_HI_FIVE1
+#if defined(D_HI_FIVE1)
    #include <unistd.h>
+#elif defined(D_NEXYS_A7)
+   #include "printf.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
@@ -90,6 +92,12 @@ void demoUartInit(void)
 {
 #ifdef D_HI_FIVE1
 	/* Empty implementation */
+#endif
+#ifdef D_NEXYS_A7
+	printfNexys("------------------------------------------");
+	printfNexys("Hello from SweRV core running on NexysA7  ");
+	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
+	printfNexys("------------------------------------------");
 #endif
 }
 
