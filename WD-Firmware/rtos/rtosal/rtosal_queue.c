@@ -28,11 +28,14 @@
 #include "common_types.h"
 #include "common_defines.h"
 #include "rtosal_queue_api.h"
-#include "rtosal_macro.h"
-#include "rtosal.h"
+#include "rtosal_macros.h"
+#include "rtosal_util.h"
+#include "rtosal_task_api.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "queue.h"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -50,8 +53,10 @@
 /**
 * local prototypes
 */
-D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
-                                       u32_t uiWaitTimeoutTicks, u32_t uiSendToFront);
+ u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
+		            const void* pRtosalMsgQueueItem,
+                    u32_t uiWaitTimeoutTicks,
+					u32_t uiSendToFront);
 
 /**
 * external prototypes
@@ -66,11 +71,11 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
 * Create a message queue
 *
 * @param pRtosalMsgQueueCb      - Pointer to queue control block to be created
-* @param pRtosMsgQueueBuffer    - Poiter to the queue buffer (its size must be
+* @param pRtosMsgQueueBuffer    - Pointer to the queue buffer (its size must be
 *                                 uiRtosMsgQueueSize * uiRtosMsgQueueItemSize)
 * @param uiRtosMsgQueueSize     - Maximum number of items ( queue deep )
 * @param uiRtosMsgQueueItemSize - Queue message-item size in bytes
-* @param pRtosalMsgQueueName    - String of the queue name (for debuging)
+* @param pRtosalMsgQueueName    - String of the queue name (for debugging)
 *
 * @return u32_t               - D_RTOSAL_SUCCESS
 *                             - D_RTOSAL_QUEUE_ERROR  - The pRtosalMsgQueueCb is invalid or been used
@@ -104,10 +109,12 @@ RTOSAL_SECTION u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, v
       uiRes = D_RTOSAL_QUEUE_ERROR;
    }
 #elif D_USE_THREADX
-   // TODO: ?????
+   #error "Add THREADX appropriate definitions"
    // for thread, on uiRtosMsgQueueItemSize we need to translate bytes to numerical values: 1-16 where each idx is 32bit word
    // and on uiRtosMsgQueueSize we need to trans to bytes
    //uiRes = add a call to ThreadX queue create API
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -132,8 +139,9 @@ RTOSAL_SECTION u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
    vQueueDelete(pRtosalMsgQueueCb->msgQueueHandle);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX queue destroy API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;
@@ -167,8 +175,8 @@ RTOSAL_SECTION u32_t rtosalMsgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, con
 }
 
 #ifdef D_USE_FREERTOS
-D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
-                                    u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
+u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQueueItem,
+                   u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
@@ -181,7 +189,7 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
    if (uiSendToFront == D_RTOSAL_TRUE)
    {
       /* msgQueueSend invoked from an ISR context */
-      if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+      if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
       {
          /* send the queue message */
          uiRes = xQueueSendToFrontFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
@@ -195,7 +203,7 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
    else
    {
       /* msgQueueSend invoked from an ISR context */
-      if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+      if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
       {
          uiRes = xQueueSendToBackFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
       }
@@ -225,8 +233,8 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
    return uiRes;
 }
 #elif D_USE_THREADX
-D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
-                                    u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
+u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMsgQueueItem,
+                   u32_t uiWaitTimeoutTicks, u32_t uiSendToFront)
 {
    u32_t uiRes;
 
@@ -246,6 +254,8 @@ D_INLINE D_ALWAYS_INLINE u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
 
    return uiRes;
 }
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
 /**
@@ -273,6 +283,8 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
 #ifdef D_USE_FREERTOS
    /* specify if a context switch is needed as a uiResult calling FreeRTOS ...ISR function */
    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueCb, pRtosalMsgQueueCb == NULL, D_RTOSAL_QUEUE_ERROR);
@@ -280,7 +292,7 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
 #ifdef D_USE_FREERTOS
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueDstBuf, pRtosalMsgQueueDstBuf == NULL, D_RTOSAL_PTR_ERROR);
    /* rtosalMsgQueueRecieve invoked from an ISR context */
-   if (pspIsInterruptContext() == D_PSP_INT_CONTEXT)
+   if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
       uiRes = xQueueReceiveFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, &xHigherPriorityTaskWoken);
    }
@@ -306,8 +318,9 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
       rtosalContextSwitchIndicationSet();
    }
 #elif D_USE_THREADX
-   // TODO:
-   //uiRes = add a call to ThreadX queue recieve API
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
    return uiRes;

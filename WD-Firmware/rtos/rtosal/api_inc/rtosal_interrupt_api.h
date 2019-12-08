@@ -67,14 +67,6 @@ typedef void (*rtosalInterruptHandler_t)(void);
 * APIs
 */
 
-/**
-* This function is invoked by the system timer interrupt
-*
-* @param  none
-*
-* @return none
-*/
-void rtosalTick(void);
 
 /**
 * The function installs an interrupt service routine per risc-v cuase

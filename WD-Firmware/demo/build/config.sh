@@ -1,0 +1,1 @@
+python ./demos/config.py

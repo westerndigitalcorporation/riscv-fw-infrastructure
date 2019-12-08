@@ -21,7 +21,7 @@
 * @brief  The file implements the COM-RV entry function
 *
 */
-#include "psp_asm_macros.h"
+#include "psp_core_base.inc"
 .include "comrv_macros.inc"
 
 /* total size of used stack */
@@ -82,12 +82,12 @@ comrvEntry:
     fence.i
     /* save the address of the next free stack frame in t2 - new stack frame
        for this engine call */
-    mv      t2, t4
+    mv          t2, t4
     /* load to t4 the offset to the previous free stack frame */
-    lh      t4, D_COMRV_PREV_STACK_FRAME(t2)
+    lh          t4, D_COMRV_PREV_STACK_FRAME(t2)
     /* set in t4 the address of the next free stack frame - will be used in
         the next engine call */
-    add     t4, t2, t4
+    add         t4, t2, t4
     /* enable interrupts */
     m_COMRV_ENABLE_INTS
     /* at this point t4 points to the next free frame, t3 points to the top
@@ -95,94 +95,94 @@ comrvEntry:
     /* link the allocated frame to its stack - we link the allocated frame
        to the stack pointed by t3. */
     /* calc the offset from the new stack frame (t2) to previous stack frame (t3) */
-    sub     t3, t3, t2
+    sub         t3, t3, t2
     /* in current stack frame (t2) save the offset to previous stack frame */
-    sh      t3, D_COMRV_PREV_STACK_FRAME(t2)
+    sh          t3, D_COMRV_PREV_STACK_FRAME(t2)
     /* link allocated stack frame */
-    mv      t3, t2
+    mv          t3, t2
     /* save callee token */
-    m_STORE t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
+    M_PSP_STORE t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
     /* save the return address */
-    m_STORE ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
+    M_PSP_STORE ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* check if callee token is an overlay token (in t5 bit0 is set) */
-    andi    t2, t5, D_COMRV_TOKEN_INDICATION
+    andi        t2, t5, D_COMRV_TOKEN_INDICATION
     /* if t2 is 0 it means callee is a non overlay function so we can
        skip search and load */
-    beqz    t2, comrv_invoke_callee
+    beqz        t2, comrv_invoke_callee
     /* change sp for temporary storage */
-    m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
+    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 in the next free stack frame */
-    m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
+    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* Add the indication we are calling a new overlay function
        this indication is required to calculate the correct offset
        when returning to an overlay function */
-    ori     t3, t3, D_COMRV_INVOKE_CALLEE_BIT_0
+    ori         t3, t3, D_COMRV_INVOKE_CALLEE_BIT_0
     /* search if the token (t5) is already loaded */
-    jal     comrvGetAddressFromToken
+    jal         comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
-    mv      t5, a0
+    mv          t5, a0
     /* restore a0 - may contain an actual callee function argument */
-    m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
+    M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
-    m_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
+    M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
 
 comrv_invoke_callee:
     /* call the function */
-    jalr    t5
+    jalr        t5
 
 comrv_igonr_caller_thunk_stack_frame:
     /* load the return address */
-    m_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
+    M_PSP_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay
        or an actual return address; first we need to unlink the top of the
        com-rv stack frame, return it back to the stack frame pool and get
        read the caller token (in previous frame it will be the callee token) */
     /* load the offset to previous stack frame */
-    lh      t5, D_COMRV_PREV_STACK_FRAME(t3)
+    lh          t5, D_COMRV_PREV_STACK_FRAME(t3)
     /* unlink the top of the stack - t3 hold the unlinked stack frame address
        t5 will hold the address of the top of the stack */
-    add     t5, t5, t3
+    add         t5, t5, t3
     /* disable interrupts */
     m_COMRV_DISABLE_INTS
     /* link the freed stack frame back to the stack frames pool;
        t2 will hold the offset to the previous free stack frame */
-    sub     t4, t4, t3
+    sub         t4, t4, t3
     /* save the offset to the previous free stack frame */
-    sh      t4, D_COMRV_PREV_STACK_FRAME(t3)
+    sh          t4, D_COMRV_PREV_STACK_FRAME(t3)
     /* link the free stack frame back to the pool */
-    mv      t4, t3
+    mv          t4, t3
     /* enable interrupts */
     m_COMRV_ENABLE_INTS
     /* save the top of the stack to the stack register */
-    mv      t3, t5
+    mv          t3, t5
     /* read caller token (will be in the callee field now as we look at
        the previous stack frame) */
-    m_LOAD  t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
+    M_PSP_LOAD  t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
     /* t2 will hold the token type - address/token */
-    andi    t2, t5, D_COMRV_TOKEN_INDICATION
+    andi        t2, t5, D_COMRV_TOKEN_INDICATION
     /* t2 is 0 means return to a non-overlay function so we can skip
        token search and load */
-    beqz    t2, comrv_exit_ret_to_caller
+    beqz        t2, comrv_exit_ret_to_caller
     /* place thunk bit in the msb */
-    slli    t2, t5, D_COMRV_THUNK_SHMT
+    slli        t2, t5, D_COMRV_THUNK_SHMT
     /* if thunk bit set (t2 negative) we skip current comrv stack frame */
-    bltz    t2, comrv_igonr_caller_thunk_stack_frame
+    bltz        t2, comrv_igonr_caller_thunk_stack_frame
     /* change sp for temporary storage */
-    m_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
+    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
-    m_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
+    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* save ra as in the token as a placeholder - this field
        is no longer in use */
-    m_STORE ra, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
+    M_PSP_STORE ra, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
     /* search if the token (t5) is already loaded */
-    jal     comrvGetAddressFromToken
+    jal         comrvGetAddressFromToken
     /* an overlay function is now loaded and a0 holds the actual
        address we can keep it in ra */
-    mv      ra, a0
+    mv          ra, a0
     /* restore a0 */
-    m_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
+    M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
-    m_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
+    M_PSP_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */

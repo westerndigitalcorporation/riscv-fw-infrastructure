@@ -73,68 +73,14 @@
 /*
 This implementation supports riscv privileged v1.10
 */
-.include "psp_asm_macros.h"
 
-/* saves mstatus and tcb */
-.macro m_portSAVE_CONTEXT
-    .global    pxCurrentTCB
-    /* Store mstatus */
-    csrr      t0, mstatus
-    m_STORE   t0, 32 * REGBYTES(sp)
-    /* Store current stackpointer in task control block (TCB) */
-    m_LOAD    t0, pxCurrentTCB
-    m_STORE   sp, 0x0(t0)
-.endm
+#include "psp_core_base.inc"
+.include "psp_macros.inc"
+#include "rtosal_defines.inc"
+#include "rtosal_macros.inc"
 
- /* restore mstatus and tcb */
-.macro m_portRESTORE_CONTEXT
-    .global    pxCurrentTCB
-    /* Load stack pointer from the current TCB */
-    m_LOAD    sp, pxCurrentTCB
-    m_LOAD    sp, 0x0(sp)
-    /* Load task program counter */
-    m_LOAD    t0, 33 * REGBYTES(sp)
-    csrw      mepc, t0
-    /* Load saved mstatus */
-    m_LOAD    t0, 32 * REGBYTES(sp)
-    csrw      mstatus, t0
-.endm
-
-.macro m_portEND_SWITCHING_ISR branch_label
-    /* save address of g_rtosalContextSwitch -> a0 */
-    la        a0, g_rtosalContextSwitch
-    /* load the value g_rtosalContextSwitch -> a1 */
-    m_LOAD    a1, 0x0(a0)
-    /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz      a1, \branch_label
-    /* clear g_rtosalContextSwitch */
-    /* TODO: if bitmanip exist add bit set */
-    m_STORE   zero, 0x0(a0)
-    /* perform context switch */
-.if D_USE_FREERTOS
-    m_portSAVE_CONTEXT
-    jal     vTaskSwitchContext
-    m_portRESTORE_CONTEXT
-.elseif D_USE_THREADX
-.endif /* .if D_USE_FREERTOS */
-.endm
-
-/* Saves current Machine Exception Program Counter (MEPC) as task program counter */
-.macro m_portSAVE_EPC
-    csrr      t0, mepc
-    m_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/* Saves current return adress (RA) as task program counter */
-.macro m_portSAVE_RA
-    LOAD      t0, 1 * REGBYTES(sp)
-    m_STORE   t0, 33 * REGBYTES(sp)
-.endm
-
-/*/not called on a context switch*/
-.macro m_portRESTORE_SP
-    m_LOAD    x2, 2 * REGBYTES(sp)
-.endm
+.global    pxCurrentTCB
+.global    rtosalHandleEcall
 
 .section  .text.entry
 .align 4
@@ -142,8 +88,10 @@ This implementation supports riscv privileged v1.10
 
 .ifndef D_RTOSAL_VECT_TABLE
 rtosal_vect_table:
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    M_PSP_PUSH_REGFILE
+    M_PSP_SET_INT_CONTEXT
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK  /* After RegFile is pushed onto application's-Stack, we change sp to point to ISR-Stack */
     csrr    t0, mcause
     bge     t0, zero, rtosal_vect_table_
     slli    t0, t0, 2
@@ -158,83 +106,113 @@ rtosal_vect_table_:
 .else
 rtosal_vect_table:
 .endif /* #if D_RTOSAL_VECT_TABLE */
-    j       rtosa_exceptions_int       /* User software interrupt & exceptions */
+    j       rtosal_exceptions_int       /* User software interrupt & exceptions */
     .align 2
-    j       rtosa_reserved_int         /* Supervisor software interrupt        */
+    j       rtosal_reserved_int         /* Supervisor software interrupt        */
     .align 2
-    j       rtosa_reserved_int         /* Reserved for future standard use     */
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
     .align 2
-    j       rtosa_m_soft_int           /* Machine software interrupt           */
+    j       rtosal_m_soft_int           /* Machine software interrupt           */
     .align 2
-    j       rtosa_reserved_int         /* User timer interrupt                 */
+    j       rtosal_reserved_int         /* User timer interrupt                 */
     .align 2
-    j       rtosa_reserved_int         /* Supervisor timer interrupt           */
+    j       rtosal_reserved_int         /* Supervisor timer interrupt           */
     .align 2
-    j       rtosa_reserved_int         /* Reserved for future standard use     */
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
     .align 2
-    j       rtosa_m_timer_int          /* Machine timer interrupt              */
+    j       rtosal_m_timer_int          /* Machine timer interrupt              */
     .align 2
-    j       rtosa_reserved_int         /* User external interrupt              */
+    j       rtosal_reserved_int         /* User external interrupt              */
     .align 2
-    j       rtosa_reserved_int         /* Supervisor external interrupt        */
+    j       rtosal_reserved_int         /* Supervisor external interrupt        */
     .align 2
-    j       rtosa_reserved_int         /* Reserved for future standard use     */
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
     .align 2
-    j       rtosa_m_external_int       /* Machine external interrupt           */
+    j       rtosal_m_external_int       /* Machine external interrupt           */
     .align 2
 
-rtosa_exceptions_int:
+rtosal_exceptions_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    M_PSP_PUSH_REGFILE                                    /* Push registers of current application onto stack */
+    M_PSP_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0                 /* Save MEPC & MSTATUS on stack. Save SP in currunt application CB */
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                 /* After RegFile is pushed onto application's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    /* call the exception handler */
-    m_CALL_INT_HANDLER g_fptrIntExceptionIntHandler
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    M_PSP_CALL_INT_HANDLER g_fptrIntExceptionIntHandler   /* Call the exception handler - if it is ECALL handler, then it also does RESTORE-CONTEXT*/
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0              /* Restore SP (application's one) and MEPC & MSTATUS */
+    M_PSP_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
+    M_PSP_POP_REGFILE                                     /* Restore the registers of current application from the stack */
     mret
 
-rtosa_m_soft_int:
+rtosal_m_soft_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    M_PSP_PUSH_REGFILE                                       /* Push registers of current application onto stack */
+    M_PSP_SET_INT_CONTEXT                                    /* Mark we are in interrupt context */
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0                    /* Save MEPC & MSTATUS on stack. Save SP in currunt application CB */
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto application's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMSoftIntHandler
-    m_portEND_SWITCHING_ISR rtosa_m_soft_int_no_cs
-rtosa_m_soft_int_no_cs:
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    M_PSP_CALL_INT_HANDLER g_fptrIntMSoftIntHandler          /* Call the interrupt handler */
+    M_RTOSAL_END_CONTEXT_SWITCH_FROM_ISR rtosal_m_soft_int_no_cs /* Check if context switch is required now. If yes - handle it now */
+rtosal_m_soft_int_no_cs:
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0                    /* Restore SP (application's one) and MEPC & MSTATUS */
+    M_PSP_CLEAR_INT_CONTEXT                                  /* Clear interrupt context indication */
+    M_PSP_POP_REGFILE                                        /* Restore the registers of current application from the stack */
     mret
 
-rtosa_m_timer_int:
+rtosal_m_timer_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    M_PSP_PUSH_REGFILE                                       /* Push registers of current application onto stack */
+    M_PSP_SET_INT_CONTEXT                                    /* Mark we are in interrupt context */
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0                    /* Save MEPC & MSTATUS on stack. Save SP in currunt application CB */
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto application's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    m_portSAVE_CONTEXT
-    m_portSAVE_EPC
-    m_CALL_INT_HANDLER g_fptrIntMTimerIntHandler
-    m_portRESTORE_CONTEXT
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    M_PSP_CALL_INT_HANDLER g_fptrIntMTimerIntHandler         /* Call the interrupt handler */
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0                 /* Restore SP (application's one) and MEPC & MSTATUS */
+    M_PSP_CLEAR_INT_CONTEXT                                  /* Clear interrupt context indication */
+    M_PSP_POP_REGFILE                                        /* Restore the registers of current application from the stack */
     mret
 
-rtosa_m_external_int:
+rtosal_m_external_int:
 .ifdef D_RTOSAL_VECT_TABLE
-    m_pushREGFILE
-    m_SET_INT_CONTEXT
+    M_PSP_PUSH_REGFILE                                            /* Push registers of current application onto stack */
+    M_PSP_SET_INT_CONTEXT                                         /* Mark we are in interrupt context */
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0                         /* Save MEPC & MSTATUS on stack. Save SP in currunt application CB */
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                         /* After RegFile is pushed onto application's-stack, we change sp to point to ISR-Stack */
 .endif /* D_RTOSAL_VECT_TABLE */
-    m_CALL_INT_HANDLER g_fptrIntMExternIntHandler
-    m_portRESTORE_SP
-    m_portEND_SWITCHING_ISR rtosa_m_external_int_no_cs
-rtosa_m_external_int_no_cs:
-    m_CLEAR_INT_CONTEXT
-    m_popREGFILE
+    M_PSP_CALL_INT_HANDLER g_fptrIntMExternIntHandler                /* Call the interrupt handler */
+    M_RTOSAL_END_CONTEXT_SWITCH_FROM_ISR rtosal_m_external_int_no_cs  /* Check if context switch is required now. If yes - handle it now */
+rtosal_m_external_int_no_cs:
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0                         /* Restore SP (application's one) and MEPC & MSTATUS */
+    M_PSP_CLEAR_INT_CONTEXT                                          /* Clear interrupt context indication */
+    M_PSP_POP_REGFILE                                                /* Restore the registers of current application from the stack */
     mret
 
-.weak rtosa_reserved_int
-rtosa_reserved_int:
+
+.weak rtosal_reserved_int
+rtosal_reserved_int:
 1:
     nop
     nop
     j 1b
+
+.align 8
+.func
+/* Implements context-switch as a result of ECALL exception */
+rtosalHandleEcall:
+    /* Update & save MEPC contents on the application's stack: */
+    /* 1. Use application's stack (rather than ISR's stack) */
+    M_PSP_CHANGE_SP_FROM_ISR_TO_APP_STACK  pxCurrentTCB, 0
+    /* 2. Read MEPC content as saved on stack (location 0) */
+    M_PSP_LOAD  a0, D_RTOSAL_MEPC_LOC_IN_STK(sp)
+    /* 3. Advance the address by 4 in order to return the next instraction right after the ECALL yielding */
+    M_PSP_ADDI  a0, a0, 4
+    /* 4. Write back the number to application's stack (location 0) */
+    M_PSP_STORE a0, D_RTOSAL_MEPC_LOC_IN_STK(sp)
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK
+    M_RTOSAL_SWITCH_CONTEXT
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0    /* This macro restors sp to the one used by current application, and restores MEPC and MSTATUS CSRs*/
+    M_PSP_CLEAR_INT_CONTEXT
+    M_PSP_POP_REGFILE
+    mret
+.endfunc
+
