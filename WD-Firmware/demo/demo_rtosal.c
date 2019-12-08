@@ -132,9 +132,9 @@ static rtosalSemaphore_t stEventSemaphore;
 /* The counters used by the various examples.  The usage is described in the
  * comments at the top of this file.
  */
-static volatile uint32_t ulCountOfTimerCallbackExecutions = 0;
-static volatile uint32_t ulCountOfItemsReceivedOnQueue = 0;
-static volatile uint32_t ulCountOfReceivedSemaphores = 0;
+static volatile u32_t ulCountOfTimerCallbackExecutions = 0;
+static volatile u32_t ulCountOfItemsReceivedOnQueue = 0;
+static volatile u32_t ulCountOfReceivedSemaphores = 0;
 
 /* Variables related to the tasks in this application */
 static rtosalTask_t stRxTask;
@@ -144,7 +144,7 @@ static rtosalTimer_t stLedTimer;
 static rtosalStackType_t uRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
 static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static rtosalStackType_t uSemTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
-static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(uint32_t)];
+static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
 
 
 /**
@@ -200,7 +200,7 @@ void demoRtosalCreateTasks(void *pParam)
     M_PSP_SET_CSR(mie, D_PSP_MIP_MEIP);
 
     /* Create the queue used by the send-msg and receive-msg tasks. */
-    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(uint32_t), NULL);
+    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
     if (res != D_RTOSAL_SUCCESS)
     {
     	demoOutputMsg("Msg-Q creation failed\n", 22);
@@ -270,7 +270,7 @@ void demoRtosalCreateTasks(void *pParam)
  */
 void demoRtosalTimerTickHandler(void)
 {
-static uint32_t ulCount = 0;
+static u32_t ulCount = 0;
 
     /* The RTOS tick hook function is enabled by setting configUSE_TICK_HOOK to
     1 in FreeRTOSConfig.h.
@@ -338,7 +338,7 @@ static void demoRtosalTimerCallback(void* xTimer)
  */
 static void demoRtosalSendMsgTask( void *pvParameters )
 {
-const uint32_t ulValueToSend = 100UL;
+const u32_t ulValueToSend = 100UL;
 
     /* Initialise xNextWakeTime - this only needs to be done once. */
     for( ;; )
@@ -365,8 +365,11 @@ const uint32_t ulValueToSend = 100UL;
  */
 static void demoRtosalReceiveMsgTask( void *pvParameters )
 {
-    uint32_t ulReceivedValue;
-    char stringValue[10];
+	u32_t ulReceivedValue;
+    #ifdef D_HI_FIVE1
+     char stringValue[10];
+    #endif
+
     for( ;; )
     {
         rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);

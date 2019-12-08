@@ -38,6 +38,10 @@
 #ifdef D_HI_FIVE1
     #define D_LED_GREEN_ON 1
     #define D_LED_BLUE_ON  2
+
+#elif D_NEXYS_A7
+    #define D_LED_GREEN_ON 'X' //unknown
+    #define D_LED_BLUE_ON  'X' //unknown
 #else
     #define D_LED_GREEN_ON 'X' //unknown
     #define D_LED_BLUE_ON  'X' //unknown
