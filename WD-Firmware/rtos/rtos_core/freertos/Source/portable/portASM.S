@@ -102,7 +102,9 @@ vPortEndScheduler:
     j 1b
 
 .align 8
+#if __gcc__
 .func
+#endif
 pxPortInitialiseStack:
 	csrr t0, mstatus					/* Obtain current mstatus value. */
     M_PSP_ADDI t1, x0, 0x188                /* Generate the value 0x1880, which are -   */
@@ -128,5 +130,6 @@ pxPortInitialiseStack:
     M_PSP_ADDI a0, a0, -REGBYTES
     M_PSP_STORE a1, 0(a0)                         /* mret value (pxCode parameter) onto the stack. */
     ret
+#if __gcc__
 .endfunc
-
+#endif
