@@ -42,6 +42,13 @@ STR_RV_GCC_ENV_VAR_NAME      = 'RISCV_GCC_TC_ROOT'
 STR_RV_LLVM_ENV_VAR_NAME     = 'RISCV_LLVM_TC_ROOT'
 STR_RV_BINUTILS_ENV_VAR_NAME = 'RISCV_BINUTILS_ROOT'
 
+STR_NEW_LINE = "\n"
+
+STR_OVL_DATA_SEC_NAME = ".ovlgrpdata"
+STR_RESERVED_OVL_SEC_NAME = ".reserved_ovl"
+INT_SEC_ADDR_INDEX = 3
+INT_SEC_SIZE_INDEX = 5
+
 # this function creates a header string
 def fnHeaderCreate(listHeader):
    strHeader = ""
@@ -70,13 +77,55 @@ def fnProduceDump(target, source, env):
    os.system(strDmpUtilName + ' ' + env['ELF_FILE'] + ' -DSh > ' + strDmpName)
    return None
 
+# move overlay section from virtual address to flash address 
+def fnMoveOverlaySection(target, source, env):
+   strReadElfUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['READELF_BIN'])
+   strObjcopyUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['OBJCOPY_BIN'])
+   # get elf sections and save them to STR_TMP_FILE
+   os.system(strReadElfUtilName + ' -S ' + env['ELF_FILE'] + ' > ' + STR_TMP_FILE)
+   # read STR_TMP_FILE
+   f = open(STR_TMP_FILE, "r")
+   strElfSections = f.read()
+   f.close()
+   intOvlSectionSize = 0
+   listSectionProperties = []
+   listLines = strElfSections.split(STR_NEW_LINE)
+   for strLine in listLines:
+     # remove leading '[ '
+     strLine = strLine.replace('[ ', '', 1)
+     # search for the reserved overlay section
+     if strLine.find(STR_RESERVED_OVL_SEC_NAME) >= 0:
+       listSectionProperties.extend(strLine.split())
+       # save the section address and size
+       strReservedSectionAddress = listSectionProperties[INT_SEC_ADDR_INDEX]
+       intReservedSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX])
+       listSectionProperties = []
+     # search for the overlay data section
+     elif strLine.find(STR_OVL_DATA_SEC_NAME) >= 0:
+       listSectionProperties.extend(strLine.split())
+       # save the section size
+       intOvlSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX])
+       listSectionProperties = []
+   # delete the temporary file
+   os.system(STR_REMOVE_FILE % STR_TMP_FILE)
+   # if we have overlays
+   if intOvlSectionSize != 0:
+      # verify the overlay groups section size fits the reserved overlay section size
+      if intOvlSectionSize <= intReservedSectionSize:
+         # change the address of .ovlgrpdata section to be the address of the reserved section
+         os.system("%s --change-section-address %s=0x%s %s %s" % (strObjcopyUtilName, STR_OVL_DATA_SEC_NAME, strReservedSectionAddress, env['ELF_FILE'], env['ELF_FILE']))
+      else:
+         print ("Error: can't move .ovlgrpdata")
+         print "'%s' is too small [0x%s] while '%s' size is [0x%s]" %(STR_RESERVED_OVL_SEC_NAME, intReservedSectionSize, STR_OVL_DATA_SEC_NAME, intOvlSectionSize)
+         os.system("rm " + env['ELF_FILE'])
+   return None
 # under linux, verify installation dependencies
 def fnCheckInstalledDependencis(listDependencis):
   if platform.uname()[0] == STR_PLATFORM:
     for strDependency in listDependencis:
       os.system(STR_LIST_PKGS % strDependency)
       if STR_NO_INSTALL in open(STR_TMP_FILE).read():
-        print("please install missing library - " + strDependency)
+        print("Error: please install missing library - " + strDependency)
         os.system(STR_REMOVE_FILE % STR_TMP_FILE)
         exit(1)
     os.system(STR_REMOVE_FILE % STR_TMP_FILE)
@@ -99,23 +148,23 @@ def fnSetToolchainPath(strTCName, env):
        env['RISCV_LLVM_TC_PATH'] = os.getenv(STR_RV_LLVM_ENV_VAR_NAME)
        # check if the TC environment variable is set or empty
        if not env['RISCV_LLVM_TC_PATH']:
-         print ("Set environment variable '" + STR_RV_LLVM_ENV_VAR_NAME + "' to point to the RISCV llvm root")
+         print ("Error: Set environment variable '" + STR_RV_LLVM_ENV_VAR_NAME + "' to point to the RISCV llvm root")
          exit(1)
        # check if the binutils environment variable is set or empty
        env['RISCV_BINUTILS_TC_PATH'] = os.getenv(STR_RV_BINUTILS_ENV_VAR_NAME)
        env['UTILS_BASE_DIR']         = env['RISCV_BINUTILS_TC_PATH'] 
        if not env['RISCV_BINUTILS_TC_PATH']:
-         print ("Set environment variable '" + STR_RV_BINUTILS_ENV_VAR_NAME + "' to point to the RISCV bunutils root")
+         print ("Error: Set environment variable '" + STR_RV_BINUTILS_ENV_VAR_NAME + "' to point to the RISCV bunutils root")
          exit(1)
     elif strTCName == STR_TC_GCC:
        env['RISCV_GCC_TC_PATH'] = os.getenv(STR_RV_GCC_ENV_VAR_NAME)
        env['UTILS_BASE_DIR']    = env['RISCV_GCC_TC_PATH'] 
        # check if the TC environment variable is set or empty
        if not env['RISCV_GCC_TC_PATH']:
-         print ("Set environment variable '" + STR_RV_GCC_ENV_VAR_NAME + "' to point to the RISCV gcc root")
+         print ("Error: Set environment variable '" + STR_RV_GCC_ENV_VAR_NAME + "' to point to the RISCV gcc root")
          exit(1)
     else:
-      print ("No toolchain present")
+      print ("Error: No toolchain present")
       exit(1)
 
 # get toolchain specific comiler/linker flags
@@ -128,7 +177,7 @@ def fnGetToolchainSpecificFlags(strTCName, env):
       listSpecificLinkerOptions = ['']
       listSpecificCFlagsOptions = ['']
     else:
-      print ("No toolchain present")
+      print ("Error: No toolchain present")
       exit(1)
 
     return listSpecificCFlagsOptions, listSpecificLinkerOptions

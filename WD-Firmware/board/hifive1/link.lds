@@ -6,6 +6,7 @@ MEMORY
 {
   flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
   ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 16K
+  ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
   /* Temporary location for storing overlay functions. This is needed for the
      linker to place functions, and as the addresses of functions in debuginfo,
      but is never loaded onto the system. */
@@ -17,6 +18,7 @@ PHDRS
   flash PT_LOAD;
   ram_init PT_LOAD;
   ram PT_NULL;
+  ovl PT_NULL;
 }
 
 SECTIONS
@@ -57,20 +59,24 @@ SECTIONS
     *(.gnu.linkonce.r.*)
   } >flash AT>flash :flash
 
-  /* Overlay data */
-  .ovlgrpdata       : {. = ALIGN(512); PROVIDE (OVERLAY_START_OF_OVERLAYS = .); __OVERLAY_STORAGE_START__ADDRESS__ = .;} >flash AT>flash :flash
-
   /* Overlay offset table */
   .ovlgrptbl      : {
     overlayOffsetTable = .;
     PROVIDE (OVERLAY_GROUP_TABLE = .);
     *(.ovlgrptbl)
   } >flash AT>flash :flash
+
   /* Overlay multi group table */
   .ovlmultigroup  : {
     overlayMultiGroupTokensTable = .;
     PROVIDE (OVERLAY_MULTI_GROUP_TABLE = .);
     *(.ovlmultigroup)
+  } >flash AT>flash :flash
+
+  .reserved_ovl  :
+  {
+    __OVERLAY_STORAGE_START__ADDRESS__ = .;
+    . = 0x600;
   } >flash AT>flash :flash
 
   . = ALIGN(4);
@@ -184,11 +190,17 @@ SECTIONS
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
 
-  .overlay_sec  :
+  .overlay_sec ALIGN(__comrv_align_size) :
   {
-    . = ALIGN(__comrv_align_size);
-    __OVERLAY_CACHE_START__ = .;
+    __OVERLAY_CACHE_START__ = . ;
     . = __comrv_cache_size; 
-    __OVERLAY_CACHE_END__ = .;
+    __OVERLAY_CACHE_END__ = . ;
   }  >ram AT>ram :ram
+
+  /* Overlay data */
+  .ovlgrpdata       : 
+  {
+    PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
+  } >ovl AT>ovl :ovl
+  
 }

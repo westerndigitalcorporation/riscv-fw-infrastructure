@@ -125,6 +125,7 @@ if Env['TARGET_BOARD'] not in listSupportedBoards:
 
 Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
 Env['BUILDERS']['Dump'] = Builder(action = utils.fnProduceDump)
+Env['BUILDERS']['ObjCopy'] = Builder(action = utils.fnMoveOverlaySection)
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
@@ -148,6 +149,7 @@ for strSconscript in objDemo.listSconscripts:
 objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
 Env.Size(source=objBundle)
 Env.Dump(source=objBundle)
+Env.ObjCopy(source=objBundle)
 
 #append to the map file the   
 #if downloadFlag != '0':
