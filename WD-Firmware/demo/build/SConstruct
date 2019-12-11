@@ -123,9 +123,6 @@ if Env['TARGET_BOARD'] not in listSupportedBoards:
   print "missing target=%s" % " | ".join(listSupportedBoards)
   exit(1)
 
-Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
-Env['BUILDERS']['Dump'] = Builder(action = utils.fnProduceDump)
-Env['BUILDERS']['ObjCopy'] = Builder(action = utils.fnMoveOverlaySection)
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
@@ -147,9 +144,10 @@ for strSconscript in objDemo.listSconscripts:
   arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
 
 objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
-Env.Size(source=objBundle)
-Env.Dump(source=objBundle)
-Env.ObjCopy(source=objBundle)
+# execute post build actions
+AddPostAction(objBundle, Action(utils.fnProduceSectionsSize))
+AddPostAction(objBundle, Action(utils.fnProduceDump))
+AddPostAction(objBundle, Action(utils.fnMoveOverlaySection))
 
 #append to the map file the   
 #if downloadFlag != '0':
