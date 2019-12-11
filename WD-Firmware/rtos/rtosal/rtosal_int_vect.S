@@ -196,7 +196,6 @@ rtosal_reserved_int:
     j 1b
 
 .align 8
-.func
 /* Implements context-switch as a result of ECALL exception */
 rtosalHandleEcall:
     /* Update & save MEPC contents on the application's stack: */
@@ -214,5 +213,4 @@ rtosalHandleEcall:
     M_PSP_CLEAR_INT_CONTEXT
     M_PSP_POP_REGFILE
     mret
-.endfunc
 
