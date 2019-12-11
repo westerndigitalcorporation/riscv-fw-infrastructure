@@ -51,19 +51,9 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
-#ifdef DEBUG_DEMO
-   extern void psp_vect_table();
-   #define CSRW(reg, val) M_PSP_WRITE_CSR(reg, val);
-#else
-   #define CSRW(reg, val);
-#endif /* DEBUG_DEMO */
-
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs;
-
-   /* set the mtvec - used only in debug */
-   CSRW(mtvec, &psp_vect_table);
 
    comrvInit(&stComrvInitArgs);
 
