@@ -34,16 +34,31 @@
 #include "psp_macros.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
+#ifdef D_NEXYS_A7
+    #include "psp_swerv_ehx1_csrs.h"
+#endif
 
 /**
 * definitions
 */
+#ifdef D_HI_FIVE1
+    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
+    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
+#elif D_NEXYS_A7
+    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_DISABLE_SWERV_TIMER();
+    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_ENABLE_SWERV_TIMER();
+#endif
+
+#ifdef D_HI_FIVE1
+    #define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSetupSingleRun(enableInterrupt)
+#elif D_NEXYS_A7
+    #define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSwervEhx1SetupSingleRun(enableInterrupt)
+#endif
 
 /**
 * macros
 */
-#define M_PSP_CLR_TIMER_INT()      M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
-#define M_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
+
 
 /**
 * types
@@ -92,6 +107,13 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 * Function that called upon unregistered Trap handler
 */
 void pspTrapUnhandled(void);
+
+/**
+*
+* Setup function for M-Timer. Called upon initialization of the system
+*
+*/
+void pspTimerSetup(void);
 
 /**
 *
