@@ -17,6 +17,11 @@
 #include "common_types.h"
 #include "psp_macros.h"
 #include "comrv_api.h"
+#include "rtosal_task_api.h"
+#include "rtosal_semaphore_api.h"
+#include "rtosal_task_api.h"
+#include "rtosal_queue_api.h"
+#include "rtosal_time_api.h"
 
 extern void* __OVERLAY_STORAGE_START__ADDRESS__;
 
@@ -67,12 +72,37 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
+/**
+ * demoStart - startup point of the demo application. called from main function.
+ *
+ */
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs;
 
+   /* init comrv */
    comrvInit(&stComrvInitArgs);
 
+   /* run the rtos */
+   rtosalStart(demoCreateTasks);
+}
+
+/**
+ * demoCreateTasks
+ *
+ * Initialize the application:
+ * - Register unhandled exceptions, Ecall exception and Timer ISR
+ * - Create the message queue
+ * - Create the Tx and Rx tasks
+ * - Create the Semaphore and the Sem-Task
+ * - Create the software timer
+ *
+ * This function is called from RTOS abstraction layer. After its completion, the scheduler is kicked on
+ * and the tasks are start to be active
+ *
+ */
+void demoCreateTasks(void *pParam)
+{
    globalCount+=1;
    OverlayFunc0();
    //benchmark();
