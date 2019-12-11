@@ -29,7 +29,7 @@ strEndHeader        = "-----------------------------------\n"
 strBin              = 'bin'
 strBsp              = 'bsp_'
 strSconscriptPrefix = 'SConscript_'
-listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
+listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv_ehx1']
 listDependencies    = ['libftdi1-2']
 
 #### scons custom arguments ####

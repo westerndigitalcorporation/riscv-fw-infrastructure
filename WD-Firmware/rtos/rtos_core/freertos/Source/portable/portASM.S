@@ -91,8 +91,7 @@ This implementation supports riscv privileged v1.10
 //.extern vTaskSwitchContext
 
 xPortStartScheduler:
-    M_PSP_ADDI a0, x0, 1
-    jal pspTimerSetupSingleRun  /* call this function with indication to enable the Timer interrupt */
+    jal pspTimerSetup
     M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
     M_PSP_POP_REGFILE
     mret
