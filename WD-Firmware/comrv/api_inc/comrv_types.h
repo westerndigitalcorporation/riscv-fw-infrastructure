@@ -159,7 +159,13 @@ typedef struct comrvStatus
 /* comrv init arguments */
 typedef struct comrvInitArgs
 {
-   // currently no args for init
+   /* end user specified that multigroup and offset
+      tables can be loaded when comrvInit() is called;
+      Value of 0 means tables are not loaded in comrvInit()
+      and it is the responsibility of the end user to
+      directly call comrvLoadTables(); any non zero value
+      specifies that tables are loaded in comrvInit() */
+   u08_t ucCanLoadComrvTables;
 }comrvInitArgs_t;
 
 /* comrv load arguments */

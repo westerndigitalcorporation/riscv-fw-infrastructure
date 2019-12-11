@@ -52,10 +52,11 @@
 #endif
 #define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
 #define D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT          9
-#define D_COMRV_INVALID_TOKEN                         0xFFFFFFFF
 #define D_COMRV_GROUP_NOT_FOUND                       0xFFFF
 #define D_COMRV_LAST_MULTI_GROUP_ENTRY                0
-
+#define D_COMRV_TABLES_CACHE_ENTRY_INDEX              (D_COMRV_NUM_OF_CACHE_ENTRIES-1)
+#define D_COMRV_LAST_CACHE_ENTRY_INDEX                (D_COMRV_TABLES_CACHE_ENTRY_INDEX)
+#define D_COMRV_TABLES_OFFSET                         0
 /**
 * macros
 */
@@ -89,9 +90,9 @@
 /* overlay group offset in bytes */
 #define M_COMRV_GET_GROUP_OFFSET_IN_BYTES(unToken)   ((pOverlayOffsetTable[unToken.stFields.uiOverlayGroupID]) << 9)
 /* convert a given entry size in to an entry properties value */
-#define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)   (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
+#define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)  (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
 /* */
-#define M_COMRV_GROUP_SIZE_TO_BYTES(groupSize)        ((groupSize) << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)
+#define M_COMRV_GROUP_SIZE_TO_BYTES(groupSize)       ((groupSize) << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)
 /* macro for verifying overlay group CRC */
 #ifdef D_COMRV_CRC
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)   \
@@ -118,11 +119,9 @@
 #define M_COMRV_CACHE_SIZE_IN_BYTES()   ((u08_t*)&__OVERLAY_CACHE_END__ - (u08_t*)&__OVERLAY_CACHE_START__)
 /* this macro is only for code readability (the symbol '__OVERLAY_CACHE_START__'
    is defined in the linker script and defines the start address of comrv cache) */
-#define pComrvCacheBaseAddress (&__OVERLAY_CACHE_START__)
-/* this macro is only for code readability (the symbol overlayOffsetTable
-   is taken from the linker script */
-// TODO: remove once we get the tables in group 0
-#define pOverlayOffsetTable   ((u16_t*)&overlayOffsetTable)
+#define pComrvCacheBaseAddress          (&__OVERLAY_CACHE_START__)
+/* address of offset table (last comrv cache entry) */
+#define pOverlayOffsetTable             ((u16_t*)&g_stComrvCB.stOverlayCache[D_COMRV_TABLES_CACHE_ENTRY_INDEX])
 /* this macro is only for code readability (the symbol overlayMultiGroupTokensTable
    is taken from the linker script */
 // TODO: remove once we get the tables in group 0
@@ -208,8 +207,9 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 #endif /* D_COMRV_VERIFY_INIT_ARGS */
 
 #ifdef D_COMRV_EVICTION_LRU
-   /* initialize all cache entries */
-   for (ucIndex = 0 ; ucIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucIndex++)
+   /* initialize all cache entries (exclude last cache entry which is
+      reserved for comrv tables) */
+   for (ucIndex = 0 ; ucIndex < D_COMRV_LAST_CACHE_ENTRY_INDEX ; ucIndex++)
    {
       pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
       /* initially each entry points to the previous and next neighbor cells */
@@ -249,6 +249,11 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
       initialized (M_COMRV_WRITE_POOL_REG) */
    comrvInitApplicationStack();
 #endif /* D_COMRV_USE_OS */
+   /* check if end user enables loading offset and multi group tables */
+   if (pInitArgs->ucCanLoadComrvTables != 0)
+   {
+      comrvLoadTables();
+   }
 }
 
 /**
@@ -788,4 +793,45 @@ void* comrvMemset(void* pMemory, s32_t siVal, u32_t uiSizeInDwords)
    }
 
    return pMemory;
+}
+
+/**
+* load offset and multigroup tables
+*
+* @param None
+*
+* @return None
+*/
+void comrvLoadTables(void)
+{
+   void            *pAddress;
+   comrvLoadArgs_t  stLoadArgs;
+   comrvErrorArgs_t stErrArgs;
+   /* at this point comrv cache is empty so we take the
+      last entry and use it to store the multigroup and
+      offset tables */
+   /* tables are located at offset 0 (first group) */
+   stLoadArgs.uiGroupOffset = D_COMRV_TABLES_OFFSET;
+   /* set the load group size */
+   stLoadArgs.uiSizeInBytes = D_COMRV_OVL_GROUP_SIZE_MIN;
+   /* load address is the last comrv cache entry */
+   stLoadArgs.pDest         = pOverlayOffsetTable;
+   /* load the tables */
+   pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
+   /* if group wasn't loaded */
+   if (_BUILTIN_EXPECT(pAddress == 0,0))
+   {
+      stErrArgs.uiErrorNum = D_COMRV_TBL_LOAD_ERR;
+      stErrArgs.uiToken    = D_COMRV_TABLES_TOKEN;
+      comrvErrorHook(&stErrArgs);
+   }
+   // TODO: add multigroup table location
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+
+   /* set cache entry token and properties */
+   g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unToken.uiValue = D_COMRV_TABLES_TOKEN;
+   g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucLocked = D_COMRV_ENTRY_LOCKED;
+   /* we set the size 0 so that debugger will not continue scanning the cache entries */
+   g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
 }

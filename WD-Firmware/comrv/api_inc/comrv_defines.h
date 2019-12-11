@@ -94,9 +94,10 @@
 #define D_COMRV_LOAD_ERR                  2
 #define D_COMRV_OVL_DATA_DEFRAG_ERR       3
 #define D_COMRV_CRC_CHECK_ERR             4
+#define D_COMRV_TBL_LOAD_ERR              5
 
 /* comrv defines */
-#define D_COMRV_INSTRUMENTATION_BASE_IND          0xFC
+#define D_COMRV_INSTRUMENTATION_BASE_IND        0xFC
 #define D_COMRV_INSTRUMENTATION_INVOKE_BIT      1
 #define D_COMRV_INSTRUMENTATION_LOAD_BIT        2
 /* Load and invoke an overlay function */
@@ -107,5 +108,9 @@
 #define D_COMRV_LOAD_AND_RETURN_IND       (D_COMRV_PROFILE_BASE_IND | D_COMRV_INSTRUMENTATION_LOAD_BIT)
 /* return from an overlay function w/o loading */
 #define D_COMRV_NO_LOAD_AND_RETURN_IND    (D_COMRV_PROFILE_BASE_IND)
+/* invalid token */
+#define D_COMRV_INVALID_TOKEN             0xFFFFFFFF
+/* tables token */
+#define D_COMRV_TABLES_TOKEN              0x00000001
 
 #endif /* __COMRV_DEFINES_H__ */
