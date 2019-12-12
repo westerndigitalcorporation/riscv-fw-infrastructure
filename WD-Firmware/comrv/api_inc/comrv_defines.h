@@ -35,7 +35,7 @@
 // TODO: ronen - use psp defines
 #define D_COMRV_INLINE     __attribute__((inline))
 #define D_COMRV_NO_INLINE  __attribute__((noinline))
-#define _OVERLAY_          __attribute__((overlaycall)) D_COMRV_NO_INLINE
+#define _OVERLAY_          __attribute__((overlaycall))
 
 #define D_COMRV_NUM_OF_CACHE_ENTRIES      (D_COMRV_OVL_CACHE_SIZE_IN_BYTES/D_COMRV_OVL_GROUP_SIZE_MIN)
 
