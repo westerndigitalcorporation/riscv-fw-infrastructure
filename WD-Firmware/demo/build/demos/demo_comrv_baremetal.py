@@ -40,11 +40,7 @@ class demo(object):
     ]
 
     self.listDemoSpecificCFlags = [
-      '-foverlay-functions',
-      '-ffixed-x31',
-      '-ffixed-x30',
-      '-ffixed-x29',
-      '-ffixed-x28',
+      '-fcomrv',
     ]
 
     self.listDemoSpecificLinkerFlags = [

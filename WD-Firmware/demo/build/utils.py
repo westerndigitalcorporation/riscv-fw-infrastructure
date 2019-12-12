@@ -98,13 +98,13 @@ def fnMoveOverlaySection(target, source, env):
        listSectionProperties.extend(strLine.split())
        # save the section address and size
        strReservedSectionAddress = listSectionProperties[INT_SEC_ADDR_INDEX]
-       intReservedSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX])
+       intReservedSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX], 16)
        listSectionProperties = []
      # search for the overlay data section
      elif strLine.find(STR_OVL_DATA_SEC_NAME) >= 0:
        listSectionProperties.extend(strLine.split())
        # save the section size
-       intOvlSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX])
+       intOvlSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX], 16)
        listSectionProperties = []
    # delete the temporary file
    os.system(STR_REMOVE_FILE % STR_TMP_FILE)

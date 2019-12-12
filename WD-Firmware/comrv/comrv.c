@@ -121,7 +121,7 @@
    is defined in the linker script and defines the start address of comrv cache) */
 #define pComrvCacheBaseAddress          (&__OVERLAY_CACHE_START__)
 /* address of offset table (last comrv cache entry) */
-#define pOverlayOffsetTable             ((u16_t*)&g_stComrvCB.stOverlayCache[D_COMRV_TABLES_CACHE_ENTRY_INDEX])
+#define pOverlayOffsetTable             ((u16_t*)((u08_t*)&__OVERLAY_CACHE_END__ - D_COMRV_OVL_GROUP_SIZE_MIN))
 /* this macro is only for code readability (the symbol overlayMultiGroupTokensTable
    is taken from the linker script */
 // TODO: remove once we get the tables in group 0
@@ -657,8 +657,8 @@ static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken)
    u08_t              ucEntryIndex;
    comrvCacheEntry_t *pCacheEntry;
 
-   /* loop all entries */
-   for (ucEntryIndex = 0 ; ucEntryIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucEntryIndex+=pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits)
+   /* loop all entries excluding the last entry which holds the comrv tables */
+   for (ucEntryIndex = 0 ; ucEntryIndex < D_COMRV_LAST_CACHE_ENTRY_INDEX ; ucEntryIndex+=pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits)
    {
       pCacheEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex];
       /* if token already loaded */
