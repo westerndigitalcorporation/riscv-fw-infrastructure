@@ -110,13 +110,14 @@ def fnMoveOverlaySection(target, source, env):
    os.system(STR_REMOVE_FILE % STR_TMP_FILE)
    # if we have overlays
    if intOvlSectionSize != 0:
+      str =  "%s --change-section-address %s=0x%s %s %s" % (strObjcopyUtilName, STR_OVL_DATA_SEC_NAME, strReservedSectionAddress, env['ELF_FILE'], env['ELF_FILE'])
       # verify the overlay groups section size fits the reserved overlay section size
       if intOvlSectionSize <= intReservedSectionSize:
          # change the address of .ovlgrpdata section to be the address of the reserved section
-         os.system("%s --change-section-address %s=0x%s %s %s" % (strObjcopyUtilName, STR_OVL_DATA_SEC_NAME, strReservedSectionAddress, env['ELF_FILE'], env['ELF_FILE']))
+         os.system(str)
       else:
          print ("Error: can't move .ovlgrpdata")
-         print "'%s' is too small [0x%s] while '%s' size is [0x%s]" %(STR_RESERVED_OVL_SEC_NAME, intReservedSectionSize, STR_OVL_DATA_SEC_NAME, intOvlSectionSize)
+         print "'%s' is too small [%s] while '%s' size is [%s]" %(STR_RESERVED_OVL_SEC_NAME, hex(intReservedSectionSize), STR_OVL_DATA_SEC_NAME, hex(intOvlSectionSize))
          os.system("rm " + env['ELF_FILE'])
    return None
 # under linux, verify installation dependencies
