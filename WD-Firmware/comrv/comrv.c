@@ -122,10 +122,8 @@
 #define pComrvCacheBaseAddress          (&__OVERLAY_CACHE_START__)
 /* address of offset table (last comrv cache entry) */
 #define pOverlayOffsetTable             ((u16_t*)((u08_t*)&__OVERLAY_CACHE_END__ - D_COMRV_OVL_GROUP_SIZE_MIN))
-/* this macro is only for code readability (the symbol overlayMultiGroupTokensTable
-   is taken from the linker script */
-// TODO: remove once we get the tables in group 0
-#define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)&overlayMultiGroupTokensTable)
+/* address of multi group table */
+#define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)(pOverlayOffsetTable + g_stComrvCB.ucMultiGroupOffset)) //((comrvOverlayToken_t*)&overlayMultiGroupTokensTable)
 
 /**
 * types
@@ -165,15 +163,6 @@ static comrvCB_t         g_stComrvCB;
 /* global comrv stack pool */
 static comrvStackFrame_t g_stComrvStackPool[D_COMRV_CALL_STACK_DEPTH];
 
-#ifdef D_COMRV_MULTI_GROUP_SUPPORT
-/* linker symbols defining the addresses of offset and multigroup tables */
-// TODO: remove once we get the tables in group 0
-   extern void *overlayMultiGroupTokensTable;
-//comrvOverlayToken_t *pOverlayMultiGroupTokensTable = (comrvOverlayToken_t*)&overlayMultiGroupTokensTable;
-#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
-/* linker symbols defining the addresses of offset and multigroup tables */
-// TODO: remove once we get the tables in group 0
-extern void *overlayOffsetTable;
 /* linker symbols defining the start and end of the overlay cache */
 extern void *__OVERLAY_CACHE_START__, *__OVERLAY_CACHE_END__;
 
@@ -343,25 +332,39 @@ void* comrvGetAddressFromToken(void)
    }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
+#ifndef D_COMRV_MULTI_GROUP_SUPPORT
    /* get the group size */
    usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
    /* if the data/function is not loaded we need to evict and load it */
    if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND)
    {
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       /* if the requested token is a multi-group token */
-      if (unToken.stFields.uiMultiGroup != 0)
+      if (unToken.stFields.uiMultiGroup)
       {
-         /* for now we take the first token in the list of tokens */
-         // TODO: need to have a more sophisticated way to select the multi-group */
-         unToken = pOverlayMultiGroupTokensTable[unToken.stFields.uiOverlayGroupID];
-         /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
-            update comrv stack frame with the loaded multi group table entry.
-            It is used to calculate the actual return offset in case we
-            are returning to a multi group token */
-         usSelectedMultiGroupEntry = unToken.stFields.uiOverlayGroupID;
+         /* invoke callee? -> select a specific group */
+         if (ucIsInvoke == D_COMRV_INVOKE_CALLEE_BIT_0)
+         {
+            /* for now we take the first token in the list of tokens */
+            // TODO: need to have a more sophisticated way to select the multi-group */
+            unToken = pOverlayMultiGroupTokensTable[unToken.stFields.uiOverlayGroupID];
+            /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
+               update comrv stack frame with the loaded multi group table entry.
+               It is used to calculate the actual return offset in case we
+               are returning to a multi group token */
+            usSelectedMultiGroupEntry = unToken.stFields.uiOverlayGroupID;
+         }
+         /* return to a multigroup token, select the token we came from */
+         else
+         {
+            /* get the token we are returning to */
+            unToken = pOverlayMultiGroupTokensTable[pComrvStackFrame->usCalleeMultiGroupTableEntry];
+         }
       }
+      /* get the group size */
+      usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
       /* we need to make sure that from this point
@@ -497,6 +500,15 @@ void* comrvGetAddressFromToken(void)
    } /* overlay group is already loaded */
    else
    {
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+      /* get the already loaded overlay token */
+      if (unToken.stFields.uiMultiGroup)
+      {
+         unToken = pOverlayMultiGroupTokensTabl[usSelectedMultiGroupEntry];
+      }
+      /* get the group size */
+     usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
      /* get the loaded address */
      pAddress           = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(usSearchResultIndex);
      /* the group size in bytes */
@@ -807,6 +819,9 @@ void comrvLoadTables(void)
    void            *pAddress;
    comrvLoadArgs_t  stLoadArgs;
    comrvErrorArgs_t stErrArgs;
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+   u16_t           *pOffsetTableEntry;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    /* at this point comrv cache is empty so we take the
       last entry and use it to store the multigroup and
       offset tables */
@@ -825,8 +840,16 @@ void comrvLoadTables(void)
       stErrArgs.uiToken    = D_COMRV_TABLES_TOKEN;
       comrvErrorHook(&stErrArgs);
    }
-   // TODO: add multigroup table location
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
+   /* multi group table location - we start from the offset table
+      and search for the first 0 - signals the start of multi group table */
+   pOffsetTableEntry = pOverlayOffsetTable;
+   /* loop as long as we have non zero offsets */
+   while (*(++pOffsetTableEntry) != 0);
+   /* next entry will be the first multi group token */
+   pOffsetTableEntry++;
+   /* calculate the offset to the multi group table */
+   g_stComrvCB.ucMultiGroupOffset = (u08_t)(pOffsetTableEntry - pOverlayOffsetTable);
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
    /* set cache entry token and properties */

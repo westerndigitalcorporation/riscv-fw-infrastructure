@@ -145,6 +145,9 @@ typedef struct comrvCB
 #endif /* D_COMRV_EVICTION_LRU */
   /* the cache entries */
   comrvCacheEntry_t stOverlayCache[D_COMRV_NUM_OF_CACHE_ENTRIES];
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+  u08_t             ucMultiGroupOffset;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 } comrvCB_t;
 
 /* status structure */
