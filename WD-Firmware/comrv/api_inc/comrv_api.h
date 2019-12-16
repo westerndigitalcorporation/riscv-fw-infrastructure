@@ -59,8 +59,9 @@
 /**
 * APIs
 */
-void                   comrvInit(comrvInitArgs_t* pInitParams);
-void                   comrvGetStatus(comrvStatus_t* pComrvStatus);
+void comrvLoadTables(void);
+void comrvInit(comrvInitArgs_t* pInitParams);
+void comrvGetStatus(comrvStatus_t* pComrvStatus);
 D_COMRV_NO_INLINE void comrvInitApplicationStack(void);
 
 #endif /* __COMRV_TASK_API_H__ */

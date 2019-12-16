@@ -69,7 +69,7 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
 
 void demoStart(void)
 {
-   comrvInitArgs_t stComrvInitArgs;
+   comrvInitArgs_t stComrvInitArgs = { 1 };
 
    comrvInit(&stComrvInitArgs);
 

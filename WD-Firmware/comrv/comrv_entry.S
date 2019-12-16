@@ -60,7 +60,7 @@
 
 .global comrvEntry
 
-.section  .text.entry
+.section  .text
 .align 4
 /* This is the function responsible for invoking the overlay function
    Whenever there is a call to an overlay function, the compiler will plant instead

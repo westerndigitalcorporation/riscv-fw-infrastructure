@@ -78,7 +78,7 @@
 This implementation supports riscv privileged v1.10
 */
 
-.section  .text.entry
+.section  .text
 .align 4
 .global   psp_vect_table
 

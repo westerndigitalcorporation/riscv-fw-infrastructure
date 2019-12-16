@@ -2,7 +2,7 @@
 
 // See LICENSE for license details.
 
-	.section .init
+
 	.globl _start
 	.type _start,@function
 
