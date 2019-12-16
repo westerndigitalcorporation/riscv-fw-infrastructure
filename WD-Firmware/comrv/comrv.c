@@ -344,24 +344,14 @@ void* comrvGetAddressFromToken(void)
       /* if the requested token is a multi-group token */
       if (unToken.stFields.uiMultiGroup)
       {
-         /* invoke callee? -> select a specific group */
-         if (ucIsInvoke == D_COMRV_INVOKE_CALLEE_BIT_0)
-         {
-            /* for now we take the first token in the list of tokens */
-            // TODO: need to have a more sophisticated way to select the multi-group */
-            unToken = pOverlayMultiGroupTokensTable[unToken.stFields.uiOverlayGroupID];
-            /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
-               update comrv stack frame with the loaded multi group table entry.
-               It is used to calculate the actual return offset in case we
-               are returning to a multi group token */
-            usSelectedMultiGroupEntry = unToken.stFields.uiOverlayGroupID;
-         }
-         /* return to a multigroup token, select the token we came from */
-         else
-         {
-            /* get the token we are returning to */
-            unToken = pOverlayMultiGroupTokensTable[pComrvStackFrame->usCalleeMultiGroupTableEntry];
-         }
+         /* for now we take the first token in the list of tokens */
+         // TODO: need to have a more sophisticated way to select the multi-group */
+         unToken = pOverlayMultiGroupTokensTable[unToken.stFields.uiOverlayGroupID];
+         /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
+            update comrv stack frame with the loaded multi group table entry.
+            It is used to calculate the actual return offset in case we
+            are returning to a multi group token */
+         usSelectedMultiGroupEntry = unToken.stFields.uiOverlayGroupID;
       }
       /* get the group size */
       usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
@@ -504,7 +494,7 @@ void* comrvGetAddressFromToken(void)
       /* get the already loaded overlay token */
       if (unToken.stFields.uiMultiGroup)
       {
-         unToken = pOverlayMultiGroupTokensTabl[usSelectedMultiGroupEntry];
+         unToken = pOverlayMultiGroupTokensTable[usSelectedMultiGroupEntry];
       }
       /* get the group size */
      usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
