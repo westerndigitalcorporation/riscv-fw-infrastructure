@@ -7,9 +7,7 @@ MEMORY
   flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
   ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 16K
   ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
-  /* Temporary location for storing overlay functions. This is needed for the
-     linker to place functions, and as the addresses of functions in debuginfo,
-     but is never loaded onto the system. */
+  /* TODO: Temporary old section. Will be removed shortly */
   ovltmp           : ORIGIN = 0xF0000000, LENGTH = 0x10000
 }
 
@@ -30,10 +28,6 @@ SECTIONS
   {
     KEEP (*(SORT_NONE(.init)))
   } >flash AT>flash :flash
-
-  /* Placeholder location for overlay functions. Marked as not allocated by the
-     linker. This must live ahead of the .text declaration */
-  .ovlallfns      : { *(.text.ovlfn.*) } > ovltmp
 
   .text           :
   {
@@ -59,24 +53,10 @@ SECTIONS
     *(.gnu.linkonce.r.*)
   } >flash AT>flash :flash
 
-  /* Overlay offset table */
-  .ovlgrptbl      : {
-    overlayOffsetTable = .;
-    PROVIDE (OVERLAY_GROUP_TABLE = .);
-    *(.ovlgrptbl)
-  } >flash AT>flash :flash
-
-  /* Overlay multi group table */
-  .ovlmultigroup  : {
-    overlayMultiGroupTokensTable = .;
-    PROVIDE (OVERLAY_MULTI_GROUP_TABLE = .);
-    *(.ovlmultigroup)
-  } >flash AT>flash :flash
-
   .reserved_ovl  :
   {
     __OVERLAY_STORAGE_START__ADDRESS__ = .;
-    . = 0x600;
+    . = 0x800;
   } >flash AT>flash :flash
 
   . = ALIGN(4);
@@ -201,6 +181,9 @@ SECTIONS
   .ovlgrpdata       : 
   {
     PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
+    *(SORT_BY_USER(.ovlinput.*))
   } >ovl AT>ovl :ovl
-  
+
+  /* TODO: Temporary old section. Will be removed shortly */
+  .ovlgrp_legacy     : {*(.ovlgrpdata)} > ovltmp
 }
