@@ -2,3 +2,4 @@
 *.tar.xz filter=lfs diff=lfs merge=lfs -text
 lto1 filter=lfs diff=lfs merge=lfs -text
 *.tar.gz filter=lfs diff=lfs merge=lfs -text
+riscv-gnu-toolchain-centos.gz filter=lfs diff=lfs merge=lfs -text
