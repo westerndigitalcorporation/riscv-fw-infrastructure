@@ -21,6 +21,7 @@
 * @brief  The file implements the COM-RV engine
 * 
 */
+_Pragma("clang diagnostic ignored \"-Winline-asm\"")
 
 /**
 * include files
