@@ -119,7 +119,7 @@ typedef union comrvEvictionLru
 #endif /* D_COMRV_EVICTION_LRU */
 
 /* overlay cache entry */
-typedef struct comrvCacheEntrycomrvCacheEntry
+typedef struct comrvCacheEntry
 {
 #ifdef D_COMRV_EVICTION_LRU
    comrvEvictionLru_u    unLru;
