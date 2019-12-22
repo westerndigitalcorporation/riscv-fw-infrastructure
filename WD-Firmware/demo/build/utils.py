@@ -130,12 +130,13 @@ def fnCheckInstalledDependencis(listDependencis):
         print("Error: please install missing library - " + strDependency)
         os.system(STR_REMOVE_FILE % STR_TMP_FILE)
         exit(1)
+
     os.system(STR_REMOVE_FILE % STR_TMP_FILE)
   else: 
     # currently only linux is supported 
     print("unsupported environment, please switch to a linux based machine")
-    exit(1)   
-    
+    exit(1)
+
 def fnSetOutputFileNames(prefix = ""):
     # format the artifacts files name for the current demo
     #return a list
@@ -152,12 +153,14 @@ def fnSetToolchainPath(strTCName, env):
        if not env['RISCV_LLVM_TC_PATH']:
          print ("Error: Set environment variable '" + STR_RV_LLVM_ENV_VAR_NAME + "' to point to the RISCV llvm root")
          exit(1)
+
        # check if the binutils environment variable is set or empty
        env['RISCV_BINUTILS_TC_PATH'] = os.getenv(STR_RV_BINUTILS_ENV_VAR_NAME)
        env['UTILS_BASE_DIR']         = env['RISCV_BINUTILS_TC_PATH'] 
        if not env['RISCV_BINUTILS_TC_PATH']:
          print ("Error: Set environment variable '" + STR_RV_BINUTILS_ENV_VAR_NAME + "' to point to the RISCV bunutils root")
          exit(1)
+
     elif strTCName == STR_TC_GCC:
        env['RISCV_GCC_TC_PATH'] = os.getenv(STR_RV_GCC_ENV_VAR_NAME)
        env['UTILS_BASE_DIR']    = env['RISCV_GCC_TC_PATH'] 
@@ -165,6 +168,7 @@ def fnSetToolchainPath(strTCName, env):
        if not env['RISCV_GCC_TC_PATH']:
          print ("Error: Set environment variable '" + STR_RV_GCC_ENV_VAR_NAME + "' to point to the RISCV gcc root")
          exit(1)
+
     else:
       print ("Error: No toolchain present")
       exit(1)
