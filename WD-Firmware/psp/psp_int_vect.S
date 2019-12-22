@@ -74,6 +74,10 @@
 #include "psp_core_base.inc"
 .include "psp_macros.inc"
 
+.if __clang__
+.option nowarnreservedreg
+.endif /* .if __clang__ */
+
 /*
 This implementation supports riscv privileged v1.10
 */

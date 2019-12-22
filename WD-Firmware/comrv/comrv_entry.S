@@ -24,6 +24,8 @@
 #include "psp_core_base.inc"
 .include "comrv_macros.inc"
 
+.option nowarnreservedreg
+
 /* total size of used stack */
 .equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
 

@@ -59,11 +59,14 @@ void OVL_OverlayFunc1 OverlayFunc1(void)
    gOverlayFunc1+=4;
 }
 
+typedef void (*funcPtr)(void);
+funcPtr myFunc;
+
 /* overlay function 0 */
 void OVL_OverlayFunc0 OverlayFunc0(void)
 {
    gOverlayFunc0+=1;
-   OverlayFunc1();
+   myFunc();
    gOverlayFunc0+=2;
 }
 
@@ -72,6 +75,9 @@ void demoStart(void)
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    comrvInit(&stComrvInitArgs);
+
+   /* demonstrate function pointer usage */
+   myFunc = OverlayFunc1;
 
    globalCount+=1;
    OverlayFunc0();
