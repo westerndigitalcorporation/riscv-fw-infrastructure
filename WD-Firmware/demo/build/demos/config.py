@@ -49,6 +49,7 @@ class clsGenerate(object):
       print "No demo has been selected!"
       print "Please run the config.sh from the build folder."
       exit(1)
+
     print "Setting Demo to => %s (%s)" % (listConfigs[INT_DEMO_INDEX], listConfigs[INT_TOOLCHAIN_INDEX])
     # import the demo class accordig to the configure 
     strModuleName = STR_DEMO_MODULE + listConfigs[INT_DEMO_INDEX]
@@ -81,6 +82,7 @@ class clsGenerate(object):
       print "No configure file has been found!"
       print "Please run the config.sh from the build folder."
       exit(1)
+
     # read the configure file from he build folder and grab its info
     f = open(STR_CONFIG_FILE, "r")
     self.strConfigs = f.read()
