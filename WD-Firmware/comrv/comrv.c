@@ -21,6 +21,11 @@
 * @brief  The file implements the COM-RV engine
 * 
 */
+/* disable warning for inline-asm - we are using comrv
+   reserved register and don't want to see these warnings.
+   Note - if one of the inline assembly in this file is changes
+   this line need to be commented so that we can verify the change
+   didn't cause new warnings */
 _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 
 /**

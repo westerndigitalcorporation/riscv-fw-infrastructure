@@ -24,6 +24,8 @@
 #include "psp_core_base.inc"
 .include "comrv_macros.inc"
 
+/* disable warning for reserved registers use - we are using comrv
+   reserved register and don't want to see these warnings. */
 .option nowarnreservedreg
 
 /* total size of used stack */
