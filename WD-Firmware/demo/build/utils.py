@@ -119,7 +119,8 @@ def fnMoveOverlaySection(target, source, env):
          print ("Error: can't move .ovlgrpdata")
          print "'%s' is too small [%s] while '%s' size is [%s]" %(STR_RESERVED_OVL_SEC_NAME, hex(intReservedSectionSize), STR_OVL_DATA_SEC_NAME, hex(intOvlSectionSize))
          os.system("rm " + env['ELF_FILE'])
-   return None
+   return None
+
 # under linux, verify installation dependencies
 def fnCheckInstalledDependencis(listDependencis):
   if platform.uname()[0] == STR_PLATFORM:
