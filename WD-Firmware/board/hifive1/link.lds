@@ -53,6 +53,9 @@ SECTIONS
     *(.gnu.linkonce.r.*)
   } >flash AT>flash :flash
 
+  /* this is a placeholder for comrv overlay groups.
+     after linking, we'll use objcopy utility and change the
+     address of .ovlgrpdata to this address */ 
   .reserved_ovl  :
   {
     __OVERLAY_STORAGE_START__ADDRESS__ = .;
@@ -170,6 +173,8 @@ SECTIONS
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
 
+  /* this area is used for loading and executing the comrv 
+     overlay groups */
   .overlay_sec ALIGN(__comrv_align_size) :
   {
     __OVERLAY_CACHE_START__ = . ;
@@ -177,7 +182,10 @@ SECTIONS
     __OVERLAY_CACHE_END__ = . ;
   }  >ram AT>ram :ram
 
-  /* Overlay data */
+  /* this is the location of all comrv overlay groups.
+     after linking, we'll use objcopy utility and change
+     this address to the .reserved_ovl address. we do this
+     to make sure there is no address dependency after linking */ 
   .ovlgrpdata       : 
   {
     PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
