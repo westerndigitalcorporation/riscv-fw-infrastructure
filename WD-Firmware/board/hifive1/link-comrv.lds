@@ -189,7 +189,7 @@ SECTIONS
   .ovlgrpdata       : 
   {
     PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
-    /* *(SORT_BY_USER(.ovlinput.*)) */
+    *(SORT_BY_USER(.ovlinput.*))
   } >ovl AT>ovl :ovl
 
   /* TODO: Temporary old section. Will be removed shortly */
