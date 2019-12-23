@@ -17,6 +17,7 @@
 #include "common_types.h"
 #include "psp_macros.h"
 #include "comrv_api.h"
+#include "demo_platform_al.h"
 
 extern void* __OVERLAY_STORAGE_START__ADDRESS__;
 
@@ -44,7 +45,7 @@ void OVL_OverlayFunc2 OverlayFunc2(void)
 }
 
 /* non overlay function */
-__attribute__((noinline)) void NonOverlayFunc(void)
+D_PSP_NO_INLINE void NonOverlayFunc(void)
 {
    globalCount+=1;
    OverlayFunc2();
@@ -59,11 +60,14 @@ void OVL_OverlayFunc1 OverlayFunc1(void)
    gOverlayFunc1+=4;
 }
 
+typedef void (*funcPtr)(void);
+funcPtr myFunc;
+
 /* overlay function 0 */
 void OVL_OverlayFunc0 OverlayFunc0(void)
 {
    gOverlayFunc0+=1;
-   OverlayFunc1();
+   myFunc();
    gOverlayFunc0+=2;
 }
 
@@ -72,6 +76,9 @@ void demoStart(void)
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    comrvInit(&stComrvInitArgs);
+
+   /* demonstrate function pointer usage */
+   myFunc = OverlayFunc1;
 
    globalCount+=1;
    OverlayFunc0();
@@ -82,7 +89,7 @@ void demoStart(void)
        gOverlayFunc1 != 7 || gOverlayFunc2 != 3)
    {
       /* loop forever */
-      while(1);
+      M_ENDLESS_LOOP();
    }
 }
 
