@@ -23,6 +23,7 @@ class demo(object):
     self.toolchain   = ""
     self.strGrpFile = os.path.join("..", "comrv-rtos.csv")
     self.strComrvCacheSize = "1024"
+    self.strLinkFilePrefix = '-comrv'
 
     self.public_defs = [
         'D_USE_RTOSAL',
@@ -43,11 +44,8 @@ class demo(object):
     ]
 
     self.listDemoSpecificCFlags = [
-      '-foverlay-functions',
-      '-ffixed-x31',
-      '-ffixed-x30',
-      '-ffixed-x29',
-      '-ffixed-x28',
+      # -fcomrv is used to enable llvm support for overlay functions/data
+      '-fcomrv',
     ]
 
     self.listDemoSpecificLinkerFlags = [

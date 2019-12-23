@@ -79,6 +79,12 @@ This implementation supports riscv privileged v1.10
 #include "rtosal_defines.inc"
 #include "rtosal_macros.inc"
 
+#ifdef __clang__
+/* disable warning for reserved registers use - we are using comrv
+   reserved register and don't want to see these warnings. */
+.option nowarnreservedreg
+#endif /* __clang__ */
+
 .global    pxCurrentTCB
 .global    rtosalHandleEcall
 
