@@ -23,7 +23,8 @@ class demo(object):
     self.toolchain   = ""
     self.strGrpFile = os.path.join("..", "comrv-baremetal.csv")
     self.strComrvCacheSize = "1024"
-
+    self.strLinkFilePrefix = '-comrv'
+    
     self.public_defs = [
         'D_BARE_METAL',
         'D_MTIME_ADDRESS=0x0200BFF8',

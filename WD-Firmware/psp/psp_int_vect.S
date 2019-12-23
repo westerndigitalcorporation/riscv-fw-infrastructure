@@ -74,11 +74,11 @@
 #include "psp_core_base.inc"
 .include "psp_macros.inc"
 
-.if __clang__
+#ifdef __clang__
 /* disable warning for reserved registers use - we are using comrv
    reserved register and don't want to see these warnings. */
 .option nowarnreservedreg
-.endif /* .if __clang__ */
+#endif /* __clang__ */
 
 /*
 This implementation supports riscv privileged v1.10
