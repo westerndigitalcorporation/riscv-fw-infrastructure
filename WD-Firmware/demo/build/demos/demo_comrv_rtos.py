@@ -49,6 +49,8 @@ class demo(object):
     ]
 
     self.listDemoSpecificLinkerFlags = [
+      # provide user defined grouping file (file name is in self.strGrpFile))
       '-Wl,--grouping-file=' + self.strGrpFile,
+      # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
