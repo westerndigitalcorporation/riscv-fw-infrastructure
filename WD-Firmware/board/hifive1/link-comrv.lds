@@ -59,7 +59,7 @@ SECTIONS
   .reserved_ovl  :
   {
     __OVERLAY_STORAGE_START__ADDRESS__ = .;
-    . = 0xe00;
+    . = 0x800;
   } >flash AT>flash :flash
 
   . = ALIGN(4);
@@ -189,7 +189,7 @@ SECTIONS
   .ovlgrpdata       : 
   {
     PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
-    /* *(SORT_BY_USER(.ovlinput.*)) */
+    *(SORT_BY_USER(.ovlinput.*))
   } >ovl AT>ovl :ovl
 
   /* TODO: Temporary old section. Will be removed shortly */

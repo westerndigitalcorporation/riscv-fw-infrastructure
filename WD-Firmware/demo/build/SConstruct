@@ -23,7 +23,7 @@ import utils
 from demos.config import clsGenerate
 
 
-strLinkerScriptFile = "link.lds"
+strLinkerScriptFile = "link"
 strStartHeader      = "\n-----------------------------------"
 strEndHeader        = "-----------------------------------\n"
 strBin              = 'bin'
@@ -115,6 +115,11 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
 
 strBoardFolder = os.path.join(Env['ROOT_DIR'], 'board', Env['TARGET_BOARD'])
+# temporary solution until we have a unified linker script
+if hasattr(objDemo, 'strLinkFilePrefix'):
+    strLinkerScriptFile += objDemo.strLinkFilePrefix
+strLinkerScriptFile += '.lds'
+# end of temporary solution
 strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
 Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
 #, LIBPATH='.'
@@ -145,6 +150,7 @@ for strSconscript in objDemo.listSconscripts:
 
 objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
 # execute post build actions
+# todo:" to check depend soultion
 AddPostAction(objBundle, Action(utils.fnProduceSectionsSize))
 AddPostAction(objBundle, Action(utils.fnProduceDump))
 AddPostAction(objBundle, Action(utils.fnMoveOverlaySection))

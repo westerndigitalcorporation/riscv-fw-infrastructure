@@ -24,14 +24,18 @@
 #include "psp_core_base.inc"
 .include "comrv_macros.inc"
 
+/* disable warning for reserved registers use - we are using comrv
+   reserved register and don't want to see these warnings. */
+.option nowarnreservedreg
+
 /* total size of used stack */
 .equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
 
 /* shift amount to get the function offset in the lsb */
 .equ D_COMRV_FUNC_OFFSET_SMNT,              17
 
-/* mask for function ofset in the token */
-.equ D_COMRV_FUNC_OFFSET_MASK,              0x3FF
+/* thunk indication upper mask */
+.equ D_COMRV_THUNK_UPPER_MASK,              0x8000
 
 .equ D_COMRV_TOKEN_INDICATION,              1
 .equ D_COMRV_INVOKE_CALLEE_BIT_0,           1
@@ -78,8 +82,6 @@ comrvEntry:
        t4 is updated with the next free stack frame */
     /* disable interrupts */
     m_COMRV_DISABLE_INTS
-    /* workaround for HiFive1 */
-    fence.i
     /* save the address of the next free stack frame in t2 - new stack frame
        for this engine call */
     mv          t2, t4
@@ -125,12 +127,12 @@ comrvEntry:
     M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
+    /* need to make sure overlay is fully loaded before calling it */
+    m_FENCE_I
 
 comrv_invoke_callee:
     /* call the function */
     jalr        t5
-
-comrv_igonr_caller_thunk_stack_frame:
     /* load the return address */
     M_PSP_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay
@@ -142,6 +144,8 @@ comrv_igonr_caller_thunk_stack_frame:
     /* unlink the top of the stack - t3 hold the unlinked stack frame address
        t5 will hold the address of the top of the stack */
     add         t5, t5, t3
+
+comrv_igonr_caller_thunk_stack_frame:
     /* disable interrupts */
     m_COMRV_DISABLE_INTS
     /* link the freed stack frame back to the stack frames pool;
@@ -166,7 +170,7 @@ comrv_igonr_caller_thunk_stack_frame:
     /* place thunk bit in the msb */
     slli        t2, t5, D_COMRV_THUNK_SHMT
     /* if thunk bit set (t2 negative) we skip current comrv stack frame */
-    bltz        t2, comrv_igonr_caller_thunk_stack_frame
+    bltz        t2, comrv_handle_thunk_token
     /* change sp for temporary storage */
     M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
@@ -183,7 +187,25 @@ comrv_igonr_caller_thunk_stack_frame:
     M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     M_PSP_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
+    /* need to make sure overlay is fully loaded before calling it */
+    m_FENCE_I
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */
     ret
+
+comrv_handle_thunk_token:
+    /* remove the thunk indication */
+    lui         t2, D_COMRV_THUNK_UPPER_MASK
+    xor         t5, t5, t2
+    /* load the offset to previous stack frame */
+    lh          t2, D_COMRV_PREV_STACK_FRAME(t3)
+    /* t2 will point to the previous stack frame */
+    add         t2, t2, t3
+    /* save the actual token to previous stack frame before
+       we skip current stack frame */
+    M_PSP_STORE t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t2)
+    /* optimization to save 'lh' instruction above 'comrv_igonr_caller_thunk_stack_frame:'*/
+    mv          t5, t2
+    /* now we can skip to the previous stack frame */
+    j comrv_igonr_caller_thunk_stack_frame
