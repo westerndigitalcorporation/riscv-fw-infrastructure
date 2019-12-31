@@ -139,9 +139,7 @@ WD-Firmware
     
     Since Nexys-A7 is an FPGA platform it need special handling...
     - ***Prerequisite***: Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
-        - For FPGA image flushing we will need 
-        - To Obtain Vivado please follow the instructions at this link: Digilent [Board Files](https://reference.digilentinc.com/vivado/installing-vivado/start)
-        - Note: To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
+        - To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
         - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
         - Pin layout for Nexys Pmod JD header with Olimex:
         
@@ -152,11 +150,13 @@ WD-Firmware
                 G4 = TMS
                 G2 = nRST
 
-    - **Download/flush**: for downloading the bit file image, we need to run ***flush_fpga_image.py*** from board/nexys_a7:
+    - ***FPGA file loading***: for loading the FPGA bit file, do the following steps:
+    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swerv_eh1_reference_design.bit***
+	   to uSD device (locate it at the uSD root)
+    	- Attach the uSD device to the Nexys-A7 board (uSD slot is on board's buttom)
+		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
+		- That's it! From now on, at any power-on the FPGA bit file is loaded to the FPGA.
 
-            $ export VIVADO_PATH=<your path to vivado executable folder>
-            $ cd [WD-firmware-root]/WD-Firmware/board/nexys_a7
-            $ python flush_fpga_image.py
 
 
 - #### Eclipse MCU configuration:
