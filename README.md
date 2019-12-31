@@ -153,7 +153,7 @@ WD-Firmware
     - ***FPGA file loading***: for loading the FPGA bit file, do the following steps:
     	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swerv_eh1_reference_design.bit***
 	   to uSD device (locate it at the uSD root)
-    	- Attach the uSD device to the Nexys-A7 board (uSD slot is on board's buttom)
+    	- Attach the uSD device to the Nexys-A7 board (uSD slot is on board's bottom)
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
 		- That's it! From now on, at any power-on the FPGA bit file is loaded to the FPGA.
 
