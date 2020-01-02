@@ -62,9 +62,9 @@ utils.fnSetToolchainPath(objDemo.toolchain, Env)
 
 #Env['BUILDERS']['Download'] = Builder(action = download)
 
-Env.Tool(os.path.join(objDemo.toolchain, 'as_rv'))
-Env.Tool(os.path.join(objDemo.toolchain, 'cc_rv'))
-Env.Tool(os.path.join(objDemo.toolchain, 'ar_rv'))
+Env.Tool(os.path.join(objDemo.toolchainPath, 'as_rv'))
+Env.Tool(os.path.join(objDemo.toolchainPath, 'cc_rv'))
+Env.Tool(os.path.join(objDemo.toolchainPath, 'ar_rv'))
 
 # set output file suffixes
 Env['OBJSUFFIX']  = '.o'

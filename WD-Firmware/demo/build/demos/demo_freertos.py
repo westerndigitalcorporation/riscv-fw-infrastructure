@@ -18,10 +18,11 @@
 
 class demo(object):
   def __init__(self):
-    self.strDemoName = "freertos"
-    self.rtos_core = "freertos"
-    self.toolchain   = ""
-    self.strGrpFile = ""
+    self.strDemoName   = "freertos"
+    self.rtos_core     = "freertos"
+    self.toolchain     = ""
+    self.toolchainPath = ""
+    self.strGrpFile    = ""
     self.strComrvCacheSize = "0"
 
     self.public_defs = [
