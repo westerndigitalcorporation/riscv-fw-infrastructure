@@ -69,13 +69,9 @@ WD-Firmware
 ```
 
 ### Additional downloads
-- Create a new folder ***bin*** inside ***toolchains*** folder in the repository
+- From the repo unzip riscv-gnu-toolchain-debian.tar.gz to the ***toolchain*** directory
 
-      $ mkdir [WD-firmware-root]/WD-Firmware/demo/build/toolchain/bin
-
-- From the repo unzip riscv-gnu-toolchain-debian.tar.gz to newly created *'bin'* folder
-
-      $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C [WD-firmware-root]/WD-Firmware/demo/build/toolchain/bin/gcc
+      $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C [WD-firmware-root]/WD-Firmware/demo/build/toolchain/
 
 - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
 

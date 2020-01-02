@@ -40,7 +40,7 @@ STR_TC_LLVM                  = "llvm"
 STR_BINUTILS                 = "binutils"
 STR_TC_GCC                   = "gcc"
 
-STR_TOOLCHAIN_BIN            = os.path.join("toolchain", "bin")
+STR_TOOLCHAIN            = "toolchain"
 
 STR_NEW_LINE = "\n"
 
@@ -148,7 +148,7 @@ def fnSetOutputFileNames(prefix = ""):
 # set toolchain path
 def fnSetToolchainPath(strTCName, env):
     if strTCName == STR_TC_LLVM:
-       env['RISCV_LLVM_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN_BIN, STR_TC_LLVM)
+       env['RISCV_LLVM_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_LLVM)
        # check if the TC folder exist
        if not os.path.isdir(env['RISCV_LLVM_TC_PATH']):
          print ("Error: No LLVM Toolchain found at: %s" % env['RISCV_LLVM_TC_PATH'])
@@ -157,7 +157,7 @@ def fnSetToolchainPath(strTCName, env):
          print "Setting LLVM Toolchain to => %s" % env['RISCV_LLVM_TC_PATH']
 
        # check if the Binutils folder exist
-       env['RISCV_BINUTILS_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN_BIN, STR_BINUTILS)
+       env['RISCV_BINUTILS_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_BINUTILS)
        env['UTILS_BASE_DIR']         = env['RISCV_BINUTILS_TC_PATH'] 
        if not env['RISCV_BINUTILS_TC_PATH']:
          print ("Error: No Binutils found at: %s" % env['RISCV_BINUTILS_TC_PATH'])
@@ -166,7 +166,7 @@ def fnSetToolchainPath(strTCName, env):
          print "Setting Binutils Toolchain to => %s" % env['RISCV_BINUTILS_TC_PATH']
 
     elif strTCName == STR_TC_GCC:
-       env['RISCV_GCC_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN_BIN, STR_TC_LLVM)
+       env['RISCV_GCC_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_LLVM)
        env['UTILS_BASE_DIR']    = env['RISCV_GCC_TC_PATH'] 
        # check if the TC folder exist
        if not os.path.isdir(env['RISCV_GCC_TC_PATH']):
