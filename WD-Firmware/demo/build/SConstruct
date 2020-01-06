@@ -28,8 +28,10 @@ strStartHeader      = "\n-----------------------------------"
 strEndHeader        = "-----------------------------------\n"
 strBin              = 'bin'
 strBsp              = 'bsp_'
+strNexys			= 'nexys_a7_'
+strBoard 			= 'board'
 strSconscriptPrefix = 'SConscript_'
-listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv1']
+listSupportedBoards = ['hifive1', 'hifive-un', 'swerv_eh1']
 listDependencies    = ['libftdi1-2']
 
 #### scons custom arguments ####
@@ -114,19 +116,24 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
 
-strBoardFolder = os.path.join(Env['ROOT_DIR'], 'board', Env['TARGET_BOARD'])
 # temporary solution until we have a unified linker script
 if hasattr(objDemo, 'strLinkFilePrefix'):
     strLinkerScriptFile += objDemo.strLinkFilePrefix
 strLinkerScriptFile += '.lds'
 # end of temporary solution
-strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
-Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
-#, LIBPATH='.'
-
 if Env['TARGET_BOARD'] not in listSupportedBoards:
   print "missing target=%s" % " | ".join(listSupportedBoards)
   exit(1)
+if Env['TARGET_BOARD'] == 'swerv_eh1':
+	strBsp       = strBsp + strNexys
+	strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, strNexys+Env['TARGET_BOARD'])
+else:
+    strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, Env['TARGET_BOARD'])
+
+
+strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
+Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
+
 
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
