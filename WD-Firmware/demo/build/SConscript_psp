@@ -29,8 +29,6 @@ listCFiles=[
    (os.path.join('psp', 'psp_timer.c'), os.path.join(strOutDir, 'psp_timer.o')),
 ]
 
-if 'D_NEXYS_A7' in Env['PUBLIC_DEF']:
-  listCFiles+= [(os.path.join('psp', 'psp_timer_swerv_ehx1.c'), os.path.join(strOutDir, 'psp_timer_swerv_ehx1.o'))]
    
 
 # Assembly language source and out files in list of tupples

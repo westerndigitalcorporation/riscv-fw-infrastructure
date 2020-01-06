@@ -95,7 +95,7 @@ void demoUartInit(void)
 #endif
 #ifdef D_NEXYS_A7
 	printfNexys("------------------------------------------");
-	printfNexys("Hello from SweRV_EHX1 core running on NexysA7  ");
+	printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
 	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
 	printfNexys("------------------------------------------");
 #endif
