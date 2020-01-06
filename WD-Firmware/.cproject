@@ -135,7 +135,7 @@
 			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs"/>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" moduleId="org.eclipse.cdt.core.settings" name="nexys_a7_swerv_eh1">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" moduleId="org.eclipse.cdt.core.settings" name="swerv_eh1">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -147,7 +147,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="nexys_a7 board loaded with swerv-eh1 fpga" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" name="nexys_a7_swerv_eh1" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="Nexys_a7 board or ISS running with swerv-eh1" id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917" name="swerv_eh1" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.1104884295.1672952917." name="/" resourcePath="">
 						<toolChain id="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.2001892976" name="RISC-V Cross GCC" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base">
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix.2071338471" name="Prefix" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.command.prefix" value="riscv64-unknown-elf-" valueType="string"/>
@@ -223,7 +223,7 @@
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other.1773884396" name="Other debugging flags" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.debugging.other"/>
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab.854882028" name="showDevicesTab" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.showDevicesTab"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform.997246183" isAbstract="false" osList="all" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform"/>
-							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/demo/build}" cleanBuildTarget="-c target=nexys_a7_swerv_eh1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.481022460" incrementalBuildTarget="target=nexys_a7_swerv_eh1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
+							<builder arguments="" autoBuildTarget="all" buildPath="${workspace_loc:/WD-Firmware/demo/build}" cleanBuildTarget="-c target=swerv_eh1" command="scons" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.481022460" incrementalBuildTarget="target=swerv_eh1" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
 							<tool id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.1215563418" name="GNU RISC-V Cross Assembler" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler">
 								<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor.858703597" name="Use preprocessor" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input.261154970" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.input"/>
@@ -277,6 +277,9 @@
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
 		<configuration configurationName="test">
+			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
+		</configuration>
+		<configuration configurationName="swerv_eh1">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
 		<configuration configurationName="nexys_a7_swerv_eh1_freertos"/>

@@ -53,7 +53,8 @@ WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
           ├── ihfive-unleashed (not supported yet)
-          ├── nexys_a7 (Support for SweRV v1)
+          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1) 
+          ├── whisper (Support for SweRV eh1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
           ├── build                           <-- example build scripts
@@ -90,13 +91,6 @@ WD-Firmware
 
 ### Building for source
 - #### Preparations 
-    - Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
-    
-          $ sudo -H gedit /etc/environment
-    
-          RISCV_TC_ROOT=/path to [Toolchain-root]
-          
-    - Reboot your machine for changes to take affect
     - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
     - Import WD firmware code:
     	- From 'Eclipse MCU' menu bar select *File* -> *Import*
@@ -160,8 +154,8 @@ WD-Firmware
 
     #### Setting up ISS (works as simulator for EH1)
     
-- #### Eclipse MCU configuration:
-    - From the 'Eclipse MCU' menu bar press File->Properties->C/C++ Build->Settings, select the *Toolchain path* with bin folder: [Toolchain-root]/bin
+    There is nothing to set for SweRV ISS, just select debugger luncher (following next)..
+
 
     
 - #### Eclipse MCU Debug:
