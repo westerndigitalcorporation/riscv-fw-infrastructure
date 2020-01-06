@@ -19,6 +19,77 @@
 #include "comrv_api.h"
 #include "demo_platform_al.h"
 
+#define M_OVL_DUMMY_FUNCTION(x) \
+  void _OVERLAY_ OvlTestFunc_##x##_() \
+  { \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+  };
+
+#define M_OVL_FUNCTIONS_GENERATOR \
+  M_OVL_DUMMY_FUNCTION(10) \
+  M_OVL_DUMMY_FUNCTION(11) \
+  M_OVL_DUMMY_FUNCTION(12) \
+  M_OVL_DUMMY_FUNCTION(13) \
+  M_OVL_DUMMY_FUNCTION(14) \
+  M_OVL_DUMMY_FUNCTION(15)
+
+#define M_OVL_FUNCTIONS_CALL \
+  OvlTestFunc_10_(); \
+  OvlTestFunc_11_(); \
+  OvlTestFunc_12_(); \
+  OvlTestFunc_13_(); \
+  OvlTestFunc_14_(); \
+  OvlTestFunc_15_();
+
 extern void* __OVERLAY_STORAGE_START__ADDRESS__;
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
@@ -28,8 +99,8 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #define OVL_OverlayFunc0 _OVERLAY_
 #define OVL_OverlayFunc1 _OVERLAY_
 #define OVL_OverlayFunc2 _OVERLAY_
-#define OVL_benchmark  //_OVERLAY_
-#define OVL_jpegdct  //_OVERLAY_
+//#define OVL_benchmark    _OVERLAY_
+//#define OVL_jpegdct      _OVERLAY_
 
 //extern int OVL_benchmark benchmark(void);
 
@@ -71,6 +142,8 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
+M_OVL_FUNCTIONS_GENERATOR
+
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
@@ -91,6 +164,7 @@ void demoStart(void)
       /* loop forever */
       M_ENDLESS_LOOP();
    }
+   M_OVL_FUNCTIONS_CALL;
 }
 
 /**
