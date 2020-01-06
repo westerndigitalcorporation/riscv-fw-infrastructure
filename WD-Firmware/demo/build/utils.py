@@ -41,6 +41,7 @@ STR_BINUTILS                 = "binutils"
 STR_TC_GCC                   = "gcc"
 
 STR_TOOLCHAIN            = "toolchain"
+STR_BIN_FOLDER           = "bin"
 
 STR_NEW_LINE = "\n"
 
@@ -166,7 +167,7 @@ def fnSetToolchainPath(strTCName, env):
          print "Setting Binutils Toolchain to => %s" % env['RISCV_BINUTILS_TC_PATH']
 
     elif strTCName == STR_TC_GCC:
-       env['RISCV_GCC_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_LLVM)
+       env['RISCV_GCC_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_GCC)
        env['UTILS_BASE_DIR']    = env['RISCV_GCC_TC_PATH'] 
        # check if the TC folder exist
        if not os.path.isdir(env['RISCV_GCC_TC_PATH']):
@@ -178,6 +179,16 @@ def fnSetToolchainPath(strTCName, env):
     else:
       print ("Error: No toolchain present")
       exit(1)
+
+    strGDBFolder = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_BIN_FOLDER)
+    if os.path.isdir(strGDBFolder):
+        os.unlink(strGDBFolder)
+    strCmd = "ln -s %s %s" % (os.path.join(env['UTILS_BASE_DIR'], STR_BIN_FOLDER), strGDBFolder)
+    ret = os.system(strCmd)
+    if ret:
+        print ("Error: Creating symbolic link folder at: %s" % strGDBFolder)
+        print ("Error: %s" % strCmd)
+        exit(1)
 
 # get toolchain specific comiler/linker flags
 def fnGetToolchainSpecificFlags(strTCName, env):
