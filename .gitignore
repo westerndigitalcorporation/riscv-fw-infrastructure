@@ -11,6 +11,10 @@
 *.project
 *.cproject
 configure.txt
+WD-Firmware/demo/build/toolchain/llvm
+WD-Firmware/demo/build/toolchain/gcc
+WD-Firmware/demo/build/toolchain/binutils
+WD-Firmware/demo/build/toolchain/bin
 
 lto1
 
