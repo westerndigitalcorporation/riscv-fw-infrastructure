@@ -19,7 +19,7 @@
 #include "comrv_api.h"
 #include "demo_platform_al.h"
 
-#define M_MATI_AOM_DUMMY_FUNCTION(x) \
+#define M_OVL_DUMMY_FUNCTION(x) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
   { \
     asm volatile ("nop");  \
@@ -74,15 +74,15 @@
     asm volatile ("nop");  \
   };
 
-#define D_MATI_AOM_FUNCTIONS_GENERATOR \
-  M_MATI_AOM_DUMMY_FUNCTION(10) \
-  M_MATI_AOM_DUMMY_FUNCTION(11) \
-  M_MATI_AOM_DUMMY_FUNCTION(12) \
-  M_MATI_AOM_DUMMY_FUNCTION(13) \
-  M_MATI_AOM_DUMMY_FUNCTION(14) \
-  M_MATI_AOM_DUMMY_FUNCTION(15)
+#define M_OVL_FUNCTIONS_GENERATOR \
+  M_OVL_DUMMY_FUNCTION(10) \
+  M_OVL_DUMMY_FUNCTION(11) \
+  M_OVL_DUMMY_FUNCTION(12) \
+  M_OVL_DUMMY_FUNCTION(13) \
+  M_OVL_DUMMY_FUNCTION(14) \
+  M_OVL_DUMMY_FUNCTION(15)
 
-#define D_MATI_AOM_FUNCTIONS_CALL \
+#define M_OVL_FUNCTIONS_CALL \
   OvlTestFunc_10_(); \
   OvlTestFunc_11_(); \
   OvlTestFunc_12_(); \
@@ -142,7 +142,7 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
-D_MATI_AOM_FUNCTIONS_GENERATOR
+M_OVL_FUNCTIONS_GENERATOR
 
 void demoStart(void)
 {
@@ -164,7 +164,7 @@ void demoStart(void)
       /* loop forever */
       M_ENDLESS_LOOP();
    }
-   D_MATI_AOM_FUNCTIONS_CALL;
+   M_OVL_FUNCTIONS_CALL;
 }
 
 /**
