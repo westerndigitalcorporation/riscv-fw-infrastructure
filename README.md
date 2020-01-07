@@ -73,14 +73,14 @@ WD-Firmware
 ### Additional downloads
 	NOTE: The COMRV demo will work only with the LLVM toolchain, GCC is not supported
 - #### Using GCC Toolchain
-	- From the repo unzip riscv-gnu-toolchain-debian.tar.gz to the ***toolchain*** directory
+	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 
-      	  $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C [WD-firmware-root]/WD-Firmware/demo/build/toolchain/
+      	  $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
 - #### Using LLVM Toolchain
-	- From the repo unzip riscv-llvm-toolchain-debian.tar.gz to the ***toolchain*** directory
+	- From the repo root folder unzip riscv-llvm-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 	
-          $ tar -xvf riscv-llvm-toolchain-debian.tar.gz -C [WD-firmware-root]/WD-Firmware/deno/build/toolchain/
+          $ tar -xvf riscv-llvm-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
 - #### Other download
     - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU

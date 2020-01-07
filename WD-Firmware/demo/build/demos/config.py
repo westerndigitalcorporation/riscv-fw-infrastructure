@@ -34,6 +34,10 @@ STR_SCONS_TOOLCHAIN = "scons-tools"
 INT_DEMO_INDEX = 0
 INT_TOOLCHAIN_INDEX = 1
 INT_NUM_OF_CONFIGS = 2
+STR_COMRV_DEMO = "comrv_baremetal"
+STR_COMRV_TC = "llvm"
+
+
 
 class clsGenerate(object):
   def __init__(self):
@@ -123,12 +127,14 @@ class clsGenerate(object):
     strConfiguration = STR_CONFIG_HEADER
     self.scanDemos()
     self.scanToolchains()
-    dicScannedLists = { STR_DEMO:      self.listDemos,
-                        STR_TOOLCHAIN: self.listToolchain
-    }
-    for scannedList in dicScannedLists:
-       intItem = self.pickItem(scannedList, dicScannedLists[scannedList])
-       strConfiguration += "\n" + scannedList + dicScannedLists[scannedList][intItem]
+    intItem = self.pickItem(STR_DEMO, self.listDemos)
+    strConfiguration += "\n" + STR_DEMO + self.listDemos[intItem]
+    if self.listDemos[intItem] == STR_COMRV_DEMO:
+      intItem = self.listToolchain.index(STR_COMRV_TC)
+    else:
+      intItem = self.pickItem(STR_TOOLCHAIN, self.listToolchain)
+    strConfiguration += "\n" + STR_TOOLCHAIN + self.listToolchain[intItem]
+
     # save the configureation in the configure file in the build folder
     f  = open(STR_CONFIG_FILE, "w")
     f.write(strConfiguration)
