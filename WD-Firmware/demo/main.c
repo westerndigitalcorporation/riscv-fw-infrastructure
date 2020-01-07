@@ -71,11 +71,12 @@ int main(void)
    /* Now is the time to activate the relevant demonstration function */
    demoStart();
 
-   /* If all is well, the scheduler will now be running, and the following line
-   will never be reached.  If the following line does execute, then there was
-   insufficient FreeRTOS heap memory available for the idle and/or timer tasks
-   to be created.  See the memory management section on the FreeRTOS web site
-   for more details.  */
+   /* For OS based demo: if all is well, the scheduler will now be running, and the
+   following line will never be reached.  If the following line does execute,
+   then there was insufficient FreeRTOS heap memory available for the idle and/or
+   timer tasks to be created.  See the memory management section on the FreeRTOS
+   web site for more details. */
+   /* For OSless demos getting here means the demo has completed successfully */
    //write(1,"\n-- We should not reach here. Check what went wrong. --\n", 55);
    for( ;; );
 }

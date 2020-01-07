@@ -18,9 +18,13 @@
 
 class demo(object):
   def __init__(self):
-    self.strName = "freertos"
-    self.rtos_core = "freertos"
-    
+    self.strDemoName   = "freertos"
+    self.rtos_core     = "freertos"
+    self.toolchain     = ""
+    self.toolchainPath = ""
+    self.strGrpFile    = ""
+    self.strComrvCacheSize = "0"
+
     self.public_defs = [
         'D_USE_RTOSAL',
         'D_MTIME_ADDRESS=0x0200BFF8',
@@ -37,4 +41,10 @@ class demo(object):
       'rtosal',
       'demo_rtosal'
     ]
-  
+
+    self.listDemoSpecificCFlags = [
+    ]
+
+    self.listDemoSpecificLinkerFlags = [
+      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
+    ]
