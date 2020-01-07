@@ -180,15 +180,37 @@ def fnSetToolchainPath(strTCName, env):
       print ("Error: No toolchain present")
       exit(1)
 
+    # setting up a bin folder for the debugger
+    strBinFolder = os.path.join(env['UTILS_BASE_DIR'], STR_BIN_FOLDER)
+    linkGDBFolder(strBinFolder)
+
+# add a bin folder for the GDB to run from it
+def linkGDBFolder(strBinFolder):
     strGDBFolder = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_BIN_FOLDER)
+
+    # delete previously linked binaries as toolchain may have been changed
     if os.path.isdir(strGDBFolder):
-        os.unlink(strGDBFolder)
-    strCmd = "ln -s %s %s" % (os.path.join(env['UTILS_BASE_DIR'], STR_BIN_FOLDER), strGDBFolder)
-    ret = os.system(strCmd)
-    if ret:
-        print ("Error: Creating symbolic link folder at: %s" % strGDBFolder)
-        print ("Error: %s" % strCmd)
-        exit(1)
+        ret = os.system("rm -r %s" % strGDBFolder)
+        if ret:
+            print "Error: Could not remove folder %s" % strGDBFolder
+            print "Remove it manually then try again"
+            exit(1)
+
+    os.mkdir(strGDBFolder)
+
+    # link all bin files while renaming riscv32 to riscv64
+    for strFile in os.listdir(strBinFolder):
+        strLinkFile = strFile
+        if "riscv32" in strFile:
+            strLinkFile = strFile.replace("riscv32", "riscv64")
+
+        strCmd = "ln -s %s %s" % (os.path.join(strBinFolder, strFile), os.path.join(strGDBFolder, strLinkFile))
+        ret = os.system(strCmd)
+        if ret:
+            print ("Error: Creating symbolic link folder at: %s" % strGDBFolder)
+            print ("Error: %s" % strCmd)
+            exit(1)
+
 
 # get toolchain specific comiler/linker flags
 def fnGetToolchainSpecificFlags(strTCName, env):
