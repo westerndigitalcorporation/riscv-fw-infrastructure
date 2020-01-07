@@ -113,6 +113,8 @@ void demoPlatformInit(void)
 {
 #ifdef D_HI_FIVE1
 	_init();
+#elif D_NEXYS_A7
+	// Nada for now
 #endif
     demoLedsInit();
     demoUartInit();

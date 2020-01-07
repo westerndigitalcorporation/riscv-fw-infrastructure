@@ -60,9 +60,6 @@ _start:
 	li  x30,0
 	li  x31,0
 
-    #setup MTVEC with vector-table entry
-	la t1, rtosal_vect_table
-	csrw mtvec, t1
 	    
       	#cache configuration
 	li t1, 0x55555555
