@@ -22,8 +22,8 @@ import time
 import utils
 from demos.config import clsGenerate
 
-strRiscvTchainRoot  = 'RISCV_TC_ROOT'
-strLinkerScriptFile = "link.lds"
+
+strLinkerScriptFile = "link"
 strStartHeader      = "\n-----------------------------------"
 strEndHeader        = "-----------------------------------\n"
 strBin              = 'bin'
@@ -42,18 +42,12 @@ strTargetName = ARGUMENTS.get('target', '')
 objFactory = clsGenerate()
 objDemo = objFactory.setDemo()
 
-# set the output files for the demo
-strMap_file, strElf_file = utils.set_outputfiles_names(objDemo.strName, prefix=strTargetName)
+# set the output files name for the demo
+strMap_file, strElf_file, strDmp_file = utils.fnSetOutputFileNames(prefix=strTargetName)
 
 #### scons verbose #####
 verbose = True
 
-strTCRootPath = os.getenv(strRiscvTchainRoot)
-# check if the TC environment variable is set or empty
-if not strTCRootPath:
-  print ("Set environment variable '" + strRiscvTchainRoot + "' to point to the RISCV toolchain root")
-  exit(1)
-  
 utils.fnCheckInstalledDependencis(listDependencies)
 
 # set global environment
@@ -61,46 +55,41 @@ utils.fnCheckInstalledDependencis(listDependencies)
 # path to scons toolchain scripts
 Env = Environment(toolpath = ['toolchain'])
 
+# update TC path
+utils.fnSetToolchainPath(objDemo.toolchain, Env)
+
 #def download(target, source, env):
 #   print repr(source)
 #   return None
 
 #Env['BUILDERS']['Download'] = Builder(action = download)
 
-# path to the RV toolchain 'bin' directory
-Env['TOOLS_BASE_DIR'] = os.path.join(strTCRootPath, strBin)
-
-# Tool c compiler execution
-Env['CC_BIN'] = "riscv64-unknown-elf-gcc"
-# Tool assembler compiler execution
-Env['AS_BIN'] = "riscv64-unknown-elf-gcc"
-# Tool archiver execution
-Env['AR_BIN'] = "riscv64-unknown-elf-ar"
-# Tool archiver execution
-Env['RANLIB_BIN'] = "riscv64-unknown-elf-ranlib"
-
-Env.Tool('as_rv')
-Env.Tool('cc_rv')
-Env.Tool('ar_rv')
+Env.Tool(os.path.join(objDemo.toolchainPath, 'as_rv'))
+Env.Tool(os.path.join(objDemo.toolchainPath, 'cc_rv'))
+Env.Tool(os.path.join(objDemo.toolchainPath, 'ar_rv'))
 
 # set output file suffixes
 Env['OBJSUFFIX']  = '.o'
 Env['LIBSUFFIX']  = '.a'
 Env['PROGSUFFIX'] = '.elf'
 
-Env['ROOT_DIR']     = os.path.join(os.getcwd(),"..", "..")
-Env['TARGET_LIBS']  = []
-Env['RTOS_CORE']    = []
-Env['PUBLIC_DEF']   = [] 
-Env['PUBLIC_INC']   = [os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
-Env['OUT_DIR_PATH'] = 'output'
-Env['TARGET_BOARD'] = strTargetName
-Env['EXAMPLE_NAME'] = objDemo.strName
-
+Env['ROOT_DIR']         = os.path.join(os.getcwd(),"..", "..")
+Env['TARGET_LIBS']      = []
+Env['RTOS_CORE']        = []
+Env['PUBLIC_DEF']       = [] 
+Env['PUBLIC_INC']       = [os.path.join(Env['ROOT_DIR'], 'common', 'api_inc'),]
+Env['OUT_DIR_PATH']     = 'output'
+Env['TARGET_BOARD']     = strTargetName
+Env['DEMO_NAME']        = objDemo.strDemoName
 
 Env['MAP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strMap_file)
+Env['DMP_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strDmp_file)
+Env['ELF_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
 
-listCCOptions = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medany']
+# get any toolchain specific options/flags
+listSpecificCFlagsOptions, listSpecificLinkerOptions = utils.fnGetToolchainSpecificFlags(objDemo.toolchain, Env);
+
+listCCOptions = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medlow'] + listSpecificCFlagsOptions + objDemo.listDemoSpecificCFlags
 Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + listCCOptions
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + listCCOptions
 
@@ -125,8 +114,13 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
                     '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
-                    '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions
+                    '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
 
+# temporary solution until we have a unified linker script
+if hasattr(objDemo, 'strLinkFilePrefix'):
+    strLinkerScriptFile += objDemo.strLinkFilePrefix
+strLinkerScriptFile += '.lds'
+# end of temporary solution
 if Env['TARGET_BOARD'] not in listSupportedBoards:
   print "missing target=%s" % " | ".join(listSupportedBoards)
   exit(1)
@@ -141,7 +135,6 @@ strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
 Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
 
 
-Env['BUILDERS']['Size'] = Builder(action = utils.fnProduceSectionsSize)
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
@@ -161,10 +154,13 @@ print "Building SConscripts files:\n\n-%s" % "\n-".join(objDemo.listSconscripts)
 print strEndHeader
 for strSconscript in objDemo.listSconscripts:
   arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
-  
-strElfFileName = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
-objBundle = Env.Program(strElfFileName, arrLibs, LIBS=Env['TARGET_LIBS'])
-Env.Size(source=objBundle)
+
+objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
+# execute post build actions
+# todo:" to check depend soultion
+AddPostAction(objBundle, Action(utils.fnProduceSectionsSize))
+AddPostAction(objBundle, Action(utils.fnProduceDump))
+AddPostAction(objBundle, Action(utils.fnMoveOverlaySection))
 
 #append to the map file the   
 #if downloadFlag != '0':

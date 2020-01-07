@@ -2,7 +2,7 @@
 
 // See LICENSE for license details.
 
-	.section .init
+
 	.globl _start
 	.type _start,@function
 
@@ -37,10 +37,10 @@ _start:
 	bltu a0, a1, 1b
 2:
 
-	/* Call global constructors */
+	/* Call global constructors
 	la a0, __libc_fini_array
 	call atexit
-	call __libc_init_array
+	call __libc_init_array*/
 
 #ifndef __riscv_float_abi_soft
 	/* Enable FPU */

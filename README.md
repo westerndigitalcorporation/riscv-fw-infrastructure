@@ -7,6 +7,7 @@ This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
   - GCC 9.2.0 Toolchain for RISC-V
+  - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.51.20190122]***
   - Eclipse MCU
 
 
@@ -70,24 +71,34 @@ WD-Firmware
 ```
 
 ### Additional downloads
-- From the repo unzip riscv-gnu-toolchain-debian.tar.gz to your designated directory for the tool chain
-- From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
+	NOTE: The COMRV demo will work only with the LLVM toolchain, GCC is not supported
+- #### Using GCC Toolchain
+	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 
-      $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C [Toolchain-root]
+      	  $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
-      $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
+- #### Using LLVM Toolchain
+	- From the repo root folder unzip riscv-llvm-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
+	
+          $ tar -xvf riscv-llvm-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
-- Standard packages that are required can be installed by the following command:
+- #### Other download
+    - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
 
-      $ sudo apt-get install scons libftdi1-2 libmpfr4
-    NOTE: If libmpfr4 can not be installed, in cases of newer versions '6', on the host machine, you can create a symbolic link to libmpfr.so.6
+          $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
+
+    - Standard packages that are required can be installed by the following command:
+
+          $ sudo apt-get install scons libftdi1-2 libmpfr4
     
-      $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
-- Download and install Java SE Runtime Environment
+        NOTE: If libmpfr4 can not be installed, in cases of newer versions '6', on the host machine, you can create a symbolic link to libmpfr.so.6
+    
+          $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
+    - Download and install Java SE Runtime Environment
 
-- For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
-                
-      $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
+    - For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
+
+          $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
 
 ### Building for source
 - #### Preparations 
@@ -181,3 +192,9 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 - #### RISCV GCC 9.2
 	- RISCV official 9.2 GCC release
 	- WD Code density improvement and optimization patches
+
+# Supporting LLVM Releases
+- #### RISCV LLVM/Clang 10.0.0
+	- Initial LLVM/Clang official 10.0.0 release
+	- COMRV support modules
+	- GCC Binutils 2.32.51.20190122 supporting COMRV

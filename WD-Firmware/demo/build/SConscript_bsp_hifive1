@@ -60,10 +60,10 @@ listIncPaths = [
   os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers', 'plic')
 ] + Env['PUBLIC_INC']
 
-# add a library to the link command board/hifive1/psb/libwrap-hifive1.a
-Env['TARGET_LIBS'] += ['wrap-hifive1']
-
 if not Env["Scan"]:
+  # add a library to the link command board/hifive1/psb/libwrap-hifive1.a
+  Env['TARGET_LIBS'] += ['wrap-hifive1']
+
   # c file objects
   listObjects = []
   for tplFile in listCFiles:

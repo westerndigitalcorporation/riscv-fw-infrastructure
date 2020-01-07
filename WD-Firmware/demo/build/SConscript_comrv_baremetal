@@ -31,13 +31,12 @@ utils.fnCreateFolder(strOutDir)
 # (sourcefile.c, outputfile.o)
 listCFiles = [
    (os.path.join('comrv', 'comrv.c'), os.path.join(strOutDir, 'comrv.o')),
-   (os.path.join('demo', 'ex-comrv-baremetal', 'main.c'), os.path.join(strOutDir, 'main.o')),
 ]
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
-listAssemblyFiles
-   (os.path.join('comrv', 'comrv_asm.S'), os.path.join(strOutDir, 'comrv_asm.o')),
+listAssemblyFiles = [
+   (os.path.join('comrv', 'comrv_entry.S'), os.path.join(strOutDir, 'comrv_entry.o')),
 ]
 
 # compiler directives
