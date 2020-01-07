@@ -14,10 +14,19 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+/**
+* include files
+*/
+
 #include "common_types.h"
 #include "psp_macros.h"
 #include "comrv_api.h"
 #include "demo_platform_al.h"
+
+/**
+* definitions
+*/
 
 #define M_OVL_DUMMY_FUNCTION(x) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
@@ -104,10 +113,40 @@ comrvInstrumentationArgs_t g_stInstArgs;
 
 //extern int OVL_benchmark benchmark(void);
 
+/**
+* macros
+*/
+
+/**
+* types
+*/
+typedef void (*funcPtr)(void);
+
+
+/**
+* local prototypes
+*/
+
+/**
+* external prototypes
+*/
+
+extern void psp_vect_table(void);
+
+/**
+* global variables
+*/
+
+funcPtr myFunc;
 volatile u32_t globalCount = 0;
 volatile u32_t gOverlayFunc0 = 0;
 volatile u32_t gOverlayFunc1 = 0;
 volatile u32_t gOverlayFunc2 = 0;
+
+
+/**
+* functions
+*/
 
 /* overlay function 2 */
 void OVL_OverlayFunc2 OverlayFunc2(void)
@@ -131,8 +170,7 @@ void OVL_OverlayFunc1 OverlayFunc1(void)
    gOverlayFunc1+=4;
 }
 
-typedef void (*funcPtr)(void);
-funcPtr myFunc;
+
 
 /* overlay function 0 */
 void OVL_OverlayFunc0 OverlayFunc0(void)
@@ -148,6 +186,10 @@ void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
+   /* Register interrupt vector */
+   M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
+
+   /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
 
    /* demonstrate function pointer usage */
