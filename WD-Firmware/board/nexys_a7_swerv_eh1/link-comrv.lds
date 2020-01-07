@@ -34,6 +34,9 @@ MEMORY
 
 PHDRS
 {
+  rom_load PT_LOAD;
+  ram_init PT_LOAD;
+  ram_load PT_LOAD;
   ovl PT_NULL;
 }
 
@@ -50,7 +53,7 @@ SECTIONS
   {
     *(.text.init)
     . = ALIGN(8);
-  } > ram
+  } > ram : rom_load
 
   .text :
   {
@@ -59,7 +62,7 @@ SECTIONS
     *(.text .text.*)
     *(.gnu.linkonce.t.*)
     . = ALIGN(4);
-  } >ram
+  } >ram : ram_load
 
   .rodata :
   {
@@ -67,7 +70,7 @@ SECTIONS
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
     . = ALIGN(4);
-  } > ram
+  } > ram : rom_load
 
   /* this is a placeholder for comrv overlay groups.
      after linking, we'll use objcopy utility and change the
@@ -76,27 +79,27 @@ SECTIONS
   {
     __OVERLAY_STORAGE_START__ADDRESS__ = .;
     . = 0xe00;
-  } > ram
+  } > ram : ram_load
 
   
   .lalign : 
   {
     . = ALIGN(4);
     PROVIDE( _data_lma = . );
-  } > ram
+  } > ram : ram_load
   
   .dalign :
   {
     . = ALIGN(4);
     PROVIDE( _data = . );
-  } > ram
+  } > ram : ram_load
   
   .data :
   {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
     . = ALIGN(8);
-  } > ram
+  } > ram : ram_load
 
   .sdata :
   {
@@ -107,14 +110,14 @@ SECTIONS
     . = ALIGN(8);
     *(.srodata .srodata.*)
    . = ALIGN(8);
-  } > ram
+  } > ram : ram_load
   
   .sbss :
   {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
     . = ALIGN(8);
-  } > ram 
+  } > ram : ram_load
   
   . = ALIGN(4);
   PROVIDE( _edata = . );
@@ -127,7 +130,7 @@ SECTIONS
   {
     *(.bss)
     . = ALIGN(8);
-  } >ram
+  } >ram : ram_load
 
   _end = .;
 
@@ -136,7 +139,7 @@ SECTIONS
     _heap_end = .;
     . = . + __stack_size;
     _sp = .;
-  } > ram
+  } > ram : ram_load
 
   /* this area is used for loading and executing the comrv 
      overlay groups */
@@ -145,12 +148,13 @@ SECTIONS
     __OVERLAY_CACHE_START__ = . ;
     . = __comrv_cache_size; 
     __OVERLAY_CACHE_END__ = . ;
-  }  >ram
+  }  >ram 
 
   /* this is the location of all comrv overlay groups.
      after linking, we'll use objcopy utility and change
      this address to the .reserved_ovl address. we do this
      to make sure there is no address dependency after linking */ 
+     
   .ovlgrpdata       : 
   {
     PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
