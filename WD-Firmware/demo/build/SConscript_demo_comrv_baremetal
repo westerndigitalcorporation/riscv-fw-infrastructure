@@ -18,54 +18,46 @@ import os
 import utils
 Import('Env')
 
-#
-# This is a template file for adding a new module
-# Duplicate this file and replace module_name with your module name
-#   
-
-# module output directory 
-strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'comrv')
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], Env['DEMO_NAME'])+'_demo'
 utils.fnCreateFolder(strOutDir)
 
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
-listCFiles = [
-   (os.path.join('comrv', 'comrv.c'), os.path.join(strOutDir, 'comrv.o')),
+listCFiles=[
+   (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
+   (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
+   (os.path.join('demo' , 'demo_comrv_baremetal.c'), os.path.join(strOutDir, 'demo_comrv_baremetal.o')),
 ]
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
-listAssemblyFiles = [
-   (os.path.join('comrv', 'comrv_entry.S'), os.path.join(strOutDir, 'comrv_entry.o')),
-]
+listAssemblyFiles=[]
 
-# compiler directives
+# compiler directivs
 listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
 listCompilationDefines = [] + Env['PUBLIC_DEF']
 
-# include paths
-Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'comrv', 'api_inc'),]
-
-listIncPaths =  [
-  os.path.join(Env['ROOT_DIR'], 'comrv', 'loc_inc'),
-] + Env['PUBLIC_INC']
-
+# public includes
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
+listIncPaths = [ ] + Env['PUBLIC_INC']
 
 if not Env["Scan"]:
-  # loop the list of c files and compile them
+  # for objects
   listObjects = []
   for tplFile in listCFiles:
-    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'],tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
-  # loop the list of assembly files and compile them
+  # asm file objects
   for tplFile in listAssemblyFiles:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  objComrvLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'comrv.a'), source=listObjects)
+  objDemoRtosaolLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
 
-  # return the comrv lib
-  Return('objComrvLib')
+  #print Env.Dump()
+
+  # return the demo lib
+  Return('objDemoRtosaolLib')
