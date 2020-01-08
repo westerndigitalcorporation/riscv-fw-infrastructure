@@ -158,7 +158,7 @@ def fnSetToolchainPath(strTCName, env):
          print "Setting LLVM Toolchain to => %s" % env['RISCV_LLVM_TC_PATH']
 
        # check if the Binutils folder exist
-       env['RISCV_BINUTILS_TC_PATH'] = os.path.join(env['RISCV_LLVM_TC_PATH'], STR_BINUTILS)
+       env['RISCV_BINUTILS_TC_PATH'] = os.path.join(env['RISCV_LLVM_TC_PATH'], STR_TC_GCC)
        env['UTILS_BASE_DIR']         = env['RISCV_BINUTILS_TC_PATH'] 
        if not env['RISCV_BINUTILS_TC_PATH']:
          print ("Error: No Binutils found at: %s" % env['RISCV_BINUTILS_TC_PATH'])
