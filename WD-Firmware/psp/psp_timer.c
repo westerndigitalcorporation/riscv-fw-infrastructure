@@ -31,7 +31,21 @@
 
 /**
 *
-* @brief Setup function for M-Timer in the CLINT (per priviliged spec)
+* @brief Setup function for M-Timer. Called upon initialization of the system
+*
+***************************************************************************************************/
+void pspTimerSetup(void)
+{
+    D_PSP_SETUP_SINGLE_TIMER_RUN(D_PSP_TRUE);
+}
+
+
+/**
+*
+* @brief Setup function for M-Timer in the CLINT (per privileged spec)
+*
+* @ const unsigned int enableInterrupt - If TRUE then enable timer-interrupt. otherwise do not enable
+*                                        timer interrupt.
 *
 ***************************************************************************************************/
 void pspTimerSetupSingleRun(const unsigned int enableInterrupt)

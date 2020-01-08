@@ -37,10 +37,11 @@ STR_NO_INSTALL = "not installed"
 STR_REMOVE_FILE = "rm %s"
 
 STR_TC_LLVM                  = "llvm"
+STR_BINUTILS                 = "binutils"
 STR_TC_GCC                   = "gcc"
-STR_RV_GCC_ENV_VAR_NAME      = 'RISCV_GCC_TC_ROOT'
-STR_RV_LLVM_ENV_VAR_NAME     = 'RISCV_LLVM_TC_ROOT'
-STR_RV_BINUTILS_ENV_VAR_NAME = 'RISCV_BINUTILS_ROOT'
+
+STR_TOOLCHAIN            = "toolchain"
+STR_BIN_FOLDER           = "bin"
 
 STR_NEW_LINE = "\n"
 
@@ -148,30 +149,68 @@ def fnSetOutputFileNames(prefix = ""):
 # set toolchain path
 def fnSetToolchainPath(strTCName, env):
     if strTCName == STR_TC_LLVM:
-       env['RISCV_LLVM_TC_PATH'] = os.getenv(STR_RV_LLVM_ENV_VAR_NAME)
-       # check if the TC environment variable is set or empty
-       if not env['RISCV_LLVM_TC_PATH']:
-         print ("Error: Set environment variable '" + STR_RV_LLVM_ENV_VAR_NAME + "' to point to the RISCV llvm root")
+       env['RISCV_LLVM_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_LLVM)
+       # check if the TC folder exist
+       if not os.path.isdir(env['RISCV_LLVM_TC_PATH']):
+         print ("Error: No LLVM Toolchain found at: %s" % env['RISCV_LLVM_TC_PATH'])
          exit(1)
+       else:
+         print "Setting LLVM Toolchain to => %s" % env['RISCV_LLVM_TC_PATH']
 
-       # check if the binutils environment variable is set or empty
-       env['RISCV_BINUTILS_TC_PATH'] = os.getenv(STR_RV_BINUTILS_ENV_VAR_NAME)
+       # check if the Binutils folder exist
+       env['RISCV_BINUTILS_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_BINUTILS)
        env['UTILS_BASE_DIR']         = env['RISCV_BINUTILS_TC_PATH'] 
        if not env['RISCV_BINUTILS_TC_PATH']:
-         print ("Error: Set environment variable '" + STR_RV_BINUTILS_ENV_VAR_NAME + "' to point to the RISCV bunutils root")
+         print ("Error: No Binutils found at: %s" % env['RISCV_BINUTILS_TC_PATH'])
          exit(1)
+       else:
+         print "Setting Binutils Toolchain to => %s" % env['RISCV_BINUTILS_TC_PATH']
 
     elif strTCName == STR_TC_GCC:
-       env['RISCV_GCC_TC_PATH'] = os.getenv(STR_RV_GCC_ENV_VAR_NAME)
+       env['RISCV_GCC_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_GCC)
        env['UTILS_BASE_DIR']    = env['RISCV_GCC_TC_PATH'] 
-       # check if the TC environment variable is set or empty
-       if not env['RISCV_GCC_TC_PATH']:
-         print ("Error: Set environment variable '" + STR_RV_GCC_ENV_VAR_NAME + "' to point to the RISCV gcc root")
+       # check if the TC folder exist
+       if not os.path.isdir(env['RISCV_GCC_TC_PATH']):
+         print ("Error: No GCC Toolchain found at: %s" % env['RISCV_GCC_TC_PATH'])
          exit(1)
+       else:
+         print "Setting GCC Toolchain to => %s" % env['RISCV_GCC_TC_PATH']
 
     else:
       print ("Error: No toolchain present")
       exit(1)
+
+    # setting up a bin folder for the debugger
+    strBinFolder = os.path.join(env['UTILS_BASE_DIR'], STR_BIN_FOLDER)
+    linkGDBFolder(strBinFolder)
+
+# add a bin folder for the GDB to run from it
+def linkGDBFolder(strBinFolder):
+    strGDBFolder = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_BIN_FOLDER)
+
+    # delete previously linked binaries as toolchain may have been changed
+    if os.path.isdir(strGDBFolder):
+        ret = os.system("rm -r %s" % strGDBFolder)
+        if ret:
+            print "Error: Could not remove folder %s" % strGDBFolder
+            print "Remove it manually then try again"
+            exit(1)
+
+    os.mkdir(strGDBFolder)
+
+    # link all bin files while renaming riscv32 to riscv64
+    for strFile in os.listdir(strBinFolder):
+        strLinkFile = strFile
+        if "riscv32" in strFile:
+            strLinkFile = strFile.replace("riscv32", "riscv64")
+
+        strCmd = "ln -s %s %s" % (os.path.join(strBinFolder, strFile), os.path.join(strGDBFolder, strLinkFile))
+        ret = os.system(strCmd)
+        if ret:
+            print ("Error: Creating symbolic link folder at: %s" % strGDBFolder)
+            print ("Error: %s" % strCmd)
+            exit(1)
+
 
 # get toolchain specific comiler/linker flags
 def fnGetToolchainSpecificFlags(strTCName, env):

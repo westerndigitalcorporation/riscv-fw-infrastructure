@@ -14,10 +14,90 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
+/**
+* include files
+*/
+
 #include "common_types.h"
 #include "psp_macros.h"
 #include "comrv_api.h"
 #include "demo_platform_al.h"
+
+/**
+* definitions
+*/
+
+#define M_OVL_DUMMY_FUNCTION(x) \
+  void _OVERLAY_ OvlTestFunc_##x##_() \
+  { \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+  };
+
+#define M_OVL_FUNCTIONS_GENERATOR \
+  M_OVL_DUMMY_FUNCTION(10) \
+  M_OVL_DUMMY_FUNCTION(11) \
+  M_OVL_DUMMY_FUNCTION(12) \
+  M_OVL_DUMMY_FUNCTION(13) \
+  M_OVL_DUMMY_FUNCTION(14) \
+  M_OVL_DUMMY_FUNCTION(15)
+
+#define M_OVL_FUNCTIONS_CALL \
+  OvlTestFunc_10_(); \
+  OvlTestFunc_11_(); \
+  OvlTestFunc_12_(); \
+  OvlTestFunc_13_(); \
+  OvlTestFunc_14_(); \
+  OvlTestFunc_15_();
 
 extern void* __OVERLAY_STORAGE_START__ADDRESS__;
 
@@ -28,15 +108,45 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #define OVL_OverlayFunc0 _OVERLAY_
 #define OVL_OverlayFunc1 _OVERLAY_
 #define OVL_OverlayFunc2 _OVERLAY_
-#define OVL_benchmark  //_OVERLAY_
-#define OVL_jpegdct  //_OVERLAY_
+//#define OVL_benchmark    _OVERLAY_
+//#define OVL_jpegdct      _OVERLAY_
 
 //extern int OVL_benchmark benchmark(void);
 
+/**
+* macros
+*/
+
+/**
+* types
+*/
+typedef void (*funcPtr)(void);
+
+
+/**
+* local prototypes
+*/
+
+/**
+* external prototypes
+*/
+
+extern void psp_vect_table(void);
+
+/**
+* global variables
+*/
+
+funcPtr myFunc;
 volatile u32_t globalCount = 0;
 volatile u32_t gOverlayFunc0 = 0;
 volatile u32_t gOverlayFunc1 = 0;
 volatile u32_t gOverlayFunc2 = 0;
+
+
+/**
+* functions
+*/
 
 /* overlay function 2 */
 void OVL_OverlayFunc2 OverlayFunc2(void)
@@ -60,8 +170,7 @@ void OVL_OverlayFunc1 OverlayFunc1(void)
    gOverlayFunc1+=4;
 }
 
-typedef void (*funcPtr)(void);
-funcPtr myFunc;
+
 
 /* overlay function 0 */
 void OVL_OverlayFunc0 OverlayFunc0(void)
@@ -71,10 +180,16 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
+M_OVL_FUNCTIONS_GENERATOR
+
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
+   /* Register interrupt vector */
+   M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
+
+   /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
 
    /* demonstrate function pointer usage */
@@ -91,6 +206,7 @@ void demoStart(void)
       /* loop forever */
       M_ENDLESS_LOOP();
    }
+   M_OVL_FUNCTIONS_CALL;
 }
 
 /**

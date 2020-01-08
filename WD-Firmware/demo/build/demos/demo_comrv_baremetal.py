@@ -18,11 +18,12 @@ import os
 
 class demo(object):
   def __init__(self):
-    self.strDemoName = "comrv_baremetal"
-    self.rtos_core   = ""
-    self.toolchain   = ""
-    self.strGrpFile = os.path.join("..", "comrv-baremetal.csv")
-    self.strComrvCacheSize = "1024"
+    self.strDemoName   = "comrv_baremetal"
+    self.rtos_core     = ""
+    self.toolchain     = ""
+    self.toolchainPath = ""
+    self.strGrpFile    = os.path.join("..", "comrv-baremetal.csv")
+    self.strComrvCacheSize = "1536"
     self.strLinkFilePrefix = '-comrv'
     
     self.public_defs = [

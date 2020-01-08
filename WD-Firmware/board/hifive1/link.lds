@@ -59,7 +59,7 @@ SECTIONS
   .reserved_ovl  :
   {
     __OVERLAY_STORAGE_START__ADDRESS__ = .;
-    . = 0x800;
+    . = 0xe00;
   } >flash AT>flash :flash
 
   . = ALIGN(4);
