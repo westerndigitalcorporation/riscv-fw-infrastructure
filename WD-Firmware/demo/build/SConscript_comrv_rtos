@@ -44,12 +44,8 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
+Env['PUBLIC_DEF'] += ['D_COMRV']
 listCompilationDefines = [] + Env['PUBLIC_DEF']
-'''
-listCompilationDefines = ['D_COMRV_EVICTION_POLICY=1', 'D_COMRV_MULTI_GROUP_SUPPORT', 
-                    'D_COMRV_FW_INSTRUMENTATION', 'D_COMRV_VERIFY_INIT_ARGS',
-                    'D_COMRV_OVL_DATA_SUPPORT', 'D_COMRV_CRC', 'D_COMRV_DEBUG'] + Env['PUBLIC_DEF']
-'''
 
 # include paths
 Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'comrv', 'api_inc'),]

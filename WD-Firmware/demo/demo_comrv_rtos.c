@@ -17,11 +17,6 @@
 #include "common_types.h"
 #include "psp_macros.h"
 #include "comrv_api.h"
-#include "rtosal_task_api.h"
-#include "rtosal_semaphore_api.h"
-#include "rtosal_task_api.h"
-#include "rtosal_queue_api.h"
-#include "rtosal_time_api.h"
 
 #ifdef D_HI_FIVE1
     #include <stdlib.h>
@@ -33,10 +28,7 @@
 #include "psp_api.h"
 
 #include "rtosal_task_api.h"
-#include "rtosal_semaphore_api.h"
-#include "rtosal_task_api.h"
-#include "rtosal_queue_api.h"
-#include "rtosal_time_api.h"
+#include "rtosal_mutex_api.h"
 
 /**
 * definitions
@@ -66,13 +58,14 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 
 #define OVL_LedBlink _OVERLAY_
-#define OVL_benchmark  //_OVERLAY_
-#define OVL_jpegdct  //_OVERLAY_
+#define OVL_SendMsg  _OVERLAY_
+#define OVL_MyItoa   _OVERLAY_
 
 //extern int OVL_benchmark benchmark(void);
 
 volatile u32_t gLedBlink = 0;
 
+static rtosalMutex_t stComrvMutex;
 static rtosalTask_t stLedTask;
 static rtosalTask_t stTxTask;
 static rtosalStackType_t uLedTaskStackBuffer[D_RX_TASK_STACK_SIZE];
@@ -82,11 +75,28 @@ static void demoLedTask( void *pvParameters );
 static void demoRtosalSendMsgTask( void *pvParameters );
 static void demoCreateTasks(void *pParam);
 
-/* overlay function 0 */
+/* overlay function */
 void OVL_LedBlink LedBlink(void)
 {
-   gLedBlink+=1;
-   //gLedBlink+=2;
+   demoOutputLed(D_LED_BLUE_ON);
+   rtosalTaskSleep(500);
+   demoOutputLed(D_LED_GREEN_ON);
+}
+unsigned int g_MyCounter = 0;
+
+/* integer to ascii */
+u08_t OVL_MyItoa MyItoa(u32_t uiValue, u08_t *pStr)
+{
+   g_MyCounter++;
+   return 0;
+}
+
+/* send counter value to uart */
+void OVL_SendMsg SendMsg(u32_t uiCount)
+{
+   u08_t ucSize, ucArr[15];
+   ucSize = MyItoa(uiCount, ucArr) + 1;
+   demoOutputMsg(ucArr, ucSize);
 }
 
 /**
@@ -95,13 +105,6 @@ void OVL_LedBlink LedBlink(void)
  */
 void demoStart(void)
 {
-   comrvInitArgs_t stComrvInitArgs = { 1 };
-
-   /* init comrv */
-   comrvInit(&stComrvInitArgs);
-
-   LedBlink();
-
    /* run the rtos */
    rtosalStart(demoCreateTasks);
 }
@@ -111,19 +114,23 @@ void demoStart(void)
  *
  * Initialize the application:
  * - Register unhandled exceptions, Ecall exception and Timer ISR
- * - Create the message queue
- * - Create the Tx and Rx tasks
- * - Create the Semaphore and the Sem-Task
- * - Create the software timer
+ * - Create the Tx and Led tasks
  *
- * This function is called from RTOS abstraction layer. After its completion, the scheduler is kicked on
- * and the tasks are start to be active
+ * This function is called from RTOS abstraction layer. After its completion, the
+ * scheduler is kicked on and the tasks are start to be active
  *
  */
 void demoCreateTasks(void *pParam)
 {
    u32_t res;
    pspExceptionCause_t cause;
+   comrvInitArgs_t stComrvInitArgs = { 1 };
+
+   /* set mutex address */
+   stComrvInitArgs.pMutex = &stComrvMutex;
+
+   /* init comrv */
+   comrvInit(&stComrvInitArgs);
 
    /* Disable the machine & timer interrupts until setup is done. */
    M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MEIP);
@@ -144,12 +151,12 @@ void demoCreateTasks(void *pParam)
    M_PSP_SET_CSR(mie, D_PSP_MIP_MEIP);
 
    /* Create the led task */
-   res = rtosalTaskCreate(&stLedTask, (s08_t*)"LED", E_RTOSAL_PRIO_29,
+   res = rtosalTaskCreate(&stLedTask, (s08_t*)"LED", E_RTOSAL_PRIO_30,
                           demoLedTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE,
                           uLedTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
    if (res != D_RTOSAL_SUCCESS)
    {
-      demoOutputMsg("Led task creation failed\n", 24);
+      demoOutputMsg("Led task creation failed\n", 25);
       M_ENDLESS_LOOP();
    }
 
@@ -161,6 +168,45 @@ void demoCreateTasks(void *pParam)
    {
       demoOutputMsg("Tx-Task creation failed\n", 24);
       M_ENDLESS_LOOP();
+   }
+
+   /* create the comrv mutex */
+   res = rtosalMutexCreate(&stComrvMutex, (s08_t*)"comrv", D_RTOSAL_INHERIT);
+   if (res != D_RTOSAL_SUCCESS)
+   {
+      demoOutputMsg("comrv mutex creation failed\n", 28);
+      M_ENDLESS_LOOP();
+   }
+
+}
+
+/**
+ * demoLedTask - Rx task function
+ *
+ * void *pvParameters - not in use
+ *
+ */
+static void demoLedTask( void *pvParameters )
+{
+   while (1)
+   {
+      LedBlink();
+   }
+}
+
+/**
+ * demoRtosalSendMsgTask - Tx task function
+ *
+ * void *pvParameters - not in use
+ *
+ */
+static void demoRtosalSendMsgTask( void *pvParameters )
+{
+   u32_t uiCount = 0;
+   while (1)
+   {
+      SendMsg(uiCount);
+      uiCount++;
    }
 }
 
@@ -243,25 +289,6 @@ u32_t comrvCrcCalcHook (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiEx
    return 0;
 }
 
-/**
- * demoLedTask - Rx task function
- *
- * void *pvParameters - not in use
- *
- */
-static void demoLedTask( void *pvParameters )
-{
-}
-
-/**
- * demoRtosalSendMsgTask - Tx task function
- *
- * void *pvParameters - not in use
- *
- */
-static void demoRtosalSendMsgTask( void *pvParameters )
-{
-}
 /******************** start temporary build issue workaround ****************/
 void _kill(void)
 {

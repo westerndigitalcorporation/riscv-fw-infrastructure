@@ -169,6 +169,10 @@ typedef struct comrvInitArgs
       directly call comrvLoadTables(); any non zero value
       specifies that tables are loaded in comrvInit() */
    u08_t ucCanLoadComrvTables;
+#ifdef D_COMRV_RTOS_SUPPORT
+   /* comrv mutex */
+   void* pMutex;
+#endif /* D_COMRV_RTOS_SUPPORT */
 }comrvInitArgs_t;
 
 /* comrv load arguments */

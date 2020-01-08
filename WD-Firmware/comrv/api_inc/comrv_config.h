@@ -44,6 +44,8 @@
 //#define D_COMRV_CRC
 /* enable comrv debug */
 //#define D_COMRV_DEBUG
+/* enable comrv RTOS support */
+#define D_COMRV_RTOS_SUPPORT
 
 /* minimum size of an overlay group */
 #define D_COMRV_OVL_GROUP_SIZE_MIN                          512
