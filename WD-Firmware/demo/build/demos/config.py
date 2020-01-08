@@ -129,12 +129,17 @@ class clsGenerate(object):
     self.scanToolchains()
     intItem = self.pickItem(STR_DEMO, self.listDemos)
     strConfiguration += "\n" + STR_DEMO + self.listDemos[intItem]
+    
     if self.listDemos[intItem] == STR_COMRV_DEMO:
       intItem = self.listToolchain.index(STR_COMRV_TC)
+      print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItem], STR_COMRV_TC)
     else:
       intItem = self.pickItem(STR_TOOLCHAIN, self.listToolchain)
     strConfiguration += "\n" + STR_TOOLCHAIN + self.listToolchain[intItem]
 
+    print "\nSelected:"
+    print "demo      = %s" % self.listDemos[intItem]
+    print "toolcahin = %s" % self.listToolchain[intItem]
     # save the configureation in the configure file in the build folder
     f  = open(STR_CONFIG_FILE, "w")
     f.write(strConfiguration)
