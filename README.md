@@ -7,6 +7,7 @@ This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
   - GCC 9.2.0 Toolchain for RISC-V
+  - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.51.20190122]***
   - Eclipse MCU
 
 
@@ -53,7 +54,8 @@ WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
           ├── ihfive-unleashed (not supported yet)
-          ├── nexys_a7 (Support for SweRV v1)
+          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1) 
+          ├── whisper (Support for SweRV eh1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
           ├── build                           <-- example build scripts
@@ -69,34 +71,37 @@ WD-Firmware
 ```
 
 ### Additional downloads
-- From the repo unzip riscv-gnu-toolchain-debian.tar.gz to your designated directory for the tool chain
-- From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
+	NOTE: The COMRV demo will work only with the LLVM toolchain, GCC is not supported
+- #### Using GCC Toolchain
+	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 
-      $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C [Toolchain-root]
+      	  $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
-      $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
+- #### Using LLVM Toolchain
+	- From the repo root folder unzip riscv-llvm-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
+	
+          $ tar -xvf riscv-llvm-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
-- Standard packages that are required can be installed by the following command:
+- #### Other download
+    - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
 
-      $ sudo apt-get install scons libftdi1-2 libmpfr4
-    NOTE: If libmpfr4 can not be installed, in cases of newer versions '6', on the host machine, you can create a symbolic link to libmpfr.so.6
+          $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
+
+    - Standard packages that are required can be installed by the following command:
+
+          $ sudo apt-get install scons libftdi1-2 libmpfr4
     
-      $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
-- Download and install Java SE Runtime Environment
+        NOTE: If libmpfr4 can not be installed, in cases of newer versions '6', on the host machine, you can create a symbolic link to libmpfr.so.6
+    
+          $ sudo ln -s /usr/lib/x86_64-linux-gnu/libmpfr.so.6 /usr/lib/x86_64-linux-gnu/libmpfr.so.4 
+    - Download and install Java SE Runtime Environment
 
-- For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
-                
-      $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
+    - For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
+
+          $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
 
 ### Building for source
 - #### Preparations 
-    - Add the environment variable RISCV_TC_ROOT - set it to the *[Toolchain-root]* with the following command:
-    
-          $ sudo -H gedit /etc/environment
-    
-          RISCV_TC_ROOT=/path to [Toolchain-root]
-          
-    - Reboot your machine for changes to take affect
     - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
     - Import WD firmware code:
     	- From 'Eclipse MCU' menu bar select *File* -> *Import*
@@ -116,8 +121,10 @@ WD-Firmware
     - From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
     - Since the building process use SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
 
-### Downloading & debugging the firmware image (FTDI over USB)
-- #### Setting up the hardware (taken from SiFive Freedom Studio Manual v1p6).
+### Platforms Downloading & debugging 
+- We provide several platforms to work with, please follow the instructions for the one you preferred.
+
+    #### Setting up Hifive1 - FTDI over USB (taken from SiFive Freedom Studio Manual v1p6).
 	- Connect to your HiFive1 debug interface and type "lsusb" to see if FT2232C is connected:
 
             $ lsusb
@@ -134,14 +141,11 @@ WD-Firmware
             $ groups
             ... plugdev ...
 	- Power off/on Debian station
- - #### Setting up Nexys-A7 for SweRV
-    Note: If you are not using SweRV core with Nexys-A7 you can skip this section.
+    #### Setting up Nexys-A7 for SweRV
     
     Since Nexys-A7 is an FPGA platform it need special handling...
     - ***Prerequisite***: Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
-        - For FPGA image flushing we will need 
-        - To Obtain Vivado please follow the instructions at this link: Digilent [Board Files](https://reference.digilentinc.com/vivado/installing-vivado/start)
-        - Note: To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
+        - To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
         - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
         - Pin layout for Nexys Pmod JD header with Olimex:
         
@@ -152,27 +156,28 @@ WD-Firmware
                 G4 = TMS
                 G2 = nRST
 
-    - **Download/flush**: for downloading the bit file image, we need to run ***flush_fpga_image.py*** from board/nexys_a7:
+    - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
+    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swerv_eh1_reference_design.bit***
+	   to uSD device (locate it at the uSD root)
+    	- Attach the uSD device to the Nexys-A7 board (uSD slot is on board's bottom)
+		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
+		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done.
 
-            $ export VIVADO_PATH=<your path to vivado executable folder>
-            $ cd [WD-firmware-root]/WD-Firmware/board/nexys_a7
-            $ python flush_fpga_image.py
+    #### Setting up ISS (works as simulator for EH1)
+    
+    There is nothing to set for SweRV ISS, just select debugger luncher (following next)..
 
-
-- #### Eclipse MCU configuration:
-    - From the 'Eclipse MCU' menu bar press File->Properties->C/C++ Build->Settings, select the *Toolchain path* with bin folder: [Toolchain-root]/bin
 
     
 - #### Eclipse MCU Debug:
     - Select from the ***'Eclipse MCU'*** menu bar ***'Run' -> 'Debug Configurations...'***; 
-    - Choose the platform you wish to runs on, from **'GDB OpenOCD Debugging'** menu
-    - Current support
-
-            - hifive1
-            - nexys_A7_Swerv1
-            
-
-
+    - Choose the platform you wish to runs on, from **'left main windows'** menu
+    - Current support:
+        ```javascript
+        - hifive1                              <-- HiFive Eval board
+        - nexys_a7_Swerv1_eh1                  <-- Nexys A7 digilent FPGA board running SweRV EH1
+        - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator 
+        ```
 ### Adding new source modules
 
 The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
@@ -187,3 +192,9 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 - #### RISCV GCC 9.2
 	- RISCV official 9.2 GCC release
 	- WD Code density improvement and optimization patches
+
+# Supporting LLVM Releases
+- #### RISCV LLVM/Clang 10.0.0
+	- Initial LLVM/Clang official 10.0.0 release
+	- COMRV support modules
+	- GCC Binutils 2.32.51.20190122 supporting COMRV

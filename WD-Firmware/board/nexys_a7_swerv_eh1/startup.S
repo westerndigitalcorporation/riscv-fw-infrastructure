@@ -17,9 +17,16 @@
 
 #Simple start up file for the reference design
 
+#ifdef __clang__
+/* disable warning for reserved registers use - we are using comrv
+   reserved register and don't want to see these warnings. */
+.option nowarnreservedreg
+#endif /* __clang__ */
+
 	.section ".text.init"
 	.global	_start
-	.type _start, @function
+	.type   _start, @function
+    .global rtosal_vect_table
 
 _start:
 	#clear minstret
@@ -58,8 +65,9 @@ _start:
 	li  x29,0
 	li  x30,0
 	li  x31,0
-	
-	#cache configuration
+
+	    
+      	#cache configuration
 	li t1, 0x55555555
 	csrw 0x7c0, t1
 
