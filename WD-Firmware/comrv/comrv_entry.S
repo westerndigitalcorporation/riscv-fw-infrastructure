@@ -28,30 +28,21 @@
    reserved register and don't want to see these warnings. */
 .option nowarnreservedreg
 
-/* total size of used stack */
+/* size of used stack */
 .equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
-
-/* shift amount to get the function offset in the lsb */
-.equ D_COMRV_FUNC_OFFSET_SMNT,              17
 
 /* thunk indication upper mask */
 .equ D_COMRV_THUNK_UPPER_MASK,              0x8000
 
 .equ D_COMRV_TOKEN_INDICATION,              1
 .equ D_COMRV_INVOKE_CALLEE_BIT_0,           1
-.equ D_COMRV_RET_CALLER_BIT_0,              0
 .equ D_COMRV_THUNK_SHMT,                    4
 
 /*
  local stack frame layout:
- offset 0 - RA
- offset 1 - A0
- offset 2 - function arg
- offset 3 - not used
+ offset 0 - A0
 */
-.equ D_COMRV_RA_REG_STACK_OFFSET_TMP,       REGBYTES * 0
-.equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 1
-.equ D_COMRV_ARG_STACK_OFFSET_TMP,          REGBYTES * 2
+.equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 0
 
 /*
  COM-RV stack frame layout - see comrvStackFrame_t:
@@ -59,8 +50,6 @@
 .equ D_COMRV_CALLER_RA_STACK_OFFSET,        REGBYTES * 0
 .equ D_COMRV_CALLEE_TOKEN_STACK_OFFSET,     REGBYTES * 1
 .equ D_COMRV_PREV_STACK_FRAME,              REGBYTES * 2
-.equ D_COMRV_GROUP_SIZE_STACK_OFFSET,       D_COMRV_PREV_STACK_FRAME + 2
-
 
 .global comrvEntry
 
