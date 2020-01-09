@@ -37,7 +37,7 @@
 ***************************************************************************************************/
 void pspTrapUnhandled(void)
 {
-	u32_t local_mepc,local_mcause;
+	volatile u32_t local_mepc,local_mcause;
 	//exit(M_PSP_READ_CSR(mcause));
 	local_mepc = M_PSP_READ_CSR(mepc);
 	local_mcause = M_PSP_READ_CSR(mcause);
