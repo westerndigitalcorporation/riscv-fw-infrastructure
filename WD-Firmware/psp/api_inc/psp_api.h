@@ -36,6 +36,7 @@
 #include "psp_attributes.h"
 #ifdef D_NEXYS_A7
     #include "psp_swerv_ehx1_csrs.h"
+    #include "psp_swerv_eh1_csrs.h"
 #endif
 
 /**

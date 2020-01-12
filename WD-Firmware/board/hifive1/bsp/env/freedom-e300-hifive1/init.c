@@ -6,13 +6,7 @@
 #include "platform.h"
 #include "encoding.h"
 
-#ifdef D_USE_RTOSAL
-  extern void rtosal_vect_table();
-#elif defined(D_BARE_METAL)
-  extern void psp_vect_table();
-#else
-  extern void trap_entry();
-#endif
+
 
 static unsigned long mtime_lo(void)
 {
@@ -224,29 +218,21 @@ void _init()
 {
   
   #ifndef NO_INIT
-  char freq_string[15];
-  use_default_clocks();
-  use_pll(0, 0, 1, 31, 1);
-  uart_init(115200);
+    char freq_string[15];
+    use_default_clocks();
+    use_pll(0, 0, 1, 31, 1);
+    uart_init(115200);
 
- uint32_t freq = (uint32_t)get_cpu_freq();
- itoa(freq,freq_string,10);
- write(1, "core freq at: ", 14);
- write(1, freq_string, 9);
- write(1, "Hz\n",3);
+    uint32_t freq = (uint32_t)get_cpu_freq();
+    itoa(freq,freq_string,10);
+    write(1, "core freq at: ", 14);
+    write(1, freq_string, 9);
+    write(1, "Hz\n",3);
 
-#ifdef D_USE_RTOSAL
-  write_csr(mtvec, &rtosal_vect_table);
-#elif defined(D_BARE_METAL)
-  write_csr(mtvec, &psp_vect_table);
-#else
-  write_csr(mtvec, &trap_entry);
-#endif
-
-  if (read_csr(misa) & (1 << ('F' - 'A'))) { // if F extension is present
-    write_csr(mstatus, MSTATUS_FS); // allow FPU instructions without trapping
-    write_csr(fcsr, 0); // initialize rounding mode, undefined at reset
-  }
+    if (read_csr(misa) & (1 << ('F' - 'A'))) { // if F extension is present
+      write_csr(mstatus, MSTATUS_FS); // allow FPU instructions without trapping
+      write_csr(fcsr, 0); // initialize rounding mode, undefined at reset
+    }
   #endif
   
 }

@@ -51,7 +51,11 @@
 /**
 * macros
 */
-
+#define M_ENDLESS_LOOP()   while(1) \
+                           { \
+                              asm volatile ("nop"); \
+                              asm volatile ("nop"); \
+                           }
 /**
 * types
 */
