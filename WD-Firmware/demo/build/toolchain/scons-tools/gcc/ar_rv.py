@@ -21,10 +21,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""SCons.Tool.ar
 
-"""SCons.Tool.as
-
-Tool-specific initialization for as, the generic Posix assembler.
+Tool-specific initialization for ar (library archive).
 
 There normally shouldn't be any need to import this module directly.
 It will usually be imported through the generic SCons.Tool.Tool()
@@ -33,47 +32,36 @@ selection method.
 """
 
 
-__revision__ = "src/engine/SCons/Tool/as.py rel_2.4.1:3453:73fefd3ea0b0 2015/11/09 03:25:05 bdbaddog"
+__revision__ = "src/engine/SCons/Tool/ar.py rel_2.4.1:3453:73fefd3ea0b0 2015/11/09 03:25:05 bdbaddog"
 
 import SCons.Defaults
 import SCons.Tool
 import SCons.Util
 import os
 
-assemblers = ['as']
-
-ASSuffixes = ['.s', '.asm', '.ASM', '.fps']
-ASPPSuffixes = ['.spp', '.SPP', '.sx']
-if SCons.Util.case_sensitive_suffixes('.s', '.S'):
-    ASPPSuffixes.extend(['.S'])
-else:
-    ASSuffixes.extend(['.S'])
-
 def generate(env):
-    """Add Builders and construction variables for as to an Environment."""
-    static_obj, shared_obj = SCons.Tool.createObjBuilders(env)
+    """Add Builders and construction variables for ar to an Environment."""
+    SCons.Tool.createStaticLibBuilder(env)
+    
+    # Tool archiver execution
+    env['AR_BIN']     = "riscv64-unknown-elf-ar"
+    # Tool archiver execution
+    env['RANLIB_BIN'] = "riscv64-unknown-elf-ranlib"
 
-    for suffix in ASSuffixes:
-        static_obj.add_action(suffix, SCons.Defaults.ASAction)
-        shared_obj.add_action(suffix, SCons.Defaults.ASAction)
-        static_obj.add_emitter(suffix, SCons.Defaults.StaticObjectEmitter)
-        shared_obj.add_emitter(suffix, SCons.Defaults.SharedObjectEmitter)
+    env['AR']          = os.path.join("$RISCV_GCC_TC_PATH", "bin", "$AR_BIN")
+    env['ARFLAGS']     = ['rc']
+    env['ARCOM']       = '$AR $ARFLAGS $TARGET $SOURCES'
+    env['LIBPREFIX']   = 'lib_'
 
-    for suffix in ASPPSuffixes:
-        static_obj.add_action(suffix, SCons.Defaults.ASPPAction)
-        shared_obj.add_action(suffix, SCons.Defaults.ASPPAction)
-        static_obj.add_emitter(suffix, SCons.Defaults.StaticObjectEmitter)
-        shared_obj.add_emitter(suffix, SCons.Defaults.SharedObjectEmitter)
+    if env.Detect('ranlib'):
+        env['RANLIB']      = os.path.join("$RISCV_GCC_TC_PATH", "bin", "$RANLIB_BIN")
+        env['RANLIBFLAGS'] = SCons.Util.CLVar('')
+        env['RANLIBCOM']   = '$RANLIB $RANLIBFLAGS $TARGET'
 
-    env['AS']        = os.path.join("$TOOLS_BASE_DIR", "$AS_BIN")
-    env['ASFLAGS']   = SCons.Util.CLVar('')
-    env['ASCOM']     = '$AS $ASFLAGS -o $TARGET $_CCCOMCOM $SOURCES'
-    env['ASPPFLAGS'] = '$ASFLAGS'
-    env['ASPPCOM']   = '$CC $ASPPFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS -c -o $TARGET $SOURCES'
     env['TOOLCHAIN'] = "RISCV"
 
 def exists(env):
-    return env.Detect(assemblers)
+    return env.Detect('ar')
 
 # Local Variables:
 # tab-width:4

@@ -81,7 +81,15 @@ def generate(env):
 
     add_common_cc_variables(env)
 
-    env['CC'] = os.path.join("$TOOLS_BASE_DIR", "$CC_BIN")
+    # Tool c compiler execution
+    env['CC_BIN']      = "clang"
+    # temporary location
+    env['SIZE_BIN']    = "riscv32-unknown-elf-size"
+    env['OBJDUMP_BIN'] = "riscv32-unknown-elf-objdump"
+    env['OBJCOPY_BIN'] = "riscv32-unknown-elf-objcopy"
+    env['READELF_BIN'] = "riscv32-unknown-elf-readelf"
+
+    env['CC'] = os.path.join("$RISCV_LLVM_TC_PATH", "bin", "$CC_BIN")
     env['CFLAGS'] = SCons.Util.CLVar('')
     env['CCCOM'] = '$CC -o $TARGET -c $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCPATHS'
     env['SHCC'] = '$CC'

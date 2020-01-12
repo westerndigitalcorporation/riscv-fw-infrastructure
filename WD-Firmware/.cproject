@@ -279,18 +279,23 @@
 		<configuration configurationName="nexys_a7_swerv_ehx1_ex_freertos">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
-		<configuration configurationName="test">
+		<configuration configurationName="swerv_eh1">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
 		<configuration configurationName="nexys_a7_swerv_ehx1_freertos"/>
 		<configuration configurationName="hifive1_freertos"/>
+		<configuration configurationName="nexys_a7_swerv_eh1_ex_freertos">
+			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
+		</configuration>
 		<configuration configurationName="comrv-baremetal"/>
+		<configuration configurationName="hifive1"/>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
 		<configuration configurationName="freertos">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
+		<configuration configurationName="nexys_a7_swerv_eh1"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
