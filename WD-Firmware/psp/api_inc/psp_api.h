@@ -86,7 +86,7 @@
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, pspInterruptCause_t eIntCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, s32_t eIntCause);
 
 
 /**
