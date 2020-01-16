@@ -27,6 +27,7 @@ strLinkerScriptFile = "link"
 strStartHeader      = "\n-----------------------------------"
 strEndHeader        = "-----------------------------------\n"
 strBin              = 'bin'
+strPsp              = 'psp_'
 strBsp              = 'bsp_'
 strNexys			= 'nexys_a7_'
 strBoard 			= 'board'
@@ -138,8 +139,9 @@ Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
-#prepare all Sconscripts for build
-objDemo.listSconscripts.append(strBsp+ Env['TARGET_BOARD']) 
+#prepare all Sconscripts for build - Add apropriate PSP and BSP sconscripts to the list
+objDemo.listSconscripts.append(strPsp + Env['TARGET_BOARD']) 
+objDemo.listSconscripts.append(strBsp+ Env['TARGET_BOARD'])
 
 Env["Scan"] = True
 for strSconscript in objDemo.listSconscripts:

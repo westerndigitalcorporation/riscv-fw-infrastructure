@@ -82,22 +82,22 @@
 * The function installs an interrupt service routine per risc-v cause
 *
 * @param fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param eIntCause                – interrupt source
+* @param interruptCause           – interrupt source
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, s32_t eIntCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause);
 
 
 /**
 * The function installs an exception handler per exception cause
 *
 * @param fptrInterruptHandler     – function pointer to the exception handler
-* @param eExcCause                – exception cause
+* @param exceptionCause           – exception cause
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, s32_t eExcCause);
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t exceptionCause);
 
 /**
 *
