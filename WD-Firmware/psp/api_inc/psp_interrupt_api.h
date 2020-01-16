@@ -54,7 +54,7 @@ typedef enum pspInterruptCause
    E_SUPERVISOR_EXTERNAL_CAUSE       = 9,
    E_RESERVED_EXTERNAL_CAUSE         = 10,
    E_MACHINE_EXTERNAL_CAUSE          = 11,
-   E_LAST_COMMON_CAUSE               = 12
+   E_LAST_COMMON_CAUSE
 } pspInterruptCause_t;
 
 /* Exceptions */
@@ -76,7 +76,7 @@ typedef enum pspExceptionCause
    E_EXC_LOAD_EXC_PAGE_FAULT                      = 13,
    E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
    E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
-   E_EXC_LAST_COMMON                             = 16
+   E_EXC_LAST_COMMON
 } pspExceptionCause_t;
 
 typedef enum pspExternIntHandlerPrivilege
