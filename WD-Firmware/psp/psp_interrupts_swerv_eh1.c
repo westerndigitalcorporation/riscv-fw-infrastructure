@@ -101,17 +101,17 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDef
 * The function installs an interrupt service routine per risc-v cause
 *
 * @param fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param uInterruptCause           – interrupt source
+* @param uiInterruptCause           – interrupt source
 *
 * @return u32_t                   - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uInterruptCause)
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
    pspInterruptHandler_t pFptr;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && uInterruptCause >= E_LAST_COMMON_CAUSE);
+   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiInterruptCause >= E_LAST_COMMON_CAUSE);
 
-   switch (uInterruptCause)
+   switch (uiInterruptCause)
    {
       case E_USER_SOFTWARE_CAUSE:
     	  pFptr = g_fptrIntUSoftIntHandler;
@@ -173,19 +173,19 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 * The function installs an exception handler per exception cause
 *
 * @param fptrInterruptHandler     – function pointer to the exception handler
-* @param uExceptionCause           – exception cause
+* @param uiExceptionCause           – exception cause
 *
 * @return u32_t                   - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uExceptionCause)
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause)
 {
    pspInterruptHandler_t pFptr;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && uExceptionCause >= E_EXC_LAST_COMMON);
+   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiExceptionCause >= E_EXC_LAST_COMMON);
 
-   pFptr = gExceptions_ints[uExceptionCause];
+   pFptr = gExceptions_ints[uiExceptionCause];
 
-   gExceptions_ints[uExceptionCause] = fptrInterruptHandler;
+   gExceptions_ints[uiExceptionCause] = fptrInterruptHandler;
 
    return pFptr;
 }
