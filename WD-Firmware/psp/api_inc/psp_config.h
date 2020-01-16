@@ -33,7 +33,7 @@
 
 /* TODO: change D_PSP_ERROR_CHECK to be determined by the build system */
 #define D_PSP_ERROR_CHECK            0
-#define D_PSP_NUM_OF_INTS_EXCEPTIONS E_EXC_LAST
+#define D_PSP_NUM_OF_INTS_EXCEPTIONS E_EXC_LAST_COMMON
 
 
 
