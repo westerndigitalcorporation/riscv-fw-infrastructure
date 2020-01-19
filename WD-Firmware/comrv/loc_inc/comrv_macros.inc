@@ -33,11 +33,23 @@
 /**
 * macros
 */
+#ifdef D_COMRV_RTOS_SUPPORT
+.macro m_COMRV_ENABLE_INTS
+   M_PSP_ENABLE_INTERRUPTS
+.endm
+#else
 .macro m_COMRV_ENABLE_INTS
 .endm
+#endif /* D_COMRV_RTOS_SUPPORT */
 
+#ifdef D_COMRV_RTOS_SUPPORT
 .macro m_COMRV_DISABLE_INTS
+   M_PSP_DISABLE_INTERRUPTS
 .endm
+#else
+.macro m_COMRV_ENABLE_INTS
+.endm
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 .macro m_FENCE_I
    fence.i

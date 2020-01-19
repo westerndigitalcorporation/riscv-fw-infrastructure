@@ -118,3 +118,12 @@
 	/* Update sp regsiter to point to Task's stack*/
     M_PSP_LOAD    sp, \spLocationInAppCB(sp)
 .endm
+
+.macro M_PSP_DISABLE_INTERRUPTS
+    csrc mstatus, 8
+.endm
+
+.macro M_PSP_ENABLE_INTERRUPTS
+    csrs mstatus, 8
+.endm
+

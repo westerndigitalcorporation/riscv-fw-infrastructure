@@ -22,7 +22,7 @@ class demo(object):
     self.rtos_core   = ""
     self.toolchain   = ""
     self.strGrpFile = os.path.join("..", "comrv-rtos.csv")
-    self.strComrvCacheSize = "1024"
+    self.strComrvCacheSize = "1536"
     self.strLinkFilePrefix = '-comrv'
 
     self.public_defs = [
