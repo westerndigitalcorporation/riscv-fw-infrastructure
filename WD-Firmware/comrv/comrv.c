@@ -31,8 +31,14 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /**
 * include files
 */
+#include "comrv_config.h"
 #include "comrv.h"
 #include "comrv_api.h"
+#ifdef D_COMRV_RTOS_SUPPORT
+   #include "rtosal_types.h"
+   #include "rtosal_macros.h"
+   #include "rtosal_mutex_api.h"
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 /**
 * definitions
@@ -161,6 +167,10 @@ extern u32_t comrvCrcCalcHook         (const void* pAddress, u16_t usMemSizeInBy
 extern void  comrvInstrumentationHook (const comrvInstrumentationArgs_t* pInstArgs);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 
+#ifdef D_COMRV_RTOS_SUPPORT
+extern void comrv_rtos_restore_point(void);
+#endif /* D_COMRV_RTOS_SUPPORT */
+
 /**
 * global variables
 */
@@ -238,12 +248,15 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    /* set the address of COMRV entry point in register t6 */
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
 
-#ifndef D_COMRV_USE_OS
+#ifdef D_COMRV_RTOS_SUPPORT
+   g_stComrvCB.pStMutex = pInitArgs->pStMutex;
+#else
    /* in baremetal applications, stack register is initialized here;
       this must be done after the stack pool register was
       initialized (M_COMRV_WRITE_POOL_REG) */
    comrvInitApplicationStack();
-#endif /* D_COMRV_USE_OS */
+#endif /* D_COMRV_RTOS_SUPPORT */
+
    /* check if end user enables loading offset and multi group tables */
    if (pInitArgs->ucCanLoadComrvTables != 0)
    {
@@ -765,7 +778,7 @@ D_COMRV_NO_INLINE void comrvInitApplicationStack(void)
    comrvStackFrame_t *pStackPool, *pStackFrame;
 
    /* disable ints */
-   // TODO: disable ints
+   M_COMRV_DISABLE_INTS();
    // TODO: with rtosal, implement condition check if scheduler
    //       is running or not, if running use RTOS sync api
 
@@ -786,7 +799,7 @@ D_COMRV_NO_INLINE void comrvInitApplicationStack(void)
    pStackFrame->uiCalleeToken = 0;
 
    /* enable ints */
-   // TODO: enable ints
+   M_COMRV_ENABLE_INTS();
    // TODO: with rtosal, implement condition check if scheduler
    //       is running or not, if running use RTOS sync api
 }
@@ -864,3 +877,57 @@ void comrvLoadTables(void)
    /* we set the size 0 so that debugger will not continue scanning the cache entries */
    g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
 }
+
+#ifdef D_COMRV_RTOS_SUPPORT
+
+/**
+* save comrv stack in case of context switch
+*
+* @param None
+*
+* @return None
+*/
+void comrvSaveContextSwitch(volatile rtosalStack_t* pxTopOfStack)
+{
+   u32_t siMepc;
+   comrvStackFrame_t *pStackPool, *pStackFrame, *pAppStack;
+
+   /* read mepc from task stack */
+   siMepc = M_RTOSAL_READ_MEPC_FROM_APP_STACK(pxTopOfStack);
+
+   /* check if mepc is in range of the overlay cache - means that interruption occurred during
+      execution of an overlay function */
+   //if ((siMepc - (s32_t)&__OVERLAY_CACHE_START__) * ((s32_t)(&__OVERLAY_CACHE_END__-1) - siMepc) >= 0)
+   if (siMepc >= (u32_t)&__OVERLAY_CACHE_START__ && siMepc < (u32_t)&__OVERLAY_CACHE_END__)
+   {
+      /* disable ints */
+      M_COMRV_DISABLE_INTS();
+      // TODO: with rtosal, implement condition check if scheduler
+      //       is running or not, if running use RTOS sync api
+      /* read comrv stack pool register (t4) */
+      M_COMRV_READ_POOL_REG(pStackPool);
+      /* get the address of the next available stack frame */
+      pStackFrame = pStackPool;
+      /* update the next stack pool address */
+      pStackPool = (comrvStackFrame_t*)((u08_t*)pStackPool + pStackPool->ssOffsetPrevFrame);
+      /* write the new comrv stack pool address */
+      M_COMRV_WRITE_POOL_REG(pStackPool);
+      /* read comrv application stack */
+      M_COMRV_READ_STACK_REG(pAppStack);
+      /* update the offset to new stack frame */
+      pAppStack->ssOffsetPrevFrame = (s32_t)pAppStack - (s32_t)pStackFrame;
+      /* set the address of COMRV stack in t3 */
+      M_COMRV_WRITE_STACK_REG(pStackFrame);
+
+      /* enable ints */
+      M_COMRV_ENABLE_INTS();
+      // TODO: with rtosal, implement condition check if scheduler
+      //       is running or not, if running use RTOS sync api
+
+      /* save new mepc (located at entry 0 of the stack) to point to comrv
+         entry label 'comrv_rtos_restore_point' */
+      M_RTOSAL_SAVE_MEPC_TO_APP_STACK(pxTopOfStack, &comrv_rtos_restore_point);
+   }
+}
+
+#endif /* D_COMRV_RTOS_SUPPORT */

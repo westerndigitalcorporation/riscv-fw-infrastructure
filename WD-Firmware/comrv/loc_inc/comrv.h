@@ -35,9 +35,30 @@
 /**
 * macros
 */
-#define M_COMRV_ENTER_CRITICAL_SECTION()
-#define M_COMRV_EXIT_CRITICAL_SECTION()
-/* __builtin_expect instruction provides branch
+#ifdef D_COMRV_RTOS_SUPPORT
+   #define M_COMRV_DISABLE_INTS()   M_PSP_DISABLE_INTERRUPTS()
+   #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
+   #define M_COMRV_ENTER_CRITICAL_SECTION()  if (_BUILTIN_EXPECT(rtosalMutexWait(g_stComrvCB.pStMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS, 0)) \
+                                             { \
+                                                stErrArgs.uiErrorNum = D_COMRV_SYNC_WAIT_ERR; \
+                                                stErrArgs.uiToken    = unToken.uiValue; \
+                                                comrvErrorHook(&stErrArgs); \
+                                             }
+   #define M_COMRV_EXIT_CRITICAL_SECTION()   if (_BUILTIN_EXPECT(rtosalMutexRelease(g_stComrvCB.pStMutex) != D_RTOSAL_SUCCESS, 0)) \
+                                             { \
+                                                stErrArgs.uiErrorNum = D_COMRV_SYNC_REL_ERR; \
+                                                stErrArgs.uiToken    = unToken.uiValue; \
+                                                comrvErrorHook(&stErrArgs); \
+                                             }
+#else
+   #define M_COMRV_ENTER_CRITICAL_SECTION()
+   #define M_COMRV_ENTER_CRITICAL_SECTION()
+   #define M_COMRV_DISABLE_INTS()
+   #define M_COMRV_ENABLE_INTS()
+#endif /* D_COMRV_RTOS_SUPPORT */
+
+
+                                          /* __builtin_expect instruction provides branch
    prediction information. The condition parameter is the expected
    comparison value. If it is equal to 1 (true), the condition
    is likely to be true, in other case condition is likely to be false.

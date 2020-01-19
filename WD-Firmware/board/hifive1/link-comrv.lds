@@ -56,7 +56,7 @@ SECTIONS
   /* this is a placeholder for comrv overlay groups.
      after linking, we'll use objcopy utility and change the
      address of .ovlgrpdata to this address */ 
-  .reserved_ovl  :
+  .reserved_ovl : ALIGN(4)
   {
     __OVERLAY_STORAGE_START__ADDRESS__ = .;
     . = 0xe00;

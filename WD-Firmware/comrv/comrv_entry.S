@@ -22,7 +22,9 @@
 *
 */
 #include "psp_core_base.inc"
-.include "comrv_macros.inc"
+.include "psp_macros.inc"
+#include "comrv_config.h"
+#include "comrv_macros.inc"
 
 /* disable warning for reserved registers use - we are using comrv
    reserved register and don't want to see these warnings. */
@@ -52,6 +54,7 @@
 .equ D_COMRV_PREV_STACK_FRAME,              REGBYTES * 2
 
 .global comrvEntry
+.global comrv_rtos_restore_point
 
 .section  .text
 .align 4
@@ -122,6 +125,7 @@ comrvEntry:
 comrv_invoke_callee:
     /* call the function */
     jalr        t5
+comrv_rtos_restore_point:
     /* load the return address */
     M_PSP_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay

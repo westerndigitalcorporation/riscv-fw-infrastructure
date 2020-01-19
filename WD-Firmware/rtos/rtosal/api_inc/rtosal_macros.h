@@ -44,4 +44,19 @@
 
 #define RTOSAL_SECTION __attribute__((section("RTOSAL_SEC")))
 
+
+#ifdef D_USE_FREERTOS
+   /* set mepc to specific task stack - this macro is used by comrv only */
+   #define M_RTOSAL_SAVE_MEPC_TO_APP_STACK(pStackTop, val) (*pStackTop = (rtosalStack_t)val)
+   /* read mepc from specific task stack - this macro is used by comrv only */
+   #define M_RTOSAL_READ_MEPC_FROM_APP_STACK(pStackTop) (*pStackTop)
+#elif D_USE_THREADX
+   #error *** TODO: need to define the TBD ***
+   #define M_RTOSAL_SAVE_MEPC_TO_APP_STACK(pStackTop, val) TBD
+   #error *** TODO: need to define the TBD ***
+   #define M_RTOSAL_READ_MEPC_FROM_APP_STACK(pStackTop) TBD
+#else
+   #error "Add appropriate RTOS definitions"
+#endif /* #ifdef D_USE_FREERTOS */
+
 #endif /* __RTOSAL_MACRO_H__ */

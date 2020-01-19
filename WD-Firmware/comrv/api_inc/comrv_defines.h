@@ -97,6 +97,8 @@
 #define D_COMRV_OVL_DATA_DEFRAG_ERR       3
 #define D_COMRV_CRC_CHECK_ERR             4
 #define D_COMRV_TBL_LOAD_ERR              5
+#define D_COMRV_SYNC_WAIT_ERR             6
+#define D_COMRV_SYNC_REL_ERR              7
 
 /* comrv defines */
 #define D_COMRV_INSTRUMENTATION_BASE_IND        0xFC

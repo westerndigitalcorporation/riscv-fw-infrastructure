@@ -79,7 +79,7 @@ static void demoCreateTasks(void *pParam);
 void OVL_LedBlink LedBlink(void)
 {
    demoOutputLed(D_LED_BLUE_ON);
-   rtosalTaskSleep(500);
+   rtosalTaskSleep(200);
    demoOutputLed(D_LED_GREEN_ON);
 }
 unsigned int g_MyCounter = 0;
@@ -95,8 +95,9 @@ u08_t OVL_MyItoa MyItoa(u32_t uiValue, u08_t *pStr)
 void OVL_SendMsg SendMsg(u32_t uiCount)
 {
    u08_t ucSize, ucArr[15];
-   ucSize = MyItoa(uiCount, ucArr) + 1;
-   demoOutputMsg(ucArr, ucSize);
+   ucSize = MyItoa(uiCount, ucArr);
+   if (ucSize)
+      demoOutputMsg(ucArr, ucSize);
 }
 
 /**
@@ -127,7 +128,7 @@ void demoCreateTasks(void *pParam)
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    /* set mutex address */
-   stComrvInitArgs.pMutex = &stComrvMutex;
+   stComrvInitArgs.pStMutex = &stComrvMutex;
 
    /* init comrv */
    comrvInit(&stComrvInitArgs);
@@ -186,11 +187,14 @@ void demoCreateTasks(void *pParam)
  * void *pvParameters - not in use
  *
  */
+volatile unsigned int cnt_demoLedTask = 0;
+volatile unsigned int cnt_demoRtosalSendMsgTask = 0;
 static void demoLedTask( void *pvParameters )
 {
    while (1)
    {
       LedBlink();
+      cnt_demoLedTask++;
    }
 }
 
@@ -202,11 +206,14 @@ static void demoLedTask( void *pvParameters )
  */
 static void demoRtosalSendMsgTask( void *pvParameters )
 {
-   u32_t uiCount = 0;
+
    while (1)
    {
-      SendMsg(uiCount);
-      uiCount++;
+      //if (cnt_demoRtosalSendMsgTask == 2180)
+      //   asm volatile ("ebreak" : : : );
+      SendMsg(cnt_demoRtosalSendMsgTask);
+      cnt_demoRtosalSendMsgTask++;
+      rtosalTaskSleep(100);
    }
 }
 

@@ -29,6 +29,9 @@
 */
 #include "common_types.h"
 #include "comrv_defines.h"
+#ifdef D_COMRV_RTOS_SUPPORT
+   #include "rtosal_mutex_api.h"
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 /**
 * types
@@ -148,6 +151,9 @@ typedef struct comrvCB
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
   u08_t             ucMultiGroupOffset;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+#ifdef D_COMRV_RTOS_SUPPORT
+  rtosalMutex_t     *pStMutex;
+#endif /* D_COMRV_RTOS_SUPPORT */
 } comrvCB_t;
 
 /* status structure */
@@ -171,7 +177,7 @@ typedef struct comrvInitArgs
    u08_t ucCanLoadComrvTables;
 #ifdef D_COMRV_RTOS_SUPPORT
    /* comrv mutex */
-   void* pMutex;
+   rtosalMutex_t* pStMutex;
 #endif /* D_COMRV_RTOS_SUPPORT */
 }comrvInitArgs_t;
 

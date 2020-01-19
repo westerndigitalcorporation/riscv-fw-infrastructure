@@ -2943,6 +2943,9 @@ BaseType_t xSwitchRequired = pdFALSE;
 
 #endif /* configUSE_APPLICATION_TASK_TAG */
 /*-----------------------------------------------------------*/
+#ifndef D_COMRV_RTOS_SUPPORT
+extern void comrvSaveContextSwitch(StackType_t* pxTopOfStack);
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 void vTaskSwitchContext( void )
 {
@@ -2993,6 +2996,10 @@ void vTaskSwitchContext( void )
 			pxCurrentTCB->iTaskErrno = FreeRTOS_errno;
 		}
 		#endif
+
+#ifndef D_COMRV_RTOS_SUPPORT
+		comrvSaveContextSwitch(pxCurrentTCB->pxTopOfStack);
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 		/* Select a new task to run using either the generic C or port
 		optimised asm code. */
