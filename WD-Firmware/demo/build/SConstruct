@@ -163,8 +163,8 @@ objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
 # execute post build actions
 # todo:" to check depend soultion
 AddPostAction(objBundle, Action(utils.fnProduceSectionsSize))
+AddPostAction(objBundle, Action(utils.fnCopyOverlaySection))
 AddPostAction(objBundle, Action(utils.fnProduceDump))
-AddPostAction(objBundle, Action(utils.fnMoveOverlaySection))
 
 #append to the map file the   
 #if downloadFlag != '0':
