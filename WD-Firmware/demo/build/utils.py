@@ -79,7 +79,7 @@ def fnProduceDump(target, source, env):
    return None
 
 # move overlay section from virtual address to flash address 
-def fnMoveOverlaySection(target, source, env):
+def fnCopyOverlaySection(target, source, env):
    strReadElfUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['READELF_BIN'])
    strObjcopyUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['OBJCOPY_BIN'])
    # get elf sections and save them to STR_TMP_FILE
@@ -107,19 +107,26 @@ def fnMoveOverlaySection(target, source, env):
        # save the section size
        intOvlSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX], 16)
        listSectionProperties = []
-   # delete the temporary file
-   os.system(STR_REMOVE_FILE % STR_TMP_FILE)
    # if we have overlays
    if intOvlSectionSize != 0:
-      str =  "%s --change-section-address %s=0x%s %s %s" % (strObjcopyUtilName, STR_OVL_DATA_SEC_NAME, strReservedSectionAddress, env['ELF_FILE'], env['ELF_FILE'])
       # verify the overlay groups section size fits the reserved overlay section size
       if intOvlSectionSize <= intReservedSectionSize:
-         # change the address of .ovlgrpdata section to be the address of the reserved section
+         # dump the ovelay section
+         str = "%s %s --dump-section %s=%s" % (strObjcopyUtilName, env['ELF_FILE'], STR_OVL_DATA_SEC_NAME, STR_TMP_FILE)
+         os.system(str)
+         # modify the reserved section flags - it is missing the content flag
+         str = "%s %s --set-section-flags %s=contents,alloc" % (strObjcopyUtilName, env['ELF_FILE'], STR_RESERVED_OVL_SEC_NAME)
+         os.system(str)
+         # update the reserved section from the dumped section
+         str = "%s %s --update-section %s=%s" % (strObjcopyUtilName, env['ELF_FILE'], STR_RESERVED_OVL_SEC_NAME, STR_TMP_FILE)
          os.system(str)
       else:
          print ("Error: can't move .ovlgrpdata")
          print "'%s' is too small [%s] while '%s' size is [%s]" %(STR_RESERVED_OVL_SEC_NAME, hex(intReservedSectionSize), STR_OVL_DATA_SEC_NAME, hex(intOvlSectionSize))
          os.system("rm " + env['ELF_FILE'])
+   # delete the temporary file
+   os.system(STR_REMOVE_FILE % STR_TMP_FILE)
+   
    return None
 
 # under linux, verify installation dependencies
