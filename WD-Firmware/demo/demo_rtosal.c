@@ -183,7 +183,7 @@ void demoRtosalCreateTasks(void *pParam)
     M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MEIP);
     M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
     /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
-    for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST ; cause++)
+    for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST_COMMON ; cause++)
     {
     	/* Skip ECALL entry as we already registered there a handler */
     	if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == cause)

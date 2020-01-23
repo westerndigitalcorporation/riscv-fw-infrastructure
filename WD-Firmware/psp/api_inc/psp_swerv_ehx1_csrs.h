@@ -100,6 +100,12 @@
 #define M_PSP_DISABLE_TIMER1()	M_PSP_CLEAR_CSR(mie, D_PSP_MIE_TIMER1_INT_ENABLE);
 #define M_PSP_ENABLE_TIMER1()	M_PSP_SET_CSR(mie, D_PSP_MIE_TIMER1_INT_ENABLE);
 
+#ifdef M_PSP_DISABLE_SWERV_TIMER
+    #undef M_PSP_DISABLE_SWERV_TIMER
+#endif
+#ifdef M_PSP_ENABLE_SWERV_TIMER
+    #undef M_PSP_ENABLE_SWERV_TIMER
+#endif
 #define M_PSP_DISABLE_SWERV_TIMER() M_PSP_DISABLE_TIMER0();
 #define M_PSP_ENABLE_SWERV_TIMER()  M_PSP_ENABLE_TIMER0();
 
@@ -129,6 +135,11 @@
 *
 ***************************************************************************************************/
 void pspTimerSwervEhx1SetupSingleRun(const unsigned int enableInterrupt);
+
+#ifdef D_PSP_SETUP_SINGLE_TIMER_RUN
+    #undef D_PSP_SETUP_SINGLE_TIMER_RUN
+#endif
+#define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSwervEhx1SetupSingleRun(enableInterrupt);
 
 
 #endif /* __PSP_SWERV_EHX1_CSRS_H__ */

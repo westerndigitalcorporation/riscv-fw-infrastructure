@@ -35,7 +35,6 @@
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
 #ifdef D_NEXYS_A7
-    #include "psp_swerv_ehx1_csrs.h"
     #include "psp_swerv_eh1_csrs.h"
 #endif
 
@@ -50,11 +49,8 @@
     #define D_PSP_ENABLE_TIMER_INT()   M_PSP_ENABLE_SWERV_TIMER();
 #endif
 
-#ifdef D_HI_FIVE1
-    #define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSetupSingleRun(enableInterrupt)
-#elif D_NEXYS_A7
-    #define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSwervEhx1SetupSingleRun(enableInterrupt)
-#endif
+#define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSetupSingleRun(enableInterrupt)
+
 
 /**
 * macros
@@ -86,22 +82,22 @@
 * The function installs an interrupt service routine per risc-v cause
 *
 * @param fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param eIntCause                – interrupt source
+* @param interruptCause           – interrupt source
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, pspInterruptCause_t eIntCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause);
 
 
 /**
 * The function installs an exception handler per exception cause
 *
 * @param fptrInterruptHandler     – function pointer to the exception handler
-* @param eExcCause                – exception cause
+* @param exceptionCause           – exception cause
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, pspExceptionCause_t eExcCause);
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t exceptionCause);
 
 /**
 *
