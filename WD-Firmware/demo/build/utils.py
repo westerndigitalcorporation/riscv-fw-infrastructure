@@ -125,7 +125,9 @@ def fnCopyOverlaySection(target, source, env):
          print "'%s' is too small [%s] while '%s' size is [%s]" %(STR_RESERVED_OVL_SEC_NAME, hex(intReservedSectionSize), STR_OVL_DATA_SEC_NAME, hex(intOvlSectionSize))
          os.system("rm " + env['ELF_FILE'])
    # delete the temporary file
-   os.system(STR_REMOVE_FILE % STR_TMP_FILE)
+   retSystCall = os.system(STR_REMOVE_FILE % STR_TMP_FILE)
+   if retSystCall != 0:
+       print "warning: unable to delete temporary file"
    
    return None
 
