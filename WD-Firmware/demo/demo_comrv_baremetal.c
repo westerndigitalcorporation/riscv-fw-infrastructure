@@ -180,7 +180,7 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
-M_OVL_FUNCTIONS_GENERATOR
+//M_OVL_FUNCTIONS_GENERATOR
 
 void demoStart(void)
 {
@@ -206,7 +206,7 @@ void demoStart(void)
       /* loop forever */
       M_ENDLESS_LOOP();
    }
-   M_OVL_FUNCTIONS_CALL;
+   // M_OVL_FUNCTIONS_CALL;
 }
 
 /**
