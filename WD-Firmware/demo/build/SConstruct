@@ -27,11 +27,14 @@ strLinkerScriptFile = "link"
 strStartHeader      = "\n-----------------------------------"
 strEndHeader        = "-----------------------------------\n"
 strBin              = 'bin'
+strPsp              = 'psp_'
 strBsp              = 'bsp_'
 strNexys			= 'nexys_a7_'
 strBoard 			= 'board'
 strSconscriptPrefix = 'SConscript_'
-listSupportedBoards = ['hifive1', 'hifive-un', 'nexys_a7_swerv_ehx1']
+listNexysA7Targets = ['swerv_eh1','swerv_ehx1']
+listSupportedTargets = ['hifive1', 'hifive-un']
+listSupportedTargets += listNexysA7Targets
 listDependencies    = ['libftdi1-2']
 
 #### scons custom arguments ####
@@ -121,10 +124,10 @@ if hasattr(objDemo, 'strLinkFilePrefix'):
     strLinkerScriptFile += objDemo.strLinkFilePrefix
 strLinkerScriptFile += '.lds'
 # end of temporary solution
-if Env['TARGET_BOARD'] not in listSupportedBoards:
-  print "missing target=%s" % " | ".join(listSupportedBoards)
+if Env['TARGET_BOARD'] not in listSupportedTargets:
+  print "missing target=%s" % " | ".join(listSupportedTargets)
   exit(1)
-if Env['TARGET_BOARD'] == 'swerv_eh1':
+if Env['TARGET_BOARD'] in listNexysA7Targets:
 	strBsp       = strBsp + strNexys
 	strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, strNexys+Env['TARGET_BOARD'])
 else:
@@ -138,8 +141,9 @@ Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
 Env['PUBLIC_DEF'] = objDemo.public_defs
 Env['TARGET_LIBS'] += ['c', 'gcc']
 
-#prepare all Sconscripts for build
-objDemo.listSconscripts.append(strBsp+ Env['TARGET_BOARD']) 
+#prepare all Sconscripts for build - Add apropriate PSP and BSP sconscripts to the list
+objDemo.listSconscripts.append(strPsp + Env['TARGET_BOARD']) 
+objDemo.listSconscripts.append(strBsp+ Env['TARGET_BOARD'])
 
 Env["Scan"] = True
 for strSconscript in objDemo.listSconscripts:
