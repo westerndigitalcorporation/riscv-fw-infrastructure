@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts.c
-* @author Ronen Haen
-* @date   20.05.2019
-* @brief  The file supllies interrups services such as  - registration, default handlers and indication
-*         whether we are in interrpu context
+* @file   psp_interrupts_swerv_ehx1
+* @author Nati Rapapoort
+* @date   16.01.2020
+* @brief  The file supplies interrupt services such as - registration, default handlers and indication whether we are in interrupt context.
+*         The file is specific to swerv_ehx1 specifications
 * 
 */
 
@@ -29,7 +29,6 @@
 #include "psp_types.h"
 #include "psp_api.h"
 #include "psp_interrupt_api_ehx1.h"
-
 /**
 * definitions
 */
@@ -109,14 +108,14 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer1IntHandler     = pspDef
 *
 * @return u32_t                   - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause)
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
    pspInterruptHandler_t pFptr;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && eIntCause >= E_LAST_COMMON_CAUSE &&
-		        eIntCause < D_PSP_FIRST_EHX1_INT_CAUSE && eIntCause >= E_LAST_EHX1_CAUSE);
+   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiInterruptCause >= E_LAST_COMMON_CAUSE &&
+		        uiInterruptCause < D_PSP_FIRST_EHX1_INT_CAUSE && uiInterruptCause >= E_LAST_EHX1_CAUSE);
 
-   switch (interruptCause)
+   switch (uiInterruptCause)
    {
       case E_USER_SOFTWARE_CAUSE:
     	  pFptr = g_fptrIntUSoftIntHandler;
@@ -190,16 +189,15 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 *
 * @return u32_t                   - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler,
-		                                             pspExceptionCause_t eExcCause)
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause)
 {
    pspInterruptHandler_t pFptr;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && eExcCause >= E_EXC_LAST);
+   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiExceptionCause >= E_EXC_LAST_COMMON);
 
-   pFptr = gExceptions_ints[eExcCause];
+   pFptr = gExceptions_ints[uiExceptionCause];
 
-   gExceptions_ints[eExcCause] = fptrInterruptHandler;
+   gExceptions_ints[uiExceptionCause] = fptrInterruptHandler;
 
    return pFptr;
 }
