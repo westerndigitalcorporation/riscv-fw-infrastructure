@@ -42,19 +42,19 @@
 /* */
 typedef enum pspInterruptCause
 {
-   E_USER_SOFTWARE_CAUSE       = 0,
-   E_SUPERVISOR_SOFTWARE_CAUSE = 1,
-   E_RESERVED_SOFTWARE_CAUSE   = 2,
-   E_MACHINE_SOFTWARE_CAUSE    = 3,
-   E_USER_TIMER_CAUSE          = 4,
-   E_SUPERVISOR_TIMER_CAUSE    = 5,
-   E_RESERVED_TIMER_CAUSE      = 6,
-   E_MACHINE_TIMER_CAUSE       = 7,
-   E_USER_EXTERNAL_CAUSE       = 8,
-   E_SUPERVISOR_EXTERNAL_CAUSE = 9,
-   E_RESERVED_EXTERNAL_CAUSE   = 10,
-   E_MACHINE_EXTERNAL_CAUSE    = 11,
-   E_LAST_CAUSE
+   E_USER_SOFTWARE_CAUSE             = 0,
+   E_SUPERVISOR_SOFTWARE_CAUSE       = 1,
+   E_RESERVED_SOFTWARE_CAUSE         = 2,
+   E_MACHINE_SOFTWARE_CAUSE          = 3,
+   E_USER_TIMER_CAUSE                = 4,
+   E_SUPERVISOR_TIMER_CAUSE          = 5,
+   E_RESERVED_TIMER_CAUSE            = 6,
+   E_MACHINE_TIMER_CAUSE             = 7,
+   E_USER_EXTERNAL_CAUSE             = 8,
+   E_SUPERVISOR_EXTERNAL_CAUSE       = 9,
+   E_RESERVED_EXTERNAL_CAUSE         = 10,
+   E_MACHINE_EXTERNAL_CAUSE          = 11,
+   E_LAST_COMMON_CAUSE
 } pspInterruptCause_t;
 
 /* Exceptions */
@@ -64,8 +64,8 @@ typedef enum pspExceptionCause
    E_EXC_INSTRUCTION_ACCESS_FAULT                 = 1,
    E_EXC_ILLEGAL_INSTRUCTION                      = 2,
    E_EXC_BREAKPOINT                               = 3,
-   E_EXC_LOAE_EXC_ADDRESS_MISALIGNED              = 4,
-   E_EXC_LOAE_EXC_ACCESS_FAULT                    = 5,
+   E_EXC_LOAD_EXC_ADDRESS_MISALIGNED              = 4,
+   E_EXC_LOAD_EXC_ACCESS_FAULT                    = 5,
    E_EXC_STORE_AMO_ADDRESS_MISALIGNED             = 6,
    E_EXC_STORE_AMO_ACCESS_FAULT                   = 7,
    E_EXC_ENVIRONMENT_CALL_FROM_UMODE              = 8,
@@ -73,10 +73,10 @@ typedef enum pspExceptionCause
    E_EXC_RESERVED                                 = 10,
    E_EXC_ENVIRONMENT_CALL_FROM_MMODE              = 11,
    E_EXC_INSTRUCTION_PAGE_FAULT                   = 12,
-   E_EXC_LOAE_EXC_PAGE_FAULT                      = 13,
+   E_EXC_LOAD_EXC_PAGE_FAULT                      = 13,
    E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
    E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
-   E_EXC_LAST
+   E_EXC_LAST_COMMON
 } pspExceptionCause_t;
 
 typedef enum pspExternIntHandlerPrivilege
