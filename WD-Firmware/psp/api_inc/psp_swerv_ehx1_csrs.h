@@ -46,7 +46,7 @@
 #define		D_PSP_MITCTL0 	0x7D4 	/* Internal timer control 0  */
 #define		D_PSP_MITCNT1 	0x7D5 	/* Internal timer counter 1  */
 #define		D_PSP_MITBND1 	0x7D6 	/* Internal timer bound 1  */
-#define		D_PSP_MITCTL 	0x7D7 	/* Internal timer control 1  */
+#define		D_PSP_MITCTL1   0x7D7 	/* Internal timer control 1  */
 #define		D_PSP_MICECT    0x7F0 	/* I-cache error counter/threshold */
 #define		D_PSP_MICCMECT  0x7F1 	/* ICCM correctable error counter/threshold  */
 #define		D_PSP_MDCCMECT  0x7F2 	/* DCCM correctable error counter/threshold  */
@@ -94,20 +94,29 @@
 * macros
 */
 
-/* Disable & Enable of Timer0 and Timer1 (via specific SweRV-EHX1 fields in mie CSR)*/
-#define M_PSP_DISABLE_TIMER0()	M_PSP_CLEAR_CSR(mie, D_PSP_MIE_TIMER0_INT_ENABLE);
-#define M_PSP_ENABLE_TIMER0()	M_PSP_SET_CSR(mie, D_PSP_MIE_TIMER0_INT_ENABLE);
-#define M_PSP_DISABLE_TIMER1()	M_PSP_CLEAR_CSR(mie, D_PSP_MIE_TIMER1_INT_ENABLE);
-#define M_PSP_ENABLE_TIMER1()	M_PSP_SET_CSR(mie, D_PSP_MIE_TIMER1_INT_ENABLE);
+/* Disable & Enable of Timer0 interrupt (via specific SweRV-EHX1 field in mie CSR)*/
+#define M_PSP_DISABLE_TIMER0_INT()	    M_PSP_CLEAR_CSR(mie, D_PSP_MIE_TIMER0_INT_ENABLE);
+#define M_PSP_ENABLE_TIMER0_INT()	    M_PSP_SET_CSR(mie, D_PSP_MIE_TIMER0_INT_ENABLE);
+/* Disable & Enable of Timer0 count (via MITCTL0 - specific SweRV-EHX1 CSR)*/
+#define M_PSP_DISABLE_TIMER0_CNT()  M_PSP_CLEAR_PS_CSR(D_PSP_MITCTL0, D_PSP_MITCTL_EN);
+#define M_PSP_ENABALE_TIMER0_CNT()  M_PSP_SET_PS_CSR(D_PSP_MITCTL0, D_PSP_MITCTL_EN);
+
+/* Disable & Enable of Timer1 interrupt (via specific SweRV-EHX1 field in mie CSR)*/
+#define M_PSP_DISABLE_TIMER1_INT()	    M_PSP_CLEAR_CSR(mie, D_PSP_MIE_TIMER1_INT_ENABLE);
+#define M_PSP_ENABLE_TIMER1_INT()	    M_PSP_SET_CSR(mie, D_PSP_MIE_TIMER1_INT_ENABLE);
+/* Disable & Enable of Timer1 count (via MITCTL1 - specific SweRV-EHX1 CSR)*/
+#define M_PSP_DISABLE_TIMER1_CNT()  M_PSP_CLEAR_PS_CSR(D_PSP_MITCTL1, D_PSP_MITCTL_EN);
+#define M_PSP_ENABALE_TIMER1_CNT()  M_PSP_SET_PS_CSR(D_PSP_MITCTL1, D_PSP_MITCTL_EN);
 
 #ifdef M_PSP_DISABLE_SWERV_TIMER
     #undef M_PSP_DISABLE_SWERV_TIMER
 #endif
+#define M_PSP_DISABLE_SWERV_TIMER() M_PSP_DISABLE_TIMER0_INT();
+
 #ifdef M_PSP_ENABLE_SWERV_TIMER
     #undef M_PSP_ENABLE_SWERV_TIMER
 #endif
-#define M_PSP_DISABLE_SWERV_TIMER() M_PSP_DISABLE_TIMER0();
-#define M_PSP_ENABLE_SWERV_TIMER()  M_PSP_ENABLE_TIMER0();
+#define M_PSP_ENABLE_SWERV_TIMER()  M_PSP_ENABLE_TIMER0_INT();
 
 /**
 * types
@@ -129,17 +138,6 @@
 * APIs
 */
 
-/**
-*
-* @brief Setup function for Timer0 (per SweRV-EHX1 reference manual)
-*
-***************************************************************************************************/
-void pspTimerSwervEhx1SetupSingleRun(const unsigned int enableInterrupt);
-
-#ifdef D_PSP_SETUP_SINGLE_TIMER_RUN
-    #undef D_PSP_SETUP_SINGLE_TIMER_RUN
-#endif
-#define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSwervEhx1SetupSingleRun(enableInterrupt);
 
 
 #endif /* __PSP_SWERV_EHX1_CSRS_H__ */

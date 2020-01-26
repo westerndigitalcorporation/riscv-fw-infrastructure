@@ -20,7 +20,6 @@
 	.section ".text.init"
 	.global	_start
 	.type   _start, @function
-    .global rtosal_vect_table
 
 _start:
 	#clear minstret
@@ -60,10 +59,6 @@ _start:
 	li  x30,0
 	li  x31,0
 
-    #setup MTVEC with vector-table entry
-	la t1, rtosal_vect_table
-	csrw mtvec, t1
-	    
       	#cache configuration
 	li t1, 0x55555555
 	csrw 0x7c0, t1
