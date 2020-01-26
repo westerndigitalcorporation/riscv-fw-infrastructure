@@ -63,6 +63,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_TABLES_CACHE_ENTRY_INDEX              (D_COMRV_NUM_OF_CACHE_ENTRIES-1)
 #define D_COMRV_LAST_CACHE_ENTRY_INDEX                (D_COMRV_TABLES_CACHE_ENTRY_INDEX)
 #define D_COMRV_TABLES_OFFSET                         0
+#define D_COMRV_TABBLES_NOT_LOADED                    0
+#define D_COMRV_TABBLES_LOADED                        1
+
 /**
 * macros
 */
@@ -248,6 +251,11 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
    if (pInitArgs->ucCanLoadComrvTables != 0)
    {
       comrvLoadTables();
+   }
+   else
+   {
+      /* mark that the 'offset' and 'multigroup' tables are not loaded yet */
+      g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_NOT_LOADED;
    }
 }
 
@@ -863,4 +871,6 @@ void comrvLoadTables(void)
    g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucLocked = D_COMRV_ENTRY_LOCKED;
    /* we set the size 0 so that debugger will not continue scanning the cache entries */
    g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
+   /* mark that the 'offset' and 'multigroup' tables are loaded */
+   g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_LOADED;
 }
