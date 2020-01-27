@@ -32,6 +32,7 @@
    #include <unistd.h>
 #elif defined(D_NEXYS_A7)
    #include "printf.h"
+   #include "string.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
@@ -94,6 +95,9 @@ void demoUartInit(void)
 	/* Empty implementation */
 #endif
 #ifdef D_NEXYS_A7
+    memset((void*)(UART_BASE_ADDRESS + 0x8),0,sizeof(unsigned int));
+
+
 	printfNexys("------------------------------------------");
 	printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
 	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
