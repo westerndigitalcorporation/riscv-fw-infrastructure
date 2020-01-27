@@ -65,6 +65,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_TABLES_OFFSET                         0
 #define D_COMRV_TABBLES_NOT_LOADED                    0
 #define D_COMRV_TABBLES_LOADED                        1
+#define D_COMRV_LUI_TOKEN_20_BITS_MASK                0xFFFFF000
+#define D_COMRV_ADDI_TOKEN_12_BITS_MASK               0xFFF00000
+#define D_COMRV_ADDI_TOKEN_SHMT                       20
 
 /**
 * macros
@@ -873,4 +876,39 @@ void comrvLoadTables(void)
    g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
    /* mark that the 'offset' and 'multigroup' tables are loaded */
    g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_LOADED;
+}
+
+/**
+* lock/unlock a specific overlay group
+*
+* @param pFuncAddress - overlay function its group shall be locked/unlocked
+*
+* @return zero - lock/unlock operation succeeded;
+*         non-zero - lock/unlock operation failed - group not loaded
+*/
+u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockState_t eLockState)
+{
+   u16_t usSearchResultIndex;
+   comrvOverlayToken_t stToken;
+
+   /* Lets read the token from the given address (address is a thunk).
+      The first instruction is lui so we need to decode the upper 20
+      bits of the instruction */
+   stToken.uiValue = *((u32_t*)pOvlFuncAddress) & D_COMRV_LUI_TOKEN_20_BITS_MASK;
+   /* next instruction we decode is the addi - take the upper 12 bits */
+   stToken.uiValue |= ((*(((u32_t*)pOvlFuncAddress+1)) & D_COMRV_ADDI_TOKEN_12_BITS_MASK) >> D_COMRV_ADDI_TOKEN_SHMT);
+   /* now search for the group */
+   usSearchResultIndex = comrvSearchForLoadedOverlayGroup(stToken);
+   /* check if the group isn't loaded */
+   if (_BUILTIN_EXPECT(usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND,0))
+   {
+      /* we can't lock an unloaded group */
+      return 0;
+   }
+
+   /* group is loaded so lets lock/unlock it */
+   g_stComrvCB.stOverlayCache[usSearchResultIndex].unProperties.stFields.ucLocked = eLockState;
+
+   /* lock/unlock was successful */
+   return 1;
 }

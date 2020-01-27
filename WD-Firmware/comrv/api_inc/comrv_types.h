@@ -33,6 +33,12 @@
 /**
 * types
 */
+typedef enum comrvLockState
+{
+   D_COMRV_GROUP_STATE_UNLOCK = 0,
+   D_COMRV_GROUP_STATE_LOCK   = 1
+}comrvLockState_t;
+
 /* comrv stack frame */
 typedef struct comrvStackFrame
 {
