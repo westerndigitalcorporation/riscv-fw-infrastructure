@@ -33,6 +33,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 */
 #include "comrv.h"
 #include "comrv_api.h"
+#include "psp_macros.h"
 
 /**
 * definitions
@@ -883,8 +884,8 @@ void comrvLoadTables(void)
 *
 * @param pFuncAddress - overlay function its group shall be locked/unlocked
 *
-* @return zero - lock/unlock operation succeeded;
-*         non-zero - lock/unlock operation failed - group not loaded
+* @return D_COMRV_SUCCESS - lock/unlock operation succeeded;
+*         D_COMRV_LOCK_UNLOCK_ERR - lock/unlock operation failed - group not loaded
 */
 u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockState_t eLockState)
 {
@@ -903,12 +904,12 @@ u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockStat
    if (_BUILTIN_EXPECT(usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND,0))
    {
       /* we can't lock an unloaded group */
-      return 0;
+      return D_COMRV_LOCK_UNLOCK_ERR;
    }
 
    /* group is loaded so lets lock/unlock it */
    g_stComrvCB.stOverlayCache[usSearchResultIndex].unProperties.stFields.ucLocked = eLockState;
 
    /* lock/unlock was successful */
-   return 1;
+   return D_COMRV_SUCCESS;
 }
