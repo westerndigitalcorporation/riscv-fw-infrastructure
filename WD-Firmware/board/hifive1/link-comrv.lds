@@ -183,10 +183,10 @@ SECTIONS
   }  >ram AT>ram :ram
 
   /* this is the location of all comrv overlay groups.
-     after linking, we'll use objcopy utility and change
-     this address to the .reserved_ovl address. we do this
+     after linking, we'll use objcopy utility and copy
+     it to the .reserved_ovl section. we do this
      to make sure there is no address dependency after linking */ 
-  .ovlgrpdata       : 
+  .ovlgrpdata (OVERLAY) : 
   {
     PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
     *(SORT_BY_USER(.ovlinput.*))

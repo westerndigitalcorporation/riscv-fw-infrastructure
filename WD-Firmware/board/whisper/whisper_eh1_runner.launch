@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LAUNCH_CONFIGURATION_BUILD_SCOPE" value="${none}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:/WD-Firmware/board/whisper/whisper}"/>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="--target=../../demo/build/output/swerv_eh1.elf --gdb --gdb-tcp-port=7000 --startpc=0x0 --configfile=${workspace_loc:/WD-Firmware/board/whisper/whisper_eh1.json}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="--target=../../demo/build/output/swerv_eh1.elf --gdb --gdb-tcp-port=7000 --startpc=0x0 --configfile=${workspace_loc:/WD-Firmware/board/whisper/whisper_eh1.json} --alarm=1000"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/WD-Firmware/board/whisper}"/>
 </launchConfiguration>

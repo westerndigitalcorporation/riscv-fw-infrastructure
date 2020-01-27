@@ -66,8 +66,8 @@ def fnProduceSectionsSize(target, source, env):
       strElfName = str(source[0])
       strSizeUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['SIZE_BIN'])
       strHeader = fnHeaderCreate([STR_HEADER_TEXT])
-      os.system(STR_MAP_SECTION_APPEND % (strHeader, env['MAP_FILE']))
-      os.system(STR_MAP_SIZE_APPEND % (strSizeUtilName, strElfName, env['MAP_FILE']))
+      fnExecuteCommand(STR_MAP_SECTION_APPEND % (strHeader, env['MAP_FILE']))
+      fnExecuteCommand(STR_MAP_SIZE_APPEND % (strSizeUtilName, strElfName, env['MAP_FILE']))
    f.close()
    return None
 
@@ -75,15 +75,15 @@ def fnProduceSectionsSize(target, source, env):
 def fnProduceDump(target, source, env):
    strDmpName     = env['DMP_FILE']
    strDmpUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['OBJDUMP_BIN'])
-   os.system(strDmpUtilName + ' ' + env['ELF_FILE'] + ' -DSh > ' + strDmpName)
+   fnExecuteCommand(strDmpUtilName + ' ' + env['ELF_FILE'] + ' -DSh > ' + strDmpName)
    return None
 
 # move overlay section from virtual address to flash address 
-def fnMoveOverlaySection(target, source, env):
+def fnCopyOverlaySection(target, source, env):
    strReadElfUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['READELF_BIN'])
    strObjcopyUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['OBJCOPY_BIN'])
    # get elf sections and save them to STR_TMP_FILE
-   os.system(strReadElfUtilName + ' -S ' + env['ELF_FILE'] + ' > ' + STR_TMP_FILE)
+   fnExecuteCommand(strReadElfUtilName + ' -S ' + env['ELF_FILE'] + ' > ' + STR_TMP_FILE)
    # read STR_TMP_FILE
    f = open(STR_TMP_FILE, "r")
    strElfSections = f.read()
@@ -107,32 +107,39 @@ def fnMoveOverlaySection(target, source, env):
        # save the section size
        intOvlSectionSize    = int(listSectionProperties[INT_SEC_SIZE_INDEX], 16)
        listSectionProperties = []
-   # delete the temporary file
-   os.system(STR_REMOVE_FILE % STR_TMP_FILE)
    # if we have overlays
    if intOvlSectionSize != 0:
-      str =  "%s --change-section-address %s=0x%s %s %s" % (strObjcopyUtilName, STR_OVL_DATA_SEC_NAME, strReservedSectionAddress, env['ELF_FILE'], env['ELF_FILE'])
       # verify the overlay groups section size fits the reserved overlay section size
       if intOvlSectionSize <= intReservedSectionSize:
-         # change the address of .ovlgrpdata section to be the address of the reserved section
-         os.system(str)
+         # dump the ovelay section
+         str = "%s %s --dump-section %s=%s" % (strObjcopyUtilName, env['ELF_FILE'], STR_OVL_DATA_SEC_NAME, STR_TMP_FILE)
+         fnExecuteCommand(str)
+         # modify the reserved section flags - it is missing the content flag
+         str = "%s %s --set-section-flags %s=contents,alloc" % (strObjcopyUtilName, env['ELF_FILE'], STR_RESERVED_OVL_SEC_NAME)
+         fnExecuteCommand(str)
+         # update the reserved section from the dumped section
+         str = "%s %s --update-section %s=%s" % (strObjcopyUtilName, env['ELF_FILE'], STR_RESERVED_OVL_SEC_NAME, STR_TMP_FILE)
+         fnExecuteCommand(str)
       else:
          print ("Error: can't move .ovlgrpdata")
          print "'%s' is too small [%s] while '%s' size is [%s]" %(STR_RESERVED_OVL_SEC_NAME, hex(intReservedSectionSize), STR_OVL_DATA_SEC_NAME, hex(intOvlSectionSize))
-         os.system("rm " + env['ELF_FILE'])
+         fnExecuteCommand("rm " + env['ELF_FILE'])
+   # delete the temporary file
+   fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE, "unable to delete temporary file")
+   
    return None
 
 # under linux, verify installation dependencies
 def fnCheckInstalledDependencis(listDependencis):
   if platform.uname()[0] == STR_PLATFORM:
     for strDependency in listDependencis:
-      os.system(STR_LIST_PKGS % strDependency)
+      fnExecuteCommand(STR_LIST_PKGS % strDependency, "dpkg failed executing")
       if STR_NO_INSTALL in open(STR_TMP_FILE).read():
         print("Error: please install missing library - " + strDependency)
-        os.system(STR_REMOVE_FILE % STR_TMP_FILE)
+        fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE)
         exit(1)
 
-    os.system(STR_REMOVE_FILE % STR_TMP_FILE)
+    fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE, "Remove temporary file failed")
   else: 
     # currently only linux is supported 
     print("unsupported environment, please switch to a linux based machine")
@@ -190,11 +197,8 @@ def linkGDBFolder(strBinFolder):
 
     # delete previously linked binaries as toolchain may have been changed
     if os.path.isdir(strGDBFolder):
-        ret = os.system("rm -r %s" % strGDBFolder)
-        if ret:
-            print "Error: Could not remove folder %s" % strGDBFolder
-            print "Remove it manually then try again"
-            exit(1)
+        fnExecuteCommand("rm -r %s" % strGDBFolder, "Could not remove folder %s\nRemove it manually then try again" % strGDBFolder)
+
 
     os.mkdir(strGDBFolder)
 
@@ -205,11 +209,7 @@ def linkGDBFolder(strBinFolder):
             strLinkFile = strFile.replace("riscv32", "riscv64")
 
         strCmd = "ln -s %s %s" % (os.path.join(strBinFolder, strFile), os.path.join(strGDBFolder, strLinkFile))
-        ret = os.system(strCmd)
-        if ret:
-            print ("Error: Creating symbolic link folder at: %s" % strGDBFolder)
-            print ("Error: %s" % strCmd)
-            exit(1)
+        fnExecuteCommand(strCmd, "Creating symbolic link folder at: %s" % strGDBFolder)
 
 
 # get toolchain specific comiler/linker flags
@@ -230,3 +230,11 @@ def fnGetToolchainSpecificFlags(strTCName, env):
 def fnCreateFolder(strPath):
   if not os.path.exists(strPath):
     os.makedirs(strPath)
+
+def fnExecuteCommand(strCmd, strErr = ""):
+  retSystCall = os.system(strCmd)
+  if retSystCall != 0:
+    print ("Error: %s" % strCmd)
+    if strErr: 
+      print ("Error: %s" % strErr)
+    exit(1)
