@@ -27,6 +27,7 @@
 /**
 * include files
 */
+#include "psp_macros.h"
 
 /**
 * definitions
@@ -38,6 +39,13 @@
 #define M_COMRV_ENTER_CRITICAL_SECTION()
 #define M_COMRV_EXIT_CRITICAL_SECTION()
 
+/* __builtin_expect instruction provides branch
+   prediction information. The condition parameter is the expected
+   comparison value. If it is equal to 1 (true), the condition
+   is likely to be true, in other case condition is likely to be false.
+   this provides us a way to take rare cases out of the critical execution path */
+// TODO: use our psp
+#define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
 /**
 * types
 */
