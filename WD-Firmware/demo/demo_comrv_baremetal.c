@@ -18,7 +18,6 @@
 /**
 * include files
 */
-
 #include "common_types.h"
 #include "psp_macros.h"
 #include "comrv_api.h"
@@ -27,7 +26,6 @@
 /**
 * definitions
 */
-
 #define M_OVL_DUMMY_FUNCTION(x) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
   { \
@@ -108,10 +106,6 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #define OVL_OverlayFunc0 _OVERLAY_
 #define OVL_OverlayFunc1 _OVERLAY_
 #define OVL_OverlayFunc2 _OVERLAY_
-//#define OVL_benchmark    _OVERLAY_
-//#define OVL_jpegdct      _OVERLAY_
-
-//extern int OVL_benchmark benchmark(void);
 
 /**
 * macros
@@ -152,6 +146,8 @@ volatile u32_t gOverlayFunc2 = 0;
 void OVL_OverlayFunc2 OverlayFunc2(void)
 {
    gOverlayFunc2+=3;
+   /* lock the group holding OverlayFunc2 */
+   comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_LOCK);
 }
 
 /* non overlay function */
@@ -206,6 +202,8 @@ void demoStart(void)
       /* loop forever */
       M_ENDLESS_LOOP();
    }
+   /* unlock the group holding OverlayFunc2 */
+   comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_UNLOCK);
    // M_OVL_FUNCTIONS_CALL;
 }
 

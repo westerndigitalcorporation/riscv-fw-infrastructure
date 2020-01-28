@@ -65,6 +65,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_TABLES_OFFSET                         0
 #define D_COMRV_TABBLES_NOT_LOADED                    0
 #define D_COMRV_TABBLES_LOADED                        1
+#define D_COMRV_LUI_TOKEN_20_BITS_MASK                0xFFFFF000
+#define D_COMRV_ADDI_TOKEN_12_BITS_MASK               0xFFF00000
+#define D_COMRV_ADDI_TOKEN_SHMT                       20
 
 /**
 * macros
@@ -105,7 +108,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* macro for verifying overlay group CRC */
 #ifdef D_COMRV_CRC
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)   \
-      if (_BUILTIN_EXPECT(comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult),0))  \
+      if (M_COMRV_BUILTIN_EXPECT(comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult),0))  \
       {                                                                          \
          stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;                           \
          stErrArgs.uiToken    = unToken.uiValue;                                 \
@@ -195,7 +198,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 #ifdef D_COMRV_VERIFY_INIT_ARGS
    uiCacheSizeInBytes = M_COMRV_CACHE_SIZE_IN_BYTES();
    /* verify cache configuration - size and alignment to D_COMRV_OVL_GROUP_SIZE_MIN */
-   if (_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
+   if (M_COMRV_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
        uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN, 0))
    {
       stErrArgs.uiErrorNum = D_COMRV_INVALID_INIT_PARAMS_ERR;
@@ -381,7 +384,7 @@ void* comrvGetAddressFromToken(void)
       ucEntryIndex = 0;
 
       /* if you have no/some candidates */
-      if (_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0))
+      if (M_COMRV_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0))
       {
          M_COMRV_EXIT_CRITICAL_SECTION();
          stErrArgs.uiErrorNum = D_COMRV_NOT_ENOUGH_ENTRIES;
@@ -421,7 +424,7 @@ void* comrvGetAddressFromToken(void)
                   pEntry = &g_stComrvCB.stOverlayCache[ucNeighbourIndex];
 #ifdef D_COMRV_OVL_DATA_SUPPORT
                   /* an overlay data is present when handling de-fragmentation */
-                  if (_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
+                  if (M_COMRV_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
                   {
                      M_COMRV_EXIT_CRITICAL_SECTION();
                      stErrArgs.uiErrorNum = D_COMRV_OVL_DATA_DEFRAG_ERR;
@@ -497,7 +500,7 @@ void* comrvGetAddressFromToken(void)
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
       /* if group wasn't loaded */
-      if (_BUILTIN_EXPECT(pAddress == 0,0))
+      if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
       {
          stErrArgs.uiErrorNum = D_COMRV_LOAD_ERR;
          stErrArgs.uiToken    = unToken.uiValue;
@@ -848,7 +851,7 @@ void comrvLoadTables(void)
    /* load the tables */
    pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
    /* if group wasn't loaded */
-   if (_BUILTIN_EXPECT(pAddress == 0,0))
+   if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
    {
       stErrArgs.uiErrorNum = D_COMRV_TBL_LOAD_ERR;
       stErrArgs.uiToken    = D_COMRV_TABLES_TOKEN;
@@ -873,4 +876,39 @@ void comrvLoadTables(void)
    g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
    /* mark that the 'offset' and 'multigroup' tables are loaded */
    g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_LOADED;
+}
+
+/**
+* lock/unlock a specific overlay group
+*
+* @param pFuncAddress - overlay function its group shall be locked/unlocked
+*
+* @return D_COMRV_SUCCESS - lock/unlock operation succeeded;
+*         D_COMRV_LOCK_UNLOCK_ERR - lock/unlock operation failed - group not loaded
+*/
+u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockState_t eLockState)
+{
+   u16_t usSearchResultIndex;
+   comrvOverlayToken_t stToken;
+
+   /* Lets read the token from the given address (address is a thunk).
+      The first instruction is lui so we need to decode the upper 20
+      bits of the instruction */
+   stToken.uiValue = *((u32_t*)pOvlFuncAddress) & D_COMRV_LUI_TOKEN_20_BITS_MASK;
+   /* next instruction we decode is the addi - take the upper 12 bits */
+   stToken.uiValue |= ((*(((u32_t*)pOvlFuncAddress+1)) & D_COMRV_ADDI_TOKEN_12_BITS_MASK) >> D_COMRV_ADDI_TOKEN_SHMT);
+   /* now search for the group */
+   usSearchResultIndex = comrvSearchForLoadedOverlayGroup(stToken);
+   /* check if the group isn't loaded */
+   if (M_COMRV_BUILTIN_EXPECT(usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND,0))
+   {
+      /* we can't lock an unloaded group */
+      return D_COMRV_LOCK_UNLOCK_ERR;
+   }
+
+   /* group is loaded so lets lock/unlock it */
+   g_stComrvCB.stOverlayCache[usSearchResultIndex].unProperties.stFields.ucLocked = eLockState;
+
+   /* lock/unlock was successful */
+   return D_COMRV_SUCCESS;
 }
