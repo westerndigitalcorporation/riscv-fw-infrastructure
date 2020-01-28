@@ -37,7 +37,6 @@ class demo(object):
 
     self.listSconscripts = [
       'comrv_rtos',
-      'psp',
       'demo_comrv_rtos',
       'rtosal',
       'freertos',
