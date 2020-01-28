@@ -33,7 +33,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 */
 #include "comrv.h"
 #include "comrv_api.h"
-#include "psp_macros.h"
 
 /**
 * definitions
@@ -109,7 +108,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* macro for verifying overlay group CRC */
 #ifdef D_COMRV_CRC
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)   \
-      if (M_PSP_BUILTIN_EXPECT(comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult),0))  \
+      if (M_COMRV_BUILTIN_EXPECT(comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult),0))  \
       {                                                                          \
          stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;                           \
          stErrArgs.uiToken    = unToken.uiValue;                                 \
@@ -199,7 +198,7 @@ void comrvInit(comrvInitArgs_t* pInitArgs)
 #ifdef D_COMRV_VERIFY_INIT_ARGS
    uiCacheSizeInBytes = M_COMRV_CACHE_SIZE_IN_BYTES();
    /* verify cache configuration - size and alignment to D_COMRV_OVL_GROUP_SIZE_MIN */
-   if (M_PSP_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
+   if (M_COMRV_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
        uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN, 0))
    {
       stErrArgs.uiErrorNum = D_COMRV_INVALID_INIT_PARAMS_ERR;
@@ -385,7 +384,7 @@ void* comrvGetAddressFromToken(void)
       ucEntryIndex = 0;
 
       /* if you have no/some candidates */
-      if (M_PSP_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0))
+      if (M_COMRV_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0))
       {
          M_COMRV_EXIT_CRITICAL_SECTION();
          stErrArgs.uiErrorNum = D_COMRV_NOT_ENOUGH_ENTRIES;
@@ -425,7 +424,7 @@ void* comrvGetAddressFromToken(void)
                   pEntry = &g_stComrvCB.stOverlayCache[ucNeighbourIndex];
 #ifdef D_COMRV_OVL_DATA_SUPPORT
                   /* an overlay data is present when handling de-fragmentation */
-                  if (M_PSP_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
+                  if (M_COMRV_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
                   {
                      M_COMRV_EXIT_CRITICAL_SECTION();
                      stErrArgs.uiErrorNum = D_COMRV_OVL_DATA_DEFRAG_ERR;
@@ -501,7 +500,7 @@ void* comrvGetAddressFromToken(void)
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
       /* if group wasn't loaded */
-      if (M_PSP_BUILTIN_EXPECT(pAddress == 0,0))
+      if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
       {
          stErrArgs.uiErrorNum = D_COMRV_LOAD_ERR;
          stErrArgs.uiToken    = unToken.uiValue;
@@ -852,7 +851,7 @@ void comrvLoadTables(void)
    /* load the tables */
    pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
    /* if group wasn't loaded */
-   if (M_PSP_BUILTIN_EXPECT(pAddress == 0,0))
+   if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
    {
       stErrArgs.uiErrorNum = D_COMRV_TBL_LOAD_ERR;
       stErrArgs.uiToken    = D_COMRV_TABLES_TOKEN;
@@ -901,7 +900,7 @@ u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockStat
    /* now search for the group */
    usSearchResultIndex = comrvSearchForLoadedOverlayGroup(stToken);
    /* check if the group isn't loaded */
-   if (M_PSP_BUILTIN_EXPECT(usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND,0))
+   if (M_COMRV_BUILTIN_EXPECT(usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND,0))
    {
       /* we can't lock an unloaded group */
       return D_COMRV_LOCK_UNLOCK_ERR;
