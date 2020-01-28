@@ -31,10 +31,20 @@
 
 /**
 *
+* @brief Setup function for M-Timer. Called upon initialization of the system
+*
+***************************************************************************************************/
+void pspTimerSetup(void)
+{
+    D_PSP_SETUP_SINGLE_TIMER_RUN(D_PSP_TRUE);
+}
+
+/**
+*
 * @brief Setup function for Timer0 (per SweRV-EHX1 reference manual)
 *
 ***************************************************************************************************/
-void pspTimerSwervEhx1SetupSingleRun(const unsigned int enableInterrupt)
+void pspTimerSetupSingleRun(const unsigned int enableInterrupt)
 {
 	/* Set the machine timer0 */
     u32_t now = M_PSP_READ_PS_CSR(D_PSP_MITCNT0);
@@ -47,7 +57,7 @@ void pspTimerSwervEhx1SetupSingleRun(const unsigned int enableInterrupt)
 	    M_PSP_SET_PS_CSR(D_PSP_MITCTL0, D_PSP_MITCTL_EN);
 
 	    // Enable the Machine-Timer-0 interrupt bit in MIE CSR
-	    M_PSP_ENABLE_TIMER0();
+	    M_PSP_ENABLE_TIMER0_INT();
     }
 }
 
