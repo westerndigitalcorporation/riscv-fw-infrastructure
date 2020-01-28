@@ -91,14 +91,16 @@
 #endif /* D_COMRV_PROFILE_1 */
 
 /* comrv errors */
-#define D_COMRV_INVALID_INIT_PARAMS_ERR   0
-#define D_COMRV_NOT_ENOUGH_ENTRIES        1
-#define D_COMRV_LOAD_ERR                  2
-#define D_COMRV_OVL_DATA_DEFRAG_ERR       3
-#define D_COMRV_CRC_CHECK_ERR             4
-#define D_COMRV_TBL_LOAD_ERR              5
-#define D_COMRV_SYNC_WAIT_ERR             6
-#define D_COMRV_SYNC_REL_ERR              7
+#define D_COMRV_SUCCESS                   0
+#define D_COMRV_INVALID_INIT_PARAMS_ERR   1
+#define D_COMRV_NOT_ENOUGH_ENTRIES        2
+#define D_COMRV_LOAD_ERR                  3
+#define D_COMRV_OVL_DATA_DEFRAG_ERR       4
+#define D_COMRV_CRC_CHECK_ERR             5
+#define D_COMRV_TBL_LOAD_ERR              6
+#define D_COMRV_LOCK_UNLOCK_ERR           7
+#define D_COMRV_SYNC_WAIT_ERR             8
+#define D_COMRV_SYNC_REL_ERR              9
 
 /* comrv defines */
 #define D_COMRV_INSTRUMENTATION_BASE_IND        0xFC
