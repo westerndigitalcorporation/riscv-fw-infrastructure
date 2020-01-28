@@ -116,7 +116,7 @@
    comparison value. If it is equal to 1 (true), the condition
    is likely to be true, in other case condition is likely to be false.
    this provides us a way to take rare cases out of the critical execution path */
-#define _BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
+#define M_PSP_BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
 /*******************************************************/
 
 
