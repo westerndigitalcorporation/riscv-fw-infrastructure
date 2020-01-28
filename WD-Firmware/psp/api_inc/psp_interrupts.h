@@ -15,21 +15,29 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupt_api.h
+* @file   psp_interrupts.h
 * @author Ronen Haen
 * @date   20.05.2019
 * @brief  The file defines the psp interrupt interfaces
 */
-#ifndef __PSP_INTERRUPT_API_H__
-#define __PSP_INTERRUPT_API_H__
+#ifndef __PSP_INTERRUPTS_H__
+#define __PSP_INTERRUPTS_H__
 
 /**
 * include files
 */
+#include "psp_csrs.h"
+#include "psp_macros.h"
 
 /**
 * definitions
 */
+/* Enable/Disable interrupts */
+#define D_PSP_ENABLE_INTERRUPTS()    M_PSP_SET_CSR(mstatus, D_PSP_MSTATUS_MIE);
+#define D_PSP_DISABLE_INTERRUPTS()   M_PSP_CLEAR_CSR(mstatus, D_PSP_MSTATUS_MIE);
+/* Enable/Disable specific interrupt */
+#define D_PSP_ENABLE_INT(mie_interrupt_en)  M_PSP_SET_CSR(mie, mie_interrupt_en);  /* */
+#define D_PSP_DISBLE_INT(mie_interrupt_dis)  M_PSP_CLEAR_CSR((mie, mie_interrupt_dis);
 
 /**
 * macros
@@ -106,4 +114,4 @@ typedef void (*pspInterruptHandler_t)(void);
 * APIs
 */
 
-#endif /* __PSP_INTERRUPT_API_H__ */
+#endif /* __PSP_INTERRUPTS_H__ */

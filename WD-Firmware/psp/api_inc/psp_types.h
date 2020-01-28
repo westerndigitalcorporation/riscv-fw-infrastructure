@@ -27,19 +27,11 @@
 /**
 * include files
 */
-
+#include "common_types.h"
 
 /**
 * types
 */
-typedef signed char        s08_t;
-typedef signed short       s16_t;
-typedef signed int         s32_t;
-typedef signed long long   s64_t;
-typedef unsigned char      u08_t;
-typedef unsigned short     u16_t;
-typedef unsigned int       u32_t;
-typedef unsigned long long u64_t;
 
 #if __riscv_xlen == 32
    typedef u32_t pspStack_t;

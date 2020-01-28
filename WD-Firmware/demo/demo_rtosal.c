@@ -180,8 +180,8 @@ void demoRtosalCreateTasks(void *pParam)
     pspExceptionCause_t cause;
 
     /* Disable the machine & timer interrupts until setup is done. */
-    M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MEIP);
-    M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
+    M_PSP_CLEAR_CSR(mie, D_PSP_MIE_MEIE);
+    M_PSP_CLEAR_CSR(mie, D_PSP_MIE_MTIE);
     /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
     for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST_COMMON ; cause++)
     {

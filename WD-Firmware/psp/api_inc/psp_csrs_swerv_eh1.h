@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_swerv_eh1_csrs.h
+* @file   psp_csrs_swerv_eh1.h
 * @author Nati Rapaport
 * @date   01.12.2019
 * @brief  Definitions of Swerv's (EH1 version) CSRs
 * 
 */
-#ifndef  __PSP_SWERV_EH1_CSRS_H__
-#define  __PSP_SWERV_EH1_CSRS_H__
+#ifndef  __PSP_CSRS_SWERV_EH1_H__
+#define  __PSP_CSRS_SWERV_EH1_H__
 
 /**
 * include files
@@ -60,4 +60,4 @@
 
 
 
-#endif /* __PSP_SWERV_EH1_CSRS_H__ */
+#endif /* __PSP_CSRS_SWERV_EH1_H__ */
