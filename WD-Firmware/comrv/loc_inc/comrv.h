@@ -27,6 +27,7 @@
 /**
 * include files
 */
+#include "psp_macros.h"
 
 /**
 * definitions
@@ -38,13 +39,13 @@
 #ifdef D_COMRV_RTOS_SUPPORT
    #define M_COMRV_DISABLE_INTS()   M_PSP_DISABLE_INTERRUPTS()
    #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
-   #define M_COMRV_ENTER_CRITICAL_SECTION()  if (_BUILTIN_EXPECT(rtosalMutexWait(g_stComrvCB.pStMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS, 0)) \
+   #define M_COMRV_ENTER_CRITICAL_SECTION()  if (M_COMRV_BUILTIN_EXPECT(rtosalMutexWait(g_stComrvCB.pStMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS, 0)) \
                                              { \
                                                 stErrArgs.uiErrorNum = D_COMRV_SYNC_WAIT_ERR; \
                                                 stErrArgs.uiToken    = unToken.uiValue; \
                                                 comrvErrorHook(&stErrArgs); \
                                              }
-   #define M_COMRV_EXIT_CRITICAL_SECTION()   if (_BUILTIN_EXPECT(rtosalMutexRelease(g_stComrvCB.pStMutex) != D_RTOSAL_SUCCESS, 0)) \
+   #define M_COMRV_EXIT_CRITICAL_SECTION()   if (M_COMRV_BUILTIN_EXPECT(rtosalMutexRelease(g_stComrvCB.pStMutex) != D_RTOSAL_SUCCESS, 0)) \
                                              { \
                                                 stErrArgs.uiErrorNum = D_COMRV_SYNC_REL_ERR; \
                                                 stErrArgs.uiToken    = unToken.uiValue; \
@@ -52,19 +53,18 @@
                                              }
 #else
    #define M_COMRV_ENTER_CRITICAL_SECTION()
-   #define M_COMRV_ENTER_CRITICAL_SECTION()
+   #define M_COMRV_EXIT_CRITICAL_SECTION()
    #define M_COMRV_DISABLE_INTS()
    #define M_COMRV_ENABLE_INTS()
 #endif /* D_COMRV_RTOS_SUPPORT */
 
 
-                                          /* __builtin_expect instruction provides branch
+/* M_PSP_BUILTIN_EXPECT instruction provides branch
    prediction information. The condition parameter is the expected
    comparison value. If it is equal to 1 (true), the condition
    is likely to be true, in other case condition is likely to be false.
    this provides us a way to take rare cases out of the critical execution path */
-// TODO: use our psp
-#define _BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
+#define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
 
 /**
 * types
