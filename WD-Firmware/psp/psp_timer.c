@@ -18,61 +18,63 @@
 * @file   psp_timer.c
 * @author Nati Rapaport
 * @date   13.11.2019
-* @brief  This file implaments core's timer service functions
+* @brief  This file implements core's timer service functions
 *
 */
 
-/*-----------------------------------------------------------
- * Implementation of functions defined in portable.h for the RISC-V RV32 port.
- *----------------------------------------------------------*/
+/**
+* include files
+*/
 #include "psp_types.h"
 #include "psp_api.h"
 
+/**
+* definitions
+*/
+
+/**
+* macros
+*/
+
+/**
+* types
+*/
+
+/**
+* local prototypes
+*/
+void pspTimerActivate(u32_t timer, u32_t period);
+
+/**
+* external prototypes
+*/
+
+/**
+* global variables
+*/
+void (*fptrPspTimerActivate)(u32_t timer, u32_t period) = pspTimerActivate;
 
 /**
 *
-* @brief Setup function for M-Timer. Called upon initialization of the system
+* @brief Activate core's Timer
+*
+* @ timer  - indicates which timer to setup
+* @ period - defines the timer's period
 *
 ***************************************************************************************************/
-void pspTimerSetup(void)
-{
-    D_PSP_SETUP_SINGLE_TIMER_RUN(D_PSP_TRUE);
-}
-
-
-/**
-*
-* @brief Setup function for M-Timer in the CLINT (per privileged spec)
-*
-* @ const unsigned int enableInterrupt - If TRUE then enable timer-interrupt. otherwise do not enable
-*                                        timer interrupt.
-*
-***************************************************************************************************/
-void pspTimerSetupSingleRun(const unsigned int enableInterrupt)
+void pspTimerActivate(u32_t timer, u32_t period)
 {
 	//demoOutputMsg("SETUP Timer\n", 12);
 
     #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
-       #error "MTIME/MTIMECMP address definition is missing"
-    #endif
-    #if !defined(D_CLOCK_RATE) || !defined(D_TICK_TIME_MS)
-       #error "Core frequency values definitions are missing"
+        #error "MTIME/MTIMECMP address definition is missing"
     #endif
 
-     // Set the machine timer
+	/* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
     volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
     volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
     u64_t now = *mtime;
-    u64_t then = now + (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
+    u64_t then = now + period;
     *mtimecmp = then;
-
-    if (D_PSP_TRUE == enableInterrupt)
-    {
-        // Enable the Machine-Timer interrupt bit in MIE CSR
-        M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
-    }
 }
-
-
-
 

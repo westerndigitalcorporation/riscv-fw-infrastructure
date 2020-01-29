@@ -111,6 +111,8 @@ static void demoRtosalReceiveMsgTask( void *pvParameters );
 static void demoRtosalSendMsgTask( void *pvParameters );
 static void demoRtosalSemaphoreTask( void *pvParameters );
 static void demoRtosalTimerCallback( void* xTimer );
+static void demoRtosalcalculateTimerPeriod(void);
+
 void demoRtosalTimerTickHandler(void);
 
 
@@ -259,6 +261,9 @@ void demoRtosalCreateTasks(void *pParam)
 
     /* Register Timer-Tick interrupt handler function */
     rtosalRegisterTimerTickHandler(demoRtosalTimerTickHandler);
+
+    /* Calculates timer period */
+    demoRtosalcalculateTimerPeriod();
 
 }
 
@@ -427,5 +432,22 @@ static void demoRtosalSemaphoreTask( void *pvParameters )
 }
 
 
+/**
+ * demoRtosalcalculateTimerPeriod - Calculates Timer period
+ *
+ */
+void demoRtosalcalculateTimerPeriod(void)
+{
+#ifdef D_HI_FIVE1
+	u32_t timerPeriod = 0;
 
+    #if !defined(D_CLOCK_RATE) || !defined(D_TICK_TIME_MS)
+        #error "Core frequency values definitions are missing"
+    #endif
+
+	timerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
+	/* Store calculated timerPeriod for future use */
+	rtosalTimerSetPeriod(timerPeriod);
+#endif /* D_HI_FIVE1 */
+}
 

@@ -43,12 +43,12 @@
    #define M_PSP_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode)
 #endif /* #if (D_PSP_ERROR_CHECK==1) */
 
-#if (D_PSP_ASSERT==1)
-   #define M_PSP_ASSERT(checkedResult)
-   /* TODO add assert call */
+#ifdef D_PSP_DEBUG
+   #define M_PSP_ASSERT(checkedResult) if (checkedResult) \
+                                     { while(1);}
 #else
    #define M_PSP_ASSERT(checkedResult)
-#endif /* #if (D_PSP_ASSERT==1)  */
+#endif /* D_PSP_DEBUG */
 
 #define M_PSP_READ_CSR(reg) (	{ unsigned long __tmp; \
   asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
