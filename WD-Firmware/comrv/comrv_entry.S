@@ -23,6 +23,7 @@
 */
 #include "psp_core_base.inc"
 .include "comrv_macros.inc"
+#include "comrv_config.h"
 
 /* disable warning for reserved registers use - we are using comrv
    reserved register and don't want to see these warnings. */
@@ -63,7 +64,9 @@
 
 
 .global comrvEntry
+.global comrvEntryDisable
 
+/* TODO: need to set this code in COMRV_TEXT_SEC */
 .section  .text
 .align 4
 /* This is the function responsible for invoking the overlay function
@@ -205,3 +208,19 @@ comrv_handle_thunk_token:
     mv          t5, t2
     /* now we can skip to the previous stack frame */
     j comrv_igonr_caller_thunk_stack_frame
+
+#ifdef D_COMRV_CONTROL_SUPPORT
+
+/* for testing purpose, we use the .weak so we won't get stuck
+   this also allows the end user to reimplement comrvEntryDisable
+   diffrently */
+.weak comrvEntryDisable
+/* we get here if the end user disabled comrv and tried
+   calling/loading overlay function/data */
+comrvEntryDisable:
+1:
+    nop
+    j 1b
+
+#endif /* D_COMRV_CONTROL_SUPPORT */
+
