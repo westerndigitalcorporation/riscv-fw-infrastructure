@@ -94,6 +94,12 @@ void demoUartInit(void)
 	/* Empty implementation */
 #endif
 #ifdef D_NEXYS_A7
+	/* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
+	 * when running with Whisper */
+    u32_t* pUartState = (u32_t*)(UART_BASE_ADDRESS+0x8);
+	*pUartState = 0 ;
+
+
 	printfNexys("------------------------------------------");
 	printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
 	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
