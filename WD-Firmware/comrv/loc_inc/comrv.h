@@ -36,6 +36,9 @@
 /**
 * macros
 */
+#define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
+#define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
+
 #define M_COMRV_ENTER_CRITICAL_SECTION()
 #define M_COMRV_EXIT_CRITICAL_SECTION()
 
@@ -45,6 +48,7 @@
    is likely to be true, in other case condition is likely to be false.
    this provides us a way to take rare cases out of the critical execution path */
 #define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
+
 
 /**
 * types

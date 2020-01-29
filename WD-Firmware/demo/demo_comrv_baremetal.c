@@ -178,6 +178,13 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
+#ifdef D_COMRV_CONTROL_SUPPORT
+/* override comrv implementation */
+void comrvEntryDisable(void)
+{
+}
+#endif /* D_COMRV_CONTROL_SUPPORT */
+
 // TODO: uncomment the next line after tools bug is fixed
 //M_OVL_FUNCTIONS_GENERATOR
 
@@ -188,16 +195,28 @@ void demoStart(void)
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
 
+#ifdef D_COMRV_CONTROL_SUPPORT
+   /* check the disable API */
+   comrvDisable();
+   OverlayFunc0();
+#endif /* D_COMRV_CONTROL_SUPPORT */
+
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
+
+#ifdef D_COMRV_CONTROL_SUPPORT
+   OverlayFunc0();
+   /* enable comrv */
+   comrvEnable();
+#endif /* D_COMRV_CONTROL_SUPPORT */
 
    /* demonstrate function pointer usage */
    myFunc = OverlayFunc1;
 
    globalCount+=1;
    OverlayFunc0();
-   //benchmark();
    globalCount+=2;
+
    /* verify function calls where completed successfully */
    if (globalCount != 6 || gOverlayFunc0 != 3 ||
        gOverlayFunc1 != 7 || gOverlayFunc2 != 3)
@@ -205,6 +224,7 @@ void demoStart(void)
       /* loop forever */
       M_ENDLESS_LOOP();
    }
+
    /* unlock the group holding OverlayFunc2 */
    comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_UNLOCK);
 
