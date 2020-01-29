@@ -127,8 +127,6 @@ comrvEntry:
     M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
-    /* need to make sure overlay is fully loaded before calling it */
-    m_FENCE_I
 
 comrv_invoke_callee:
     /* call the function */
@@ -187,8 +185,6 @@ comrv_igonr_caller_thunk_stack_frame:
     M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     M_PSP_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
-    /* need to make sure overlay is fully loaded before calling it */
-    m_FENCE_I
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */

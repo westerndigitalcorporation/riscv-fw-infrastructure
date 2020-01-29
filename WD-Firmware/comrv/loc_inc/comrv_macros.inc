@@ -38,7 +38,3 @@
 
 .macro m_COMRV_DISABLE_INTS
 .endm
-
-.macro m_FENCE_I
-   fence.i
-.endm
