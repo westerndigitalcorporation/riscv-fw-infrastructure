@@ -35,6 +35,7 @@
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
 #include "psp_csrs.h"
+#include "psp_timers.h"
 #ifdef D_NEXYS_A7
     #include "psp_csrs_swerv_eh1.h"
 #endif
@@ -42,15 +43,6 @@
 /**
 * definitions
 */
-#ifdef D_HI_FIVE1
-    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
-    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
-#elif D_NEXYS_A7
-    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_DISABLE_SWERV_TIMER();
-    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_ENABLE_SWERV_TIMER();
-#endif
-
-#define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSetupSingleRun(enableInterrupt)
 
 
 /**

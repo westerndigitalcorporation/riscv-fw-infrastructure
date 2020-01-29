@@ -32,16 +32,17 @@
 /**
 * definitions
 */
-/* Enable/Disable interrupts */
-#define D_PSP_ENABLE_INTERRUPTS()    M_PSP_SET_CSR(mstatus, D_PSP_MSTATUS_MIE);
-#define D_PSP_DISABLE_INTERRUPTS()   M_PSP_CLEAR_CSR(mstatus, D_PSP_MSTATUS_MIE);
-/* Enable/Disable specific interrupt */
-#define D_PSP_ENABLE_INT(mie_interrupt_en)  M_PSP_SET_CSR(mie, mie_interrupt_en);  /* */
-#define D_PSP_DISBLE_INT(mie_interrupt_dis)  M_PSP_CLEAR_CSR((mie, mie_interrupt_dis);
 
 /**
 * macros
 */
+/* Enable/Disable all interrupts */
+#define M_PSP_ENABLE_ALL_INTERRUPTS()    M_PSP_SET_CSR(mstatus, D_PSP_MSTATUS_MIE);
+#define M_PSP_DISABLE_ALL_INTERRUPTS()   M_PSP_CLEAR_CSR(mstatus, D_PSP_MSTATUS_MIE);
+/* Enable/Disable specific interrupt */
+/* __mie_interrupt_ is D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
+#define M_PSP_ENABLE_INTERRUPT(__mie_interrupt_)  M_PSP_SET_CSR(mie, __mie_interrupt_);
+#define M_PSP_DISBLE_INTERRUPT(__mie_interrupt_)  M_PSP_CLEAR_CSR(mie, __mie_interrupt_);
 
 /**
 * types
