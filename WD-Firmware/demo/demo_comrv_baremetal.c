@@ -26,6 +26,8 @@
 /**
 * definitions
 */
+#define M_DEMO_COMRV_RTOS_FENCEI() asm volatile ("fence.i")
+
 #define M_OVL_DUMMY_FUNCTION(x) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
   { \
@@ -176,6 +178,7 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=2;
 }
 
+// TODO: uncomment the next line after tools bug is fixed
 //M_OVL_FUNCTIONS_GENERATOR
 
 void demoStart(void)
@@ -204,6 +207,8 @@ void demoStart(void)
    }
    /* unlock the group holding OverlayFunc2 */
    comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_UNLOCK);
+
+   // TODO: uncomment the next line after tools bug is fixed
    // M_OVL_FUNCTIONS_CALL;
 }
 
@@ -240,6 +245,9 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 {
    comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_STORAGE_START__ADDRESS__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
+   /* it is upto the end user of comrv to synchronize the instruction and data stream after
+      overlay data has been written to destination memory */
+   M_DEMO_COMRV_RTOS_FENCEI();
    return pLoadArgs->pDest;
 }
 
