@@ -22,7 +22,7 @@ class demo(object):
     self.rtos_core   = ""
     self.toolchain   = ""
     self.strGrpFile = os.path.join("..", "comrv-rtos.csv")
-    self.strComrvCacheSize = "1536"
+    self.strComrvCacheSize = "1024"
     self.strLinkFilePrefix = '-comrv'
 
     self.public_defs = [
@@ -36,10 +36,10 @@ class demo(object):
     ]
 
     self.listSconscripts = [
-      'comrv_rtos',
-      'demo_comrv_rtos',
-      'rtosal',
       'freertos',
+      'rtosal',
+      'demo_comrv_rtos',
+      'comrv_rtos',
     ]
 
     self.listDemoSpecificCFlags = [

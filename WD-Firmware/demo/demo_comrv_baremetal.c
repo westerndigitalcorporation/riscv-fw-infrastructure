@@ -193,7 +193,6 @@ void demoStart(void)
 
    globalCount+=1;
    OverlayFunc0();
-   //benchmark();
    globalCount+=2;
    /* verify function calls where completed successfully */
    if (globalCount != 6 || gOverlayFunc0 != 3 ||

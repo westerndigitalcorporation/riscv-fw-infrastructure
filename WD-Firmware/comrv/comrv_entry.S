@@ -119,8 +119,6 @@ comrvEntry:
     M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
-    /* need to make sure overlay is fully loaded before calling it */
-    m_FENCE_I
 
 comrv_invoke_callee:
     /* call the function */
@@ -168,9 +166,9 @@ comrv_igonr_caller_thunk_stack_frame:
     M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
     M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* save ra as in the token as a placeholder - this field
-       is no longer in use */
-    M_PSP_STORE ra, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
+    /* pass the ra as the function parameter -
+       used for calculating the return offset */
+    mv          a0, ra
     /* search if the token (t5) is already loaded */
     jal         comrvGetAddressFromToken
     /* an overlay function is now loaded and a0 holds the actual
@@ -180,8 +178,6 @@ comrv_igonr_caller_thunk_stack_frame:
     M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* adjust back sp - memory not needed anymore */
     M_PSP_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
-    /* need to make sure overlay is fully loaded before calling it */
-    m_FENCE_I
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */

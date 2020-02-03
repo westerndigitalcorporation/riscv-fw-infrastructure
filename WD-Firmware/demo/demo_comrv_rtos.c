@@ -14,21 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "common_types.h"
-#include "psp_macros.h"
-#include "comrv_api.h"
-
 #ifdef D_HI_FIVE1
     #include <stdlib.h>
 #endif
-
 #include "common_types.h"
+#include "comrv_api.h"
 #include "demo_platform_al.h"
-
-#include "psp_api.h"
-
 #include "rtosal_task_api.h"
 #include "rtosal_mutex_api.h"
+#include "rtosal_queue_api.h"
 
 /**
 * definitions
@@ -36,69 +30,57 @@
 
 /* The rate the data is sent to the queue, specified in milliseconds, and
 converted to ticks (using the definition of D_TICK_TIME_MS) */
-#define D_MAIN_QUEUE_SEND_PERIOD_TICKS            200/D_TICK_TIME_MS
-
-/* The period of the example software timer, specified in milliseconds, and
-converted to ticks (using the definition of D_TICK_TIME_MS) */
-#define D_MAIN_SOFTWARE_TIMER_PERIOD_TICKS        1000/D_TICK_TIME_MS
+#define D_MAIN_QUEUE_SEND_PERIOD_TICKS         (200/D_TICK_TIME_MS)
 
 /* The number of items the queue can hold.  This is 1 as the receive task
 has a higher priority than the send task, so will remove items as they are added,
 meaning the send task should always find the queue empty. */
-#define D_MAIN_QUEUE_LENGTH                    ( 1 )
+#define D_MAIN_QUEUE_LENGTH                    (1)
 
 /* Stack size of the tasks in this application */
-#define D_RX_TASK_STACK_SIZE  600
-#define D_TX_TASK_STACK_SIZE  450
+#define D_RX_TASK_STACK_SIZE                    450
+#define D_TX_TASK_STACK_SIZE                    450
 
-extern void* __OVERLAY_STORAGE_START__ADDRESS__;
+/**
+* macros
+*/
+
+/**
+* types
+*/
+
+/**
+* local prototypes
+*/
+void demoRtosalCreateTasks(void *pParam);
+void demoRtosalReceiveMsgTask( void *pvParameters );
+void demoRtosalTxMsgTask( void *pvParameters );
+
+/**
+* external prototypes
+*/
+
+/**
+* global variables
+*/
+extern void* _OVERLAY_STORAGE_START_ADDRESS_;
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 
-#define OVL_LedBlink _OVERLAY_
-#define OVL_SendMsg  _OVERLAY_
-#define OVL_MyItoa   _OVERLAY_
-
-//extern int OVL_benchmark benchmark(void);
-
-volatile u32_t gLedBlink = 0;
-
-static rtosalMutex_t stComrvMutex;
-static rtosalTask_t stLedTask;
+/* globals related to the tasks in this demo */
+static rtosalTask_t stRxTask;
 static rtosalTask_t stTxTask;
-static rtosalStackType_t uLedTaskStackBuffer[D_RX_TASK_STACK_SIZE];
+static rtosalStackType_t uRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
 static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
+static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
+static rtosalMsgQueue_t stMsgQueue;
+static rtosalMutex_t stComrvMutex;
 
-static void demoLedTask( void *pvParameters );
-static void demoRtosalSendMsgTask( void *pvParameters );
-static void demoCreateTasks(void *pParam);
-
-/* overlay function */
-void OVL_LedBlink LedBlink(void)
-{
-   demoOutputLed(D_LED_BLUE_ON);
-   rtosalTaskSleep(200);
-   demoOutputLed(D_LED_GREEN_ON);
-}
-unsigned int g_MyCounter = 0;
-
-/* integer to ascii */
-u08_t OVL_MyItoa MyItoa(u32_t uiValue, u08_t *pStr)
-{
-   g_MyCounter++;
-   return 0;
-}
-
-/* send counter value to uart */
-void OVL_SendMsg SendMsg(u32_t uiCount)
-{
-   u08_t ucSize, ucArr[15];
-   ucSize = MyItoa(uiCount, ucArr);
-   if (ucSize)
-      demoOutputMsg(ucArr, ucSize);
-}
+/**
+* functions
+*/
 
 /**
  * demoStart - startup point of the demo application. called from main function.
@@ -106,25 +88,6 @@ void OVL_SendMsg SendMsg(u32_t uiCount)
  */
 void demoStart(void)
 {
-   /* run the rtos */
-   rtosalStart(demoCreateTasks);
-}
-
-/**
- * demoCreateTasks
- *
- * Initialize the application:
- * - Register unhandled exceptions, Ecall exception and Timer ISR
- * - Create the Tx and Led tasks
- *
- * This function is called from RTOS abstraction layer. After its completion, the
- * scheduler is kicked on and the tasks are start to be active
- *
- */
-void demoCreateTasks(void *pParam)
-{
-   u32_t res;
-   pspExceptionCause_t cause;
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    /* set mutex address */
@@ -132,6 +95,28 @@ void demoCreateTasks(void *pParam)
 
    /* init comrv */
    comrvInit(&stComrvInitArgs);
+
+   rtosalStart(demoRtosalCreateTasks);
+}
+
+/**
+ * demoRtosalCreateTasks
+ *
+ * Initialize the application:
+ * - Register unhandled exceptions, Ecall exception and Timer ISR
+ * - Create the message queue
+ * - Create the Tx and Rx tasks
+ * - Create the comrv mutex
+ *
+ * This function is called from RTOS abstraction layer. After its
+ * completion, the scheduler is kicked on and the tasks are start to be active
+ *
+ */
+void demoRtosalCreateTasks(void *pParam)
+{
+
+   u32_t res;
+   pspExceptionCause_t cause;
 
    /* Disable the machine & timer interrupts until setup is done. */
    M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MEIP);
@@ -143,7 +128,7 @@ void demoCreateTasks(void *pParam)
       /* Skip ECALL entry as we already registered there a handler */
       if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == cause)
       {
-        continue;
+         continue;
       }
       pspRegisterExceptionHandler(pspTrapUnhandled, cause);
    }
@@ -151,20 +136,29 @@ void demoCreateTasks(void *pParam)
    /* Enable the Machine-External bit in MIE */
    M_PSP_SET_CSR(mie, D_PSP_MIP_MEIP);
 
-   /* Create the led task */
-   res = rtosalTaskCreate(&stLedTask, (s08_t*)"LED", E_RTOSAL_PRIO_30,
-                          demoLedTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE,
-                          uLedTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
+   /* Create the queue used by the send-msg and receive-msg tasks. */
+   res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH,
+            sizeof(u32_t), NULL);
    if (res != D_RTOSAL_SUCCESS)
    {
-      demoOutputMsg("Led task creation failed\n", 25);
+      demoOutputMsg("Msg-Q creation failed\n", 22);
       M_ENDLESS_LOOP();
    }
 
-   /* Create the queue-send task in exactly the same way */
+   /* Create the rx task */
+   res = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_29,
+            demoRtosalReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE,
+            uRxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
+   if (res != D_RTOSAL_SUCCESS)
+   {
+      demoOutputMsg("Rx-Task creation failed\n", 24);
+      M_ENDLESS_LOOP();
+   }
+
+   /* Create the tx task in exactly the same way */
    res = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_30,
-              demoRtosalSendMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
-             uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
+            demoRtosalTxMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
+           uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
    if (res != D_RTOSAL_SUCCESS)
    {
       demoOutputMsg("Tx-Task creation failed\n", 24);
@@ -178,42 +172,85 @@ void demoCreateTasks(void *pParam)
       demoOutputMsg("comrv mutex creation failed\n", 28);
       M_ENDLESS_LOOP();
    }
-
 }
 
 /**
- * demoLedTask - Rx task function
+ * send an item to the rtos queue
  *
- * void *pvParameters - not in use
- *
+ * pValueToSend - Item to send to the queue
  */
-volatile unsigned int cnt_demoLedTask = 0;
-volatile unsigned int cnt_demoRtosalSendMsgTask = 0;
-static void demoLedTask( void *pvParameters )
+void _OVERLAY_ OvlFuncTx(u32_t* pValueToSend)
 {
-   while (1)
+   /* Place this task in the blocked state until it is time to run again.
+   The block time is specified in ticks.
+   The task will not consume any CPU time while it is in the Blocked state. */
+   rtosalTaskSleep(D_MAIN_QUEUE_SEND_PERIOD_TICKS);
+
+   demoOutputMsg("Sending to queue\n", 17);
+
+   /* Send to the queue - causing the queue receive task to unblock and
+   increment its counter.  0 is used as the block time so the sending
+   operation will not block - it shouldn't need to block as the queue
+   should always be empty at this point in the code. */
+   rtosalMsgQueueSend(&stMsgQueue, pValueToSend, 0, D_RTOSAL_FALSE);
+}
+
+/**
+ * Tx task function
+ *
+ * pvParameters - not in use
+ */
+void demoRtosalTxMsgTask( void *pvParameters )
+{
+   u32_t ulValueToSend = 0UL;
+
+   for( ;; )
    {
-      LedBlink();
-      cnt_demoLedTask++;
+      /* value to send to the queue */
+      ulValueToSend++;
+
+      /* send to queue */
+      OvlFuncTx(&ulValueToSend);
    }
 }
 
 /**
- * demoRtosalSendMsgTask - Tx task function
+ * Rx function
+ *
+ * pvParameters - holds the received queue item value
+ */
+void _OVERLAY_ OvlFuncRx(u32_t* pReceivedValue)
+{
+   rtosalMsgQueueRecieve(&stMsgQueue, pReceivedValue, portMAX_DELAY);
+}
+
+/**
+ * demoRtosalReceiveMsgTask - Rx task function
  *
  * void *pvParameters - not in use
- *
  */
-static void demoRtosalSendMsgTask( void *pvParameters )
+void demoRtosalReceiveMsgTask( void *pvParameters )
 {
+#ifdef D_HI_FIVE1
+   char stringValue[10];
+#endif /* D_HI_FIVE1 */
+   u32_t ulReceivedValue;
 
-   while (1)
+   for( ;; )
    {
-      //if (cnt_demoRtosalSendMsgTask == 2180)
-      //   asm volatile ("ebreak" : : : );
-      SendMsg(cnt_demoRtosalSendMsgTask);
-      cnt_demoRtosalSendMsgTask++;
-      rtosalTaskSleep(100);
+      OvlFuncRx(&ulReceivedValue);
+
+#ifdef D_HI_FIVE1
+      itoa(ulReceivedValue,stringValue, 10);
+      demoOutputMsg("Received: ", 10);
+      demoOutputMsg(stringValue, 3);
+      demoOutputMsg("\n",1);
+#else
+      M_PSP_NOP();
+      M_PSP_NOP();
+      M_PSP_NOP();
+      M_PSP_NOP();
+#endif
    }
 }
 
@@ -249,7 +286,11 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 */
 void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 {
-   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_STORAGE_START__ADDRESS__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
+   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&_OVERLAY_STORAGE_START_ADDRESS_ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
+   /* order device I/O an memory accesses */
+   asm volatile ("fence");
+   /* sync the instruction and data stream */
+   asm volatile ("fence.i");
    return pLoadArgs->pDest;
 }
 
@@ -279,7 +320,7 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
    comrvStatus_t stComrvStatus;
    comrvGetStatus(&stComrvStatus);
    /* we can't continue so loop forever */
-   while (1);
+   M_ENDLESS_LOOP();
 }
 
 /**
@@ -307,4 +348,3 @@ void _getpid(void)
 {
 }
 /******************** end temporary build issue workaround ****************/
-
