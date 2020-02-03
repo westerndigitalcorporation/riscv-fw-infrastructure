@@ -438,7 +438,6 @@ static void demoRtosalSemaphoreTask( void *pvParameters )
  */
 void demoRtosalcalculateTimerPeriod(void)
 {
-#ifdef D_HI_FIVE1
 	u32_t timerPeriod = 0;
 
     #if !defined(D_CLOCK_RATE) || !defined(D_TICK_TIME_MS)
@@ -448,6 +447,5 @@ void demoRtosalcalculateTimerPeriod(void)
 	timerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
 	/* Store calculated timerPeriod for future use */
 	rtosalTimerSetPeriod(timerPeriod);
-#endif /* D_HI_FIVE1 */
 }
 
