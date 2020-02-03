@@ -58,6 +58,6 @@
 /* size of the overlay cache - the size of the RAM provided
    for loading and executing the overlay groups; granularity
    expressed in bytes */
-#define D_COMRV_OVL_CACHE_SIZE_IN_BYTES                     1536
+#define D_COMRV_OVL_CACHE_SIZE_IN_BYTES                     1024
 
 #endif /* __COMRV_CONFIG_H__ */
