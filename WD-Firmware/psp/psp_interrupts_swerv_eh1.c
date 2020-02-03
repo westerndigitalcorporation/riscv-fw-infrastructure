@@ -83,7 +83,9 @@ D_PSP_DATA_SECTION pspInterruptHandler_t  gExceptions_ints[D_PSP_NUM_OF_INTS_EXC
                        pspDefaultEmptyIntHandler_isr };
 
 /* Exceptions handler pointer */
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
+//D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
+// [NatiR] Temporarily not in D_PSP_DATA_SECTION. need to further investigate jump to g_fptrIntExceptionIntHandler from ecall
+pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
 
 /* Interrupts handler pointers */
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
