@@ -88,8 +88,6 @@ This implementation supports riscv privileged v1.10
 .global vPortEndScheduler
 .global pxPortInitialiseStack
 
-//.extern vTaskSwitchContext
-
 xPortStartScheduler:
     jal rtosalTimerSetup
     M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
