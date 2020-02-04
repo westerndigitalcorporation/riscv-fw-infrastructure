@@ -98,20 +98,6 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 */
 void pspTrapUnhandled(void);
 
-/**
-*
-* Setup function for M-Timer. Called upon initialization of the system
-*
-*/
-void pspTimerSetup(void);
-
-/**
-*
-* Setup function for Core's Timer for a single run
-*
-* @param enable     – indicates whether to enable timer interrupt or not
-*/
-void pspTimerSetupSingleRun(const unsigned int enableInterrupt);
 
 
 
