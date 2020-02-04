@@ -31,8 +31,6 @@
 /**
 * definitions
 */
-#define M_PSP_DISABLE_SWERV_TIMER()
-#define M_PSP_ENABLE_SWERV_TIMER()
 
 /**
 * macros

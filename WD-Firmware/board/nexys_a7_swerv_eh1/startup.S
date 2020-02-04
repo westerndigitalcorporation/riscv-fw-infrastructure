@@ -26,7 +26,6 @@
 	.section ".text.init"
 	.global	_start
 	.type   _start, @function
-    .global rtosal_vect_table
 
 _start:
 	#clear minstret
