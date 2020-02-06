@@ -45,62 +45,65 @@
 
 #ifdef D_PSP_DEBUG
    #define M_PSP_ASSERT(checkedResult) if (checkedResult) \
-                                     { while(1);}
+                                     { asm volatile ("ebreak" : : : );}
 #else
    #define M_PSP_ASSERT(checkedResult)
 #endif /* D_PSP_DEBUG */
 
-#define M_PSP_READ_CSR(reg) (	{ unsigned long __tmp; \
+/* CSR read */
+#define _READ_CSR_(reg) (	{ unsigned long __tmp; \
   asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
   __tmp; })
 /* Use two-step definition in order to read Product-Specific (PS) CSR */
-#define M_PSP_READ_PS_CSR(x)  M_PSP_READ_CSR_INTERMEDIATE(x)
-#define M_PSP_READ_CSR_INTERMEDIATE(y) M_PSP_READ_CSR(y)
+#define M_PSP_READ_CSR(x)  _READ_CSR_INTERMEDIATE_(x)
+#define _READ_CSR_INTERMEDIATE_(y) _READ_CSR_(y)
 /*******************************************************/
 
-#define M_PSP_WRITE_CSR(reg, val) ({ \
+/* CSR write */
+#define _WRITE_CSR_(reg, val) ({ \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
     asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
   else \
     asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
 /* Use two-step definition in order to write Product-Specific (PS) CSR */
-#define M_PSP_WRITE_PS_CSR(x, val)  M_PSP_WRITE_CSR_INTERMEDIATE(x, val)
-#define M_PSP_WRITE_CSR_INTERMEDIATE(y, val) M_PSP_WRITE_CSR(y, val)
+#define M_PSP_WRITE_CSR(x, val)  _WRITE_CSR_INTERMEDIATE_(x, val)
+#define _WRITE_CSR_INTERMEDIATE_(y, val) _WRITE_CSR_(y, val)
 /*******************************************************/
 
-
-#define M_PSP_SWAP_CSR(reg, val) ({ unsigned long __tmp; \
+/* CSR swap */
+#define _SWAP_CSR_(reg, val) ({ unsigned long __tmp; \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
     asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
   else \
     asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "r"(val)); \
   __tmp; })
 /* Use two-step definition in order to swap Product-Specific (PS) CSR */
-#define M_PSP_SWAP_PS_CSR(x, val)  M_PSP_SWAP_CSR_INTERMEDIATE(x, val)
-#define M_PSP_SWAP_CSR_INTERMEDIATE(y, val) M_PSP_SWAP_CSR(y, val)
+#define M_PSP_SWAP_CSR(x, val)  _SWAP_CSR_INTERMEDIATE_(x, val)
+#define _SWAP_CSR_INTERMEDIATE_(y, val) _SWAP_CSR_(y, val)
 /*******************************************************/
 
-
-#define M_PSP_SET_CSR(reg, bit) ({ unsigned long __tmp; \
+/* CSR set */
+#define _SET_CSR_(reg, bit) ({ unsigned long __tmp; \
   if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
     asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
   else \
     asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
   __tmp; })
 /* Use two-step definition in order to set Product-Specific (PS) CSR */
-#define M_PSP_SET_PS_CSR(x, bit)  M_PSP_SET_CSR_INTERMEDIATE(x, bit)
-#define M_PSP_SET_CSR_INTERMEDIATE(y, bit) M_PSP_SET_CSR(y, bit)
+#define M_PSP_SET_CSR(x, bit)  _SET_CSR_INTERMEDIATE_(x, bit)
+#define _SET_CSR_INTERMEDIATE_(y, bit) _SET_CSR_(y, bit)
 /*******************************************************/
 
-#define M_PSP_CLEAR_CSR(reg, bit) ({ unsigned long __tmp; \
+/* CSR clear */
+#define _CLEAR_CSR_(reg, bit) ({ unsigned long __tmp; \
   if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
     asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
   else \
     asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
   __tmp; })
 /* Use two-step definition in order to clear Product-Specific (PS) CSR */
-#define M_PSP_CLEAR_PS_CSR(x, bit)  M_PSP_CLEAR_CSR_INTERMEDIATE(x, bit)
-#define M_PSP_CLEAR_CSR_INTERMEDIATE(y, bit) M_PSP_CLEAR_CSR(y, bit)
+#define M_PSP_CLEAR_CSR(x, bit)  _CLEAR_CSR_INTERMEDIATE_(x, bit)
+#define _CLEAR_CSR_INTERMEDIATE_(y, bit) _CLEAR_CSR_(y, bit)
 /*******************************************************/
 
 #define M_PSP_DISABLE_INTERRUPTS()	asm volatile( "csrc mstatus, 8" )

@@ -31,6 +31,13 @@
 /**
 * definitions
 */
+#ifdef __GNUC__
+    #define D_PSP_MTVEC   mtvec
+    #define D_PSP_MSTATUS mstatus
+    #define D_PSP_MIE     mie
+    #define D_PSP_MIP     mip
+    #define D_PSP_MCAUSE  mcause
+#endif
 
 /* Definitions for the various fields in the CSRs */
 /* misa CSR */
@@ -59,19 +66,6 @@
 #define D_PSP_MSTATUS_SXL         0x0000000C00000000
 #define D_PSP_MSTATUS32_SD        0x80000000
 #define D_PSP_MSTATUS64_SD        0x8000000000000000
-/* sstatus CSR */
-#define D_PSP_SSTATUS_UIE         0x00000001
-#define D_PSP_SSTATUS_SIE         0x00000002
-#define D_PSP_SSTATUS_UPIE        0x00000010
-#define D_PSP_SSTATUS_SPIE        0x00000020
-#define D_PSP_SSTATUS_SPP         0x00000100
-#define D_PSP_SSTATUS_FS          0x00006000
-#define D_PSP_SSTATUS_XS          0x00018000
-#define D_PSP_SSTATUS_SUM         0x00040000
-#define D_PSP_SSTATUS_MXR         0x00080000
-#define D_PSP_SSTATUS_UXL         0x0000000300000000
-#define D_PSP_SSTATUS32_SD        0x80000000
-#define D_PSP_SSTATUS64_SD        0x8000000000000000
 /* mip CSR */
 #define D_PSP_MIP_USIP                0x00000001  /* Software Interrupt pending */ /* User mode */
 #define D_PSP_MIP_SSIP                0x00000002                                   /* Supervisor mode */

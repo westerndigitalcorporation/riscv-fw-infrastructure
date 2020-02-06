@@ -18,7 +18,7 @@
 * @file   psp_timer.c
 * @author Nati Rapaport
 * @date   13.11.2019
-* @brief  This file implements core's timer service functions
+* @brief  This file implements core's timer-counter service functions
 *
 */
 
@@ -43,7 +43,7 @@
 /**
 * local prototypes
 */
-void pspTimerActivate(u32_t timer, u32_t period);
+void pspTimerCounterActivate(u32_t timer, u32_t period);
 
 /**
 * external prototypes
@@ -52,17 +52,17 @@ void pspTimerActivate(u32_t timer, u32_t period);
 /**
 * global variables
 */
-void (*fptrPspTimerActivate)(u32_t timer, u32_t period) = pspTimerActivate;
+void (*fptrPspTimerCounterActivate)(u32_t timer, u32_t period) = pspTimerCounterActivate;
 
 /**
 *
 * @brief Activate core's Timer
 *
-* @ timer  - indicates which timer to setup
+* @ timer  - indicates which timer (actually it is a counter) to setup
 * @ period - defines the timer's period
 *
 ***************************************************************************************************/
-void pspTimerActivate(u32_t timer, u32_t period)
+void pspTimerCounterActivate(u32_t timer, u32_t period)
 {
 	//demoOutputMsg("SETUP Timer\n", 12);
 
