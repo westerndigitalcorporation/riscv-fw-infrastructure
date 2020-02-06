@@ -394,15 +394,13 @@ void rtosalTimerSetPeriod(u32_t timerPeriod)
 void rtosalTimerSetup(void)
 {
 	/* In case g_uTimerPeriod = 0 then there is no point to activate the timer */
-	if (0 != g_uTimerPeriod)
-	{
-		/* Enable timer interrupt */
-	    M_PSP_ENABLE_INTERRUPT(D_PSP_MIE_MTIE);
+	M_PSP_ASSERT(0 == g_uTimerPeriod);
 
-	    /* Activates Core's timer with the calculated period */
-	    M_PSP_TIMER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
-	}
+	/* Enable timer interrupt */
+	M_PSP_ENABLE_INTERRUPT(D_PSP_MIE_MTIE);
 
+	/* Activates Core's timer with the calculated period */
+	M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
 }
 
 /**

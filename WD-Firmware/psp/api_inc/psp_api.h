@@ -30,11 +30,11 @@
 #include "psp_intrinsics.h"
 #include "psp_defines.h"
 #include "psp_config.h"
-#include "psp_interrupts.h"
+#include "psp_csrs.h"
 #include "psp_macros.h"
+#include "psp_interrupts.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
-#include "psp_csrs.h"
 #include "psp_timers.h"
 #ifdef D_NEXYS_A7
     #include "psp_csrs_swerv_eh1.h"
