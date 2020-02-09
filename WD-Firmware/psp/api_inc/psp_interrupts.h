@@ -30,13 +30,12 @@
 /**
 * definitions
 */
+#define D_PSP_INTS_DISABLE_ENABLE_BALANCED 0
 
 /**
 * macros
 */
-/* Enable/Disable all interrupts */
-#define M_PSP_ENABLE_ALL_INTERRUPTS()    M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
-#define M_PSP_DISABLE_ALL_INTERRUPTS()   M_PSP_CLEAR_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
+
 /* Enable/Disable specific interrupt */
 /* __mie_interrupt_ is D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
 #define M_PSP_ENABLE_INTERRUPT(__mie_interrupt__)  M_PSP_SET_CSR(mie, __mie_interrupt__);
@@ -108,9 +107,44 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * global variables
 */
+extern s32_t gIntsDisableEnableBalance;
 
 /**
 * APIs
 */
+
+/**
+* Enable interrupts and set the gIntsDisableEnableBalance in "balanced" state
+*/
+D_PSP_INLINE void pspInterruptsEnable(void)
+{
+	/* Enable interrupts */
+	M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
+	/* Set disable/enable counter in "balanced" state */
+	gIntsDisableEnableBalance = D_PSP_INTS_DISABLE_ENABLE_BALANCED;
+}
+
+/**
+* Disable interrupts and decrement the gIntsDisableEnableBalance counter
+*/
+D_PSP_INLINE void pspInterruptsDisable(void)
+{
+	/* Disable interrupts */
+    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
+	/* Decrement the disable/enable counter */
+	gIntsDisableEnableBalance--;
+}
+
+/**
+* Increment gIntsDisableEnableBalance counter and only if it is in "balanced" state - enable interrupts
+*/
+D_PSP_INLINE void pspInterruptsRestore(void)
+{
+	/* Increment the disable/enable counter. Only if it is "balanced" do interrupts-enable */
+	if (++gIntsDisableEnableBalance == D_PSP_INTS_DISABLE_ENABLE_BALANCED)
+	{
+		M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
+	}
+}
 
 #endif /* __PSP_INTERRUPTS_H__ */
