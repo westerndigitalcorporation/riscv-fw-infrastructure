@@ -116,7 +116,7 @@ extern s32_t gIntsDisableEnableBalance;
 /**
 * Enable interrupts and set the gIntsDisableEnableBalance in "balanced" state
 */
-D_PSP_INLINE void pspInterruptsEnable(void)
+static D_PSP_INLINE void pspInterruptsEnable(void)
 {
 	/* Enable interrupts */
 	M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
@@ -127,7 +127,7 @@ D_PSP_INLINE void pspInterruptsEnable(void)
 /**
 * Disable interrupts and decrement the gIntsDisableEnableBalance counter
 */
-D_PSP_INLINE void pspInterruptsDisable(void)
+static D_PSP_INLINE void pspInterruptsDisable(void)
 {
 	/* Disable interrupts */
     M_PSP_CLEAR_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
@@ -138,7 +138,7 @@ D_PSP_INLINE void pspInterruptsDisable(void)
 /**
 * Increment gIntsDisableEnableBalance counter and only if it is in "balanced" state - enable interrupts
 */
-D_PSP_INLINE void pspInterruptsRestore(void)
+static D_PSP_INLINE void pspInterruptsRestore(void)
 {
 	/* Increment the disable/enable counter. Only if it is "balanced" do interrupts-enable */
 	if (++gIntsDisableEnableBalance == D_PSP_INTS_DISABLE_ENABLE_BALANCED)
