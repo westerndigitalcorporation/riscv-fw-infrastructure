@@ -168,14 +168,13 @@ void OVL_OverlayFunc1 OverlayFunc1(void)
    gOverlayFunc1+=4;
 }
 
-
-
 /* overlay function 0 */
 void OVL_OverlayFunc0 OverlayFunc0(void)
 {
    gOverlayFunc0+=1;
    myFunc();
    gOverlayFunc0+=2;
+   NonOverlayFunc();
 }
 
 #ifdef D_COMRV_CONTROL_SUPPORT
@@ -218,8 +217,8 @@ void demoStart(void)
    globalCount+=2;
 
    /* verify function calls where completed successfully */
-   if (globalCount != 6 || gOverlayFunc0 != 3 ||
-       gOverlayFunc1 != 7 || gOverlayFunc2 != 3)
+   if (globalCount != 9 || gOverlayFunc0 != 3 ||
+       gOverlayFunc1 != 7 || gOverlayFunc2 != 6)
    {
       /* loop forever */
       M_ENDLESS_LOOP();
