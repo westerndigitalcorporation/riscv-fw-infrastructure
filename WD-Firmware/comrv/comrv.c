@@ -346,6 +346,8 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* search for token */
       usSearchResultIndex = comrvSearchForLoadedOverlayGroup(unToken);
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
+      /* must be set to 0 in case no multi-group */
+      usSelectedMultiGroupEntry = 0;
    }
    /* search for a multi-group overlay token */
    else
