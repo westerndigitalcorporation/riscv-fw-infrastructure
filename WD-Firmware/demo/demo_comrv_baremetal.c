@@ -91,6 +91,8 @@
   M_OVL_DUMMY_FUNCTION(14) \
   M_OVL_DUMMY_FUNCTION(15)
 
+M_OVL_DUMMY_FUNCTION(16)
+
 #define M_OVL_FUNCTIONS_CALL \
   OvlTestFunc_10_(); \
   OvlTestFunc_11_(); \
@@ -108,6 +110,7 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #define OVL_OverlayFunc0 _OVERLAY_
 #define OVL_OverlayFunc1 _OVERLAY_
 #define OVL_OverlayFunc2 _OVERLAY_
+#define OVL_OverlayFunc3 _OVERLAY_
 
 /**
 * macros
@@ -152,6 +155,19 @@ void OVL_OverlayFunc2 OverlayFunc2(void)
    comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_LOCK);
 }
 
+/* overlay function 3 - 8 args through regs + 1 through the stack*/
+u32_t OVL_OverlayFunc3 OverlayFunc3(u32_t uiVal1, u32_t uiVal2, u32_t uiVal3, u32_t uiVal4,
+                                    u32_t uiVal5, u32_t uiVal6, u32_t uiVal7, u32_t uiVal8,
+                                    u32_t uiVal9)
+{
+   /* unlock the group holding OverlayFunc2 (we need 1K for
+      overlay group containing OvlTestFunc_16_) */
+   comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_UNLOCK);
+   /* call other overlay function to make sure args remain valid */
+   OvlTestFunc_16_();
+   return uiVal1+uiVal2+uiVal3+uiVal4+uiVal5+uiVal6+uiVal7+uiVal8+uiVal9;
+}
+
 /* non overlay function */
 D_PSP_NO_INLINE void NonOverlayFunc(void)
 {
@@ -175,6 +191,8 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    myFunc();
    gOverlayFunc0+=2;
    NonOverlayFunc();
+   /* check 9 args (8 will pass via regs + one additional via stack) */
+   gOverlayFunc0+=OverlayFunc3(1,2,3,4,5,6,7,8,9);
 }
 
 #ifdef D_COMRV_CONTROL_SUPPORT
@@ -184,8 +202,7 @@ void comrvEntryDisable(void)
 }
 #endif /* D_COMRV_CONTROL_SUPPORT */
 
-// TODO: uncomment the next line after tools bug is fixed
-//M_OVL_FUNCTIONS_GENERATOR
+M_OVL_FUNCTIONS_GENERATOR
 
 void demoStart(void)
 {
@@ -217,18 +234,15 @@ void demoStart(void)
    globalCount+=2;
 
    /* verify function calls where completed successfully */
-   if (globalCount != 9 || gOverlayFunc0 != 3 ||
+   if (globalCount != 9 || gOverlayFunc0 != 48 ||
        gOverlayFunc1 != 7 || gOverlayFunc2 != 6)
    {
       /* loop forever */
       M_ENDLESS_LOOP();
    }
 
-   /* unlock the group holding OverlayFunc2 */
-   comrvLockUnlockOverlayGroupByFunction(OverlayFunc2, D_COMRV_GROUP_STATE_UNLOCK);
-
-   // TODO: uncomment the next line after tools bug is fixed
-   // M_OVL_FUNCTIONS_CALL;
+   /* check that the overlay group > 512B works */
+   M_OVL_FUNCTIONS_CALL;
 }
 
 /**

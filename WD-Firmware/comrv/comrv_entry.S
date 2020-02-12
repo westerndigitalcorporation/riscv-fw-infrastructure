@@ -30,7 +30,7 @@
 .option nowarnreservedreg
 
 /* size of used stack */
-.equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
+.equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 32
 
 /* thunk indication upper mask */
 .equ D_COMRV_THUNK_UPPER_MASK,              0x8000
@@ -119,22 +119,18 @@ comrvEntry:
     /* if t2 is 0 it means callee is a non overlay function so we can
        skip search and load */
     beqz        t2, comrv_invoke_callee
-    /* change sp for temporary storage */
-    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
-    /* temporary save a0 in the next free stack frame */
-    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
     /* Add the indication we are calling a new overlay function
        this indication is required to calculate the correct offset
        when returning to an overlay function */
     ori         t3, t3, D_COMRV_INVOKE_CALLEE_BIT_0
+    /* save a0-a7 on stack */
+    M_COMRV_SAVE_ARGS_REGS
     /* search if the token (t5) is already loaded */
     jal         comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
     mv          t5, a0
-    /* restore a0 - may contain an actual callee function argument */
-    M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* adjust back sp - memory not needed anymore */
-    M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
+    /* restore a0-a7 from stack */
+    M_COMRV_RESTORE_ARGS_REGS
 
 comrv_invoke_callee:
     /* call the function */
@@ -178,10 +174,8 @@ comrv_igonr_caller_thunk_stack_frame:
     slli        t2, t5, D_COMRV_THUNK_SHMT
     /* if thunk bit set (t2 negative) we skip current comrv stack frame */
     bltz        t2, comrv_handle_thunk_token
-    /* change sp for temporary storage */
-    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
-    /* temporary save a0 as it is being used */
-    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
+    /* save a0-a7 on stack */
+    M_COMRV_SAVE_ARGS_REGS
     /* pass the ra as the function parameter -
        used for calculating the return offset */
     mv          a0, ra
@@ -190,10 +184,8 @@ comrv_igonr_caller_thunk_stack_frame:
     /* an overlay function is now loaded and a0 holds the actual
        address we can keep it in ra */
     mv          ra, a0
-    /* restore a0 */
-    M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* adjust back sp - memory not needed anymore */
-    M_PSP_ADDI  sp,  sp, D_COMRV_STACK_FRAME_SIZE
+    /* restore a0-a7 from stack */
+    M_COMRV_RESTORE_ARGS_REGS
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */
