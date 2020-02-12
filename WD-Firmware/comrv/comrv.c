@@ -290,7 +290,7 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 *
 * @return void* - address of the overlay function/data
 */
-D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void)
+D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 {
    comrvCacheEntry_t   *pEntry;
    comrvOverlayToken_t  unToken;
@@ -568,7 +568,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void)
          /* get the token group size */
          usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE_IN_BYTES(unToken);
          /* calculate the actual return offset */
-         usOffset += ((u32_t)(pComrvStackFrame->uiCalleeToken) - uiTemp) & (--usOverlayGroupSize);
+         usOffset += ((u32_t)(pReturnAddress) - uiTemp) & (--usOverlayGroupSize);
          /* clear the save multi token so it won't be reused */
          pComrvStackFrame->usCalleeMultiGroupTableEntry = 0;
       }
@@ -576,7 +576,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void)
       {
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
          /* calculate the actual return offset */
-         usOffset += ((u32_t)(pComrvStackFrame->uiCalleeToken) - usOffset) & (--usOverlayGroupSize);
+         usOffset += ((u32_t)(pReturnAddress) - usOffset) & (--usOverlayGroupSize);
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       }
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */

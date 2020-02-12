@@ -29,30 +29,35 @@
    reserved register and don't want to see these warnings. */
 .option nowarnreservedreg
 
-/* total size of used stack */
+/* size of used stack */
 .equ D_COMRV_STACK_FRAME_SIZE,              REGBYTES * 4
-
-/* shift amount to get the function offset in the lsb */
-.equ D_COMRV_FUNC_OFFSET_SMNT,              17
 
 /* thunk indication upper mask */
 .equ D_COMRV_THUNK_UPPER_MASK,              0x8000
 
 .equ D_COMRV_TOKEN_INDICATION,              1
 .equ D_COMRV_INVOKE_CALLEE_BIT_0,           1
-.equ D_COMRV_RET_CALLER_BIT_0,              0
 .equ D_COMRV_THUNK_SHMT,                    4
 
 /*
  local stack frame layout:
- offset 0 - RA
- offset 1 - A0
- offset 2 - function arg
- offset 3 - not used
+ offset 1 - a0
+ offset 2 - a1
+ offset 3 - a2
+ offset 3 - a3
+ offset 3 - a4
+ offset 3 - a5
+ offset 3 - a6
+ offset 3 - a7
 */
-.equ D_COMRV_RA_REG_STACK_OFFSET_TMP,       REGBYTES * 0
-.equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 1
-.equ D_COMRV_ARG_STACK_OFFSET_TMP,          REGBYTES * 2
+.equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 0
+.equ D_COMRV_A1_REG_STACK_OFFSET_TMP,       REGBYTES * 1
+.equ D_COMRV_A2_REG_STACK_OFFSET_TMP,       REGBYTES * 2
+.equ D_COMRV_A3_REG_STACK_OFFSET_TMP,       REGBYTES * 3
+.equ D_COMRV_A4_REG_STACK_OFFSET_TMP,       REGBYTES * 4
+.equ D_COMRV_A5_REG_STACK_OFFSET_TMP,       REGBYTES * 5
+.equ D_COMRV_A6_REG_STACK_OFFSET_TMP,       REGBYTES * 6
+.equ D_COMRV_A7_REG_STACK_OFFSET_TMP,       REGBYTES * 7
 
 /*
  COM-RV stack frame layout - see comrvStackFrame_t:
@@ -60,11 +65,11 @@
 .equ D_COMRV_CALLER_RA_STACK_OFFSET,        REGBYTES * 0
 .equ D_COMRV_CALLEE_TOKEN_STACK_OFFSET,     REGBYTES * 1
 .equ D_COMRV_PREV_STACK_FRAME,              REGBYTES * 2
-.equ D_COMRV_GROUP_SIZE_STACK_OFFSET,       D_COMRV_PREV_STACK_FRAME + 2
 
 
 .global comrvEntry
 .global comrvEntryDisable
+.global comrv_ret_from_callee
 
 /* TODO: need to set this code in COMRV_TEXT_SEC */
 .section  .text
@@ -134,6 +139,7 @@ comrvEntry:
 comrv_invoke_callee:
     /* call the function */
     jalr        t5
+comrv_ret_from_callee:
     /* load the return address */
     M_PSP_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay
@@ -176,9 +182,9 @@ comrv_igonr_caller_thunk_stack_frame:
     M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
     /* temporary save a0 as it is being used */
     M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
-    /* save ra as in the token as a placeholder - this field
-       is no longer in use */
-    M_PSP_STORE ra, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
+    /* pass the ra as the function parameter -
+       used for calculating the return offset */
+    mv          a0, ra
     /* search if the token (t5) is already loaded */
     jal         comrvGetAddressFromToken
     /* an overlay function is now loaded and a0 holds the actual
