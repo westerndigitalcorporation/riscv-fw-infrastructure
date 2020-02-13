@@ -41,14 +41,14 @@
 
 /*
  local stack frame layout:
- offset 1 - a0
- offset 2 - a1
- offset 3 - a2
+ offset 0 - a0
+ offset 1 - a1
+ offset 2 - a2
  offset 3 - a3
- offset 3 - a4
- offset 3 - a5
- offset 3 - a6
- offset 3 - a7
+ offset 4 - a4
+ offset 5 - a5
+ offset 6 - a6
+ offset 7 - a7
 */
 .equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 0
 .equ D_COMRV_A1_REG_STACK_OFFSET_TMP,       REGBYTES * 1
