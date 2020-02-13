@@ -138,6 +138,10 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define pOverlayOffsetTable             ((u16_t*)((u08_t*)&__OVERLAY_CACHE_END__ - D_COMRV_OVL_GROUP_SIZE_MIN))
 /* address of multi group table */
 #define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)(pOverlayOffsetTable + g_stComrvCB.ucMultiGroupOffset))
+/* Place a label, the debugger will stop here to query the overlay manager current status.  */
+#define M_COMRV_DEBUGGER_HOOK_SYMBOL()            asm volatile (".globl _ovly_debug_event\n" \
+                                                      "_ovly_debug_event:");
+
 
 /**
 * types
@@ -529,6 +533,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 
       M_COMRV_VERIFY_CRC(pAddress, usOverlayGroupSize-sizeof(u32_t),
                         *((u08_t*)pAddress + (usOverlayGroupSize-sizeof(u32_t))));
+
+      /* at this point we are sure comrv data is valid - debugger can now collect it */
+      M_COMRV_DEBUGGER_HOOK_SYMBOL();
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
       /* update for FW profiling loaded the function */
