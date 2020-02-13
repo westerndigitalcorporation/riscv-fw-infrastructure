@@ -188,8 +188,9 @@ SECTIONS
      to make sure there is no address dependency after linking */ 
   .ovlgrps (OVERLAY) : 
   {
-    PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
+    OVERLAY_START_OF_OVERLAYS = .;
     *(SORT_BY_USER(.ovlinput.*))
+    OVERLAY_END_OF_OVERLAYS = .;
   } >ovl AT>ovl :ovl
 
   /* TODO: Temporary old section. Will be removed shortly */
