@@ -26,7 +26,8 @@
 /**
 * definitions
 */
-#define M_DEMO_COMRV_RTOS_FENCEI() asm volatile ("fence.i")
+#define M_DEMO_COMRV_RTOS_FENCE()   M_PSP_INST_FENCE(); \
+                                    M_PSP_INST_FENCEI();
 
 #define M_OVL_DUMMY_FUNCTION(x) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
@@ -287,7 +288,7 @@ void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
    comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_STORAGE_START__ADDRESS__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
    /* it is upto the end user of comrv to synchronize the instruction and data stream after
       overlay data has been written to destination memory */
-   M_DEMO_COMRV_RTOS_FENCEI();
+   M_DEMO_COMRV_RTOS_FENCE();
    return pLoadArgs->pDest;
 }
 
