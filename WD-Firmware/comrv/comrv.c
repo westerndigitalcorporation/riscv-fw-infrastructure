@@ -137,7 +137,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* address of offset table (last comrv cache entry) */
 #define pOverlayOffsetTable             ((u16_t*)((u08_t*)&__OVERLAY_CACHE_END__ - D_COMRV_OVL_GROUP_SIZE_MIN))
 /* address of multi group table */
-#define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)(pOverlayOffsetTable + g_stComrvCB.ucMultiGroupOffset)) //((comrvOverlayToken_t*)&overlayMultiGroupTokensTable)
+#define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)(pOverlayOffsetTable + g_stComrvCB.ucMultiGroupOffset))
 
 /**
 * types
@@ -178,8 +178,10 @@ D_COMRV_DATA_SECTION static comrvCB_t         g_stComrvCB;
 /* global comrv stack pool */
 D_COMRV_DATA_SECTION static comrvStackFrame_t g_stComrvStackPool[D_COMRV_CALL_STACK_DEPTH];
 
-/* linker symbols defining the start and end of the overlay cache */
+/* symbols defining the start and end of the overlay cache */
 extern void *__OVERLAY_CACHE_START__, *__OVERLAY_CACHE_END__;
+/* symbols defining the start and end of the overlay managment tables */
+extern void *__OVERLAY_MULTIGROUP_TABLE_START,  *__OVERLAY_GROUP_TABLE_START;
 
 /**
 * COM-RV initialization function
@@ -857,9 +859,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    void            *pAddress;
    comrvLoadArgs_t  stLoadArgs;
    comrvErrorArgs_t stErrArgs;
-#ifdef D_COMRV_MULTI_GROUP_SUPPORT
-   u16_t           *pOffsetTableEntry;
-#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+
    /* at this point comrv cache is empty so we take the
       last entry and use it to store the multigroup and
       offset tables */
@@ -879,15 +879,8 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
       comrvErrorHook(&stErrArgs);
    }
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-   /* multi group table location - we start from the offset table
-      and search for the first 0 - signals the start of multi group table */
-   pOffsetTableEntry = pOverlayOffsetTable;
-   /* loop as long as we have non zero offsets */
-   while (*(++pOffsetTableEntry) != 0);
-   /* next entry will be the first multi group token */
-   pOffsetTableEntry++;
    /* calculate the offset to the multi group table */
-   g_stComrvCB.ucMultiGroupOffset = (u08_t)(pOffsetTableEntry - pOverlayOffsetTable);
+   g_stComrvCB.ucMultiGroupOffset = ((u16_t*)&__OVERLAY_MULTIGROUP_TABLE_START - (u16_t*)&__OVERLAY_GROUP_TABLE_START);
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
    /* set cache entry token and properties */
