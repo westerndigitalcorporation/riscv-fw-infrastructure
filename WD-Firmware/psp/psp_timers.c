@@ -66,7 +66,7 @@ void pspTimerCounterActivate(u32_t timer, u32_t period)
 {
 	//demoOutputMsg("SETUP Timer\n", 12);
 
-    #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
+    #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
         #error "MTIME/MTIMECMP address definition is missing"
     #endif
 

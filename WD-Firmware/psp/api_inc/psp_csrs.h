@@ -31,13 +31,11 @@
 /**
 * definitions
 */
-#ifdef __GNUC__
-    #define D_PSP_MTVEC   mtvec
-    #define D_PSP_MSTATUS mstatus
-    #define D_PSP_MIE     mie
-    #define D_PSP_MIP     mip
-    #define D_PSP_MCAUSE  mcause
-#endif
+#define D_PSP_MTVEC   mtvec
+#define D_PSP_MSTATUS mstatus
+#define D_PSP_MIE     mie
+#define D_PSP_MIP     mip
+#define D_PSP_MCAUSE  mcause
 
 /* Definitions for the various fields in the CSRs */
 /* misa CSR */

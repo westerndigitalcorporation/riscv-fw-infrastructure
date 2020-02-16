@@ -37,7 +37,7 @@
 
 
 /* Macro that sets indication of interrupt context */
-.macro M_PSP_SET_INT_CONTEXT
+.macro M_RTOSAL_SET_INT_CONTEXT
     /* save address of g_rtosalIsInterruptContext -> t0 */
     la        a0, g_rtosalIsInterruptContext
     /* load the value g_rtosalIsInterruptContext -> t1 */
@@ -49,7 +49,7 @@
 .endm
 
 /* Macro that clears indication of interrupt context */
-.macro M_PSP_CLEAR_INT_CONTEXT
+.macro M_RTOSAL_CLEAR_INT_CONTEXT
     /* save address of g_rtosalIsInterruptContext -> t0 */
     la        a0, g_rtosalIsInterruptContext
     /* load the value g_rtosalIsInterruptContext -> t1 */

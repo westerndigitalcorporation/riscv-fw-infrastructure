@@ -199,7 +199,7 @@ void demoRtosalCreateTasks(void *pParam)
     /* pspRegisterInterruptHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
 
     /* Enable the Machine-External bit in MIE */
-    M_PSP_SET_CSR(mie, D_PSP_MIP_MEIP);
+    M_PSP_SET_CSR(mie, D_PSP_MIE_MEIE);
 
     /* Create the queue used by the send-msg and receive-msg tasks. */
     res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
@@ -440,7 +440,7 @@ void demoRtosalcalculateTimerPeriod(void)
 {
 	u32_t timerPeriod = 0;
 
-    #if !defined(D_CLOCK_RATE) || !defined(D_TICK_TIME_MS)
+    #if (0 == D_CLOCK_RATE) || (0 == D_TICK_TIME_MS)
         #error "Core frequency values definitions are missing"
     #endif
 
