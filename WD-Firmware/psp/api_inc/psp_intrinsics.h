@@ -40,7 +40,7 @@
 #endif
 
 
-#define D_PSP_INLINE    inline
+#define D_PSP_INLINE    static inline
 
 
 #endif /* defined (__GNUC__) || defined (__clang__) */
