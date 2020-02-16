@@ -107,44 +107,36 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * global variables
 */
-extern s32_t gIntsDisableEnableBalance;
 
 /**
 * APIs
 */
 
 /**
-* Enable interrupts and set the gIntsDisableEnableBalance in "balanced" state
+* Disable interrupts and return the previous interrupt state
 */
-static D_PSP_INLINE void pspInterruptsEnable(void)
+D_PSP_INLINE void pspInterruptsDisable(u32_t *pOutPrevIntState)
 {
-	/* Enable interrupts */
-	M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
-	/* Set disable/enable counter in "balanced" state */
-	gIntsDisableEnableBalance = D_PSP_INTS_DISABLE_ENABLE_BALANCED;
+	/* Store the interrupts state as they now */
+	*pOutPrevIntState = (M_PSP_READ_CSR(D_PSP_MSTATUS) & (D_PSP_MSTATUS_UIE | D_PSP_MSTATUS_SIE | D_PSP_MSTATUS_MIE));
+	/* Disable interrupts (all privilege levels) */
+    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE | D_PSP_MSTATUS_SIE | D_PSP_MSTATUS_MIE) );
 }
 
 /**
-* Disable interrupts and decrement the gIntsDisableEnableBalance counter
+* Restore the interrupts state (i.e. if they were already disabled - they will stay disabled. If they were enabled - they will become enabled now)
 */
-static D_PSP_INLINE void pspInterruptsDisable(void)
+D_PSP_INLINE void pspInterruptsRestore(u32_t uiPrevIntState)
 {
-	/* Disable interrupts */
-    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
-	/* Decrement the disable/enable counter */
-	gIntsDisableEnableBalance--;
+	M_PSP_SET_CSR(D_PSP_MSTATUS, uiPrevIntState);
 }
 
 /**
-* Increment gIntsDisableEnableBalance counter and only if it is in "balanced" state - enable interrupts
+* Enable interrupts (all privilege levels) regardless their previous state
 */
-static D_PSP_INLINE void pspInterruptsRestore(void)
+D_PSP_INLINE void pspInterruptsEnable(void)
 {
-	/* Increment the disable/enable counter. Only if it is "balanced" do interrupts-enable */
-	if (++gIntsDisableEnableBalance == D_PSP_INTS_DISABLE_ENABLE_BALANCED)
-	{
-		M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE);
-	}
+	M_PSP_SET_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE | D_PSP_MSTATUS_SIE | D_PSP_MSTATUS_MIE));
 }
 
 #endif /* __PSP_INTERRUPTS_H__ */
