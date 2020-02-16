@@ -186,10 +186,11 @@ SECTIONS
      after linking, we'll use objcopy utility and copy
      it to the .reserved_ovl section. we do this
      to make sure there is no address dependency after linking */ 
-  .ovlgrpdata (OVERLAY) : 
+  .ovlgrps (OVERLAY) : 
   {
-    PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
+    OVERLAY_START_OF_OVERLAYS = .;
     *(SORT_BY_USER(.ovlinput.*))
+    OVERLAY_END_OF_OVERLAYS = .;
   } >ovl AT>ovl :ovl
 
   /* TODO: Temporary old section. Will be removed shortly */

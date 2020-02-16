@@ -44,6 +44,10 @@
 //#define D_COMRV_CRC
 /* enable comrv debug */
 //#define D_COMRV_DEBUG
+/* enable the ability to enable/disable comrv */
+//#define  D_COMRV_CONTROL_SUPPORT
+/* enable comrv error notifications */
+#define M_COMRV_ERROR_NOTIFICATIONS
 /* enable comrv RTOS support */
 #define D_COMRV_RTOS_SUPPORT
 

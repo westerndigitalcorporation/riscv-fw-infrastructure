@@ -155,7 +155,7 @@ typedef struct comrvCB
   /* the cache entries */
   comrvCacheEntry_t stOverlayCache[D_COMRV_NUM_OF_CACHE_ENTRIES];
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-  u08_t             ucMultiGroupOffset;
+  u16_t             ucMultiGroupOffset;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
   /* state of 'offset' and 'multigroup' tables loaded or not */
   u08_t             ucTablesLoaded;
