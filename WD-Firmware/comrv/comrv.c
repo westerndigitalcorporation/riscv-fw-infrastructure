@@ -84,8 +84,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define M_COMRV_WRITE_STACK_REG(x)       asm volatile ("mv t3, %0" : : "r" (x) );
 /* set comrv entry engine address */
 #define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la t6, "#address : : : );
-/* set comrv entry engine address */
-#define M_COMRV_GET_ENTRY_ADDR(address)  asm volatile ("mv %0, t6" : "=r" (address)  : );
 /* set the comrv stack pool and comrv stack registers */
 #if __riscv_xlen == 64
  #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
@@ -111,10 +109,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #ifdef D_COMRV_CRC
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)   \
       if (M_COMRV_BUILTIN_EXPECT(comrvCrcCalcHook(pAddressToCalc, usMemSizeInBytes, uiExpectedResult),0))  \
-      {                                                                          \
-         stErrArgs.uiErrorNum = D_COMRV_CRC_CHECK_ERR;                           \
-         stErrArgs.uiToken    = unToken.uiValue;                                 \
-         comrvErrorHook(&stErrArgs);                                             \
+      {                                                           \
+         M_COMRV_ERROR(stErrArgs, D_COMRV_CRC_CHECK_ERR, unToken.uiValue);   \
       }
 #else
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)
@@ -141,7 +137,13 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* Place a label, the debugger will stop here to query the overlay manager current status.  */
 #define M_COMRV_DEBUGGER_HOOK_SYMBOL()            asm volatile (".globl _ovly_debug_event\n" \
                                                       "_ovly_debug_event:");
-
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
+                                                stError.uiToken    = token; \
+                                                comrvErrorHook(&stError);
+#else
+#define M_COMRV_ERROR(stError,errorNum,token)
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
 
 /**
 * types
@@ -201,24 +203,20 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
 #ifdef D_COMRV_VERIFY_INIT_ARGS
    comrvErrorArgs_t   stErrArgs;
-   u32_t              uiCacheSizeInBytes;
 #endif /* D_COMRV_VERIFY_INIT_ARGS */
-
-#ifdef D_COMRV_CONTROL_SUPPORT
-   u32_t              uiComrvEntry;
-#endif /* D_COMRV_CONTROL_SUPPORT */
 
 #ifdef D_COMRV_VERIFY_INIT_ARGS
-   uiCacheSizeInBytes = M_COMRV_CACHE_SIZE_IN_BYTES();
    /* verify cache configuration - size and alignment to D_COMRV_OVL_GROUP_SIZE_MIN */
    if (M_COMRV_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
-       uiCacheSizeInBytes % D_COMRV_OVL_GROUP_SIZE_MIN, 0))
+       (M_COMRV_CACHE_SIZE_IN_BYTES()) % D_COMRV_OVL_GROUP_SIZE_MIN, 0))
    {
-      stErrArgs.uiErrorNum = D_COMRV_INVALID_INIT_PARAMS_ERR;
-      stErrArgs.uiToken    = D_COMRV_INVALID_TOKEN;
-      comrvErrorHook(&stErrArgs);
+      M_COMRV_ERROR(stErrArgs, D_COMRV_INVALID_INIT_PARAMS_ERR, D_COMRV_INVALID_TOKEN);
    }
 #endif /* D_COMRV_VERIFY_INIT_ARGS */
+
+   /* set the address of COMRV entry point (disabled) in register t6 - end user won't be able
+      to call overlay functions until comrv tables are loaded */
+   M_COMRV_SET_ENTRY_ADDR(comrvEntryDisable);
 
 #ifdef D_COMRV_EVICTION_LRU
    /* initialize all cache entries (exclude last cache entry which is
@@ -254,18 +252,6 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
    /* set the address of COMRV stack pool register t4 */
    M_COMRV_WRITE_POOL_REG(pStackPool);
 
-#ifdef D_COMRV_CONTROL_SUPPORT
-   /* read the set comrv entry from register t6 */
-   M_COMRV_GET_ENTRY_ADDR(uiComrvEntry);
-   /* if comrv has been disabled before initialization
-      we need to keep it disabled */
-   if (uiComrvEntry != (u32_t)comrvEntryDisable)
-#endif /* D_COMRV_CONTROL_SUPPORT */
-   {
-      /* set the address of COMRV entry point in register t6 */
-      M_COMRV_SET_ENTRY_ADDR(comrvEntry);
-   }
-
 #ifndef D_COMRV_USE_OS
    /* in baremetal applications, stack register is initialized here;
       this must be done after the stack pool register was
@@ -300,7 +286,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 {
    comrvCacheEntry_t   *pEntry;
    comrvOverlayToken_t  unToken;
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t     stErrArgs;
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
    comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
@@ -411,9 +399,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       if (M_COMRV_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0))
       {
          M_COMRV_EXIT_CRITICAL_SECTION();
-         stErrArgs.uiErrorNum = D_COMRV_NOT_ENOUGH_ENTRIES;
-         stErrArgs.uiToken    = unToken.uiValue;
-         comrvErrorHook(&stErrArgs);
+         M_COMRV_ERROR(stErrArgs, D_COMRV_NOT_ENOUGH_ENTRIES, unToken.uiValue);
       }
       /* we need to handle cache fragmentation since we got more than 1 eviction candidate */
       else
@@ -451,9 +437,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
                   if (M_COMRV_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
                   {
                      M_COMRV_EXIT_CRITICAL_SECTION();
-                     stErrArgs.uiErrorNum = D_COMRV_OVL_DATA_DEFRAG_ERR;
-                     stErrArgs.uiToken    = unToken.uiValue;
-                     comrvErrorHook(&stErrArgs);
+                     M_COMRV_ERROR(stErrArgs, D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.uiValue);
                   }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
                   /* now we copy the cache entry properties and token */
@@ -526,9 +510,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* if group wasn't loaded */
       if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
       {
-         stErrArgs.uiErrorNum = D_COMRV_LOAD_ERR;
-         stErrArgs.uiToken    = unToken.uiValue;
-         comrvErrorHook(&stErrArgs);
+         M_COMRV_ERROR(stErrArgs, D_COMRV_LOAD_ERR, unToken.uiValue);
       }
 
       M_COMRV_VERIFY_CRC(pAddress, usOverlayGroupSize-sizeof(u32_t),
@@ -865,7 +847,9 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 {
    void            *pAddress;
    comrvLoadArgs_t  stLoadArgs;
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t stErrArgs;
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
 
    /* at this point comrv cache is empty so we take the
       last entry and use it to store the multigroup and
@@ -881,9 +865,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    /* if group wasn't loaded */
    if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
    {
-      stErrArgs.uiErrorNum = D_COMRV_TBL_LOAD_ERR;
-      stErrArgs.uiToken    = D_COMRV_TABLES_TOKEN;
-      comrvErrorHook(&stErrArgs);
+      M_COMRV_ERROR(stErrArgs, D_COMRV_TBL_LOAD_ERR, D_COMRV_TABLES_TOKEN);
    }
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* calculate the offset to the multi group table */
@@ -897,6 +879,9 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
    /* mark that the 'offset' and 'multigroup' tables are loaded */
    g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_LOADED;
+   /* set the address of COMRV entry point in register t6 -
+      from this point end user can call overlay functions/load overlay data */
+   M_COMRV_SET_ENTRY_ADDR(comrvEntry);
 }
 
 /**
@@ -976,3 +961,19 @@ D_COMRV_TEXT_SECTION void comrvDisable(void)
 }
 
 #endif /* D_COMRV_CONTROL_SUPPORT */
+
+/**
+* This function is invoked by the comev engine in case an overlay function
+* was invoked and comrv is disabled
+*
+* @param None
+*
+* @return None
+*/
+D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
+{
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
+   comrvErrorArgs_t stErrArgs;
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+   M_COMRV_ERROR(stErrArgs, D_COMRV_INVOKED_WHILE_DISABLED, D_COMRV_INVALID_TOKEN);
+}

@@ -46,6 +46,8 @@
 //#define D_COMRV_DEBUG
 /* enable the ability to enable/disable comrv */
 //#define  D_COMRV_CONTROL_SUPPORT
+/* enable comrv error notifications */
+#define M_COMRV_ERROR_NOTIFICATIONS
 
 /* minimum size of an overlay group */
 #define D_COMRV_OVL_GROUP_SIZE_MIN                          512
