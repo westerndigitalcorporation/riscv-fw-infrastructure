@@ -27,6 +27,8 @@
 /**
 * definitions
 */
+#define M_DEMO_COMRV_RTOS_FENCE()   M_PSP_INST_FENCE(); \
+                                    M_PSP_INST_FENCEI();
 
 /* The rate the data is sent to the queue, specified in milliseconds, and
 converted to ticks (using the definition of D_TICK_TIME_MS) */
@@ -287,10 +289,10 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 {
    comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&_OVERLAY_STORAGE_START_ADDRESS_ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
-   /* order device I/O an memory accesses */
-   asm volatile ("fence");
-   /* sync the instruction and data stream */
-   asm volatile ("fence.i");
+   /* it is upto the end user of comrv to synchronize the instruction and data stream after
+      overlay data has been written to destination memory */
+   M_DEMO_COMRV_RTOS_FENCE();
+
    return pLoadArgs->pDest;
 }
 

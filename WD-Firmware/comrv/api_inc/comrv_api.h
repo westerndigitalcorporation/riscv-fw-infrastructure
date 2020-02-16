@@ -59,6 +59,8 @@
 /**
 * APIs
 */
+void comrvEnable(void);
+void comrvDisable(void);
 void comrvLoadTables(void);
 void comrvInit(comrvInitArgs_t* pInitParams);
 void comrvGetStatus(comrvStatus_t* pComrvStatus);

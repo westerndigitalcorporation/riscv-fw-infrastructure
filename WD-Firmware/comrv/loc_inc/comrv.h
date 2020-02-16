@@ -36,6 +36,9 @@
 /**
 * macros
 */
+#define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
+#define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
+
 #ifdef D_COMRV_RTOS_SUPPORT
    #define M_COMRV_DISABLE_INTS()   M_PSP_DISABLE_INTERRUPTS()
    #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
@@ -65,6 +68,7 @@
    is likely to be true, in other case condition is likely to be false.
    this provides us a way to take rare cases out of the critical execution path */
 #define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
+
 
 /**
 * types
