@@ -36,6 +36,7 @@
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
+
 /**
 * definitions
 */
@@ -376,6 +377,7 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 
 /**
 * @brief rtosalTimerSetPeriod - Store the input parameter in a global variable for usage along the program run
+*                               (used for setup the timer-counter as the period time to count-up)
 *
 * @param timerPeriod
 *

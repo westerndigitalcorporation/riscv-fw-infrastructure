@@ -63,7 +63,6 @@ void pspDefaultEmptyIntHandler_isr(void);
 /**
 * global variables
 */
-s32_t gIntsDisableEnableBalance = D_PSP_INTS_DISABLE_ENABLE_BALANCED;
 
 
 /* Exception handlers */
