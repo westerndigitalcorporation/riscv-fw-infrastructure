@@ -70,6 +70,7 @@
 .global comrvEntry
 .global comrvEntryDisable
 .global comrv_ret_from_callee
+.global comrvNotifyDisabledError
 
 /* TODO: need to set this code in COMRV_TEXT_SEC */
 .section  .text
@@ -207,8 +208,6 @@ comrv_handle_thunk_token:
     /* now we can skip to the previous stack frame */
     j comrv_igonr_caller_thunk_stack_frame
 
-#ifdef D_COMRV_CONTROL_SUPPORT
-
 /* for testing purpose, we use the .weak so we won't get stuck
    this also allows the end user to reimplement comrvEntryDisable
    diffrently */
@@ -217,8 +216,6 @@ comrv_handle_thunk_token:
    calling/loading overlay function/data */
 comrvEntryDisable:
 1:
-    nop
-    j 1b
-
-#endif /* D_COMRV_CONTROL_SUPPORT */
+    la          t0, comrvNotifyDisabledError
+    jr          t0
 

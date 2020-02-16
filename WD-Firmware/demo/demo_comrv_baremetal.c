@@ -219,16 +219,13 @@ void demoStart(void)
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
 
-#ifdef D_COMRV_CONTROL_SUPPORT
-   /* check the disable API */
-   comrvDisable();
-   OverlayFunc0();
-#endif /* D_COMRV_CONTROL_SUPPORT */
-
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
 
 #ifdef D_COMRV_CONTROL_SUPPORT
+   /* check the disable API */
+   comrvDisable();
+   /* try to call an overlay function */
    OverlayFunc0();
    /* enable comrv */
    comrvEnable();
