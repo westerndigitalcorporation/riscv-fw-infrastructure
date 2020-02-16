@@ -45,7 +45,7 @@ STR_BIN_FOLDER           = "bin"
 
 STR_NEW_LINE = "\n"
 
-STR_OVL_DATA_SEC_NAME = ".ovlgrpdata"
+STR_OVL_DATA_SEC_NAME = ".ovlgrps"
 STR_RESERVED_OVL_SEC_NAME = ".reserved_ovl"
 INT_SEC_ADDR_INDEX = 3
 INT_SEC_SIZE_INDEX = 5
