@@ -30,6 +30,7 @@
 /**
 * macros
 */
+
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
    /* TODO: need to add default function */
@@ -108,7 +109,8 @@
 
 #define M_PSP_DISABLE_INTERRUPTS()	asm volatile( "csrc mstatus, 8" )
 #define M_PSP_ENABLE_INTERRUPTS()	asm volatile( "csrs mstatus, 8" )
-#define M_PSP_YIELD()               asm volatile( "ecall" )
+#define M_PSP_EBREAK()              asm volatile ("ebreak" : : : );
+#define M_PSP_ECALL()               asm volatile ("ecall" : : : );
 #define M_PSP_NOP()                 asm volatile ("nop")
 #define M_PSP_MEMORY_BARRIER()      asm volatile( "" ::: "memory" )
 

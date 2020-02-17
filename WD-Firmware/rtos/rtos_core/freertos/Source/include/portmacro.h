@@ -87,7 +87,7 @@ not need to be guarded with a critical section. */
 
 
 /* Scheduler utilities. */
-#define portYIELD()                              M_PSP_YIELD()
+#define portYIELD()                              M_PSP_ECALL()
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired ) vTaskSwitchContext()
 #define portYIELD_FROM_ISR( x )                  portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/
