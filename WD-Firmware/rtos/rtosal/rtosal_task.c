@@ -375,7 +375,7 @@ RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
 	/* Register interrupt vector */
-	M_PSP_WRITE_CSR(mtvec, &rtosal_vect_table);
+	M_PSP_WRITE_CSR(D_PSP_MTVEC, &rtosal_vect_table);
 
 #ifdef D_USE_FREERTOS
 	/* Initialize the timer-tick handler function pointer to NULL */
