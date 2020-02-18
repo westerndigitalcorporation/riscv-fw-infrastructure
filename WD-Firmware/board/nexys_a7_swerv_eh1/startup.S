@@ -72,11 +72,12 @@ _start:
 	csrw 0x7c0, t1
 
 	#setup MEIP and MTIP
+/*
 	li t0, (1<<7 | 1<<11)
 	csrw mie, t0
 	li t0, (1<<3)
 	csrw mstatus, t0
-
+*/
 	# initialize global pointer
 	.option push
 	.option norelax

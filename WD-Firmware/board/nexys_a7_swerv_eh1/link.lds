@@ -27,6 +27,16 @@ MEMORY
 {
   /* --------  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M --------  */
   ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 128K
+  dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
+}
+
+
+PHDRS
+{
+  rom_load PT_LOAD;
+  ram_init PT_LOAD;
+  ram_load PT_LOAD;
+  ovl PT_NULL;
 }
 
 /*----------------------------------------------------------------------*/
@@ -41,7 +51,7 @@ SECTIONS
   {
     *(.text.init)
     . = ALIGN(8);
-  } > ram
+  } > ram : ram_load
 
   .text :
   {
@@ -50,7 +60,7 @@ SECTIONS
     *(.text .text.*)
     *(.gnu.linkonce.t.*)
     . = ALIGN(4);
-  } >ram
+  } >ram : ram_load
 
 
   .rodata :
@@ -59,26 +69,26 @@ SECTIONS
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
     . = ALIGN(4);
-  } > ram
+  } > ram : ram_load
   
   .lalign : 
   {
     . = ALIGN(4);
     PROVIDE( _data_lma = . );
-  } > ram
+  } > ram : ram_load
   
   .dalign :
   {
     . = ALIGN(4);
     PROVIDE( _data = . );
-  } > ram
+  } > ram : ram_load
   
   .data :
   {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
     . = ALIGN(8);
-  } > ram
+  } > ram : ram_load
 
   .sdata :
   {
@@ -89,14 +99,14 @@ SECTIONS
     . = ALIGN(8);
     *(.srodata .srodata.*)
    . = ALIGN(8);
-  } > ram
+  } > ram : ram_load
   
   .sbss :
   {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
     . = ALIGN(8);
-  } > ram 
+  } > ram : ram_load
   
   . = ALIGN(4);
   PROVIDE( _edata = . );
@@ -109,7 +119,7 @@ SECTIONS
   {
     *(.bss)
     . = ALIGN(8);
-  } >ram
+  } >ram : ram_load
 
   _end = .;
 
@@ -118,5 +128,5 @@ SECTIONS
     _heap_end = .;
     . = . + __stack_size;
     _sp = .;
-  } > ram
+  } > ram : ram_load
 }
