@@ -24,7 +24,7 @@ class demo(object):
     self.toolchainPath = ""
     self.strGrpFile    = os.path.join("..", "comrv-baremetal.csv")
     self.strComrvCacheSize = "1536"
-    self.strLinkFilePrefix = '-comrv'
+    self.strLinkFilePrefix = ''
     
     self.public_defs = [
         'D_BARE_METAL',
