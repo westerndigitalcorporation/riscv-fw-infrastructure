@@ -33,6 +33,12 @@
 /**
 * types
 */
+typedef enum comrvLockState
+{
+   D_COMRV_GROUP_STATE_UNLOCK = 0,
+   D_COMRV_GROUP_STATE_LOCK   = 1
+}comrvLockState_t;
+
 /* comrv stack frame */
 typedef struct comrvStackFrame
 {
@@ -146,8 +152,10 @@ typedef struct comrvCB
   /* the cache entries */
   comrvCacheEntry_t stOverlayCache[D_COMRV_NUM_OF_CACHE_ENTRIES];
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-  u08_t             ucMultiGroupOffset;
+  u16_t             ucMultiGroupOffset;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+  /* state of 'offset' and 'multigroup' tables loaded or not */
+  u08_t             ucTablesLoaded;
 } comrvCB_t;
 
 /* status structure */
