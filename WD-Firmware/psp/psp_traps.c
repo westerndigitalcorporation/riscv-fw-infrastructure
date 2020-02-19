@@ -25,7 +25,6 @@
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the RISC-V RV32 port.
  *----------------------------------------------------------*/
-#include "psp_types.h"
 #include "psp_api.h"
 
 #if defined (__GNUC__) || defined (__clang__)

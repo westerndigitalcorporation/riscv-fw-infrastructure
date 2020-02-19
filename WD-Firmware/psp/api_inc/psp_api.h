@@ -26,7 +26,7 @@
 /**
 * include files
 */
-
+#include "psp_types.h"
 #include "psp_intrinsics.h"
 #include "psp_defines.h"
 #include "psp_config.h"
@@ -49,14 +49,9 @@
 * macros
 */
 
-/* Save interrupts state (all privilege levels) in a local variable */
-#define M_PSP_INT_VAR_DECLARE()    u32_t INT_PREV_STATE = 0
-/* Disable Interrupts (all privilege levels) */
-#define M_PSP_INT_DISABLE()        pspInterruptsDisable(&INT_PREV_STATE)
-/* Restore interrupts to their previous state */
-#define M_PSP_INT_RESTORE()        pspInterruptsRestore(INT_PREV_STATE)
-/* Enable interrupts regardless their previous state */
-#define M_PSP_INT_ENABLE()         pspInterruptsEnable()
+/* What is the current privilege-level */
+#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented */
+
 /**
 * types
 */

@@ -24,7 +24,6 @@
 /**
 * include files
 */
-#include "common_types.h"
 #include "demo_platform_al.h"
 #include "psp_api.h"
 

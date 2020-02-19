@@ -25,13 +25,12 @@
 /**
 * include files
 */
-#include "common_types.h"
+#include "psp_api.h"
 #include "common_defines.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_macros.h"
 #include "rtosal_util.h"
 #include "rtosal_task_api.h"
-#include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "queue.h"
 #else
