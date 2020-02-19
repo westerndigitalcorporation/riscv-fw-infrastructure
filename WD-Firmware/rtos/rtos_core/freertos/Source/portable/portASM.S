@@ -93,8 +93,8 @@ This implementation supports riscv privileged v1.10
 .global xPortStartScheduler
 .global vPortEndScheduler
 .global pxPortInitialiseStack
-
-//.extern vTaskSwitchContext
+.global rtosalUpdateStackPriorContextSwitch
+.global vPortUpdateStackPriorContextSwitch
 
 xPortStartScheduler:
     jal pspTimerSetup
@@ -108,16 +108,13 @@ vPortEndScheduler:
 
 .align 8
 pxPortInitialiseStack:
-   csrr t0, mstatus                       /* Obtain current mstatus value. */
+   csrr       t0, mstatus                 /* Obtain current mstatus value. */
    M_PSP_ADDI t1, x0, 0x188               /* Generate the value 0x1880, which are -   */
-   slli t1, t1, 4                         /* the MPIE and MPP bits to set in mstatus. */
-   or t0, t0, t1                          /* Set MPIE and MPP bits in mstatus value. */
+   slli       t1, t1, 4                   /* the MPIE and MPP bits to set in mstatus. */
+   or         t0, t0, t1                  /* Set MPIE and MPP bits in mstatus value. */
 
-   //M_PSP_ADDI a0, a0, -REGBYTES
    M_PSP_STORE t0, -( 1 * REGBYTES)(a0)   /* mstatus onto the stack. */
-   //M_PSP_ADDI a0, a0, -(22 * REGBYTES)  /* Space for registers x11-x31. */
    M_PSP_STORE a2, -(23 * REGBYTES)(a0)   /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
-   //M_PSP_ADDI a0, a0, -(6 * REGBYTES)   /* Space for registers x5-x9. */
    M_PSP_STORE x0, -(29 * REGBYTES)(a0)   /* Return address onto the stack */
 // The following is relevant only when there are "aditional registers" in the core to handle. For now irrelevant hence commented out */
 // It was left here commented as a reference only
@@ -143,7 +140,10 @@ pxPortInitialiseStack:
    M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
 #endif /* D_COMRV */
 
-   M_PSP_ADDI a0, a0, -(30 * REGBYTES)    /* a0 to be returned to caller */
+   M_PSP_ADDI  a0, a0, -(32 * REGBYTES)    /* a0 to be returned to caller */
    M_PSP_STORE a1, 0(a0)                  /* mret value (pxCode parameter) onto the stack. */
 
    ret
+
+vPortUpdateStackPriorContextSwitch:
+   j  rtosalUpdateStackPriorContextSwitch

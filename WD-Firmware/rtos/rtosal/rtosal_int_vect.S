@@ -85,12 +85,12 @@ This implementation supports riscv privileged v1.10
 .option nowarnreservedreg
 #endif /* __clang__ */
 
-.global    pxCurrentTCB
-.global    rtosalHandleEcall
 
 .section  .text.entry
 .align 4
 .global   rtosal_vect_table
+.global    pxCurrentTCB
+.global    rtosalHandleEcall
 
 .ifndef D_RTOSAL_VECT_TABLE
 rtosal_vect_table:

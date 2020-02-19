@@ -42,17 +42,13 @@
 #ifdef D_COMRV_RTOS_SUPPORT
    #define M_COMRV_DISABLE_INTS()   M_PSP_DISABLE_INTERRUPTS()
    #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
-   #define M_COMRV_ENTER_CRITICAL_SECTION()  if (M_COMRV_BUILTIN_EXPECT(rtosalMutexWait(g_stComrvCB.pStMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS, 0)) \
+   #define M_COMRV_ENTER_CRITICAL_SECTION()  if (M_COMRV_BUILTIN_EXPECT(comrvEnterCriticalSectionHook() != D_COMRV_SUCCESS, 0)) \
                                              { \
-                                                stErrArgs.uiErrorNum = D_COMRV_SYNC_WAIT_ERR; \
-                                                stErrArgs.uiToken    = unToken.uiValue; \
-                                                comrvErrorHook(&stErrArgs); \
+                                                M_COMRV_ERROR(stErrArgs, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken) \
                                              }
-   #define M_COMRV_EXIT_CRITICAL_SECTION()   if (M_COMRV_BUILTIN_EXPECT(rtosalMutexRelease(g_stComrvCB.pStMutex) != D_RTOSAL_SUCCESS, 0)) \
+   #define M_COMRV_EXIT_CRITICAL_SECTION()   if (M_COMRV_BUILTIN_EXPECT(comrvExitCriticalSectionHook() != D_COMRV_SUCCESS, 0)) \
                                              { \
-                                                stErrArgs.uiErrorNum = D_COMRV_SYNC_REL_ERR; \
-                                                stErrArgs.uiToken    = unToken.uiValue; \
-                                                comrvErrorHook(&stErrArgs); \
+                                                M_COMRV_ERROR(stErrArgs, D_COMRV_EXIT_CRITICAL_SECTION_ERR, unToken) \
                                              }
 #else
    #define M_COMRV_ENTER_CRITICAL_SECTION()
