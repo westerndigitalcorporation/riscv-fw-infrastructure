@@ -44,11 +44,11 @@
    #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
    #define M_COMRV_ENTER_CRITICAL_SECTION()  if (M_COMRV_BUILTIN_EXPECT(comrvEnterCriticalSectionHook() != D_COMRV_SUCCESS, 0)) \
                                              { \
-                                                M_COMRV_ERROR(stErrArgs, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken) \
+                                                M_COMRV_ERROR(stErrArgs, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken.uiValue) \
                                              }
    #define M_COMRV_EXIT_CRITICAL_SECTION()   if (M_COMRV_BUILTIN_EXPECT(comrvExitCriticalSectionHook() != D_COMRV_SUCCESS, 0)) \
                                              { \
-                                                M_COMRV_ERROR(stErrArgs, D_COMRV_EXIT_CRITICAL_SECTION_ERR, unToken) \
+                                                M_COMRV_ERROR(stErrArgs, D_COMRV_EXIT_CRITICAL_SECTION_ERR, unToken.uiValue) \
                                              }
 #else
    #define M_COMRV_ENTER_CRITICAL_SECTION()
