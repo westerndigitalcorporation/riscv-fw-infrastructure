@@ -57,21 +57,14 @@
 /**
 * include files
 */
-
-#ifdef D_HI_FIVE1
-    #include <stdlib.h>
-#endif
-
-#include "common_types.h"
-#include "demo_platform_al.h"
-
 #include "psp_api.h"
-
+#include "demo_platform_al.h"
 #include "rtosal_task_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
+#include <stdlib.h>
 
 /**
 * definitions
@@ -318,14 +311,14 @@ static u32_t ulCount = 0;
  */
 static void demoRtosalTimerCallback(void* xTimer)
 {
-#ifdef D_HI_FIVE1
     /* The timer has expired.  Count the number of times this happens.  The
     timer that calls this function is an auto re-load timer, so it will
     execute periodically. */
     ulCountOfTimerCallbackExecutions++;
 
-    demoOutputLed(D_LED_BLUE_ON);
     demoOutputMsg("RTOS Timer Callback\n", 20);
+#ifdef D_HI_FIVE1
+    demoOutputLed(D_LED_BLUE_ON);
 #else
     /* Developer: please add here implementation that fits your environment */
     M_PSP_NOP();
@@ -371,14 +364,11 @@ const u32_t ulValueToSend = 100UL;
 static void demoRtosalReceiveMsgTask( void *pvParameters )
 {
 	u32_t ulReceivedValue;
-    #ifdef D_HI_FIVE1
-     char stringValue[10];
-    #endif
+    char stringValue[10];
 
     for( ;; )
     {
         rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
-     #ifdef D_HI_FIVE1
         /* Wait until something arrives in the queue - this task will block
         indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
         FreeRTOSConfig.h. */
@@ -386,13 +376,6 @@ static void demoRtosalReceiveMsgTask( void *pvParameters )
         demoOutputMsg("Recieved: ", 10);
         demoOutputMsg(stringValue, 3);
 		demoOutputMsg("\n",1);
-     #else
-		/* Developer: please add here implementation that fits your environment */
-		M_PSP_NOP();
-		M_PSP_NOP();
-		M_PSP_NOP();
-		M_PSP_NOP();
-     #endif
 
         /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */

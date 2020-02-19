@@ -41,6 +41,15 @@
 #define M_PSP_ENABLE_INTERRUPT(__mie_interrupt__)  M_PSP_SET_CSR(D_PSP_MIE, __mie_interrupt__);
 #define M_PSP_DISBLE_INTERRUPT(__mie_interrupt__)  M_PSP_CLEAR_CSR(D_PSP_MIE, __mie_interrupt__);
 
+/* Save interrupts state (all privilege levels) in a local variable */
+#define M_PSP_INT_VAR_DECLARE()    u32_t INT_PREV_STATE = 0
+/* Disable Interrupts (all privilege levels) */
+#define M_PSP_INT_DISABLE()        pspInterruptsDisable(&INT_PREV_STATE)
+/* Restore interrupts to their previous state */
+#define M_PSP_INT_RESTORE()        pspInterruptsRestore(INT_PREV_STATE)
+/* Enable interrupts regardless their previous state */
+#define M_PSP_INT_ENABLE()         pspInterruptsEnable()
+
 /**
 * types
 */
@@ -113,30 +122,20 @@ typedef void (*pspInterruptHandler_t)(void);
 */
 
 /**
-* Disable interrupts and return the previous interrupt state
+* Disable interrupts and return the current (== before the 'disable') interrupt state
 */
-D_PSP_INLINE void pspInterruptsDisable(u32_t *pOutPrevIntState)
-{
-	/* Store the interrupts state as they now */
-	*pOutPrevIntState = (M_PSP_READ_CSR(D_PSP_MSTATUS) & (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
-	/* Disable interrupts (all privilege levels) */
-    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
-}
+void pspInterruptsDisable(u32_t *pOutPrevIntState);
 
 /**
-* Restore the interrupts state (i.e. if they were already disabled - they will stay disabled. If they were enabled - they will become enabled now)
+* Restore the interrupts state
 */
-D_PSP_INLINE void pspInterruptsRestore(u32_t uiPrevIntState)
-{
-	M_PSP_SET_CSR(D_PSP_MSTATUS, uiPrevIntState);
-}
-
+void pspInterruptsRestore(u32_t uiPrevIntState);
 /**
-* Enable interrupts (all privilege levels) regardless their previous state
+* Enable interrupts regardless their previous state
 */
-D_PSP_INLINE void pspInterruptsEnable(void)
-{
-	M_PSP_SET_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
-}
+void pspInterruptsEnable(void);
+
+
+
 
 #endif /* __PSP_INTERRUPTS_H__ */

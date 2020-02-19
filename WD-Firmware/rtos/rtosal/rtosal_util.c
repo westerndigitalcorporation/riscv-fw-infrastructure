@@ -25,7 +25,7 @@
 /**
 * include files
 */
-#include "psp_types.h"
+#include "psp_api.h"
 #include "rtosal_util.h"
 #include "rtosal_macros.h"
 #include "rtosal_task_api.h"
@@ -35,7 +35,6 @@
 #else
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
-#include "psp_api.h"
 #include "demo_platform_al.h"
 
 /**
