@@ -186,7 +186,7 @@ RTOSAL_SECTION u32_t rtosalMutexRelease(rtosalMutex_t* pRtosalMutexCb)
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMutexCb, pRtosalMutexCb == NULL, D_RTOSAL_MUTEX_ERROR);
 
 #ifdef D_USE_FREERTOS
-   uiRes = xSemaphoreGive((SemaphoreHandle_t)pRtosalMutexCb->mutexHandle);
+   uiRes = xSemaphoreGive(pRtosalMutexCb->mutexHandle);
    if (uiRes == pdPASS)
    {
       uiRes = D_RTOSAL_SUCCESS;

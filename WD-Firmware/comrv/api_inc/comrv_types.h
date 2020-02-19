@@ -29,9 +29,6 @@
 */
 #include "common_types.h"
 #include "comrv_defines.h"
-#ifdef D_COMRV_RTOS_SUPPORT
-   #include "rtosal_mutex_api.h"
-#endif /* D_COMRV_RTOS_SUPPORT */
 
 /**
 * types
@@ -159,9 +156,6 @@ typedef struct comrvCB
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
   /* state of 'offset' and 'multigroup' tables loaded or not */
   u08_t             ucTablesLoaded;
-#ifdef D_COMRV_RTOS_SUPPORT
-  rtosalMutex_t     *pStMutex;
-#endif /* D_COMRV_RTOS_SUPPORT */
 } comrvCB_t;
 
 /* status structure */
@@ -183,10 +177,6 @@ typedef struct comrvInitArgs
       directly call comrvLoadTables(); any non zero value
       specifies that tables are loaded in comrvInit() */
    u08_t ucCanLoadComrvTables;
-#ifdef D_COMRV_RTOS_SUPPORT
-   /* comrv mutex */
-   rtosalMutex_t* pStMutex;
-#endif /* D_COMRV_RTOS_SUPPORT */
 }comrvInitArgs_t;
 
 /* comrv load arguments */

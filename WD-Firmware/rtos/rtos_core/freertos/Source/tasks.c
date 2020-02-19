@@ -2943,9 +2943,9 @@ BaseType_t xSwitchRequired = pdFALSE;
 
 #endif /* configUSE_APPLICATION_TASK_TAG */
 /*-----------------------------------------------------------*/
-#ifndef D_COMRV_RTOS_SUPPORT
-extern void comrvSaveContextSwitch(StackType_t* pxTopOfStack);
-#endif /* D_COMRV_RTOS_SUPPORT */
+#if ( configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH == 1 )
+extern void vPortUpdateStackPriorContextSwitch(volatile StackType_t* pxTopOfStack);
+#endif /* configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH */
 
 void vTaskSwitchContext( void )
 {
@@ -2997,9 +2997,9 @@ void vTaskSwitchContext( void )
 		}
 		#endif
 
-#ifndef D_COMRV_RTOS_SUPPORT
-		comrvSaveContextSwitch(pxCurrentTCB->pxTopOfStack);
-#endif /* D_COMRV_RTOS_SUPPORT */
+#if ( configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH == 1 )
+		vPortUpdateStackPriorContextSwitch(pxCurrentTCB->pxTopOfStack);
+#endif /* configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH */
 
 		/* Select a new task to run using either the generic C or port
 		optimised asm code. */

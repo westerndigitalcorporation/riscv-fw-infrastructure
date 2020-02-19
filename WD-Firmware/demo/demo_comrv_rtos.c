@@ -92,9 +92,6 @@ void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
-   /* set mutex address */
-   stComrvInitArgs.pStMutex = &stComrvMutex;
-
    /* init comrv */
    comrvInit(&stComrvInitArgs);
 
@@ -158,7 +155,7 @@ void demoRtosalCreateTasks(void *pParam)
    }
 
    /* Create the tx task in exactly the same way */
-   res = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_30,
+   res = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_29,
             demoRtosalTxMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
            uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
    if (res != D_RTOSAL_SUCCESS)
@@ -183,6 +180,8 @@ void demoRtosalCreateTasks(void *pParam)
  */
 void _OVERLAY_ OvlFuncTx(u32_t* pValueToSend)
 {
+   u32_t count = 0;
+
    /* Place this task in the blocked state until it is time to run again.
    The block time is specified in ticks.
    The task will not consume any CPU time while it is in the Blocked state. */
@@ -195,6 +194,17 @@ void _OVERLAY_ OvlFuncTx(u32_t* pValueToSend)
    operation will not block - it shouldn't need to block as the queue
    should always be empty at this point in the code. */
    rtosalMsgQueueSend(&stMsgQueue, pValueToSend, 0, D_RTOSAL_FALSE);
+
+   /* the purpose of this loop is to wait for a context switch while
+      in an overlay function  - every odd call*/
+   for ( ; count < 100000 ; count ++)
+   {
+      M_PSP_NOP();
+      M_PSP_NOP();
+      M_PSP_NOP();
+      M_PSP_NOP();
+      M_PSP_NOP();
+   }
 }
 
 /**
@@ -217,7 +227,7 @@ void demoRtosalTxMsgTask( void *pvParameters )
 }
 
 /**
- * Rx function
+ * Recieve an item from the rtos queue
  *
  * pvParameters - holds the received queue item value
  */
@@ -336,6 +346,54 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 */
 u32_t comrvCrcCalcHook (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult)
 {
+   return 0;
+}
+
+/**
+* enter critical section
+*
+* @param None
+*
+* @return 0 - success, non-zero - failure
+*/
+u32_t comrvEnterCriticalSectionHook(void)
+{
+   if (rtosalGetSchedulerState() != D_RTOSAL_SCHEDULER_NOT_STARTED)
+   {
+      if (rtosalMutexWait(&stComrvMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS)
+      {
+         return 1;
+      }
+   }
+   else
+   {
+      M_PSP_DISABLE_INTERRUPTS();
+   }
+
+   return 0;
+}
+
+/**
+* exit critical section
+*
+* @param None
+*
+* @return 0 - success, non-zero - failure
+*/
+u32_t comrvExitCriticalSectionHook(void)
+{
+   if (rtosalGetSchedulerState() != D_RTOSAL_SCHEDULER_NOT_STARTED)
+   {
+      if (rtosalMutexRelease(&stComrvMutex) != D_RTOSAL_SUCCESS)
+      {
+         return 1;
+      }
+   }
+   else
+   {
+      M_PSP_ENABLE_INTERRUPTS();
+   }
+
    return 0;
 }
 
