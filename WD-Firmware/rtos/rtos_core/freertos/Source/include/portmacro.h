@@ -100,8 +100,9 @@ extern void vTaskExitCritical( void );
 #define portSET_INTERRUPT_MASK_FROM_ISR() 0
 
 #define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue ) ( void ) uxSavedStatusValue
-#define portDISABLE_INTERRUPTS()	                            M_PSP_DISABLE_INTERRUPTS()
-#define portENABLE_INTERRUPTS()		                            M_PSP_ENABLE_INTERRUPTS()
+#define portDISABLE_INTERRUPTS()	                            M_PSP_INT_VAR_DECLARE();\
+		                                                        M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL();
+#define portENABLE_INTERRUPTS()		                            M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
 #define portENTER_CRITICAL()	                                vTaskEnterCritical()
 #define portEXIT_CRITICAL()		                                vTaskExitCritical()
 
