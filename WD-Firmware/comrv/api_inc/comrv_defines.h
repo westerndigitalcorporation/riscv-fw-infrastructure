@@ -99,9 +99,11 @@
 #define D_COMRV_CRC_CHECK_ERR                5
 #define D_COMRV_TBL_LOAD_ERR                 6
 #define D_COMRV_LOCK_UNLOCK_ERR              7
-#define D_COMRV_INVOKED_WHILE_DISABLED    8
+#define D_COMRV_INVOKED_WHILE_DISABLED       8
 #define D_COMRV_ENTER_CRITICAL_SECTION_ERR   9
 #define D_COMRV_EXIT_CRITICAL_SECTION_ERR    10
+#define D_COMRV_INTERNAL_ERR                 11
+
 
 /* comrv defines */
 #define D_COMRV_INSTRUMENTATION_BASE_IND        0xFC

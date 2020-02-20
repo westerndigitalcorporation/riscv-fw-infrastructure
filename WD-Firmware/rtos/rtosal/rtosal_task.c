@@ -28,6 +28,7 @@
 #include "rtosal_task_api.h"
 #include "rtosal_macros.h"
 #include "rtosal_util.h"
+#include "rtosal_interrupt_api.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
@@ -460,7 +461,7 @@ u32_t rtosalGetSchedulerState(void)
 }
 
 /**
-* @brief This ib=nterfave is called from the rtos porting layer to
+* @brief This interface is called from the rtos porting layer to
 *        update the task stack if needed before context switch is performed.
 *        If comrv is enabled, it is called to save context in case switching is done
 *        while executing in an overlay function

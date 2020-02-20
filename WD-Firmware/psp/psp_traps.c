@@ -42,8 +42,8 @@ void pspTrapUnhandled(void)
 	local_mepc = M_PSP_READ_CSR(mepc);
 	local_mcause = M_PSP_READ_CSR(mcause);
 	local_mtval =  M_PSP_READ_CSR(mtval);
-	if (0 == local_mepc || 0 == local_mcause){}
-
+	if (0 == local_mtval || 0 == local_mepc || 0 == local_mcause){}
+	// TODO: change the ebreak with a macro once pushed
 	asm volatile ("ebreak" : : : );
 }
 
