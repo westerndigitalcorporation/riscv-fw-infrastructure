@@ -178,6 +178,22 @@ void demoRtosalCreateTasks(void *pParam)
  *
  * pValueToSend - Item to send to the queue
  */
+void _OVERLAY_ OvlFuncSendMsg(u32_t* pValueToSend)
+{
+   demoOutputMsg("Sending to queue\n", 17);
+
+   /* Send to the queue - causing the queue receive task to unblock and
+   increment its counter.  0 is used as the block time so the sending
+   operation will not block - it shouldn't need to block as the queue
+   should always be empty at this point in the code. */
+   rtosalMsgQueueSend(&stMsgQueue, pValueToSend, 0, D_RTOSAL_FALSE);
+}
+
+/**
+ * send an item to the rtos queue
+ *
+ * pValueToSend - Item to send to the queue
+ */
 void _OVERLAY_ OvlFuncTx(u32_t* pValueToSend)
 {
    u32_t count = 0;
@@ -187,13 +203,7 @@ void _OVERLAY_ OvlFuncTx(u32_t* pValueToSend)
    The task will not consume any CPU time while it is in the Blocked state. */
    rtosalTaskSleep(D_MAIN_QUEUE_SEND_PERIOD_TICKS);
 
-   demoOutputMsg("Sending to queue\n", 17);
-
-   /* Send to the queue - causing the queue receive task to unblock and
-   increment its counter.  0 is used as the block time so the sending
-   operation will not block - it shouldn't need to block as the queue
-   should always be empty at this point in the code. */
-   rtosalMsgQueueSend(&stMsgQueue, pValueToSend, 0, D_RTOSAL_FALSE);
+   OvlFuncSendMsg(pValueToSend);
 
    /* the purpose of this loop is to wait for a context switch while
       in an overlay function  - every odd call*/
@@ -243,26 +253,17 @@ void _OVERLAY_ OvlFuncRx(u32_t* pReceivedValue)
  */
 void demoRtosalReceiveMsgTask( void *pvParameters )
 {
-#ifdef D_HI_FIVE1
    char stringValue[10];
-#endif /* D_HI_FIVE1 */
    u32_t ulReceivedValue;
 
    for( ;; )
    {
       OvlFuncRx(&ulReceivedValue);
 
-#ifdef D_HI_FIVE1
       itoa(ulReceivedValue,stringValue, 10);
       demoOutputMsg("Received: ", 10);
       demoOutputMsg(stringValue, 3);
       demoOutputMsg("\n",1);
-#else
-      M_PSP_NOP();
-      M_PSP_NOP();
-      M_PSP_NOP();
-      M_PSP_NOP();
-#endif
    }
 }
 

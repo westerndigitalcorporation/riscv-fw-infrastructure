@@ -119,10 +119,12 @@
     M_PSP_LOAD    sp, \spLocationInAppCB(sp)
 .endm
 
+/* TODO: remove once Nati's PR is pushed */
 .macro M_PSP_DISABLE_INTERRUPTS
     csrc mstatus, 8
 .endm
 
+/* TODO: remove once Nati's PR is pushed */
 .macro M_PSP_ENABLE_INTERRUPTS
     csrs mstatus, 8
 .endm

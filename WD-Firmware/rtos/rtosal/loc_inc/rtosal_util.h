@@ -78,14 +78,4 @@ extern void (*fptrParamErrorNotification)(const void *pParam, u32_t uErrorCode);
 */
 void rtosalTick(void);
 
-/**
-* @brief check if in ISR context
-*
-* @param None
-*
-* @return u32_t            - D_NON_INT_CONTEXT
-*                          - non zero value - interrupt context
-*/
-u32_t rtosalIsInterruptContext(void);
-
 #endif /* __RTOSAL_H__ */
