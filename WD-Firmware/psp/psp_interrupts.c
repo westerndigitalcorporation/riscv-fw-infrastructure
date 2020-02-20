@@ -64,14 +64,10 @@
 void pspInterruptsDisable(u32_t *pOutPrevIntState)
 {
 	/* Store the interrupts state as they now */
-/*	*pOutPrevIntState = (M_PSP_READ_CSR(D_PSP_MSTATUS) & (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK)); */
-	*pOutPrevIntState = (M_PSP_READ_CSR(D_PSP_MSTATUS) & D_PSP_MSTATUS_MIE_MASK );
+	*pOutPrevIntState = (M_PSP_READ_CSR(D_PSP_MSTATUS) & (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
 
-	//	/* Disable interrupts (all privilege levels) */
-/*    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) ); */
-
-	/* Disable interrupts (Machine privilege level) */
-    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE_MASK );
+	/* Disable interrupts (all privilege levels) */
+    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
 }
 
 /**
@@ -91,7 +87,6 @@ void pspInterruptsRestore(u32_t uiPrevIntState)
 */
 void pspInterruptsEnable(void)
 {
-/*	M_PSP_SET_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK)); */
-	M_PSP_SET_CSR(D_PSP_MSTATUS, D_PSP_MSTATUS_MIE_MASK );
+	M_PSP_SET_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
 }
 

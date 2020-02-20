@@ -30,7 +30,6 @@
 /**
 * definitions
 */
-#define D_PSP_INTS_DISABLE_ENABLE_BALANCED 0
 
 /**
 * macros
@@ -44,11 +43,11 @@
 /* Save interrupts state (all privilege levels) in a local variable */
 #define M_PSP_INT_VAR_DECLARE()    u32_t INT_PREV_STATE = 0
 /* Disable Interrupts (all privilege levels) */
-#define M_PSP_INT_DISABLE()        pspInterruptsDisable(&INT_PREV_STATE)
+#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL()        pspInterruptsDisable(&INT_PREV_STATE)
 /* Restore interrupts to their previous state */
-#define M_PSP_INT_RESTORE()        pspInterruptsRestore(INT_PREV_STATE)
+#define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL()        pspInterruptsRestore(INT_PREV_STATE)
 /* Enable interrupts regardless their previous state */
-#define M_PSP_INT_ENABLE()         pspInterruptsEnable()
+#define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()         pspInterruptsEnable()
 
 /**
 * types

@@ -299,7 +299,15 @@ static u32_t ulCount = 0;
          ulCount = 0UL;
 
          demoOutputMsg("Giving Semaphore\n", 17);
+#ifdef D_HI_FIVE1
          demoOutputLed(D_LED_GREEN_ON);
+#else
+    /* Developer: please add here implementation that fits your environment */
+    M_PSP_NOP();
+    M_PSP_NOP();
+    M_PSP_NOP();
+    M_PSP_NOP();
+#endif
     }
 }
 
