@@ -103,13 +103,13 @@ void demoPlatformInit(void);
 void demoOutputMsg(const void *str, size_t size);
 
 /**
-* demoOutputLed - sets LED output according input request.
+* demoOutputToggelLed - sets LED output according input request.
 *
 * const D_LED_ACTION ledAct - LED action to do
 *
 * The "LED action" is defined per each platform
 *
 * */
-void demoOutputLed(const int ledAct);
+void demoOutputToggelLed(const int ledAct);
 
 

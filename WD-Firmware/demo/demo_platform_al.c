@@ -32,6 +32,8 @@
    #include <unistd.h>
 #elif defined(D_NEXYS_A7)
    #include "printf.h"
+   #include "mem_map.h"
+   #include "psp_macros.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
@@ -123,7 +125,13 @@ void demoPlatformInit(void)
 	// Nada for now
 #endif
     demoLedsInit();
+
+    /*OS: just test for leds: delete me after    */
+    demoOutpuLed(1);
+
     demoUartInit();
+
+    demoOutpuLed(0);
 
 }
 
@@ -147,14 +155,14 @@ void demoOutputMsg(const void *str, size_t size)
 
 
 /**
-* demoOutputLed - sets LED output according input request.
+* demoOutputToggelLed - sets LED output according input request.
 *
 * const D_LED_ACTION ledAct - LED action to do
 *
-* The "LED action" is defined per each platform
+* The "LED action" is defined per each platform, it is the led color
 *
 * */
-void demoOutputLed(const int ledAct)
+void demoOutputToggelLed(const int ledAct)
 {
 #ifdef D_HI_FIVE1
 	switch (ledAct)
@@ -168,7 +176,22 @@ void demoOutputLed(const int ledAct)
         default:
            break;
 	}
+#endif
+}
 
+/**
+* demoOutputLed - sets LED output on/off
+*
+* const uiOnOffMode = 0/1
+*
+*
+* */
+void demoOutpuLed(const u08_t ucOnOffMode)
+{
+#ifdef D_NEXYS_A7
+	M_PSP_ASSERT(uiOnOffMode>1);
+
+	M_PSP_WRITE_REGISTER_32(LED_BASE_ADDRESS, ucOnOffMode);
 #endif
 }
 

@@ -301,7 +301,7 @@ static u32_t ulCount = 0;
          ulCount = 0UL;
 
          demoOutputMsg("Giving Semaphore\n", 17);
-         demoOutputLed(D_LED_GREEN_ON);
+         demoOutputToggelLed(D_LED_GREEN_ON);
     }
 }
 
@@ -319,7 +319,7 @@ static void demoRtosalTimerCallback(void* xTimer)
     execute periodically. */
     ulCountOfTimerCallbackExecutions++;
 
-    demoOutputLed(D_LED_BLUE_ON);
+    demoOutputToggelLed(D_LED_BLUE_ON);
     demoOutputMsg("RTOS Timer Callback\n", 20);
 #else
     /* Developer: please add here implementation that fits your environment */
