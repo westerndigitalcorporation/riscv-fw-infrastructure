@@ -34,7 +34,7 @@ STR_SCONS_TOOLCHAIN = "scons-tools"
 INT_DEMO_INDEX = 0
 INT_TOOLCHAIN_INDEX = 1
 INT_NUM_OF_CONFIGS = 2
-STR_COMRV_DEMO = "comrv_baremetal"
+STR_COMRV_DEMO = "comrv"
 STR_COMRV_TC = "llvm"
 
 
@@ -130,7 +130,7 @@ class clsGenerate(object):
     intItem = self.pickItem(STR_DEMO, self.listDemos)
     strConfiguration += "\n" + STR_DEMO + self.listDemos[intItem]
     
-    if self.listDemos[intItem] == STR_COMRV_DEMO:
+    if self.listDemos[intItem].find(STR_COMRV_DEMO) > -1:
       intItem = self.listToolchain.index(STR_COMRV_TC)
       print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItem], STR_COMRV_TC)
     else:

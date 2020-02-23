@@ -1,3 +1,4 @@
+
 /* 
 * SPDX-License-Identifier: Apache-2.0
 * Copyright 2019 Western Digital Corporation or its affiliates.
@@ -31,8 +32,14 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /**
 * include files
 */
+#include "comrv_config.h"
 #include "comrv.h"
 #include "comrv_api.h"
+#ifdef D_COMRV_RTOS_SUPPORT
+   #include "rtosal_types.h"
+   #include "rtosal_macros.h"
+   #include "rtosal_interrupt_api.h"
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 /**
 * definitions
@@ -116,13 +123,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)
 #endif /* D_COMRV_CRC */
 
-#ifdef D_COMRV_DEBUG
-#define M_COMRV_ASSERT(conditionMet) if (conditionMet) \
-                                     { while(1);}
-#else
-#define M_COMRV_ASSERT(conditionMet)
-#endif /* D_COMRV_DEBUG */
-
 /* calculate the cache address for a given cache entry */
 #define M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucEntryIndex) ((u08_t*)pComrvCacheBaseAddress + (ucEntryIndex<<9))
 
@@ -137,13 +137,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* Place a label, the debugger will stop here to query the overlay manager current status.  */
 #define M_COMRV_DEBUGGER_HOOK_SYMBOL()            asm volatile (".globl _ovly_debug_event\n" \
                                                       "_ovly_debug_event:");
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
-#define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
-                                                stError.uiToken    = token; \
-                                                comrvErrorHook(&stError);
-#else
-#define M_COMRV_ERROR(stError,errorNum,token)
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
 
 /**
 * types
@@ -169,12 +162,20 @@ extern void  comrvEntryDisable        (void);
 extern void  comrvErrorHook           (const comrvErrorArgs_t* pErrorArgs);
 extern void  comrvMemcpyHook          (void* pDest, void* pSrc, u32_t uiSizeInBytes);
 extern void* comrvLoadOvlayGroupHook  (comrvLoadArgs_t* pLoadArgs);
+#ifdef D_COMRV_RTOS_SUPPORT
+extern u32_t comrvEnterCriticalSectionHook(void);
+extern u32_t comrvExitCriticalSectionHook(void);
+#endif /* D_COMRV_RTOS_SUPPORT */
 #ifdef D_COMRV_CRC
 extern u32_t comrvCrcCalcHook         (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult);
 #endif /* D_COMRV_CRC */
 #ifdef D_COMRV_FW_INSTRUMENTATION
 extern void  comrvInstrumentationHook (const comrvInstrumentationArgs_t* pInstArgs);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
+
+#ifdef D_COMRV_RTOS_SUPPORT
+extern void comrv_ret_from_callee(void);
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 /**
 * global variables
@@ -186,8 +187,10 @@ D_COMRV_DATA_SECTION static comrvStackFrame_t g_stComrvStackPool[D_COMRV_CALL_ST
 
 /* symbols defining the start and end of the overlay cache */
 extern void *__OVERLAY_CACHE_START__, *__OVERLAY_CACHE_END__;
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
 /* symbols defining the start and end of the overlay managment tables */
 extern void *__OVERLAY_MULTIGROUP_TABLE_START,  *__OVERLAY_GROUP_TABLE_START;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
 /**
 * COM-RV initialization function
@@ -207,8 +210,8 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 
 #ifdef D_COMRV_VERIFY_INIT_ARGS
    /* verify cache configuration - size and alignment to D_COMRV_OVL_GROUP_SIZE_MIN */
-   if (M_COMRV_BUILTIN_EXPECT(uiCacheSizeInBytes != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
-       (M_COMRV_CACHE_SIZE_IN_BYTES()) % D_COMRV_OVL_GROUP_SIZE_MIN, 0))
+   if (M_COMRV_BUILTIN_EXPECT(((u32_t)&__OVERLAY_CACHE_END__ - (u32_t)&__OVERLAY_CACHE_START__) != D_COMRV_OVL_CACHE_SIZE_IN_BYTES ||
+       (M_COMRV_CACHE_SIZE_IN_BYTES()) % D_COMRV_OVL_GROUP_SIZE_MIN, 0) )
    {
       M_COMRV_ERROR(stErrArgs, D_COMRV_INVALID_INIT_PARAMS_ERR, D_COMRV_INVALID_TOKEN);
    }
@@ -252,12 +255,13 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
    /* set the address of COMRV stack pool register t4 */
    M_COMRV_WRITE_POOL_REG(pStackPool);
 
-#ifndef D_COMRV_USE_OS
+#ifndef D_COMRV_RTOS_SUPPORT
    /* in baremetal applications, stack register is initialized here;
       this must be done after the stack pool register was
       initialized (M_COMRV_WRITE_POOL_REG) */
    comrvInitApplicationStack();
-#endif /* D_COMRV_USE_OS */
+#endif /* D_COMRV_RTOS_SUPPORT */
+
    /* check if end user enables loading offset and multi group tables */
    if (pInitArgs->ucCanLoadComrvTables != 0)
    {
@@ -304,6 +308,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    u32_t                uiTemp;
    u16_t                usSelectedMultiGroupEntry;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+#ifdef D_COMRV_RTOS_SUPPORT
+   u32_t                ret;
+#endif /* D_COMRV_RTOS_SUPPORT */
 
    /* read the requested token value (t5) */
    M_COMRV_READ_TOKEN_REG(unToken.uiValue);
@@ -611,6 +618,9 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
    u08_t               ucAccumulatedSize = 0, ucIndex = 0;
    u08_t               ucEntryIndex, ucNumberOfCandidates = 0;
    u32_t               uiEvictCandidateMap[D_COMRV_EVICT_CANDIDATE_MAP_SIZE];
+#if defined(D_COMRV_ASSERT_ENABLED) && defined(M_COMRV_ERROR_NOTIFICATIONS)
+   comrvErrorArgs_t   stErrArgs;
+#endif /* D_COMRV_ASSERT_ENABLED && M_COMRV_ERROR_NOTIFICATIONS */
 
    /* first lets clear the uiCandidates list */
    comrvMemset(uiEvictCandidateMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
@@ -646,7 +656,8 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 
    /* make sure we don't have more than the maximum available entries
       to accommodate one group */
-   M_COMRV_ASSERT(ucNumberOfCandidates > (D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN));
+   M_COMRV_ASSERT((ucNumberOfCandidates > (D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN)),
+                  0, D_COMRV_INTERNAL_ERR, D_COMRV_INVALID_TOKEN);
 
    /* now we have eviction uiCandidates bitmap of cache entries - lets create
       an output sorted list of these entries */
@@ -787,10 +798,7 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
    comrvStackFrame_t *pStackPool, *pStackFrame;
 
    /* disable ints */
-   // TODO: disable ints
-   // TODO: with rtosal, implement condition check if scheduler
-   //       is running or not, if running use RTOS sync api
-
+   M_COMRV_DISABLE_INTS();
    /* read stack pool register (t4) */
    M_COMRV_READ_POOL_REG(pStackPool);
    /* save the address of the next available stack frame */
@@ -799,6 +807,8 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
    pStackPool = (comrvStackFrame_t*)((u08_t*)pStackPool + pStackPool->ssOffsetPrevFrame);
    /* write the new stack pool address */
    M_COMRV_WRITE_POOL_REG(pStackPool);
+   /* enable ints */
+   M_COMRV_ENABLE_INTS();
    /* set the address of COMRV stack in t3 */
    M_COMRV_WRITE_STACK_REG(pStackFrame);
    /* mark the last stack frame */
@@ -806,11 +816,6 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
    /* clear token field - bit 0 must be 0 to indicate we came
       from non overlay function */
    pStackFrame->uiCalleeToken = 0;
-
-   /* enable ints */
-   // TODO: enable ints
-   // TODO: with rtosal, implement condition check if scheduler
-   //       is running or not, if running use RTOS sync api
 }
 
 /**
@@ -896,25 +901,31 @@ D_COMRV_TEXT_SECTION
 u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockState_t eLockState)
 {
    u16_t usSearchResultIndex;
-   comrvOverlayToken_t stToken;
+   comrvOverlayToken_t unToken;
+#ifdef D_COMRV_RTOS_SUPPORT
+   u32_t              ret;
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
+   comrvErrorArgs_t   stErrArgs;
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_RTOS_SUPPORT */
 
    /* Lets read the token from the given address (address is a thunk).
       The first instruction is lui so we need to decode the upper 20
       bits of the instruction */
-   stToken.uiValue = *((u32_t*)pOvlFuncAddress) & D_COMRV_LUI_TOKEN_20_BITS_MASK;
+   unToken.uiValue = *((u32_t*)pOvlFuncAddress) & D_COMRV_LUI_TOKEN_20_BITS_MASK;
    /* next instruction we decode is the addi - take the upper 12 bits */
-   stToken.uiValue |= ((*(((u32_t*)pOvlFuncAddress+1)) & D_COMRV_ADDI_TOKEN_12_BITS_MASK) >> D_COMRV_ADDI_TOKEN_SHMT);
+   unToken.uiValue |= ((*(((u32_t*)pOvlFuncAddress+1)) & D_COMRV_ADDI_TOKEN_12_BITS_MASK) >> D_COMRV_ADDI_TOKEN_SHMT);
 
-   /* disable ints */
-   // TODO: disable ints
-   // TODO: with rtosal, implement condition check if scheduler
-   //       is running or not, if running use RTOS sync api
+   /* enter critical section */
+   M_COMRV_ENTER_CRITICAL_SECTION();
 
    /* now search for the group */
-   usSearchResultIndex = comrvSearchForLoadedOverlayGroup(stToken);
+   usSearchResultIndex = comrvSearchForLoadedOverlayGroup(unToken);
    /* check if the group isn't loaded */
    if (M_COMRV_BUILTIN_EXPECT(usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND,0))
    {
+      /* exit critical section */
+      M_COMRV_EXIT_CRITICAL_SECTION();
       /* we can't lock an unloaded group */
       return D_COMRV_LOCK_UNLOCK_ERR;
    }
@@ -922,10 +933,8 @@ u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockStat
    /* group is loaded so lets lock/unlock it */
    g_stComrvCB.stOverlayCache[usSearchResultIndex].unProperties.stFields.ucLocked = eLockState;
 
-   /* enable ints */
-   // TODO: enable ints
-   // TODO: with rtosal, implement condition check if scheduler
-   //       is running or not, if running use RTOS sync api
+   /* exit critical section */
+   M_COMRV_EXIT_CRITICAL_SECTION();
 
    /* lock/unlock was successful */
    return D_COMRV_SUCCESS;
@@ -977,3 +986,50 @@ D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
 #endif /* M_COMRV_ERROR_NOTIFICATIONS */
    M_COMRV_ERROR(stErrArgs, D_COMRV_INVOKED_WHILE_DISABLED, D_COMRV_INVALID_TOKEN);
 }
+
+#ifdef D_COMRV_RTOS_SUPPORT
+
+/**
+* save comrv stack in case of context switch
+*
+* @param None
+*
+* @return None
+*/
+void comrvSaveContextSwitch(volatile u32_t* pMepc, volatile u32_t* pRegisterT3)
+{
+   comrvStackFrame_t *pStackPool, *pStackFrame, *pAppStack;
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
+   comrvErrorArgs_t   stErrArgs;
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+
+   /* make sure we are in interrupt context */
+   M_COMRV_ASSERT(rtosalIsInterruptContext() != 0 , 1, D_COMRV_INTERNAL_ERR, 0);
+
+   /* check if mepc is in range of the overlay cache - means that interruption
+      occurred during execution of an overlay function */
+   if ((*pMepc - (u32_t)&__OVERLAY_CACHE_START__) < D_COMRV_OVL_CACHE_SIZE_IN_BYTES )
+   {
+      /* read comrv stack pool register (t4) */
+      M_COMRV_READ_POOL_REG(pStackPool);
+      /* get the address of the next available stack frame */
+      pStackFrame = pStackPool;
+      /* update the next stack pool address */
+      pStackPool = (comrvStackFrame_t*)((u08_t*)pStackPool + pStackPool->ssOffsetPrevFrame);
+      /* write the new comrv stack pool address */
+      M_COMRV_WRITE_POOL_REG(pStackPool);
+      /* read comrv application stack */
+      pAppStack = (comrvStackFrame_t*)*pRegisterT3;
+      /* update the offset to new stack frame */
+      pStackFrame->ssOffsetPrevFrame = (s32_t)pAppStack - (s32_t)pStackFrame;
+      /* save the return address */
+      pStackFrame->uiCallerReturnAddress = *pMepc;
+      /* set the address of COMRV stack in t3 */
+      *pRegisterT3 = (u32_t)pStackFrame;
+      /* save new mepc to point to comrv entry label 'comrv_ret_from_callee'
+         so when 'context switch' back to this task, we will first make sure
+         the overlay is loaded */
+      *pMepc = (u32_t)&comrv_ret_from_callee;
+   }
+}
+#endif /* D_COMRV_RTOS_SUPPORT */

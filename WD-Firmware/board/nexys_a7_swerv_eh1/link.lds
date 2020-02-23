@@ -74,7 +74,7 @@ SECTIONS
      address of .ovlgrpdata to this address */ 
   .reserved_ovl : ALIGN(4)
   {
-    __OVERLAY_STORAGE_START__ADDRESS__ = .;
+    _OVERLAY_STORAGE_START_ADDRESS_ = .;
     . = 0xe00;
   } > ram : ram_load
 
