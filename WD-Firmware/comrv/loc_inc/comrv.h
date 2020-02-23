@@ -40,11 +40,11 @@
 #define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
 
 #ifdef M_COMRV_ERROR_NOTIFICATIONS
-#define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
-                                                stError.uiToken    = token; \
-                                                comrvErrorHook(&stError);
+   #define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
+                                                   stError.uiToken    = token; \
+                                                   comrvErrorHook(&stError);
 #else
-#define M_COMRV_ERROR(stError,errorNum,token)
+   #define M_COMRV_ERROR(stError,errorNum,token)
 #endif /* M_COMRV_ERROR_NOTIFICATIONS */
 
 #ifdef D_COMRV_ASSERT_ENABLED
