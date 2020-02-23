@@ -63,11 +63,8 @@
 */
 void pspInterruptsDisable(u32_t *pOutPrevIntState)
 {
-	/* Store the interrupts state as they now */
-	*pOutPrevIntState = (M_PSP_READ_CSR(D_PSP_MSTATUS) & (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
-
-	/* Disable interrupts (all privilege levels) */
-    M_PSP_CLEAR_CSR(D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
+	/* Disable interrupts (all privilege levels). Status of mstatus CSR before the 'disable' is saved in pOutPrevIntState */
+    M_PSP_CLEAR_CSR(*pOutPrevIntState, D_PSP_MSTATUS, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
 }
 
 /**
