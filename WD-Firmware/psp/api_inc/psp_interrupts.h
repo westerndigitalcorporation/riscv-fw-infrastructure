@@ -35,10 +35,10 @@
 * macros
 */
 
-/* Enable/Disable specific interrupt */
+/* Disable/Enable specific interrupt */
 /* __mie_interrupt_ is D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
-#define M_PSP_ENABLE_INTERRUPT(__mie_interrupt__)  M_PSP_SET_CSR(D_PSP_MIE, __mie_interrupt__);
-#define M_PSP_DISBLE_INTERRUPT(__mie_interrupt__)  M_PSP_CLEAR_CSR(D_PSP_MIE, __mie_interrupt__);
+#define M_PSP_DISBLE_INTERRUPT_ID(__mie_interrupt__)  u32_t tmp; M_PSP_CLEAR_CSR(tmp, D_PSP_MIE, __mie_interrupt__);
+#define M_PSP_ENABLE_INTERRUPT_ID(__mie_interrupt__)  M_PSP_SET_CSR(D_PSP_MIE, __mie_interrupt__);
 
 /* Save interrupts state (all privilege levels) in a local variable */
 #define M_PSP_INT_VAR_DECLARE()    u32_t INT_PREV_STATE = 0
