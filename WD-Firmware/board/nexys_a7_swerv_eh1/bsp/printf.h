@@ -18,6 +18,7 @@
 
 #include "mem_map.h"
 
-int	printfNexys(const char* format, ... );
+int	f_printfNexys(const char* format, ... );
+void f_uartInit(void);
 
 #endif //__PRINTF_H

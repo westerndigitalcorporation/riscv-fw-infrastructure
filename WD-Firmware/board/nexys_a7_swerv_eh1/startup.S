@@ -28,6 +28,38 @@
 	.type   _start, @function
     .global rtosal_vect_table
 
+
+	.equ REG_BRDL, (4*0x00) /* Baud rate divisor (LSB)        */
+    .equ REG_BRDH, (4*0x01) /* Baud rate divisor (MSB)        */
+    .equ REG_RDR, (4*0x00)  /* Receiver data reg.             */
+    .equ REG_MDC, (4*0x04)  /* Modem control reg.             */
+    .equ REG_IER, (4*0x01)  /* Interrupt enable reg.          */
+    .equ REG_IIR, (4*0x02)  /* Interrupt ID reg.              */
+    .equ REG_FCR, (4*0x02)  /* FIFO control reg.              */
+    .equ REG_LCR, (4*0x03)  /* Line control reg.              */
+    .equ REG_MDC, (4*0x04)  /* Modem control reg.             */
+    .equ REG_LSR, (4*0x05)  /* Line status reg.               */
+    .equ REG_MSR, (4*0x06)  /* Modem status reg.              */
+    .equ REG_DLF, (4*0xC0)  /* Divisor Latch Fraction         */
+
+    .equ LCR_CS8, 0x03   /* 8 bits data size */
+    .equ LCR_1_STB, 0x00 /* 1 stop bit */
+    .equ LCR_PDIS, 0x00  /* parity disable */
+
+    .equ MCR_DTR, 0x01  /* dtr output */
+    .equ MCR_RTS, 0x02  /* rts output */
+    .equ MCR_OUT2, 0x08 /* output #2 */
+
+    .equ LSR_THRE, 0x20
+    .equ FCR_FIFO, 0x01    /* enable XMIT and RCVR FIFO */
+    .equ FCR_RCVRCLR, 0x02 /* clear RCVR FIFO */
+    .equ FCR_XMITCLR, 0x04 /* clear XMIT FIFO */
+    .equ FCR_MODE0, 0x00 /* set receiver in mode 0 */
+    .equ FCR_MODE1, 0x08 /* set receiver in mode 1 */
+    .equ FCR_FIFO_8, 0x80  /* 8 bytes in RCVR FIFO */
+
+
+
 _start:
 	#clear minstret
     csrw minstret, zero 
@@ -121,9 +153,10 @@ _start:
 #OS	csrr a0, mhartid
 #OS	li   a1, 1
 #OS 1:  bgeu a0, a1, 1b
-    # argc = argv = 0 
+    # argc = argv = 0 t0
     li a0, 0
     li a1, 0
+
     call main
     
     #[OS]: no need for exit, just endless loop here.....was: tail atexit

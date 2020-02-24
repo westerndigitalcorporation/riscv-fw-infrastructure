@@ -24,7 +24,8 @@
 /**
 * include files
 */
-#include "psp_pragmas.h"
+#include "psp_types.h"
+#include "psp_api.h"
 
 #ifdef D_HI_FIVE1
    #include "encoding.h"
@@ -112,4 +113,12 @@ void demoOutputMsg(const void *str, size_t size);
 * */
 void demoOutputToggelLed(const int ledAct);
 
+/**
+* demoOutputLed - sets LED output on/off
+*
+* const uiOnOffMode = 0/1
+*
+*
+* */
+void demoOutpuLed(const u08_t ucOnOffMode);
 
