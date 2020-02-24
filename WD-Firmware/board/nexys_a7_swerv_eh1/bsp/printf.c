@@ -29,10 +29,10 @@
 /*---------------------------------------------------*/
 #if 0
 
-#define UART_RX_DATA	(*((volatile unsigned int*)(UART_BASE_ADDRESS + 0x0)))
-#define UART_TX_DATA	(*((volatile unsigned int*)(UART_BASE_ADDRESS + 0x4)))
-#define UART_STAT		(*((volatile unsigned int*)(UART_BASE_ADDRESS + 0x8)))
-#define UART_CTRL 		(*((volatile unsigned int*)(UART_BASE_ADDRESS + 0xC)))
+#define UART_RX_DATA	(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x0)))
+#define UART_TX_DATA	(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x4)))
+#define UART_STAT		(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x8)))
+#define UART_CTRL 		(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0xC)))
 
 #define UART_TX_BUSY	(1<<3)
 #define UART_RX_AVAIL	(1<<0)
@@ -41,12 +41,12 @@
 
 
 
-#define M_UART_WR_REG_BRDL(_VAL_) (*((volatile unsigned int*)(UART_BASE_ADDRESS + (4*0x00) )) = _VAL_) /* Baud rate divisor (LSB)        */
-#define M_UART_WR_REG_IER(_VAL_)  (*((volatile unsigned int*)(UART_BASE_ADDRESS + (4*0x01) )) = _VAL_) /* Interrupt enable reg.          */
-#define M_UART_WR_REG_FCR(_VAL_)  (*((volatile unsigned int*)(UART_BASE_ADDRESS + (4*0x02) )) = _VAL_) /* FIFO control reg.              */
-#define M_UART_WR_REG_LCR(_VAL_)  (*((volatile unsigned int*)(UART_BASE_ADDRESS + (4*0x03) )) = _VAL_) /* Line control reg.              */
+#define M_UART_WR_REG_BRDL(_VAL_) (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x00) )) = _VAL_) /* Baud rate divisor (LSB)        */
+#define M_UART_WR_REG_IER(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x01) )) = _VAL_) /* Interrupt enable reg.          */
+#define M_UART_WR_REG_FCR(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x02) )) = _VAL_) /* FIFO control reg.              */
+#define M_UART_WR_REG_LCR(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x03) )) = _VAL_) /* Line control reg.              */
 
-#define M_UART_RD_REG_LSR()  (*((volatile unsigned int*)(UART_BASE_ADDRESS + (4*0x05) )))              /* Line status reg.               */
+#define M_UART_RD_REG_LSR()  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x05) )))              /* Line status reg.               */
 
 #define D_UART_LCR_CS8         (0x03)  /* 8 bits data size */
 #define D_UART_LCR_1_STB       (0x00)  /* 1 stop bit */
@@ -61,7 +61,7 @@
 #define D_UART_FCR_FIFO_8_BIT  (0x80)  /* 8 bytes in RCVR FIFO */
 #define D_UART_DLAB_BIT        (0x80)  /* DLAB bit in LCR */
 
-#define M_UART_WR_CH(_CHAR_) (*((volatile unsigned int*)(UART_BASE_ADDRESS + (0x00) )) = _CHAR_)
+#define M_UART_WR_CH(_CHAR_) (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (0x00) )) = _CHAR_)
 
 /*---------------------------------------------------*/
 /* strlen											 */

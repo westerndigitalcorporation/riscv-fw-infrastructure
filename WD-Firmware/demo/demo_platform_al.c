@@ -33,6 +33,7 @@
 #elif defined(D_NEXYS_A7)
    #include "printf.h"
    #include "mem_map.h"
+   #include "version.h"
    #include "psp_macros.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
@@ -96,9 +97,13 @@ void demoUartInit(void)
 	/* Empty implementation */
 #endif
 #ifdef D_NEXYS_A7
+	swervolfVersion_t stSwervolfVersion;
+
+	f_getSwervolfVersion(&stSwervolfVersion);
+
 	/* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
 	 * when running with Whisper */
-    u32_t* pUartState = (u32_t*)(UART_BASE_ADDRESS+0x8);
+    u32_t* pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
 	*pUartState = 0 ;
 
 	/* init uart */
@@ -108,6 +113,18 @@ void demoUartInit(void)
 	f_printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
 	f_printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
 	f_printfNexys("------------------------------------------");
+	f_printfNexys("SweRVolf version %d.%d%d (SHA %08x) (dirty %d)",
+                   stSwervolfVersion.ucMajor,
+                   stSwervolfVersion.ucMinor,
+                   stSwervolfVersion.ucRev,
+                   stSwervolfVersion.ucSha,
+                   stSwervolfVersion.ucDirty);
+	f_printfNexys("------------------------------------------");
+
+
+
+
+
 #endif
 }
 
@@ -191,7 +208,7 @@ void demoOutpuLed(const u08_t ucOnOffMode)
 #ifdef D_NEXYS_A7
 	M_PSP_ASSERT(uiOnOffMode>1);
 
-	M_PSP_WRITE_REGISTER_32(LED_BASE_ADDRESS, ucOnOffMode);
+	M_PSP_WRITE_REGISTER_32(D_LED_BASE_ADDRESS, ucOnOffMode);
 #endif
 }
 
