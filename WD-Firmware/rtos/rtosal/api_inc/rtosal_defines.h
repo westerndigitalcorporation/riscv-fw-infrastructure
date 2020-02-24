@@ -147,5 +147,18 @@
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
+#ifdef D_USE_FREERTOS
+   #define D_RTOSAL_SCHEDULER_NOT_STARTED        0
+   #define D_RTOSAL_SCHEDULER_RUNNING            1
+   #define D_RTOSAL_SCHEDULER_SUSPENDED          2
+   #define D_RTOSAL_SCHEDULER_UNKNOWN_STATE      3
+#elif D_USE_THREADX
+   #define D_RTOSAL_SCHEDULER_NOT_STARTED        TBD_TAKE_VAL_FROM_TX
+   #define D_RTOSAL_SCHEDULER_RUNNING            TBD_TAKE_VAL_FROM_TX
+   #define D_RTOSAL_SCHEDULER_SUSPENDED          TBD_TAKE_VAL_FROM_TX
+   #define D_RTOSAL_SCHEDULER_UNKNOWN_STATE      TBD_TAKE_VAL_FROM_TX
+#else
+   #error "Add appropriate RTOS definitions"
+#endif /* #ifdef D_USE_FREERTOS */
 
 #endif /* __RTOSAL_DEFINES_H__ */
