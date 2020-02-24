@@ -142,7 +142,8 @@ We provide several platforms to work with, please follow the instructions for th
             $ groups
             ... plugdev ...
 	- Power off/on Debian station
-#	
+#
+#
 - #### Setting up Nexys-A7 for SweRV - SweRVolf 
 
     SweRVolf is an fpga create by Olof Kindgren under CHIPS-Alliance
