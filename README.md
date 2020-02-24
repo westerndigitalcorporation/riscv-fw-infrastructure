@@ -55,6 +55,7 @@ WD-Firmware
           ├── hifive-1                        
           ├── ihfive-unleashed (not supported yet)
           ├── nexys_a7_swerv_eh1 (Support for SweRV eh1) 
+          ├── nexys_a7_swerv_eh1_swervolf (Support for SweRV eh1 with full SoC) 
           ├── whisper (Support for SweRV eh1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
@@ -108,6 +109,7 @@ WD-Firmware
     	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
     	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
     	- Press *'Finish'* button
+&nbsp;
 - #### Build - compile and link 
     - You will need to choose a specific ***demo*** for building a full solution:
     
@@ -122,9 +124,9 @@ WD-Firmware
     - Since the building process use SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
 
 ### Platforms Downloading & debugging 
-- We provide several platforms to work with, please follow the instructions for the one you preferred.
+We provide several platforms to work with, please follow the instructions for the one you preferred.
 
-    #### Setting up Hifive1 - FTDI over USB (taken from SiFive Freedom Studio Manual v1p6).
+- #### Setting up Hifive1 - FTDI over USB (taken from SiFive Freedom Studio Manual v1p6).
 	- Connect to your HiFive1 debug interface and type "lsusb" to see if FT2232C is connected:
 
             $ lsusb
@@ -141,10 +143,24 @@ WD-Firmware
             $ groups
             ... plugdev ...
 	- Power off/on Debian station
-    #### Setting up Nexys-A7 for SweRV
+&nbsp;
+- #### Setting up Nexys-A7 for SweRV - SweRVolf 
+
+    SweRVolf is an fpga create by Olof Kindgren under CHIPS-Alliance
+    If you wish to know more please use this link: [Cores-SweRVolf](https://github.com/chipsalliance/Cores-SweRVolf)
     
+    - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
+    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swervolf_0.bit*** to uSD device (locate it at the uSD root)
+    	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
+		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
+		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done
+		- Wait for ORANGE led to be off, once off the board is ready to be used 
+&nbsp;
+- #### Setting up Nexys-A7 for SweRV
+
     Since Nexys-A7 is an FPGA platform it need special handling...
-    - ***Prerequisite***: Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
+    - ***Prerequisite***: 
+    Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
         - To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
         - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
         - Pin layout for Nexys Pmod JD header with Olimex:
@@ -156,32 +172,36 @@ WD-Firmware
                 G4 = TMS
                 G2 = nRST
 
-    - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
+    - ***FPGA image file loading***: 
+    for loading the FPGA bit file, do the following steps:
     	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swerv_eh1_reference_design.bit***
 	   to uSD device (locate it at the uSD root)
-    	- Attach the uSD device to the Nexys-A7 board (uSD slot is on board's bottom)
+    	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done.
-
-    #### Setting up ISS (works as simulator for EH1)
+		- Wait for ORANGE led to be off, once off the board is ready to be used
+&nbsp;
+- #### Setting up ISS (works as simulator for EH1)
     
     There is nothing to set for SweRV ISS, just select debugger luncher (following next)..
-
-
-    
-- #### Eclipse MCU Debug:
+&nbsp; 
+- #### Platforms Debug on Eclipse MCU Debug:
     - Select from the ***'Eclipse MCU'*** menu bar ***'Run' -> 'Debug Configurations...'***; 
     - Choose the platform you wish to runs on, from **'left main windows'** menu
     - Current support:
         ```javascript
         - hifive1                              <-- HiFive Eval board
         - nexys_a7_Swerv1_eh1                  <-- Nexys A7 digilent FPGA board running SweRV EH1
+        - nexys_a7_Swerv1_eh1_swerolf          <-- Nexys A7 digilent FPGA board running SweRV EH1 
+                                                   with full System on chip. 
+                                                   From chipsalliance/Cores-SweRVolf
         - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator 
         ```
+
 ### Adding new source modules
 
 The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
-
+&nbsp;
 # Supporting GCC Releases
 - #### RISCV GCC 8.2
 	- Initial RISCV official 8.2 GCC release
@@ -193,8 +213,9 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 	- RISCV official 9.2 GCC release
 	- WD Code density improvement and optimization patches
 
+
 # Supporting LLVM Releases
 - #### RISCV LLVM/Clang 10.0.0
 	- Initial LLVM/Clang official 10.0.0 release
-	- COMRV support modules
-	- GCC Binutils 2.32.51.20190122 supporting COMRV
+	- ComRV support modules
+	- GCC Binutils-gdb 2.32.51.20190122 supporting ComRV
