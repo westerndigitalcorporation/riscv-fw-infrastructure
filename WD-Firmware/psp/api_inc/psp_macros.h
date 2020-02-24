@@ -111,6 +111,10 @@
 #define M_PSP_CLEAR_CSR(__tmp, x, bit)  _CLEAR_CSR_INTERMEDIATE_(__tmp, x, bit)
 /*************************************************************************/
 
+/** Nati - TO DO: add more macros as the above ones. using single instructions that does read & clear/set/write etc. **/
+
+
+
 #define M_PSP_EBREAK()              asm volatile ("ebreak" : : : );
 #define M_PSP_ECALL()               asm volatile ("ecall" : : : );
 #define M_PSP_NOP()                 asm volatile ("nop")

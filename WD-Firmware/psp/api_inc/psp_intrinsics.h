@@ -42,7 +42,7 @@
 
 #define D_PSP_INLINE    static inline
 
-/* The following CSRs are known to be intrinsics in GCC and LLVM (It does not mean they are the only ones..) */
+/* The following CSRs are known to be intrinsics values in GCC and LLVM. Those are not instructions */
 #define D_PSP_MISA    misa
 #define D_PSP_MTVEC   mtvec
 #define D_PSP_MSTATUS mstatus

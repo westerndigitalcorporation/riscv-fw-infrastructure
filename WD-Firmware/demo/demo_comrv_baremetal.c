@@ -183,7 +183,7 @@ void demoStart(void)
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    /* Register interrupt vector */
-   M_PSP_WRITE_CSR(D_PSP_MTVEC, &psp_vect_table);
+   M_PSP_WRITE_CSR(D_PSP_MTVEC_ADDR, &psp_vect_table);
 
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
