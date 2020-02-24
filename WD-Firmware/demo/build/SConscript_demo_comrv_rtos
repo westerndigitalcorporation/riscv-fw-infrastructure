@@ -18,54 +18,34 @@ import os
 import utils
 Import('Env')
 
-strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'bsp')
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], Env['DEMO_NAME'])+'_demo'
 utils.fnCreateFolder(strOutDir)
-
-strBspBase=os.path.join('board', 'hifive1', 'bsp')
 
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
-
 listCFiles=[
-   (os.path.join(strBspBase, 'env', 'freedom-e300-hifive1', 'init.c')    , os.path.join(strOutDir, 'init.o')),
-   (os.path.join(strBspBase, 'drivers', 'plic', 'plic_driver.c'), os.path.join(strOutDir, 'plic_driver.o'))
+   (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
+   (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
+   (os.path.join('demo' , 'demo_comrv_rtos.c'), os.path.join(strOutDir, 'demo_comrv_rtos.o')),
 ]
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
-listAssemblyFiles=[
-   (os.path.join('board', 'hifive1', 'start.S'), os.path.join(strOutDir, 'start.o')),
-]
+listAssemblyFiles=[]
 
 # compiler directivs
 listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_HI_FIVE1', 'D_MTIME_ADDRESS=0x0200BFF8', 'D_MTIMECMP_ADDRESS=0x02004000',
-                      'D_CLOCK_RATE=32768']
-listCompilationDefines = [ ] + Env['PUBLIC_DEF']
+listCompilationDefines = [] + Env['PUBLIC_DEF']
 
 # public includes
-Env['PUBLIC_INC'] += [ 
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'include', 'sifive'),
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'include', 'sifive', 'devices'),
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'env'),
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'env', 'freedom-e300-hifive1'),
-]
-
-# privte includes
-listIncPaths = [ 
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'include'),
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers'),
-  os.path.join(Env['ROOT_DIR'], strBspBase, 'drivers', 'plic')
-] + Env['PUBLIC_INC']
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
+listIncPaths = [ ] + Env['PUBLIC_INC']
 
 if not Env["Scan"]:
-  # add a library to the link command board/hifive1/psb/libwrap-hifive1.a
-  Env['TARGET_LIBS'] += ['wrap-hifive1']
-
-  # c file objects
+  # for objects
   listObjects = []
   for tplFile in listCFiles:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
@@ -74,8 +54,10 @@ if not Env["Scan"]:
   for tplFile in listAssemblyFiles:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
-  # create the bsp library from he objects
-  objBspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'bsp.a'), source=listObjects)
+  # for libraries
+  objDemoRtosaolLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
 
-  # return the bsp library
-  Return('objBspLib')
+  #print Env.Dump()
+
+  # return the demo lib
+  Return('objDemoRtosaolLib')

@@ -14,33 +14,42 @@
 #* See the License for the specific language governing permissions and
 #* limitations under the License.
 #*/
-
+import os
 
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "freertos"
-    self.rtos_core     = "freertos"
-    self.toolchain     = ""
-    self.toolchainPath = ""
-    self.strGrpFile    = ""
-    self.strComrvCacheSize = "0"
+    self.strDemoName = "comrv_rtos"
+    self.rtos_core   = ""
+    self.toolchain   = ""
+    self.strGrpFile = os.path.join("..", "comrv-rtos.csv")
+    self.strComrvCacheSize = "1024"
+    self.strLinkFilePrefix = ''
 
     self.public_defs = [
         'D_USE_RTOSAL',
+        'D_MTIME_ADDRESS=0x0200BFF8',
+        'D_MTIMECMP_ADDRESS=0x02004000',
+        'D_CLOCK_RATE=32768',
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
-        'D_USE_FREERTOS'
+        'D_USE_FREERTOS',
     ]
-   
+
     self.listSconscripts = [
       'freertos',
       'rtosal',
-      'demo_rtosal'
+      'demo_comrv_rtos',
+      'comrv_rtos',
     ]
 
     self.listDemoSpecificCFlags = [
+      # -fcomrv is used to enable llvm support for overlay functions/data
+      '-fcomrv',
     ]
 
     self.listDemoSpecificLinkerFlags = [
+      # provide user defined grouping file (file name is in self.strGrpFile))
+      '-Wl,--grouping-file=' + self.strGrpFile,
+      # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]

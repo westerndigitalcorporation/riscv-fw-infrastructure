@@ -33,12 +33,6 @@
 /**
 * macros
 */
-.macro m_COMRV_ENABLE_INTS
-.endm
-
-.macro m_COMRV_DISABLE_INTS
-.endm
-
 .macro M_COMRV_SAVE_ARGS_REGS
    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(sp)
@@ -62,3 +56,22 @@
    M_PSP_LOAD  a7, D_COMRV_A7_REG_STACK_OFFSET_TMP(sp)
    M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
 .endm
+
+#ifdef D_COMRV_RTOS_SUPPORT
+.macro m_COMRV_ENABLE_INTS
+   M_PSP_ENABLE_INTERRUPTS
+.endm
+#else
+.macro m_COMRV_ENABLE_INTS
+.endm
+#endif /* D_COMRV_RTOS_SUPPORT */
+
+#ifdef D_COMRV_RTOS_SUPPORT
+.macro m_COMRV_DISABLE_INTS
+   M_PSP_DISABLE_INTERRUPTS
+.endm
+#else
+.macro m_COMRV_DISABLE_INTS
+.endm
+#endif /* D_COMRV_RTOS_SUPPORT */
+

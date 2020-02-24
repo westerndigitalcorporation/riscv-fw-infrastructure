@@ -39,8 +39,43 @@
 #define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
 #define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
 
-#define M_COMRV_ENTER_CRITICAL_SECTION()
-#define M_COMRV_EXIT_CRITICAL_SECTION()
+#ifdef M_COMRV_ERROR_NOTIFICATIONS
+   #define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
+                                                   stError.uiToken    = token; \
+                                                   comrvErrorHook(&stError);
+#else
+   #define M_COMRV_ERROR(stError,errorNum,token)
+#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+
+#ifdef D_COMRV_ASSERT_ENABLED
+   #ifdef M_COMRV_ERROR_NOTIFICATIONS
+      #define M_COMRV_ASSERT_ACTION(error,tokenVal)      M_COMRV_ERROR(stErrArgs,error,tokenVal);
+   #else
+      #define M_COMRV_ASSERT_ACTION(error,tokenVal)      while(1);
+   #endif /* M_COMRV_ERROR_NOTIFICATIONS */
+   #define M_COMRV_ASSERT(expression, expectedVlue, error, tokenVal)  if (M_COMRV_BUILTIN_EXPECT((expression) != (expectedVlue), 0)) \
+                                                                      { \
+                                                                         M_COMRV_ASSERT_ACTION(error,tokenVal); \
+                                                                      }
+#else
+   #define M_COMRV_ASSERT(expression, expectedVlue, error, tokenVal)
+#endif /* D_COMRV_ASSERT_ENABLED */
+
+#ifdef D_COMRV_RTOS_SUPPORT
+   // TODO: replace M_PSP_ with new interface
+   #define M_COMRV_DISABLE_INTS()   M_PSP_DISABLE_INTERRUPTS()
+   #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
+   #define M_COMRV_ENTER_CRITICAL_SECTION()  ret = comrvEnterCriticalSectionHook(); \
+                                             M_COMRV_ASSERT(ret, D_COMRV_SUCCESS, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken.uiValue);
+   #define M_COMRV_EXIT_CRITICAL_SECTION()   ret = comrvExitCriticalSectionHook(); \
+                                             M_COMRV_ASSERT(ret, D_COMRV_SUCCESS, D_COMRV_EXIT_CRITICAL_SECTION_ERR, unToken.uiValue);
+#else
+   #define M_COMRV_ENTER_CRITICAL_SECTION()
+   #define M_COMRV_EXIT_CRITICAL_SECTION()
+   #define M_COMRV_DISABLE_INTS()
+   #define M_COMRV_ENABLE_INTS()
+#endif /* D_COMRV_RTOS_SUPPORT */
+
 
 /* M_PSP_BUILTIN_EXPECT instruction provides branch
    prediction information. The condition parameter is the expected
