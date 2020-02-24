@@ -109,6 +109,7 @@ WD-Firmware
     	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
     	- In the next Import window *Select root directory* -> *Browse*  and choose the infra-riscv-fw/WD-Firmware/ you've downloaded in 'Getting the firmware sources' section
     	- Press *'Finish'* button
+&nbsp;
 - #### Build - compile and link 
     - You will need to choose a specific ***demo*** for building a full solution:
     
@@ -142,8 +143,7 @@ We provide several platforms to work with, please follow the instructions for th
             $ groups
             ... plugdev ...
 	- Power off/on Debian station
-#
-#
+&nbsp;
 - #### Setting up Nexys-A7 for SweRV - SweRVolf 
 
     SweRVolf is an fpga create by Olof Kindgren under CHIPS-Alliance
@@ -155,8 +155,7 @@ We provide several platforms to work with, please follow the instructions for th
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done
 		- Wait for ORANGE led to be off, once off the board is ready to be used 
-	
-#
+&nbsp;
 - #### Setting up Nexys-A7 for SweRV
 
     Since Nexys-A7 is an FPGA platform it need special handling...
@@ -181,14 +180,11 @@ We provide several platforms to work with, please follow the instructions for th
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done.
 		- Wait for ORANGE led to be off, once off the board is ready to be used
-
-#
+&nbsp;
 - #### Setting up ISS (works as simulator for EH1)
     
     There is nothing to set for SweRV ISS, just select debugger luncher (following next)..
-
-
-    
+&nbsp; 
 - #### Platforms Debug on Eclipse MCU Debug:
     - Select from the ***'Eclipse MCU'*** menu bar ***'Run' -> 'Debug Configurations...'***; 
     - Choose the platform you wish to runs on, from **'left main windows'** menu
@@ -201,12 +197,11 @@ We provide several platforms to work with, please follow the instructions for th
                                                    From chipsalliance/Cores-SweRVolf
         - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator 
         ```
+
 ### Adding new source modules
 
 The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
-
-#
-#
+&nbsp;
 # Supporting GCC Releases
 - #### RISCV GCC 8.2
 	- Initial RISCV official 8.2 GCC release
@@ -218,7 +213,7 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 	- RISCV official 9.2 GCC release
 	- WD Code density improvement and optimization patches
 
-#
+
 # Supporting LLVM Releases
 - #### RISCV LLVM/Clang 10.0.0
 	- Initial LLVM/Clang official 10.0.0 release
