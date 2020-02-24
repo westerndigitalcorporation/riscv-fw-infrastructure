@@ -25,13 +25,17 @@ ENTRY( _start )
 
 MEMORY
 {
-  /* --------  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M --------  */
   ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 128K
-  ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
-  /* TODO: Temporary old section. Will be removed shortly */
-  ovltmp           : ORIGIN = 0xF0000000, LENGTH = 0x10000
+<<<<<<< HEAD
+  dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
 }
 
+
+=======
+  ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
+}
+
+>>>>>>> origin/master
 PHDRS
 {
   rom_load PT_LOAD;
@@ -53,7 +57,11 @@ SECTIONS
   {
     *(.text.init)
     . = ALIGN(8);
+<<<<<<< HEAD
+  } > ram : ram_load
+=======
   } > ram : rom_load
+>>>>>>> origin/master
 
   .text :
   {
@@ -63,6 +71,10 @@ SECTIONS
     *(.gnu.linkonce.t.*)
     . = ALIGN(4);
   } >ram : ram_load
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/master
 
   .rodata :
   {
@@ -70,6 +82,9 @@ SECTIONS
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
     . = ALIGN(4);
+<<<<<<< HEAD
+  } > ram : ram_load
+=======
   } > ram : rom_load
 
   /* this is a placeholder for comrv overlay groups.
@@ -77,10 +92,11 @@ SECTIONS
      address of .ovlgrpdata to this address */ 
   .reserved_ovl : ALIGN(4)
   {
-    __OVERLAY_STORAGE_START__ADDRESS__ = .;
+    _OVERLAY_STORAGE_START_ADDRESS_ = .;
     . = 0xe00;
   } > ram : ram_load
 
+>>>>>>> origin/master
   
   .lalign : 
   {
@@ -111,6 +127,9 @@ SECTIONS
     *(.srodata .srodata.*)
    . = ALIGN(8);
   } > ram : ram_load
+<<<<<<< HEAD
+
+=======
   
   .sbss :
   {
@@ -119,6 +138,7 @@ SECTIONS
     . = ALIGN(8);
   } > ram : ram_load
   
+>>>>>>> origin/master
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -128,6 +148,8 @@ SECTIONS
   
   .bss :
   {
+    *(.sbss .sbss.* .gnu.linkonce.sb.*)
+    *(.scommon)    
     *(.bss)
     . = ALIGN(8);
   } >ram : ram_load
@@ -140,6 +162,8 @@ SECTIONS
     . = . + __stack_size;
     _sp = .;
   } > ram : ram_load
+<<<<<<< HEAD
+=======
 
   /* this area is used for loading and executing the comrv 
      overlay groups */
@@ -154,13 +178,11 @@ SECTIONS
      after linking, we'll use objcopy utility and copy
      it to the .reserved_ovl section. we do this
      to make sure there is no address dependency after linking */ 
-     
-  .ovlgrpdata (OVERLAY) : 
+  .ovlgrps (OVERLAY) : 
   {
-    PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
-    *(SORT_BY_USER(.ovlinput.*))
+    OVERLAY_START_OF_OVERLAYS = .;
+    *(.ovlinput.*)
+    OVERLAY_END_OF_OVERLAYS = .;
   } >ovl AT>ovl :ovl
-
-  /* TODO: Temporary old section. Will be removed shortly */
-  .ovlgrp_legacy     : {*(.ovlgrpdata)} > ovltmp
+>>>>>>> origin/master
 }
