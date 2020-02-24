@@ -101,11 +101,13 @@ void demoUartInit(void)
     u32_t* pUartState = (u32_t*)(UART_BASE_ADDRESS+0x8);
 	*pUartState = 0 ;
 
+	/* init uart */
+	f_uartInit();
 
-	printfNexys("------------------------------------------");
-	printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
-	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
-	printfNexys("------------------------------------------");
+	f_printfNexys("------------------------------------------");
+	f_printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
+	f_printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
+	f_printfNexys("------------------------------------------");
 #endif
 }
 
@@ -124,14 +126,12 @@ void demoPlatformInit(void)
 #elif D_NEXYS_A7
 	// Nada for now
 #endif
+	/* init LED GPIO*/
     demoLedsInit();
 
-    /*OS: just test for leds: delete me after    */
-    demoOutpuLed(1);
-
+    /* init Uart for 115200 baud, 8 data bits, 1 stop bit, no parity */
     demoUartInit();
 
-    demoOutpuLed(0);
 
 }
 
@@ -149,7 +149,7 @@ void demoOutputMsg(const void *str, size_t size)
 #ifdef D_HI_FIVE1
 	write(1, str, size);
 #elif D_NEXYS_A7
-	printfNexys(str);
+	f_printfNexys(str);
 #endif
 }
 

@@ -17,6 +17,7 @@
 #ifndef __MEM_MAP_H
 #define __MEM_MAP_H
 
+//[OS]: this is currently obsolete
 //Memory map SweRV EH1 (Arup)
 //[OS] #define EXT_SRAM_BASE_ADDRES 	0x00000000
 //[OS] #define ICCM_BASE_ADDRESS		0xEE000000
