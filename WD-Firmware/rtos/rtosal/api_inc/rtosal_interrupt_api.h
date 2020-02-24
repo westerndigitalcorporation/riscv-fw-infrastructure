@@ -84,4 +84,14 @@ u32_t rtosalInstallIsr(rtosalInterruptHandler_t fptrRtosalInterruptHandler,
                        u32_t uiInterruptId , u32_t uiInterruptPriority,
                        rtosalInterruptCause_t stCauseIndex);
 
+/**
+* @brief check if in ISR context
+*
+* @param None
+*
+* @return u32_t            - D_NON_INT_CONTEXT
+*                          - non zero value - interrupt context
+*/
+u32_t rtosalIsInterruptContext(void);
+
 #endif /* __RTOSAL_INTERRUPT_API_H__ */

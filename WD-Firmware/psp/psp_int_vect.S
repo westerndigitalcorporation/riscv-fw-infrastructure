@@ -72,7 +72,7 @@
 
 
 #include "psp_core_base.inc"
-.include "psp_macros.inc"
+#include "psp_macros.inc"
 
 #ifdef __clang__
 /* disable warning for reserved registers use - we are using comrv

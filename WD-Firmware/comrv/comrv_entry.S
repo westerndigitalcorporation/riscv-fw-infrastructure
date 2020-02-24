@@ -22,7 +22,9 @@
 *
 */
 #include "psp_core_base.inc"
-.include "comrv_macros.inc"
+.include "psp_macros.inc"
+#include "comrv_config.h"
+#include "comrv_macros.inc"
 #include "comrv_config.h"
 
 /* disable warning for reserved registers use - we are using comrv
