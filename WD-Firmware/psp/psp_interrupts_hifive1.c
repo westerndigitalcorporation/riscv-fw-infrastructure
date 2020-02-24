@@ -201,7 +201,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterrup
 D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 {
    /* get the exception cause */
-   u32_t cause = M_PSP_READ_CSR(D_PSP_MCAUSE);
+   u32_t cause = M_PSP_READ_CSR(D_PSP_MCAUSE_ADDR);
 
    /* is it a valid cause */
    M_PSP_ASSERT(cause < D_PSP_NUM_OF_INTS_EXCEPTIONS);

@@ -43,20 +43,15 @@
 #define D_PSP_MHARTID_ADDR     0xF14
 
 /* Machine Trap setup registers */
-#define D_PSP_MSTATUS_ADDR     0x300
-#define D_PSP_MISA_ADDR        0x301
+
 #define D_PSP_MEDELEG_ADDR     0x302
 #define D_PSP_MIDELEG_ADDR     0x301
-#define D_PSP_MIE_ADDR         0x304
-#define D_PSP_MTVEC_ADDR       0x305
 #define D_PSP_MCOUNTEREN_ADDR  0x305
 
 /* Machine Trap handling registers */
 #define D_PSP_MSCRATCH_ADDR    0x340
 #define D_PSP_MEPC_ADDR        0x341
-#define D_PSP_MCAUSE_ADDR      0x342
 #define D_PSP_MTVAL_ADDR       0x343
-#define D_PSP_MIP_ADDR         0x344
 
 /* Machine Protection and Translation registers */
 #define D_PSP_PMPCFG0_ADDR     0x3A0
@@ -197,14 +192,17 @@
 /* Note - the mask definitions herein assume 32bit XLEN */
 
 /* misa CSR */
+#define D_PSP_MISA_ADDR            0x301
 #define D_PSP_MISA_EXTENSIONS_MASK 0x03FFFFFF
 #define D_PSP_MISA_MXL_MASK        0x0C000000
 
 /*  mtvec CSR */
+#define D_PSP_MTVEC_ADDR           0x305
 #define D_PSP_MTVEC_MODE_MASK      0x00000003
 #define D_PSP_MTVEC_BASE_MASK      0xFFFFFFFC
 
 /* mstatus CSR */
+#define D_PSP_MSTATUS_ADDR         0x300
 #define D_PSP_MSTATUS_UIE_MASK     0x00000001   /* Interrupts enable/disable */ /* User mode */
 #define D_PSP_MSTATUS_SIE_MASK     0x00000002                                   /* Supervisor mode */
 #define D_PSP_MSTATUS_MIE_MASK     0x00000008                                   /* Machine mode */
@@ -227,6 +225,7 @@
 #define D_PSP_MSTATUS64_SD_MASK    0x8000000000000000
 
 /* mip CSR */
+#define D_PSP_MIP_ADDR         0x344
 #define D_PSP_MIP_USIP_MASK    0x00000001  /* Software Interrupt pending */ /* User mode */
 #define D_PSP_MIP_SSIP_MASK    0x00000002                                   /* Supervisor mode */
 #define D_PSP_MIP_MSIP_MASK    0x00000008                                   /* Machine mode */
@@ -238,6 +237,7 @@
 #define D_PSP_MIP_MEIP_MASK    0x00000800                                   /* Machine mode */
 
 /* mie CSR */
+#define D_PSP_MIE_ADDR         0x304
 #define D_PSP_MIE_USIE_MASK    0x00000001  /* Software Interrupt enable/disable */ /* User mode */
 #define D_PSP_MIE_SSIE_MASK    0x00000002                                          /* Supervisor mode */
 #define D_PSP_MIE_MSIE_MASK    0x00000008                                          /* Machine mode */
@@ -249,6 +249,7 @@
 #define D_PSP_MIE_MEIE_MASK    0x00000800                                          /* Machine mode */
 
 /* mcause CSR */
+#define D_PSP_MCAUSE_ADDR                        0x342
 #define D_PSP_MCAUSE_U_SW_INT_MASK               0x80000000
 #define D_PSP_MCAUSE_S_SW_INT_MASK               0x80000001
 #define D_PSP_MCAUSE_M_SW_INT_MASK               0x80000003
