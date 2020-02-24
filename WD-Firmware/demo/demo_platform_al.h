@@ -112,4 +112,12 @@ void demoOutputMsg(const void *str, size_t size);
 * */
 void demoOutputToggelLed(const int ledAct);
 
+/**
+* demoOutputLed - sets LED output on/off
+*
+* const uiOnOffMode = 0/1
+*
+*
+* */
+void demoOutpuLed(const unsigned char ucOnOffMode);
 

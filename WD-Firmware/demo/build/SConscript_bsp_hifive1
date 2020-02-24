@@ -42,7 +42,8 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_HI_FIVE1']
+Env['PUBLIC_DEF'] += ['D_HI_FIVE1', 'D_MTIME_ADDRESS=0x0200BFF8', 'D_MTIMECMP_ADDRESS=0x02004000',
+                      'D_CLOCK_RATE=32768']
 listCompilationDefines = [ ] + Env['PUBLIC_DEF']
 
 # public includes
