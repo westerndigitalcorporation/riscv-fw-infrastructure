@@ -54,10 +54,10 @@
 
 
 /***** CSR read *****/
-#define _READ_CSR_(reg) (	{ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
-#define _READ_CSR_INTERMEDIATE_(y) _READ_CSR_(y)
+#define _READ_CSR_(reg) (	{ unsigned long val; \
+  asm volatile ("csrr %0, " #reg : "=r"(val)); \
+  val; })
+#define _READ_CSR_INTERMEDIATE_(reg) _READ_CSR_(reg)
 /*************************************************************************/
 /***** CSR write *****/
 #define _WRITE_CSR_(reg, val) ({ \
@@ -65,7 +65,7 @@
     asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
   else \
     asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
-#define _WRITE_CSR_INTERMEDIATE_(y, val) _WRITE_CSR_(y, val)
+#define _WRITE_CSR_INTERMEDIATE_(reg, val) _WRITE_CSR_(reg, val)
 /*************************************************************************/
 /***** CSR set *****/
 #define _SET_CSR_(reg, bits) ({\
@@ -73,34 +73,42 @@
     asm volatile ("csrs " #reg ", %0" :: "i"(bits)); \
   else \
     asm volatile ("csrs " #reg ", %0" :: "r"(bits)); })
-#define _SET_CSR_INTERMEDIATE_(y, bits) _SET_CSR_(y, bits)
+#define _SET_CSR_INTERMEDIATE_(reg, bits) _SET_CSR_(reg, bits)
+/*************************************************************************/
+/***** CSR clear *****/
+#define _CLEAR_CSR_(reg, bits) ({\
+  if (__builtin_constant_p(bits) && (unsigned long)(bits) < 32) \
+    asm volatile ("csrc " #reg ", %0" :: "i"(bits)); \
+  else \
+    asm volatile ("csrc " #reg ", %0" :: "r"(bits)); })
+#define _CLEAR_CSR_INTERMEDIATE_(reg, bits) _CLEAR_CSR_(reg, bits)
 /*************************************************************************/
 /***** CSR swap (read & write) *****/
-#define _SWAP_CSR_(reg, val) ({ unsigned long __tmp; \
-  if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
-    asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
+#define _SWAP_CSR_(read_val, reg, write_val) ({ \
+  if (__builtin_constant_p(write_val) && (unsigned long)(write_val) < 32) \
+    asm volatile ("csrrw %0, " #reg ", %1" : "=r"(read_val) : "i"(write_val)); \
   else \
-    asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "r"(val)); \
-  __tmp; })
-#define _SWAP_CSR_INTERMEDIATE_(y, val) _SWAP_CSR_(y, val)
+    asm volatile ("csrrw %0, " #reg ", %1" : "=r"(read_val) : "r"(write_val)); \
+  read_val; })
+#define _SWAP_CSR_INTERMEDIATE_(read_val, reg, write_val) _SWAP_CSR_(read_val, reg, write_val)
 /*************************************************************************/
 /***** CSR set & read *****/
-#define _SET_AND_READ_CSR_(__tmp,reg, bits) ({ \
+#define _SET_AND_READ_CSR_(read_val, reg, bits) ({ \
   if (__builtin_constant_p(bits) && (unsigned long)(bits) < 32) \
-    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bits)); \
+    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(read_val) : "i"(bits)); \
   else \
-    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bits)); \
-  __tmp; })
-#define _SET_AND_READ_CSR_INTERMEDIATE_(__tmp, y, bits) _SET_AND_READ_CSR_(__tmp, y, bits)
+    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(read_val) : "r"(bits)); \
+  read_val; })
+#define _SET_AND_READ_CSR_INTERMEDIATE_(read_val, reg, bits) _SET_AND_READ_CSR_(read_val, reg, bits)
 /*************************************************************************/
 /***** CSR clear & read *****/
-#define _CLEAR_AND_READ_CSR_(__tmp, reg, bit) ({ \
+#define _CLEAR_AND_READ_CSR_(read_val, reg, bit) ({ \
   if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
-    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
+    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(read_val) : "i"(bit)); \
   else \
-    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
-  __tmp; })
-#define _CLEAR_AND_READ_CSR_INTERMEDIATE_(__tmp, y, bit) _CLEAR_AND_READ_CSR_(__tmp, y, bit)
+    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(read_val) : "r"(bit)); \
+  read_val; })
+#define _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, reg, bit) _CLEAR_AND_READ_CSR_(read_val, reg, bit)
 /*************************************************************************/
 
 
@@ -108,7 +116,8 @@
 #define M_PSP_READ_CSR(csr)                           _READ_CSR_INTERMEDIATE_(csr)
 #define M_PSP_WRITE_CSR(csr, val)                     _WRITE_CSR_INTERMEDIATE_(csr, val)
 #define M_PSP_SET_CSR(csr, bits)                      _SET_CSR_INTERMEDIATE_(csr, bits)
-#define M_PSP_SWAP_CSR(csr, val)                      _SWAP_CSR_INTERMEDIATE_(csr, val)
+#define M_PSP_CLEAR_CSR(csr, bits)                    _CLEAR_CSR_INTERMEDIATE_(csr, bits)
+#define M_PSP_SWAP_CSR(read_val, csr, write_val)      _SWAP_CSR_INTERMEDIATE_(csr, val)
 #define M_PSP_SET_AND_READ_CSR(read_val, csr, bits)   _SET_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
 #define M_PSP_CLEAR_AND_READ_CSR(read_val, csr, bits) _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
 /*****************************************************************************************/
