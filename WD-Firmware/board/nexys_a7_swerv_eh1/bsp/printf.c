@@ -110,7 +110,7 @@ int f_uartPutchar(char ch)
         f_uartPutchar('\r');
 
     /* Check for space in UART FIFO */
-    while((M_UART_RD_REG_LSR() && D_UART_LSR_THRE_BIT) == 0);
+    while((M_UART_RD_REG_LSR() & D_UART_LSR_THRE_BIT) == 0);
 
     //write char
     M_UART_WR_CH(ch);
