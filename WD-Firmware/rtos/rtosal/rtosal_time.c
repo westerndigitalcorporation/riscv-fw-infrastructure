@@ -37,6 +37,7 @@
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
+
 /**
 * definitions
 */
@@ -377,6 +378,7 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 
 /**
 * @brief rtosalTimerSetPeriod - Store the input parameter in a global variable for usage along the program run
+*                               (used for setup the timer-counter as the period time to count-up)
 *
 * @param timerPeriod
 *
@@ -395,15 +397,13 @@ void rtosalTimerSetPeriod(u32_t timerPeriod)
 void rtosalTimerSetup(void)
 {
 	/* In case g_uTimerPeriod = 0 then there is no point to activate the timer */
-	if (0 != g_uTimerPeriod)
-	{
-		/* Enable timer interrupt */
-	    M_PSP_ENABLE_INTERRUPT(D_PSP_MIE_MTIE);
+	M_PSP_ASSERT(0 == g_uTimerPeriod);
 
-	    /* Activates Core's timer with the calculated period */
-	    M_PSP_TIMER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
-	}
+	/* Enable timer interrupt */
+	M_PSP_M_ENABLE_INTERRUPT_ID(D_PSP_MIE_MTIE_MASK);
 
+	/* Activates Core's timer with the calculated period */
+	M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
 }
 
 /**
@@ -415,7 +415,7 @@ void rtosalTimerSetup(void)
 void rtosalTimerIntHandler(void)
 {
 	/* Disable Machine-Timer interrupt */
-	M_PSP_DISBLE_INTERRUPT(D_PSP_MIE_MTIE);
+	M_PSP_M_DISBLE_INTERRUPT_ID(D_PSP_MIE_MTIE_MASK);
 
     /* Increment the RTOS tick. */
     rtosalTick();

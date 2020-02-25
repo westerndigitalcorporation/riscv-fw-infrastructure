@@ -18,14 +18,13 @@
 * @file   psp_timer.c
 * @author Nati Rapaport
 * @date   13.11.2019
-* @brief  This file implements core's timer service functions
+* @brief  This file implements core's timer-counter service functions
 *
 */
 
 /**
 * include files
 */
-#include "psp_types.h"
 #include "psp_api.h"
 
 /**
@@ -43,7 +42,7 @@
 /**
 * local prototypes
 */
-void pspTimerActivate(u32_t timer, u32_t period);
+void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * external prototypes
@@ -52,29 +51,28 @@ void pspTimerActivate(u32_t timer, u32_t period);
 /**
 * global variables
 */
-void (*fptrPspTimerActivate)(u32_t timer, u32_t period) = pspTimerActivate;
+void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod) = pspTimerCounterActivate;
 
 /**
 *
 * @brief Activate core's Timer
 *
-* @ timer  - indicates which timer to setup
+* @ timer  - indicates which timer (actually it is a counter) to setup
 * @ period - defines the timer's period
 *
 ***************************************************************************************************/
-void pspTimerActivate(u32_t timer, u32_t period)
+void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod)
 {
-	//demoOutputMsg("SETUP Timer\n", 12);
 
-    #if !defined(D_MTIME_ADDRESS) || !defined(D_MTIMECMP_ADDRESS)
+    #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
         #error "MTIME/MTIMECMP address definition is missing"
     #endif
 
 	/* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
-    volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
-    volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
-    u64_t now = *mtime;
-    u64_t then = now + period;
-    *mtimecmp = then;
+    volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
+    volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+    u64_t udNow = *pMtime;
+    u64_t udThen = udNow + uiPeriod;
+    *pMtimecmp = udThen;
 }
 

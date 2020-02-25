@@ -26,8 +26,6 @@
 /**
 * include files
 */
-#include "psp_csrs.h"
-#include "psp_macros.h"
 
 /**
 * definitions
@@ -36,13 +34,19 @@
 /**
 * macros
 */
-/* Enable/Disable all interrupts */
-#define M_PSP_ENABLE_ALL_INTERRUPTS()    M_PSP_SET_CSR(mstatus, D_PSP_MSTATUS_MIE);
-#define M_PSP_DISABLE_ALL_INTERRUPTS()   M_PSP_CLEAR_CSR(mstatus, D_PSP_MSTATUS_MIE);
-/* Enable/Disable specific interrupt */
-/* __mie_interrupt_ is D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
-#define M_PSP_ENABLE_INTERRUPT(__mie_interrupt__)  M_PSP_SET_CSR(mie, __mie_interrupt__);
-#define M_PSP_DISBLE_INTERRUPT(__mie_interrupt__)  M_PSP_CLEAR_CSR(mie, __mie_interrupt__);
+
+/* Disable/Enable specific interrupt */
+/* mie_interrupt is one of D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
+#define M_PSP_M_DISBLE_INTERRUPT_ID(mie_interrupt)  u32_t uiCsrVal; \
+	                                                M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, mie_interrupt);
+#define M_PSP_M_ENABLE_INTERRUPT_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
+
+/* Disable Interrupts (all privilege levels) */
+#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(mask)  pspInterruptsDisable(mask)
+/* Restore interrupts to their previous state */
+#define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(mask)  pspInterruptsRestore(mask)
+/* Enable interrupts regardless their previous state */
+#define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable()
 
 /**
 * types
@@ -114,5 +118,22 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * APIs
 */
+
+/**
+* Disable interrupts and return the current (== before the 'disable') interrupt state
+*/
+void pspInterruptsDisable(u32_t  *pOutPrevIntState);
+
+/**
+* Restore the interrupts state
+*/
+void pspInterruptsRestore(u32_t uiPrevIntState);
+/**
+* Enable interrupts regardless their previous state
+*/
+void pspInterruptsEnable(void);
+
+
+
 
 #endif /* __PSP_INTERRUPTS_H__ */

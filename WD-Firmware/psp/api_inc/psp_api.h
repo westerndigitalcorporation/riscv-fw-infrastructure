@@ -26,15 +26,15 @@
 /**
 * include files
 */
-
+#include "psp_types.h"
 #include "psp_intrinsics.h"
 #include "psp_defines.h"
 #include "psp_config.h"
-#include "psp_interrupts.h"
+#include "psp_csrs.h"
 #include "psp_macros.h"
+#include "psp_interrupts.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
-#include "psp_csrs.h"
 #include "psp_timers.h"
 #ifdef D_NEXYS_A7
     #include "psp_csrs_swerv_eh1.h"
@@ -49,6 +49,8 @@
 * macros
 */
 
+/* What is the current privilege-level */
+#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented */
 
 /**
 * types
@@ -79,7 +81,7 @@
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 
 /**
@@ -90,7 +92,7 @@ pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInte
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t exceptionCause);
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
 /**
 *
