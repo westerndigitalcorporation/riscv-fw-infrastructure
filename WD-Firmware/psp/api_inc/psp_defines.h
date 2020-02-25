@@ -33,15 +33,15 @@
 */
 
 /* there are 1000 msec in one second */
-#define D_PSP_MSEC 1000
+#define D_PSP_MSEC       1000
 
 /* function return codes */
-#define D_PSP_SUCCESS                      0x00
-#define D_PSP_FAIL                         0x01
-#define D_PSP_PTR_ERROR                    0x02
+#define D_PSP_SUCCESS    0x00
+#define D_PSP_FAIL       0x01
+#define D_PSP_PTR_ERROR  0x02
 
-#define D_PSP_TRUE                         1
-#define D_PSP_FALSE                        0
+#define D_PSP_TRUE       1
+#define D_PSP_FALSE      0
 
 
 #endif /* __PSP_DEFINES_H__ */

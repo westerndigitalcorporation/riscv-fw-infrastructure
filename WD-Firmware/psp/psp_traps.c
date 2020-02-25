@@ -36,13 +36,15 @@
 ***************************************************************************************************/
 void pspTrapUnhandled(void)
 {
-	u32_t local_mepc,local_mcause;
-	//exit(M_PSP_READ_CSR(D_PSP_MCAUSE_ADDR));
-	local_mepc = M_PSP_READ_CSR(mepc);
-	local_mcause = M_PSP_READ_CSR(D_PSP_MCAUSE_ADDR);
-	if (0 == local_mepc || 0 == local_mcause){}
-	//write(1, "Unhandeled exc\n", 15);
-	   asm volatile ("ebreak" : : : );
+	u32_t uiLocalMepc,uiLocalMcause;
+
+	uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
+	uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
+
+	if (0 == uiLocalMepc || 0 == uiLocalMcause)
+	{}
+
+	asm volatile ("ebreak" : : : );
 }
 
 #endif /* defined (__GNUC__) || defined (__clang__) */
