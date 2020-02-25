@@ -102,7 +102,7 @@ M_OVL_DUMMY_FUNCTION(16)
   OvlTestFunc_14_(); \
   OvlTestFunc_15_();
 
-extern void* __OVERLAY_STORAGE_START__ADDRESS__;
+extern void* _OVERLAY_STORAGE_START_ADDRESS_;
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
@@ -282,7 +282,7 @@ void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
 */
 void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
 {
-   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&__OVERLAY_STORAGE_START__ADDRESS__ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
+   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&_OVERLAY_STORAGE_START_ADDRESS_ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
    /* it is upto the end user of comrv to synchronize the instruction and data stream after
       overlay data has been written to destination memory */
    M_DEMO_COMRV_RTOS_FENCE();
