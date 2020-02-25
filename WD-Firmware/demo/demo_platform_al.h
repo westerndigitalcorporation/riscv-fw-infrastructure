@@ -25,11 +25,13 @@
 * include files
 */
 #include "psp_pragmas.h"
+#include "psp_types.h"
 
 #ifdef D_HI_FIVE1
    #include "encoding.h"
    #include "platform.h"
 #endif
+
 /**
 * definitions
 */
@@ -38,7 +40,6 @@
 #ifdef D_HI_FIVE1
     #define D_LED_GREEN_ON 1
     #define D_LED_BLUE_ON  2
-
 #elif D_NEXYS_A7
     #define D_LED_GREEN_ON 'X' //unknown
     #define D_LED_BLUE_ON  'X' //unknown
@@ -95,21 +96,21 @@ void demoPlatformInit(void);
 * demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
 *                 using the platform means for that.
 *
-* const void *str - pointer to a string to be printed out
+* const void *pStr - pointer to a string to be printed out
 *
-* size_t size - number of characters to print
+* u32_t uiSize - number of characters to print
 *
 * */
-void demoOutputMsg(const void *str, size_t size);
+void demoOutputMsg(const void *pStr, u32_t uiSize);
 
 /**
 * demoOutputLed - sets LED output according input request.
 *
-* const D_LED_ACTION ledAct - LED action to do
+* const s32_t - LED action to do
 *
 * The "LED action" is defined per each platform
 *
 * */
-void demoOutputLed(const int ledAct);
+void demoOutputLed(const s32_t siLedAct);
 
 

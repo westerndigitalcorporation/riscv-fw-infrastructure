@@ -18,11 +18,11 @@
 * @file   psp_timers.h
 * @author Nati Rapaport
 * @date   28.01.2020
-* @brief  The file defines timer api services
+* @brief  The file defines timer-counter api services
 * 
 */
-#ifndef  __PSP_TIMERS_H__
-#define  __PSP_TIMERS_H__
+#ifndef  __PSP_TIMER_COUNTERS_H__
+#define  __PSP_TIMER_COUNTERS_H__
 
 /**
 * include files
@@ -45,7 +45,7 @@
 /**
 * external prototypes
 */
-extern void (*fptrPspTimerActivate)(u32_t timer, u32_t period);
+extern void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * global variables
@@ -54,10 +54,10 @@ extern void (*fptrPspTimerActivate)(u32_t timer, u32_t period);
 /**
 * macros
 */
-#define M_PSP_TIMER_ACTIVATE(__timer__, __period__)   fptrPspTimerActivate(__timer__, __period__)
+#define M_PSP_TIMER_COUNTER_ACTIVATE(timer, period)   fptrPspTimerCounterActivate(timer, period)
 
 /**
 * APIs
 */
 
-#endif /* __PSP_TIMERS_H__ */
+#endif /* __PSP_TIMER_COUNTERS_H__ */

@@ -24,10 +24,6 @@
 /**
 * include files
 */
-#include "common_types.h"
-#include "demo_platform_al.h"
-#include "psp_api.h"
-
 #if defined(D_HI_FIVE1)
    #include <unistd.h>
 #elif defined(D_NEXYS_A7)
@@ -35,6 +31,9 @@
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
+
+#include "demo_platform_al.h"
+#include "psp_api.h"
 
 /**
 * definitions
@@ -76,10 +75,9 @@
 void demoLedsInit(void)
 {
 #ifdef D_HI_FIVE1
-	GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-
+   GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+   GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+   GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 #endif
 }
 
@@ -91,19 +89,18 @@ void demoLedsInit(void)
 void demoUartInit(void)
 {
 #ifdef D_HI_FIVE1
-	/* Empty implementation */
+   /* Empty implementation */
 #endif
 #ifdef D_NEXYS_A7
-	/* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
-	 * when running with Whisper */
+   /* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
+    * when running with Whisper */
     u32_t* pUartState = (u32_t*)(UART_BASE_ADDRESS+0x8);
-	*pUartState = 0 ;
+   *pUartState = 0 ;
 
-
-	printfNexys("------------------------------------------");
-	printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
-	printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
-	printfNexys("------------------------------------------");
+   printfNexys("------------------------------------------");
+   printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
+   printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
+   printfNexys("------------------------------------------");
 #endif
 }
 
@@ -131,17 +128,17 @@ void demoPlatformInit(void)
 * demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
 *                 using the platform means for that.
 *
-* const void *str - pointer to a string to be printed out
+* const void *pStr - pointer to a string to be printed out
 *
-* size_t size - number of characters to print
+* u32_t uiSize - number of characters to print
 *
 * */
-void demoOutputMsg(const void *str, size_t size)
+void demoOutputMsg(const void *pStr, u32_t uiSize)
 {
 #ifdef D_HI_FIVE1
-	write(1, str, size);
+	write(1, pStr, uiSize);
 #elif D_NEXYS_A7
-	printfNexys(str);
+	printfNexys(pStr);
 #endif
 }
 
@@ -149,28 +146,25 @@ void demoOutputMsg(const void *str, size_t size)
 /**
 * demoOutputLed - sets LED output according input request.
 *
-* const D_LED_ACTION ledAct - LED action to do
+* const s32_t - LED action to do
 *
 * The "LED action" is defined per each platform
 *
 * */
-void demoOutputLed(const int ledAct)
+void demoOutputLed(const s32_t siLedAct)
 {
 #ifdef D_HI_FIVE1
-	switch (ledAct)
-	{
-        case D_LED_GREEN_ON:
-           GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
- 	       break;
-        case D_LED_BLUE_ON:
-           GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
- 	       break;
-        default:
-           break;
-	}
-
+   switch (siLedAct)
+   {
+      case D_LED_GREEN_ON:
+        GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
+        break;
+      case D_LED_BLUE_ON:
+        GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
+        break;
+      default:
+        break;
+   }
 #endif
 }
-
-
 

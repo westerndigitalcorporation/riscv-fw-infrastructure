@@ -25,7 +25,6 @@
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the RISC-V RV32 port.
  *----------------------------------------------------------*/
-#include "psp_types.h"
 #include "psp_api.h"
 
 #if defined (__GNUC__) || defined (__clang__)
@@ -37,13 +36,15 @@
 ***************************************************************************************************/
 void pspTrapUnhandled(void)
 {
-	volatile u32_t local_mepc,local_mcause, local_mtval;
+	u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
 
-	local_mepc = M_PSP_READ_CSR(mepc);
-	local_mcause = M_PSP_READ_CSR(mcause);
-	local_mtval =  M_PSP_READ_CSR(mtval);
-	if (0 == local_mtval || 0 == local_mepc || 0 == local_mcause){}
-	// TODO: change the ebreak with a macro once pushed
+	uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
+	uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
+	uiLocalmtval =  M_PSP_READ_CSR(D_PSP_MTVAL_NUM);
+
+	if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
+	{}
+
 	asm volatile ("ebreak" : : : );
 }
 
