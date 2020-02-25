@@ -33,7 +33,7 @@ typedef struct swervolfVersion
 * @param inputs: ucRev, minor, major, sha, dirty
 *
 */
-void f_getSwervolfVersion(swervolfVersion_t *pSwervolfVersion);
+void versionGetSwervolfVer(swervolfVersion_t *pSwervolfVersion);
 
 #endif //__PRINTF_H
 

@@ -20,6 +20,7 @@
 
 
 #include <stdarg.h>
+#include "psp_types.h"
 #include "mem_map.h"
 #include "printf.h"
 
@@ -79,21 +80,21 @@ int strlen(const char *s)
 
 
 /*---------------------------------------------------*/
-/* f_uartPutchar: Write character to UART			 */
+/* printUartPutchar: Write character to UART			 */
 /*---------------------------------------------------*/
 #if 0 /* this works for WD SweRV EH1*/
-int f_uartPutchar(char ch)
+int printUartPutchar(char ch)
 {   
-    if (ch == '\n')
-        f_uartPutchar('\r');
+  if (ch == '\n')
+    printUartPutchar('\r');
 
-	//check status
-    while (UART_STAT & UART_TX_BUSY);
+  //check status
+  while (UART_STAT & UART_TX_BUSY);
 
-    //write char
-    UART_RX_DATA = ch;
+  //write char
+  UART_RX_DATA = ch;
 
-    return 0;
+  return 0;
 }
 #endif
 
@@ -104,18 +105,18 @@ int f_uartPutchar(char ch)
 *
 * @return u32_t - 0
 */
-int f_uartPutchar(char ch)
+int printUartPutchar(char ch)
 {
-    if (ch == '\n')
-        f_uartPutchar('\r');
+  if (ch == '\n')
+    printUartPutchar('\r');
 
-    /* Check for space in UART FIFO */
-    while((M_UART_RD_REG_LSR() & D_UART_LSR_THRE_BIT) == 0);
+  /* Check for space in UART FIFO */
+  while((M_UART_RD_REG_LSR() & D_UART_LSR_THRE_BIT) == 0);
 
-    //write char
-    M_UART_WR_CH(ch);
+  //write char
+  M_UART_WR_CH(ch);
 
-    return 0;
+  return 0;
 }
 
 /**
@@ -125,7 +126,7 @@ int f_uartPutchar(char ch)
 *
 * @return u32_t - 0
 */
-void f_uartInit(void)
+void uartInit(void)
 {
   /* Set DLAB bit in LCR */
   M_UART_WR_REG_LCR(D_UART_DLAB_BIT);
@@ -165,9 +166,9 @@ typedef struct params_s
 int puts( const char * str )
 {
 	while (*str)
-		f_uartPutchar(*str++);
+		printUartPutchar(*str++);
 
-	return f_uartPutchar('\n');
+	return printUartPutchar('\n');
 }
 
 /*----------------------------------------------------*/
@@ -175,7 +176,7 @@ int puts( const char * str )
 /*----------------------------------------------------*/
 int putchar( int c )
 {
-	f_uartPutchar((char)c);
+	printUartPutchar((char)c);
 	return c;
 }
 
@@ -192,7 +193,7 @@ static void padding( const int l_flag, params_t *par)
 
     if (par->do_padding && l_flag && (par->len < par->num1))
         for (i=par->len; i<par->num1; i++)
-            f_uartPutchar( par->pad_character);
+            printUartPutchar( par->pad_character);
 }
 
 /*---------------------------------------------------*/
@@ -209,7 +210,7 @@ static void outs(  char* lp, params_t *par)
 
     /* Move string to the buffer                     */
     while (*lp && (par->num2)--)
-        f_uartPutchar( *lp++);
+        printUartPutchar( *lp++);
 
     /* Pad on right if needed                        */
     par->len = strlen( lp);                      
@@ -276,7 +277,7 @@ static void outnum( const int n, const long base, params_t *par)
     padding( !(par->left_flag), par);
 	i = 0;
     while (cp >= outbuf && i++ < par->maxium_length)
-        f_uartPutchar( *cp--);
+        printUartPutchar( *cp--);
     padding( par->left_flag, par);
 }
 
@@ -329,7 +330,7 @@ int uart_printf(const char* ctrl1, va_list argp)
         /* format control is found.                    */
         if ( *ctrl != '%') 
 		{
-			f_uartPutchar( *ctrl);
+			printUartPutchar( *ctrl);
             continue;
         }
 
@@ -361,7 +362,7 @@ int uart_printf(const char* ctrl1, va_list argp)
         switch ((par.upper_hex_digit_flag ? ch + 32: ch)) 
 		{
             case '%':
-				f_uartPutchar( '%');
+				printUartPutchar( '%');
                 continue;
 
             case '-':
@@ -405,24 +406,24 @@ int uart_printf(const char* ctrl1, va_list argp)
                 outs( va_arg( argp, char*), &par);
                 continue;
             case 'c':
-			f_uartPutchar( va_arg( argp, int));
+			printUartPutchar( va_arg( argp, int));
                 continue;
             case '\\':
                 switch (*ctrl) {
                     case 'a':
-                        f_uartPutchar( 0x07);
+                        printUartPutchar( 0x07);
                         break;
                     case 'h':
-                        f_uartPutchar( 0x08);
+                        printUartPutchar( 0x08);
                         break;
                     case 'r':
-                        f_uartPutchar( 0x0D);
+                        printUartPutchar( 0x0D);
                         break;
                     case 'n':
-                        f_uartPutchar( 0x0A);
+                        printUartPutchar( 0x0A);
                         break;
                     default:
-                        f_uartPutchar( *ctrl);
+                        printUartPutchar( *ctrl);
                         break;
                 }
                 ctrl++;
@@ -440,21 +441,21 @@ int uart_printf(const char* ctrl1, va_list argp)
 /*---------------------------------------------------*/
 /* printf: Console based printf 					 */
 /*---------------------------------------------------*/
-int f_printfNexys( const char* format, ... )
+u32_t printfNexys( const char * cFormat, ... )
 {
-	int res = 0;
-	va_list argp;
-	if (format)
-	{
-		va_start( argp, format);
-		// Setup target to be stdout function
-		res = uart_printf( format, argp);
+  u32_t uiRes = 0;
+  va_list argp;
+  if(cFormat)
+  {
+    va_start( argp, cFormat);
+    // Setup target to be stdout function
+    uiRes = uart_printf( cFormat, argp);
 
-		va_end( argp);
-	}
+    va_end( argp);
+  }
 
-	f_uartPutchar('\n');
-	return res;
+  printUartPutchar('\n');
+  return uiRes;
 }
 
 

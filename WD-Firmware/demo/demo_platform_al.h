@@ -37,8 +37,8 @@
 
 /* LEDs outputs definition */
 #ifdef D_HI_FIVE1
-    #define D_LED_GREEN_ON 1
-    #define D_LED_BLUE_ON  2
+    #define D_LED_GREEN_ON 0
+    #define D_LED_BLUE_ON  1
 
 #elif D_NEXYS_A7
     #define D_LED_GREEN_ON 'X' //unknown
@@ -101,7 +101,12 @@ void demoPlatformInit(void);
 * size_t size - number of characters to print
 *
 * */
+#ifdef D_HI_FIVE1
 void demoOutputMsg(const void *str, size_t size);
+#else
+#include "printf.h"
+#define demoOutputMsg(f_,...)  printfNexys((f_), ##__VA_ARGS__)
+#endif
 
 /**
 * demoOutputToggelLed - sets LED output according input request.
@@ -111,7 +116,7 @@ void demoOutputMsg(const void *str, size_t size);
 * The "LED action" is defined per each platform
 *
 * */
-void demoOutputToggelLed(const int ledAct);
+void demoOutputToggelLed(void);
 
 /**
 * demoOutputLed - sets LED output on/off
