@@ -75,16 +75,22 @@ This implementation supports riscv privileged v1.10
 */
 
 #include "psp_core_base.inc"
-.include "psp_macros.inc"
+#include "psp_macros.inc"
 #include "rtosal_defines.inc"
 #include "rtosal_macros.inc"
 
-.global    pxCurrentTCB
-.global    rtosalHandleEcall
+#ifdef __clang__
+/* disable warning for reserved registers use - we are using comrv
+   reserved register and don't want to see these warnings. */
+.option nowarnreservedreg
+#endif /* __clang__ */
+
 
 .section  .text.entry
 .align 4
 .global   rtosal_vect_table
+.global    pxCurrentTCB
+.global    rtosalHandleEcall
 
 .ifndef D_RTOSAL_VECT_TABLE
 rtosal_vect_table:
@@ -196,7 +202,6 @@ rtosal_reserved_int:
     j 1b
 
 .align 8
-.func
 /* Implements context-switch as a result of ECALL exception */
 rtosalHandleEcall:
     /* Update & save MEPC contents on the application's stack: */
@@ -214,5 +219,4 @@ rtosalHandleEcall:
     M_PSP_CLEAR_INT_CONTEXT
     M_PSP_POP_REGFILE
     mret
-.endfunc
 

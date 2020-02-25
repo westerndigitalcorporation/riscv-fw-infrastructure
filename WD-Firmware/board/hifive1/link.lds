@@ -56,9 +56,9 @@ SECTIONS
   /* this is a placeholder for comrv overlay groups.
      after linking, we'll use objcopy utility and change the
      address of .ovlgrpdata to this address */ 
-  .reserved_ovl  :
+  .reserved_ovl : ALIGN(4)
   {
-    __OVERLAY_STORAGE_START__ADDRESS__ = .;
+    _OVERLAY_STORAGE_START_ADDRESS_ = .;
     . = 0xe00;
   } >flash AT>flash :flash
 
@@ -183,15 +183,13 @@ SECTIONS
   }  >ram AT>ram :ram
 
   /* this is the location of all comrv overlay groups.
-     after linking, we'll use objcopy utility and change
-     this address to the .reserved_ovl address. we do this
+     after linking, we'll use objcopy utility and copy
+     it to the .reserved_ovl section. we do this
      to make sure there is no address dependency after linking */ 
-  .ovlgrpdata       : 
+  .ovlgrps (OVERLAY) : 
   {
-    PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
-    /* *(SORT_BY_USER(.ovlinput.*)) */
+    OVERLAY_START_OF_OVERLAYS = .;
+    *(.ovlinput.*)
+    OVERLAY_END_OF_OVERLAYS = .;
   } >ovl AT>ovl :ovl
-
-  /* TODO: Temporary old section. Will be removed shortly */
-  .ovlgrp_legacy     : {*(.ovlgrpdata)} > ovltmp
 }
