@@ -134,7 +134,9 @@ static rtosalSemaphore_t stEventSemaphore;
 /* The counters used by the various examples.  The usage is described in the
  * comments at the top of this file.
  */
-static volatile u32_t ulCountOfTimerCallbackExecutions = 0;
+#ifdef D_HI_FIVE1
+   static volatile u32_t ulCountOfTimerCallbackExecutions = 0;
+#endif /* D_HI_FIVE1 */
 static volatile u32_t ulCountOfItemsReceivedOnQueue = 0;
 static volatile u32_t ulCountOfReceivedSemaphores = 0;
 
