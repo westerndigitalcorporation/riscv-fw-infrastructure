@@ -31,7 +31,7 @@
 */
 .if D_USE_FREERTOS
     .equ D_RTOSAL_MEPC_LOC_IN_STK,    0
-	.equ D_RTOSAL_MSTATUS_LOC_IN_STK, 29
+    .equ D_RTOSAL_MSTATUS_LOC_IN_STK, 31
 .else
     /* [NR] - TO DO - define appropriate numbers for THREADX */
     .error "RTOS is not defined!"

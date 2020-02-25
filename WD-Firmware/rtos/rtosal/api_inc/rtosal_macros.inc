@@ -39,7 +39,7 @@
 /* Macro that sets indication of interrupt context */
 .macro M_PSP_SET_INT_CONTEXT
     /* save address of g_rtosalIsInterruptContext -> t0 */
-    la        a0, g_rtosalIsInterruptContext
+    la            a0, g_rtosalIsInterruptContext
     /* load the value g_rtosalIsInterruptContext -> t1 */
     M_PSP_LOAD    a1, 0x0(a0)
     /* increment t1 by 1 */
@@ -51,7 +51,7 @@
 /* Macro that clears indication of interrupt context */
 .macro M_PSP_CLEAR_INT_CONTEXT
     /* save address of g_rtosalIsInterruptContext -> t0 */
-    la        a0, g_rtosalIsInterruptContext
+    la            a0, g_rtosalIsInterruptContext
     /* load the value g_rtosalIsInterruptContext -> t1 */
     M_PSP_LOAD    a1, 0x0(a0)
     /* decrement t1 by 1 */
@@ -63,15 +63,14 @@
 /* this macro save mstatus and mepc CSRs on stack then store sp in the Application control block */
 .macro M_RTOSAL_SAVE_CONTEXT  pAppCB, spLocationInAppCB
     /* Store mstatus */
-    csrr      t0, mstatus
+    csrr          t0, mstatus
     M_PSP_STORE   t0, D_RTOSAL_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
     M_PSP_LOAD    t0, \pAppCB
     M_PSP_STORE   sp, \spLocationInAppCB(t0)
     /* Store mepc */
-	csrr      t0, mepc
+    csrr          t0, mepc
     M_PSP_STORE   t0, D_RTOSAL_MEPC_LOC_IN_STK(sp)
-
 .endm
 
  /* this macro restore sp from the Application control block then restore mstatus and mepc CSRs from stack */
@@ -81,7 +80,7 @@
     M_PSP_LOAD    sp, \spLocationInAppCB(sp)
     /* Load task program counter */
     M_PSP_LOAD    t0, D_RTOSAL_MEPC_LOC_IN_STK * REGBYTES(sp)
-    csrw      mepc, t0
+    csrw          mepc, t0
     /* Load saved mstatus */
     M_PSP_LOAD    t0, D_RTOSAL_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     csrw      mstatus, t0
@@ -96,21 +95,21 @@
  */
 .macro M_RTOSAL_END_CONTEXT_SWITCH_FROM_ISR branch_label
     /* save address of g_rtosalContextSwitch -> a0 */
-    la        a0, g_rtosalContextSwitch
+    la            a0, g_rtosalContextSwitch
     /* load the value g_rtosalContextSwitch -> a1 */
     M_PSP_LOAD    a1, 0x0(a0)
     /* check if g_rtosalContextSwitch is set - need to do context switch */
-    beqz      a1, \branch_label
+    beqz          a1, \branch_label
     /* clear g_rtosalContextSwitch */
     /* TODO: if bitmanip exist add bit set */
     M_PSP_STORE   zero, 0x0(a0)
     /* call OS to perform context switch */
-	M_RTOSAL_SWITCH_CONTEXT
+    M_RTOSAL_SWITCH_CONTEXT
 .endm
 
 .macro M_RTOSAL_SWITCH_CONTEXT
 .if D_USE_FREERTOS
-   jal vTaskSwitchContext
+   jal            vTaskSwitchContext
 .endif
 .endm
 
