@@ -42,7 +42,7 @@
 /**
 * local prototypes
 */
-void pspTimerCounterActivate(u32_t timer, u32_t period);
+void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * external prototypes
@@ -51,7 +51,7 @@ void pspTimerCounterActivate(u32_t timer, u32_t period);
 /**
 * global variables
 */
-void (*fptrPspTimerCounterActivate)(u32_t timer, u32_t period) = pspTimerCounterActivate;
+void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod) = pspTimerCounterActivate;
 
 /**
 *
@@ -61,19 +61,18 @@ void (*fptrPspTimerCounterActivate)(u32_t timer, u32_t period) = pspTimerCounter
 * @ period - defines the timer's period
 *
 ***************************************************************************************************/
-void pspTimerCounterActivate(u32_t timer, u32_t period)
+void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod)
 {
-	//demoOutputMsg("SETUP Timer\n", 12);
 
     #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
         #error "MTIME/MTIMECMP address definition is missing"
     #endif
 
 	/* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
-    volatile u64_t * mtime       = (u64_t*)D_MTIME_ADDRESS;
-    volatile u64_t * mtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
-    u64_t now = *mtime;
-    u64_t then = now + period;
-    *mtimecmp = then;
+    volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
+    volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+    u64_t udNow = *pMtime;
+    u64_t udThen = udNow + uiPeriod;
+    *pMtimecmp = udThen;
 }
 

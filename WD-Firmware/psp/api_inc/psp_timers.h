@@ -45,7 +45,7 @@
 /**
 * external prototypes
 */
-extern void (*fptrPspTimerCounterActivate)(u32_t timer, u32_t period);
+extern void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * global variables
@@ -54,7 +54,7 @@ extern void (*fptrPspTimerCounterActivate)(u32_t timer, u32_t period);
 /**
 * macros
 */
-#define M_PSP_TIMER_COUNTER_ACTIVATE(__timer__, __period__)   fptrPspTimerCounterActivate(__timer__, __period__)
+#define M_PSP_TIMER_COUNTER_ACTIVATE(timer, period)   fptrPspTimerCounterActivate(timer, period)
 
 /**
 * APIs
