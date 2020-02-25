@@ -59,9 +59,6 @@
   __tmp; })
 #define _READ_CSR_INTERMEDIATE_(y) _READ_CSR_(y)
 /*************************************************************************/
-#define M_PSP_READ_CSR(x)  _READ_CSR_INTERMEDIATE_(x)
-/*************************************************************************/
-
 /***** CSR write *****/
 #define _WRITE_CSR_(reg, val) ({ \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
@@ -70,10 +67,15 @@
     asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
 #define _WRITE_CSR_INTERMEDIATE_(y, val) _WRITE_CSR_(y, val)
 /*************************************************************************/
-#define M_PSP_WRITE_CSR(x, val)  _WRITE_CSR_INTERMEDIATE_(x, val)
+/***** CSR set *****/
+#define _SET_CSR_(reg, bits) ({\
+  if (__builtin_constant_p(bits) && (unsigned long)(bits) < 32) \
+    asm volatile ("csrs " #reg ", %0" :: "i"(bits)); \
+  else \
+    asm volatile ("csrs " #reg ", %0" :: "r"(bits)); })
+#define _SET_CSR_INTERMEDIATE_(y, bits) _SET_CSR_(y, bits)
 /*************************************************************************/
-
-/***** CSR swap *****/
+/***** CSR swap (read & write) *****/
 #define _SWAP_CSR_(reg, val) ({ unsigned long __tmp; \
   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
     asm volatile ("csrrw %0, " #reg ", %1" : "=r"(__tmp) : "i"(val)); \
@@ -82,43 +84,39 @@
   __tmp; })
 #define _SWAP_CSR_INTERMEDIATE_(y, val) _SWAP_CSR_(y, val)
 /*************************************************************************/
-#define M_PSP_SWAP_CSR(x, val)  _SWAP_CSR_INTERMEDIATE_(x, val)
-/*************************************************************************/
-
-/***** CSR set *****/
-#define _SET_CSR_(reg, bit) ({ unsigned long __tmp; \
-  if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
-    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
+/***** CSR set & read *****/
+#define _SET_AND_READ_CSR_(__tmp,reg, bits) ({ \
+  if (__builtin_constant_p(bits) && (unsigned long)(bits) < 32) \
+    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "i"(bits)); \
   else \
-    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
+    asm volatile ("csrrs %0, " #reg ", %1" : "=r"(__tmp) : "r"(bits)); \
   __tmp; })
-#define _SET_CSR_INTERMEDIATE_(y, bit) _SET_CSR_(y, bit)
+#define _SET_AND_READ_CSR_INTERMEDIATE_(__tmp, y, bits) _SET_AND_READ_CSR_(__tmp, y, bits)
 /*************************************************************************/
-#define M_PSP_SET_CSR(x, bit)  _SET_CSR_INTERMEDIATE_(x, bit)
-/*************************************************************************/
-
-/***** CSR clear *****/
-#define _CLEAR_CSR_(__tmp, reg, bit) ({ \
+/***** CSR clear & read *****/
+#define _CLEAR_AND_READ_CSR_(__tmp, reg, bit) ({ \
   if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
     asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "i"(bit)); \
   else \
     asm volatile ("csrrc %0, " #reg ", %1" : "=r"(__tmp) : "r"(bit)); \
   __tmp; })
-/*#define _CLEAR_CSR_INTERMEDIATE_(y, bit) _CLEAR_CSR_(y, bit)*/
-#define _CLEAR_CSR_INTERMEDIATE_(__tmp, y, bit) _CLEAR_CSR_(__tmp, y, bit)
-/*************************************************************************/
-/*#define M_PSP_CLEAR_CSR(x, bit)  _CLEAR_CSR_INTERMEDIATE_(x, bit)*/
-#define M_PSP_CLEAR_CSR(__tmp, x, bit)  _CLEAR_CSR_INTERMEDIATE_(__tmp, x, bit)
+#define _CLEAR_AND_READ_CSR_INTERMEDIATE_(__tmp, y, bit) _CLEAR_AND_READ_CSR_(__tmp, y, bit)
 /*************************************************************************/
 
-/** Nati - TO DO: add more macros as the above ones. using single instructions that does read & clear/set/write etc. **/
 
-
+/******************************** Macros of CSRs handling ********************************/
+#define M_PSP_READ_CSR(csr)                           _READ_CSR_INTERMEDIATE_(csr)
+#define M_PSP_WRITE_CSR(csr, val)                     _WRITE_CSR_INTERMEDIATE_(csr, val)
+#define M_PSP_SET_CSR(csr, bits)                      _SET_CSR_INTERMEDIATE_(csr, bits)
+#define M_PSP_SWAP_CSR(csr, val)                      _SWAP_CSR_INTERMEDIATE_(csr, val)
+#define M_PSP_SET_AND_READ_CSR(read_val, csr, bits)   _SET_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
+#define M_PSP_CLEAR_AND_READ_CSR(read_val, csr, bits) _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
+/*****************************************************************************************/
 
 #define M_PSP_EBREAK()              asm volatile ("ebreak" : : : );
 #define M_PSP_ECALL()               asm volatile ("ecall" : : : );
 #define M_PSP_NOP()                 asm volatile ("nop")
-#define M_PSP_MEMORY_BARRIER()      asm volatile( "" ::: "memory" )
+#define M_PSP_MEMORY_BARRIER()      asm volatile ( "" ::: "memory" )
 
 /*******************************************************/
 
