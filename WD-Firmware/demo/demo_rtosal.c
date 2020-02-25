@@ -132,9 +132,8 @@ static rtosalSemaphore_t stEventSemaphore;
 /* The counters used by the various examples.  The usage is described in the
  * comments at the top of this file.
  */
-#ifdef D_HI_FIVE1
-   static volatile u32_t ulCountOfTimerCallbackExecutions = 0;
-#endif /* D_HI_FIVE1 */
+
+static volatile u32_t ulCountOfTimerCallbackExecutions = 0;
 static volatile u32_t ulCountOfItemsReceivedOnQueue = 0;
 static volatile u32_t ulCountOfReceivedSemaphores = 0;
 
@@ -303,7 +302,7 @@ static u32_t ulCount = 0;
          ulCount = 0UL;
 
          demoOutputMsg("Giving Semaphore\n", 17);
-         demoOutputToggelLed(D_LED_GREEN_ON);
+         demoOutputToggelLed();
     }
 }
 
@@ -315,14 +314,17 @@ static u32_t ulCount = 0;
  */
 static void demoRtosalTimerCallback(void* xTimer)
 {
-#ifdef D_HI_FIVE1
+
     /* The timer has expired.  Count the number of times this happens.  The
     timer that calls this function is an auto re-load timer, so it will
     execute periodically. */
     ulCountOfTimerCallbackExecutions++;
 
-    demoOutputToggelLed(D_LED_BLUE_ON);
+    demoOutputToggelLed();
+#ifdef D_HI_FIVE1
     demoOutputMsg("RTOS Timer Callback\n", 20);
+#elif defined(D_NEXYS_A7)
+    demoOutputMsg("RTOS Timer Callback\n");
 #else
     /* Developer: please add here implementation that fits your environment */
     M_PSP_NOP();
@@ -368,7 +370,6 @@ const u32_t ulValueToSend = 100UL;
 static void demoRtosalReceiveMsgTask( void *pvParameters )
 {
    u32_t ulReceivedValue;
-   char stringValue[10];
 
    for( ;; )
    {
@@ -376,10 +377,15 @@ static void demoRtosalReceiveMsgTask( void *pvParameters )
       /* Wait until something arrives in the queue - this task will block
       indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
       FreeRTOSConfig.h. */
+  #ifdef D_HI_FIVE1
+      char stringValue[10];
       itoa(ulReceivedValue,stringValue, 10);
-      demoOutputMsg("Recieved: ", 10);
+      demoOutputMsg("Received : ", 10);
       demoOutputMsg(stringValue, 3);
       demoOutputMsg("\n",1);
+  #else
+      demoOutputMsg("Received %d: ",ulReceivedValue);
+  #endif
 
       /*  To get here something must have been received from the queue, but
       is it the expected value?  If it is, increment the counter. */
