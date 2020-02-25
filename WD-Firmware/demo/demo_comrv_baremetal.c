@@ -22,6 +22,7 @@
 #include "psp_macros.h"
 #include "comrv_api.h"
 #include "demo_platform_al.h"
+#include "psp_csrs.h"
 
 /**
 * definitions
