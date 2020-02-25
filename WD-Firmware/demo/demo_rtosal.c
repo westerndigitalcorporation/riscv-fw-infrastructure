@@ -171,12 +171,12 @@ void demoStart(void)
 void demoRtosalCreateTasks(void *pParameters)
 {
 	
-    u32_t uiResult, uiCsrVal;
+    u32_t uiResult;
     pspExceptionCause_t eCause;
 
     /* Disable the machine & timer interrupts until setup is done. */
-    M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
-    M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, D_PSP_MIE_MTIE_MASK);
+    M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
+    M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MTIE_MASK);
     /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
     for (eCause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; eCause < E_EXC_LAST_COMMON ; eCause++)
     {
