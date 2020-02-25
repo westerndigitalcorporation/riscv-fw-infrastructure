@@ -367,38 +367,28 @@ const u32_t ulValueToSend = 100UL;
  */
 static void demoRtosalReceiveMsgTask( void *pvParameters )
 {
-	u32_t ulReceivedValue;
-    #ifdef D_HI_FIVE1
-     char stringValue[10];
-    #endif
+   u32_t ulReceivedValue;
+   char stringValue[10];
 
-    for( ;; )
-    {
-        rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
-     #ifdef D_HI_FIVE1
-        /* Wait until something arrives in the queue - this task will block
-        indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
-        FreeRTOSConfig.h. */
-        itoa(ulReceivedValue,stringValue, 10);
-        demoOutputMsg("Recieved: ", 10);
-        demoOutputMsg(stringValue, 3);
-		demoOutputMsg("\n",1);
-     #else
-		/* Developer: please add here implementation that fits your environment */
-		M_PSP_NOP();
-		M_PSP_NOP();
-		M_PSP_NOP();
-		M_PSP_NOP();
-     #endif
+   for( ;; )
+   {
+      rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
+      /* Wait until something arrives in the queue - this task will block
+      indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
+      FreeRTOSConfig.h. */
+      itoa(ulReceivedValue,stringValue, 10);
+      demoOutputMsg("Recieved: ", 10);
+      demoOutputMsg(stringValue, 3);
+      demoOutputMsg("\n",1);
 
-        /*  To get here something must have been received from the queue, but
-        is it the expected value?  If it is, increment the counter. */
-        if( ulReceivedValue == 100UL )
-        {
-            /* Count the number of items that have been received correctly. */
-            ulCountOfItemsReceivedOnQueue++;
-        }
-    }
+      /*  To get here something must have been received from the queue, but
+      is it the expected value?  If it is, increment the counter. */
+      if( ulReceivedValue == 100UL )
+      {
+         /* Count the number of items that have been received correctly. */
+         ulCountOfItemsReceivedOnQueue++;
+      }
+   }
 }
 
 /**
