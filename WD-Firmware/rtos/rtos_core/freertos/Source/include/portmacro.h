@@ -101,20 +101,14 @@ extern void vTaskExitCritical( void );
 
 #define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue ) ( void ) uxSavedStatusValue
 
-/* Use these macros when you need to explicitly define _mask_ to preserve interrupts status */
-#define portTURN_OFF_INTERRUPTS(_mask_)	                        pspInterruptsDisable(_mask_);
-#define portTURN_ON_INTERRUPTS(_mask_)	                        pspInterruptsRestore(_mask_);
-
-/* Use these macros when you disable and then re-enable interrupts in the same function. In this case you
- *  don't need to explicitly create a variable to preserve the interrupts status. The macros are handle
- *  that for you */
-#define portDISABLE_INTERRUPTS()	                            M_PSP_INT_VAR_DECLARE();\
-		                                                        M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL();
-#define portENABLE_INTERRUPTS()		                            M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL();
+/* Note: There are vTaskEnterCritical that calls portDISABLE_INTERRUPTS and portEXIT_CRITICAL that calls portENABLE_INTERRUPTS.
+ * So we have to use a global parameter to preserve interrupts status over disable & enable of interrupts */
+extern unsigned int g_uInterruptsPreserveMask;
+#define portDISABLE_INTERRUPTS()	                            M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&g_uInterruptsPreserveMask);
+#define portENABLE_INTERRUPTS()		                            M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(g_uInterruptsPreserveMask);
 
 #define portENTER_CRITICAL()	                                vTaskEnterCritical()
 #define portEXIT_CRITICAL()		                                vTaskExitCritical()
-
 
 /*-----------------------------------------------------------*/
 

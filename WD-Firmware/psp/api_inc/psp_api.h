@@ -81,7 +81,7 @@
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 
 /**
@@ -92,7 +92,7 @@ pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInte
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t exceptionCause);
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
 /**
 *
