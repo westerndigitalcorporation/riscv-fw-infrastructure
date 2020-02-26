@@ -36,7 +36,7 @@
 ***************************************************************************************************/
 void pspTrapUnhandled(void)
 {
-	u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
+	volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
 
 	uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
 	uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
@@ -45,7 +45,7 @@ void pspTrapUnhandled(void)
 	if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
 	{}
 
-	asm volatile ("ebreak" : : : );
+	M_PSP_EBREAK();
 }
 
 #endif /* defined (__GNUC__) || defined (__clang__) */

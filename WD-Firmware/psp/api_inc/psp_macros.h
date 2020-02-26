@@ -47,7 +47,7 @@
 /* assert macro */
 #ifdef D_PSP_DEBUG
    #define M_PSP_ASSERT(checkedResult) if (checkedResult) \
-                                     { asm volatile ("ebreak" : : : );}
+                                          M_PSP_EBREAK()
 #else
    #define M_PSP_ASSERT(checkedResult)
 #endif /* D_PSP_DEBUG */
@@ -102,13 +102,13 @@
 #define _SET_AND_READ_CSR_INTERMEDIATE_(read_val, reg, bits) _SET_AND_READ_CSR_(read_val, reg, bits)
 /*************************************************************************/
 /***** CSR clear & read *****/
-#define _CLEAR_AND_READ_CSR_(read_val, reg, bit) ({ \
-  if (__builtin_constant_p(bit) && (unsigned long)(bit) < 32) \
-    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(read_val) : "i"(bit)); \
+#define _CLEAR_AND_READ_CSR_(read_val, reg, bits) ({ \
+  if (__builtin_constant_p(bits) && (unsigned long)(bits) < 32) \
+    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(read_val) : "i"(bits)); \
   else \
-    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(read_val) : "r"(bit)); \
+    asm volatile ("csrrc %0, " #reg ", %1" : "=r"(read_val) : "r"(bits)); \
   read_val; })
-#define _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, reg, bit) _CLEAR_AND_READ_CSR_(read_val, reg, bit)
+#define _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, reg, bits) _CLEAR_AND_READ_CSR_(read_val, reg, bits)
 /*************************************************************************/
 
 
