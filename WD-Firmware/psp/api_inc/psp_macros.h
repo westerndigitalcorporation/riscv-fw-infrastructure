@@ -135,7 +135,14 @@
    is likely to be true, in other case condition is likely to be false.
    this provides us a way to take rare cases out of the critical execution path */
 #define M_PSP_BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
+
 /*******************************************************/
 
+/* order device I/O and memory accesses */
+#define M_PSP_INST_FENCE()          asm volatile( "fence" )
+/* synchronize the instruction and data streams */
+#define M_PSP_INST_FENCEI()         asm volatile( "fence.i" )
+
+/*******************************************************/
 
 #endif /* __PSP_MACRO_H__ */

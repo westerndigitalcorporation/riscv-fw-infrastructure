@@ -249,5 +249,9 @@ void rtosalContextSwitchIndicationSet(void);
 */
 void rtosalContextSwitchIndicationClear(void);
 
+/**
+* retrieve scheduler state
+*/
+u32_t rtosalGetSchedulerState(void);
 
 #endif /* __RTOSAL_TASK_API_H__ */
