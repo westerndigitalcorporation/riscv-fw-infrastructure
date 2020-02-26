@@ -25,7 +25,6 @@ ENTRY( _start )
 
 MEMORY
 {
-  /* --------  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M --------  */
   ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 128K
   dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
   ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
@@ -112,7 +111,14 @@ SECTIONS
     *(.srodata .srodata.*)
    . = ALIGN(8);
   } > ram : ram_load
-
+  
+  .sbss :
+  {
+    *(.sbss .sbss.* .gnu.linkonce.sb.*)
+    *(.scommon)
+    . = ALIGN(8);
+  } > ram : ram_load
+  
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -136,6 +142,7 @@ SECTIONS
     . = . + __stack_size;
     _sp = .;
   } > ram : ram_load
+
 
   /* this area is used for loading and executing the comrv 
      overlay groups */
