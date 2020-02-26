@@ -137,6 +137,13 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* Place a label, the debugger will stop here to query the overlay manager current status.  */
 #define M_COMRV_DEBUGGER_HOOK_SYMBOL()            asm volatile (".globl _ovly_debug_event\n" \
                                                       "_ovly_debug_event:");
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
+#define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
+                                                stError.uiToken    = token; \
+                                                comrvErrorHook(&stError);
+#else
+#define M_COMRV_ERROR(stError,errorNum,token)
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
 
 /**
 * types
@@ -290,9 +297,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 {
    comrvCacheEntry_t   *pEntry;
    comrvOverlayToken_t  unToken;
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t     stErrArgs;
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
    comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
@@ -852,9 +859,9 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 {
    void            *pAddress;
    comrvLoadArgs_t  stLoadArgs;
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t stErrArgs;
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
 
    /* at this point comrv cache is empty so we take the
       last entry and use it to store the multigroup and
@@ -981,9 +988,9 @@ D_COMRV_TEXT_SECTION void comrvDisable(void)
 */
 D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
 {
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t stErrArgs;
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
    M_COMRV_ERROR(stErrArgs, D_COMRV_INVOKED_WHILE_DISABLED, D_COMRV_INVALID_TOKEN);
 }
 
