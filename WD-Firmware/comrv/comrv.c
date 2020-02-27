@@ -137,13 +137,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* Place a label, the debugger will stop here to query the overlay manager current status.  */
 #define M_COMRV_DEBUGGER_HOOK_SYMBOL()            asm volatile (".globl _ovly_debug_event\n" \
                                                       "_ovly_debug_event:");
-#ifdef D_COMRV_ERROR_NOTIFICATIONS
-#define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
-                                                stError.uiToken    = token; \
-                                                comrvErrorHook(&stError);
-#else
-#define M_COMRV_ERROR(stError,errorNum,token)
-#endif /* D_COMRV_ERROR_NOTIFICATIONS */
 
 /**
 * types
