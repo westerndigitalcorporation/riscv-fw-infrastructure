@@ -26,36 +26,31 @@
 /**
 * include files
 */
-
+#include "psp_types.h"
 #include "psp_intrinsics.h"
 #include "psp_defines.h"
 #include "psp_config.h"
-#include "psp_interrupt_api.h"
+#include "psp_csrs.h"
 #include "psp_macros.h"
+#include "psp_interrupts.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
+#include "psp_timers.h"
 #ifdef D_NEXYS_A7
-    #include "psp_swerv_eh1_csrs.h"
+    #include "psp_csrs_swerv_eh1.h"
 #endif
 
 /**
 * definitions
 */
-#ifdef D_HI_FIVE1
-    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
-    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
-#elif D_NEXYS_A7
-    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_DISABLE_SWERV_TIMER();
-    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_ENABLE_SWERV_TIMER();
-#endif
-
-#define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSetupSingleRun(enableInterrupt)
 
 
 /**
 * macros
 */
 
+/* What is the current privilege-level */
+#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented */
 
 /**
 * types
@@ -86,7 +81,7 @@
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause);
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 
 /**
@@ -97,7 +92,7 @@ pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInte
 *
 * @return u32_t                   - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t exceptionCause);
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
 /**
 *
@@ -105,20 +100,6 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 */
 void pspTrapUnhandled(void);
 
-/**
-*
-* Setup function for M-Timer. Called upon initialization of the system
-*
-*/
-void pspTimerSetup(void);
-
-/**
-*
-* Setup function for Core's Timer for a single run
-*
-* @param enable     – indicates whether to enable timer interrupt or not
-*/
-void pspTimerSetupSingleRun(const unsigned int enableInterrupt);
 
 
 
