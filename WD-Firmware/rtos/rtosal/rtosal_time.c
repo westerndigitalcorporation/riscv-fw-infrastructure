@@ -37,6 +37,7 @@
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
+
 /**
 * definitions
 */
@@ -60,6 +61,7 @@
 /**
 * global variables
 */
+u32_t g_uTimerPeriod = 0;
 
 
 /**
@@ -373,6 +375,37 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 }
 
 
+
+/**
+* @brief rtosalTimerSetPeriod - Store the input parameter in a global variable for usage along the program run
+*                               (used for setup the timer-counter as the period time to count-up)
+*
+* @param timerPeriod
+*
+*/
+void rtosalTimerSetPeriod(u32_t timerPeriod)
+{
+	g_uTimerPeriod = timerPeriod;
+}
+
+/**
+* @brief rtosalTimerSetup - Setup & activates core's timer
+*
+* @param void
+*
+*/
+void rtosalTimerSetup(void)
+{
+	/* In case g_uTimerPeriod = 0 then there is no point to activate the timer */
+	M_PSP_ASSERT(0 == g_uTimerPeriod);
+
+	/* Enable timer interrupt */
+	M_PSP_M_ENABLE_INTERRUPT_ID(D_PSP_MIE_MTIE_MASK);
+
+	/* Activates Core's timer with the calculated period */
+	M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
+}
+
 /**
 * @brief rtosalTimerIntHandler - Timer interrupt handler
 *
@@ -382,15 +415,12 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 void rtosalTimerIntHandler(void)
 {
 	/* Disable Machine-Timer interrupt */
-	D_PSP_DISABLE_TIMER_INT();
+	M_PSP_M_DISBLE_INTERRUPT_ID(D_PSP_MIE_MTIE_MASK);
 
-	/* Indicate PSP to let the Timer run an additional cycle, without enable it - this is done later on here after Ticking the RTOS */
-	D_PSP_SETUP_SINGLE_TIMER_RUN(0);
+    /* Increment the RTOS tick. */
+    rtosalTick();
 
-   /* Increment the RTOS tick. */
-	rtosalTick();
-
-	/* Enable Machine-Timer interrupt */
-	D_PSP_ENABLE_TIMER_INT();
+    /* Setup the Timer for next round */
+    rtosalTimerSetup();
 }
 
