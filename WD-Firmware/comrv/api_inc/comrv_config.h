@@ -120,4 +120,15 @@
    #define D_COMRV_OVL_CACHE_SIZE_IN_BYTES  1536
 #endif /* D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES */
 
+/* eviction algorithm definition */
+#if (D_COMRV_EVICTION_POLICY == 0)
+   #define D_COMRV_EVICTION_LRU
+#elif (D_COMRV_EVICTION_POLICY == 1)
+   #define D_COMRV_EVICTION_LRU
+#elif (D_COMRV_EVICTION_POLICY == 2)
+   #define D_COMRV_EVICTION_LFU
+#elif (D_COMRV_EVICTION_POLICY == 3)
+   #define D_COMRV_EVICTION_MIX_LRU_LFU
+#endif /* */
+
 #endif /* __COMRV_CONFIG_H__ */
