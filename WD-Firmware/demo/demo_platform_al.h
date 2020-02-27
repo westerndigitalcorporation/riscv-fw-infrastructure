@@ -31,6 +31,7 @@
    #include "encoding.h"
    #include "platform.h"
 #endif
+
 /**
 * definitions
 */
@@ -96,13 +97,13 @@ void demoPlatformInit(void);
 * demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
 *                 using the platform means for that.
 *
-* const void *str - pointer to a string to be printed out
+* const void *pStr - pointer to a string to be printed out
 *
-* size_t size - number of characters to print
+* u32_t uiSize - number of characters to print
 *
 * */
 #ifdef D_HI_FIVE1
-void demoOutputMsg(const void *str, size_t size);
+void demoOutputMsg(const void *pStr, u32_t uiSize);
 #else
 #include "printf.h"
 #define demoOutputMsg(f_,...)  printfNexys((f_), ##__VA_ARGS__)
@@ -111,7 +112,6 @@ void demoOutputMsg(const void *str, size_t size);
 /**
 * demoOutputToggelLed - sets LED output according input request.
 *
-* const D_LED_ACTION ledAct - LED action to do
 *
 * The "LED action" is defined per each platform
 *
