@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_swerv_eh1_csrs.h
+* @file   psp_timers.h
 * @author Nati Rapaport
-* @date   01.12.2019
-* @brief  Definitions of Swerv's (EH1 version) CSRs
+* @date   28.01.2020
+* @brief  The file defines timer-counter api services
 * 
 */
-#ifndef  __PSP_SWERV_EH1_CSRS_H__
-#define  __PSP_SWERV_EH1_CSRS_H__
+#ifndef  __PSP_TIMER_COUNTERS_H__
+#define  __PSP_TIMER_COUNTERS_H__
 
 /**
 * include files
@@ -31,12 +31,8 @@
 /**
 * definitions
 */
-#define M_PSP_DISABLE_SWERV_TIMER()
-#define M_PSP_ENABLE_SWERV_TIMER()
+#define D_PSP_CORE_TIMER 0
 
-/**
-* macros
-*/
 
 /**
 * types
@@ -49,15 +45,19 @@
 /**
 * external prototypes
 */
+extern void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * global variables
 */
 
 /**
+* macros
+*/
+#define M_PSP_TIMER_COUNTER_ACTIVATE(timer, period)   fptrPspTimerCounterActivate(timer, period)
+
+/**
 * APIs
 */
 
-
-
-#endif /* __PSP_SWERV_EH1_CSRS_H__ */
+#endif /* __PSP_TIMER_COUNTERS_H__ */

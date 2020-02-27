@@ -67,7 +67,7 @@ SECTIONS
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
     . = ALIGN(4);
-  } > ram : rom_load
+  } > ram : ram_load
 
   /* this is a placeholder for comrv overlay groups.
      after linking, we'll use objcopy utility and change the
