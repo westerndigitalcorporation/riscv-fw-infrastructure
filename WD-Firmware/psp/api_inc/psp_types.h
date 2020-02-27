@@ -19,7 +19,7 @@
 * @author Nati Rapaport
 * @date   04.11.2019
 * @brief  The file defines the fw types - its contents is fully identical to WD-Firmware/common/api_inc/common_types.h
-*                                         we duplicates it here in order to keep PSP fully independant
+*                                         we duplicates it here in order to keep PSP fully independent
 */
 #ifndef  __FW_PSP_TYPES_H__
 #define  __FW_PSP_TYPES_H__
@@ -27,7 +27,6 @@
 /**
 * include files
 */
-
 
 /**
 * types

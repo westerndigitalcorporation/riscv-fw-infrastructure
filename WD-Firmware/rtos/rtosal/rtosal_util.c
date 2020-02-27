@@ -25,7 +25,7 @@
 /**
 * include files
 */
-#include "psp_types.h"
+#include "psp_api.h"
 #include "rtosal_util.h"
 #include "rtosal_macros.h"
 #include "rtosal_task_api.h"
@@ -35,7 +35,6 @@
 #else
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
-#include "psp_api.h"
 #include "demo_platform_al.h"
 
 /**
@@ -68,6 +67,8 @@ extern rtosalTimerTickHandler_t fptrTimerTickHandler ;
 */
 u32_t g_rtosalContextSwitch = 0;
 u32_t g_rtosalIsInterruptContext = D_RTOSAL_NON_INT_CONTEXT;
+u32_t g_uInterruptsPreserveMask  = 0; /* Used for restoring interrupts status */
+
 
 #ifdef D_USE_FREERTOS
 /* Idle-task and Timer-task are created by FreeRtos and not by this application */

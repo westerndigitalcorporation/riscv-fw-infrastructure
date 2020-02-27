@@ -97,7 +97,7 @@ This implementation supports riscv privileged v1.10
 .global vPortUpdateStackPriorContextSwitch
 
 xPortStartScheduler:
-    jal pspTimerSetup
+    jal rtosalTimerSetup
     M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
     M_PSP_POP_REGFILE
     mret

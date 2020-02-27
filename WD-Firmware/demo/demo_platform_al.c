@@ -24,10 +24,6 @@
 /**
 * include files
 */
-#include "common_types.h"
-#include "demo_platform_al.h"
-#include "psp_api.h"
-
 #if defined(D_HI_FIVE1)
    #include <unistd.h>
 #elif defined(D_NEXYS_A7)
@@ -38,6 +34,9 @@
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
+
+#include "demo_platform_al.h"
+#include "psp_api.h"
 
 /**
 * definitions
@@ -79,10 +78,9 @@
 void demoLedsInit(void)
 {
 #ifdef D_HI_FIVE1
-	GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-	GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-	GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-
+  GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+  GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+  GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 #endif
 }
 
@@ -94,7 +92,7 @@ void demoLedsInit(void)
 void demoUartInit(void)
 {
 #ifdef D_HI_FIVE1
-  /* Empty implementation */
+   /* Empty implementation */
 #endif
 #ifdef D_NEXYS_A7
   swervolfVersion_t stSwervolfVersion;
@@ -156,23 +154,21 @@ void demoPlatformInit(void)
 * demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
 *                 using the platform means for that.
 *
-* const void *str - pointer to a string to be printed out
+* const void *pStr - pointer to a string to be printed out
 *
-* size_t size - number of characters to print
+* u32_t uiSize - number of characters to print
 *
 * */
 #ifdef D_HI_FIVE1
-void demoOutputMsg(const void *str, size_t size)
+void demoOutputMsg(const void *pStr, u32_t uiSize)
 {
-  write(1, str, size);
+  write(1, pStr, uiSize);
 }
 #endif
-
 
 /**
 * demoOutputToggelLed - sets LED output according input request.
 *
-* const D_LED_ACTION ledAct - LED action to do
 *
 * The "LED action" is defined per each platform, it is the led color
 *
@@ -213,6 +209,4 @@ void demoOutpuLed(const u08_t ucOnOffMode)
   M_PSP_WRITE_REGISTER_32(D_LED_BASE_ADDRESS, ucOnOffMode);
 #endif
 }
-
-
 

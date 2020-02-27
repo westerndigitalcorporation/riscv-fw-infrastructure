@@ -115,4 +115,10 @@ u32_t rtosTimerStop(rtosalTimer_t* pRtosalTimerCb);
 */
 u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t uiTicks, u32_t uiRescheduleTicks);
 
+/**
+* @brief - Store the input parameter in a global variable for usage along the program run
+*/
+void rtosalTimerSetPeriod(u32_t timerPeriod);
+
+
 #endif /* __RTOSAL_TIME_API_H__ */
