@@ -35,7 +35,6 @@
 extern "C" {
 #endif
 
-#include "psp_types.h"
 #include "psp_api.h"
 
 /*-----------------------------------------------------------
@@ -87,7 +86,7 @@ not need to be guarded with a critical section. */
 
 
 /* Scheduler utilities. */
-#define portYIELD()                              M_PSP_YIELD()
+#define portYIELD()                              M_PSP_ECALL()
 #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired ) vTaskSwitchContext()
 #define portYIELD_FROM_ISR( x )                  portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/
@@ -101,8 +100,13 @@ extern void vTaskExitCritical( void );
 #define portSET_INTERRUPT_MASK_FROM_ISR() 0
 
 #define portCLEAR_INTERRUPT_MASK_FROM_ISR( uxSavedStatusValue ) ( void ) uxSavedStatusValue
-#define portDISABLE_INTERRUPTS()	                            M_PSP_DISABLE_INTERRUPTS()
-#define portENABLE_INTERRUPTS()		                            M_PSP_ENABLE_INTERRUPTS()
+
+/* Note: There are vTaskEnterCritical that calls portDISABLE_INTERRUPTS and portEXIT_CRITICAL that calls portENABLE_INTERRUPTS.
+ * So we have to use a global parameter to preserve interrupts status over disable & enable of interrupts */
+extern unsigned int g_uInterruptsPreserveMask;
+#define portDISABLE_INTERRUPTS()	                            M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&g_uInterruptsPreserveMask);
+#define portENABLE_INTERRUPTS()		                        M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(g_uInterruptsPreserveMask);
+
 #define portENTER_CRITICAL()	                                vTaskEnterCritical()
 #define portEXIT_CRITICAL()		                                vTaskExitCritical()
 
