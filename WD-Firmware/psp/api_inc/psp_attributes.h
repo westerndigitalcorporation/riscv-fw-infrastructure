@@ -21,6 +21,9 @@
 * @brief  The file defines attribute directives that relevant to our PSP
 * 
 */
+#ifndef  __PSP_ATTRIBUTES_H__
+#define  __PSP_ATTRIBUTES_H__
+
 #if defined (__GNUC__) || defined (__clang__)
 
 /**
@@ -47,3 +50,5 @@
 */
 
 #endif /* defined (__GNUC__) || defined (__clang__) */
+
+#endif /* __PSP_ATTRIBUTES_H__ */

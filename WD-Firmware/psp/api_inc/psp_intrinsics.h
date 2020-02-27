@@ -40,7 +40,17 @@
 #endif
 
 
-#define D_PSP_INLINE    inline
+#define D_PSP_INLINE    static inline
+
+/* The following CSRs are known to be intrinsics values in GCC and LLVM. Those are not instructions */
+#define D_PSP_MISA    misa
+#define D_PSP_MTVEC   mtvec
+#define D_PSP_MSTATUS mstatus
+#define D_PSP_MIE     mie
+#define D_PSP_MIP     mip
+#define D_PSP_MCAUSE  mcause
+#define D_PSP_MEPC    mepc
+
 
 
 #endif /* defined (__GNUC__) || defined (__clang__) */
