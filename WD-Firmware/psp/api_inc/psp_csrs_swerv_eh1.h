@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_defines.h
-* @author Ronen Haen
-* @date   20.05.2019
-* @brief  The psp defines
+* @file   psp_csrs_swerv_eh1.h
+* @author Nati Rapaport
+* @date   01.12.2019
+* @brief  Definitions of Swerv's (EH1 version) CSRs
 * 
 */
-#ifndef  __PSP_DEFINES_H__
-#define  __PSP_DEFINES_H__
+#ifndef  __PSP_CSRS_SWERV_EH1_H__
+#define  __PSP_CSRS_SWERV_EH1_H__
 
 /**
 * include files
@@ -32,16 +32,30 @@
 * definitions
 */
 
-/* there are 1000 msec in one second */
-#define D_PSP_MSEC       1000
+/**
+* macros
+*/
 
-/* function return codes */
-#define D_PSP_SUCCESS    0x00
-#define D_PSP_FAIL       0x01
-#define D_PSP_PTR_ERROR  0x02
+/**
+* types
+*/
 
-#define D_PSP_TRUE       1
-#define D_PSP_FALSE      0
+/**
+* local prototypes
+*/
+
+/**
+* external prototypes
+*/
+
+/**
+* global variables
+*/
+
+/**
+* APIs
+*/
 
 
-#endif /* __PSP_DEFINES_H__ */
+
+#endif /* __PSP_CSRS_SWERV_EH1_H__ */
