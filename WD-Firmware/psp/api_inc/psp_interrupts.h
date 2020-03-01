@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupt_api.h
+* @file   psp_interrupts.h
 * @author Ronen Haen
 * @date   20.05.2019
 * @brief  The file defines the psp interrupt interfaces
 */
-#ifndef __PSP_INTERRUPT_API_H__
-#define __PSP_INTERRUPT_API_H__
+#ifndef __PSP_INTERRUPTS_H__
+#define __PSP_INTERRUPTS_H__
 
 /**
 * include files
@@ -34,6 +34,19 @@
 /**
 * macros
 */
+
+/* Disable/Enable specific interrupt */
+/* mie_interrupt is one of D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
+#define M_PSP_M_DISBLE_INTERRUPT_ID(mie_interrupt)  u32_t uiCsrVal; \
+	                                                M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, mie_interrupt);
+#define M_PSP_M_ENABLE_INTERRUPT_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
+
+/* Disable Interrupts (all privilege levels) */
+#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(mask)  pspInterruptsDisable(mask)
+/* Restore interrupts to their previous state */
+#define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(mask)  pspInterruptsRestore(mask)
+/* Enable interrupts regardless their previous state */
+#define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable()
 
 /**
 * types
@@ -106,4 +119,21 @@ typedef void (*pspInterruptHandler_t)(void);
 * APIs
 */
 
-#endif /* __PSP_INTERRUPT_API_H__ */
+/**
+* Disable interrupts and return the current (== before the 'disable') interrupt state
+*/
+void pspInterruptsDisable(u32_t  *pOutPrevIntState);
+
+/**
+* Restore the interrupts state
+*/
+void pspInterruptsRestore(u32_t uiPrevIntState);
+/**
+* Enable interrupts regardless their previous state
+*/
+void pspInterruptsEnable(void);
+
+
+
+
+#endif /* __PSP_INTERRUPTS_H__ */
