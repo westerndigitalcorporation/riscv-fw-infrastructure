@@ -66,7 +66,6 @@ void demoRtosalTxMsgTask( void *pvParameters );
 /**
 * global variables
 */
-extern void* _OVERLAY_STORAGE_START_ADDRESS_;
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
@@ -270,89 +269,6 @@ void demoRtosalReceiveMsgTask( void *pvParameters )
 }
 
 /**
-* memory copy hook
-*
-* @param  none
-*
-* @return none
-*/
-void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
-{
-   u32_t loopCount = sizeInBytes/(sizeof(u32_t)), i;
-   /* copy dwords */
-   for (i = 0; i < loopCount ; i++)
-   {
-      *((u32_t*)pDest + i) = *((u32_t*)pSrc + i);
-   }
-   loopCount = sizeInBytes - (loopCount*(sizeof(u32_t)));
-   /* copy bytes */
-   for (i = (i-1)*(sizeof(u32_t)) ; i < loopCount ; i++)
-   {
-      *((u08_t*)pDest + i) = *((u08_t*)pSrc + i);
-   }
-}
-
-/**
-* load overlay group hook
-*
-* @param pLoadArgs - refer to comrvLoadArgs_t for exact args
-*
-* @return loaded address or NULL if unable to load
-*/
-void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
-{
-   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&_OVERLAY_STORAGE_START_ADDRESS_ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
-   /* it is upto the end user of comrv to synchronize the instruction and data stream after
-      overlay data has been written to destination memory */
-   M_DEMO_COMRV_RTOS_FENCE();
-
-   return pLoadArgs->pDest;
-}
-
-/**
-* notification hook
-*
-* @param  pInstArgs - pointer to instrumentation arguments
-*
-* @return none
-*/
-#ifdef D_COMRV_FW_INSTRUMENTATION
-void comrvInstrumentationHook(const comrvInstrumentationArgs_t* pInstArgs)
-{
-   g_stInstArgs = *pInstArgs;
-}
-#endif /* D_COMRV_FW_INSTRUMENTATION */
-
-/**
-* error hook
-*
-* @param  pErrorArgs - pointer to error arguments
-*
-* @return none
-*/
-void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
-{
-   comrvStatus_t stComrvStatus;
-   comrvGetStatus(&stComrvStatus);
-   /* we can't continue so loop forever */
-   M_ENDLESS_LOOP();
-}
-
-/**
-* crc calculation hook (itt)
-*
-* @param pAddress         - memory address to calculate
-*        memSizeInBytes   - number of bytes to calculate
-*        uiExpectedResult - expected crc result
-*
-* @return calculated CRC
-*/
-u32_t comrvCrcCalcHook (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult)
-{
-   return 0;
-}
-
-/**
 * enter critical section
 *
 * @param None
@@ -399,15 +315,3 @@ u32_t comrvExitCriticalSectionHook(void)
 
    return 0;
 }
-
-/******************** start temporary build issue workaround ****************/
-void _kill(void)
-{
-}
-void _sbrk(void)
-{
-}
-void _getpid(void)
-{
-}
-/******************** end temporary build issue workaround ****************/
