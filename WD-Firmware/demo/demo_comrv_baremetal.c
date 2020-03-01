@@ -22,6 +22,7 @@
 #include "psp_macros.h"
 #include "comrv_api.h"
 #include "demo_platform_al.h"
+#include "psp_csrs.h"
 
 /**
 * definitions
@@ -215,7 +216,7 @@ void demoStart(void)
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    /* Register interrupt vector */
-   M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
+   M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
