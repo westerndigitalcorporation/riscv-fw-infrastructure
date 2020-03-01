@@ -33,6 +33,12 @@ class demo(object):
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
         'D_USE_FREERTOS',
+        'D_COMRV_ENABLE_RTOS_SUPPORT',
+        'D_COMRV_ENABLE_ERROR_NOTIFICATIONS',
+        'D_COMRV_MIN_GROUP_SIZE_IN_BYTES=512',
+        'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
+        'D_COMRV_MAX_CALL_STACK_DEPTH=10',
+        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES=1024',
     ]
 
     self.listSconscripts = [
