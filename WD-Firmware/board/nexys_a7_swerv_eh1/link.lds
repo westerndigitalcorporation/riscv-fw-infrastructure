@@ -111,14 +111,7 @@ SECTIONS
     *(.srodata .srodata.*)
    . = ALIGN(8);
   } > ram : ram_load
-  
-  .sbss :
-  {
-    *(.sbss .sbss.* .gnu.linkonce.sb.*)
-    *(.scommon)
-    . = ALIGN(8);
-  } > ram : ram_load
-  
+
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -129,7 +122,7 @@ SECTIONS
   .bss :
   {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
-    *(.scommon)    
+    *(.scommon)
     *(.bss)
     . = ALIGN(8);
   } >ram : ram_load
