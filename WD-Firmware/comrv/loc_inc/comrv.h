@@ -39,20 +39,20 @@
 #define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
 #define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
 
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    #define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
                                                    stError.uiToken    = token; \
                                                    comrvErrorHook(&stError);
 #else
    #define M_COMRV_ERROR(stError,errorNum,token)
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
 
 #ifdef D_COMRV_ASSERT_ENABLED
-   #ifdef M_COMRV_ERROR_NOTIFICATIONS
+   #ifdef D_COMRV_ERROR_NOTIFICATIONS
       #define M_COMRV_ASSERT_ACTION(error,tokenVal)      M_COMRV_ERROR(stErrArgs,error,tokenVal);
    #else
       #define M_COMRV_ASSERT_ACTION(error,tokenVal)      while(1);
-   #endif /* M_COMRV_ERROR_NOTIFICATIONS */
+   #endif /* D_COMRV_ERROR_NOTIFICATIONS */
    #define M_COMRV_ASSERT(expression, expectedVlue, error, tokenVal)  if (M_COMRV_BUILTIN_EXPECT((expression) != (expectedVlue), 0)) \
                                                                       { \
                                                                          M_COMRV_ASSERT_ACTION(error,tokenVal); \
