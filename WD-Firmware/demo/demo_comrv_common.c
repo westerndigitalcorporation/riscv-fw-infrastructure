@@ -125,7 +125,7 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
    comrvStatus_t stComrvStatus;
    comrvGetStatus(&stComrvStatus);
    /* we can't continue so loop forever */
-   while (1);
+   M_PSP_EBREAK();
 }
 
 /**
