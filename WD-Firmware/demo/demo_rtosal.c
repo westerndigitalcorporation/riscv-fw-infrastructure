@@ -369,7 +369,6 @@ static void demoRtosalSendMsgTask( void *pParameters )
 static void demoRtosalReceiveMsgTask( void *pParameters )
 {
 	u32_t uiReceivedValue;
-     char stringValue[10];
 
     for( ;; )
     {
