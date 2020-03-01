@@ -64,12 +64,12 @@
 
 #include "common_types.h"
 #include "demo_platform_al.h"
-#include "psp_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
+#include <stdlib.h>
 
 /**
 * definitions
@@ -260,6 +260,7 @@ void demoRtosalCreateTasks(void *pParameters)
 
     /* Calculates timer period */
     demoRtosalcalculateTimerPeriod();
+
 }
 
 
@@ -368,6 +369,7 @@ static void demoRtosalSendMsgTask( void *pParameters )
 static void demoRtosalReceiveMsgTask( void *pParameters )
 {
 	u32_t uiReceivedValue;
+     char stringValue[10];
 
     for( ;; )
     {

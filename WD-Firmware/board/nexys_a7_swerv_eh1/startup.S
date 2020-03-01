@@ -72,7 +72,6 @@ _start:
       	#cache configuration
 	li t1, 0x55555555
 	csrw 0x7c0, t1
-
 	# initialize global pointer
 	.option push
 	.option norelax
