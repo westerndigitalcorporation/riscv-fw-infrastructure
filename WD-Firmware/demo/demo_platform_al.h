@@ -103,10 +103,12 @@ void demoPlatformInit(void);
 *
 * */
 #ifdef D_HI_FIVE1
-void demoOutputMsg(const void *pStr, u32_t uiSize);
+   void demoOutputMsg(const void *pStr, u32_t uiSize);
+#elif defined(D_NEXYS_A7)
+   #include "printf.h"
+   #define demoOutputMsg(f_,...)  printfNexys((f_), ##__VA_ARGS__)
 #else
-#include "printf.h"
-#define demoOutputMsg(f_,...)  printfNexys((f_), ##__VA_ARGS__)
+   #define demoOutputMsg(f_,...)
 #endif
 
 /**
