@@ -98,6 +98,10 @@ void demoUartInit(void)
   swervolfVersion_t stSwervolfVersion;
 
   versionGetSwervolfVer(&stSwervolfVersion);
+  if (stSwervolfVersion.ucMinor == 0 && stSwervolfVersion.ucMajor == 0)
+  {
+     printfSetUartStatus(0);
+  }
 
  /* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
   * when running with Whisper */
@@ -118,11 +122,6 @@ void demoUartInit(void)
                    stSwervolfVersion.ucSha,
                    stSwervolfVersion.ucDirty);
   printfNexys("------------------------------------------");
-
-
-
-
-
 #endif
 }
 
