@@ -23,6 +23,7 @@
 #include "rtosal_task_api.h"
 #include "rtosal_mutex_api.h"
 #include "rtosal_queue_api.h"
+#include "rtosal_time_api.h"
 #include "psp_interrupts.h"
 
 /**
@@ -58,6 +59,7 @@ meaning the send task should always find the queue empty. */
 void demoRtosalCreateTasks(void *pParam);
 void demoRtosalReceiveMsgTask( void *pvParameters );
 void demoRtosalTxMsgTask( void *pvParameters );
+void demoRtosalcalculateTimerPeriod(void);
 
 /**
 * external prototypes
@@ -172,6 +174,9 @@ void demoRtosalCreateTasks(void *pParam)
       demoOutputMsg("comrv mutex creation failed\n", 28);
       M_ENDLESS_LOOP();
    }
+
+   /* Calculates timer period */
+   demoRtosalcalculateTimerPeriod();
 }
 
 /**
@@ -314,4 +319,21 @@ u32_t comrvExitCriticalSectionHook(void)
    }
 
    return 0;
+}
+
+/**
+ * demoRtosalcalculateTimerPeriod - Calculates Timer period
+ *
+ */
+void demoRtosalcalculateTimerPeriod(void)
+{
+   u32_t uiTimerPeriod = 0;
+
+    #if (0 == D_CLOCK_RATE) || (0 == D_TICK_TIME_MS)
+        #error "Core frequency values definitions are missing"
+    #endif
+
+   uiTimerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
+   /* Store calculated timerPeriod for future use */
+   rtosalTimerSetPeriod(uiTimerPeriod);
 }
