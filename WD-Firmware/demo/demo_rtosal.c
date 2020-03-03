@@ -57,11 +57,6 @@
 /**
 * include files
 */
-
-#ifdef D_HI_FIVE1
-    #include <stdlib.h>	
-#endif
-
 #include "common_types.h"
 #include "demo_platform_al.h"
 #include "rtosal_task_api.h"
