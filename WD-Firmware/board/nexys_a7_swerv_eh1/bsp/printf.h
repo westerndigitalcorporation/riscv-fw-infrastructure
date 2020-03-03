@@ -19,5 +19,7 @@
 
 u32_t  printfNexys(const char * cFormat, ... );
 void   uartInit(void);
+void   printfSetUartStatus(u08_t ucStatus);
+u08_t  printfGetUartStatus(void);
 
 #endif //__PRINTF_H

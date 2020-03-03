@@ -65,6 +65,11 @@
 #define M_UART_WR_CH(_CHAR_) (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (0x00) )) = _CHAR_)
 
 /*---------------------------------------------------*/
+/* static                                            */
+/*---------------------------------------------------*/
+static u08_t g_ucStatus = 1;
+
+/*---------------------------------------------------*/
 /* strlen											 */
 /*---------------------------------------------------*/
 int strlen(const char *s)
@@ -445,18 +450,29 @@ u32_t printfNexys( const char * cFormat, ... )
 {
   u32_t uiRes = 0;
   va_list argp;
-  if(cFormat)
-  {
-    va_start( argp, cFormat);
-    // Setup target to be stdout function
-    uiRes = uart_printf( cFormat, argp);
 
-    va_end( argp);
+  if (printfGetUartStatus() == 1)
+  {
+      if (cFormat)
+      {
+         va_start( argp, cFormat);
+         // Setup target to be stdout function
+         uiRes = uart_printf( cFormat, argp);
+         va_end( argp);
+      }
+
+      printUartPutchar('\n');
   }
 
-  printUartPutchar('\n');
   return uiRes;
 }
 
+void printfSetUartStatus(u08_t ucStatus)
+{
+   g_ucStatus = ucStatus;
+}
 
-
+u08_t printfGetUartStatus(void)
+{
+   return g_ucStatus;
+}
