@@ -28,6 +28,9 @@
    #include <unistd.h>
 #elif defined(D_NEXYS_A7)
    #include "printf.h"
+   #include "mem_map.h"
+   #include "version.h"
+   #include "psp_macros.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
@@ -75,9 +78,9 @@
 void demoLedsInit(void)
 {
 #ifdef D_HI_FIVE1
-   GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-   GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
-   GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+  GPIO_REG(GPIO_INPUT_EN)    &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+  GPIO_REG(GPIO_OUTPUT_EN)   |=  ((0x1<< RED_LED_OFFSET)| (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
+  GPIO_REG(GPIO_OUTPUT_VAL)  &= ~((0x1<< RED_LED_OFFSET) | (0x1<< GREEN_LED_OFFSET) | (0x1 << BLUE_LED_OFFSET)) ;
 #endif
 }
 
@@ -92,15 +95,33 @@ void demoUartInit(void)
    /* Empty implementation */
 #endif
 #ifdef D_NEXYS_A7
-   /* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
-    * when running with Whisper */
-    u32_t* pUartState = (u32_t*)(UART_BASE_ADDRESS+0x8);
-   *pUartState = 0 ;
+  swervolfVersion_t stSwervolfVersion;
 
-   printfNexys("------------------------------------------");
-   printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
-   printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
-   printfNexys("------------------------------------------");
+  versionGetSwervolfVer(&stSwervolfVersion);
+  if (stSwervolfVersion.ucMinor == 0 && stSwervolfVersion.ucMajor == 0)
+  {
+     printfSetUartStatus(0);
+  }
+
+ /* Whisper bypass - force UART state to be "non-busy" (== 0) so print via UART will be displayed on console
+  * when running with Whisper */
+  u32_t* pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
+  *pUartState = 0 ;
+
+  /* init uart */
+  uartInit();
+
+  printfNexys("------------------------------------------");
+  printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
+  printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
+  printfNexys("------------------------------------------");
+  printfNexys("SweRVolf version %d.%d%d (SHA %08x) (dirty %d)",
+                   stSwervolfVersion.ucMajor,
+                   stSwervolfVersion.ucMinor,
+                   stSwervolfVersion.ucRev,
+                   stSwervolfVersion.ucSha,
+                   stSwervolfVersion.ucDirty);
+  printfNexys("------------------------------------------");
 #endif
 }
 
@@ -115,12 +136,16 @@ void demoUartInit(void)
 void demoPlatformInit(void)
 {
 #ifdef D_HI_FIVE1
-	_init();
-#elif D_NEXYS_A7
-	// Nada for now
+  _init();
+#elif defined(D_NEXYS_A7)
+  // Nada for now
 #endif
-    demoLedsInit();
-    demoUartInit();
+  /* init LED GPIO*/
+  demoLedsInit();
+
+  /* init Uart for 115200 baud, 8 data bits, 1 stop bit, no parity */
+  demoUartInit();
+
 
 }
 
@@ -133,38 +158,54 @@ void demoPlatformInit(void)
 * u32_t uiSize - number of characters to print
 *
 * */
+#ifdef D_HI_FIVE1
 void demoOutputMsg(const void *pStr, u32_t uiSize)
 {
-#ifdef D_HI_FIVE1
-	write(1, pStr, uiSize);
-#elif D_NEXYS_A7
-	printfNexys(pStr);
-#endif
+  write(1, pStr, uiSize);
 }
-
+#endif
 
 /**
-* demoOutputLed - sets LED output according input request.
+* demoOutputToggelLed - sets LED output according input request.
 *
-* const s32_t - LED action to do
 *
-* The "LED action" is defined per each platform
+* The "LED action" is defined per each platform, it is the led color
 *
 * */
-void demoOutputLed(const s32_t siLedAct)
+void demoOutputToggelLed(void)
 {
+  static u08_t ucLedAct;
 #ifdef D_HI_FIVE1
-   switch (siLedAct)
-   {
-      case D_LED_GREEN_ON:
-        GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
-        break;
-      case D_LED_BLUE_ON:
-        GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
-        break;
-      default:
-        break;
-   }
+  switch (ucLedAct)
+  {
+    case D_LED_GREEN_ON:
+       GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << GREEN_LED_OFFSET) ;
+       break;
+    case D_LED_BLUE_ON:
+       GPIO_REG(GPIO_OUTPUT_VAL)  ^=   (0x1 << BLUE_LED_OFFSET) ;
+       break;
+    default:
+       break;
+  }
+#elif defined(D_NEXYS_A7)
+  demoOutpuLed(ucLedAct);
+#endif
+
+  ucLedAct = !ucLedAct;
+}
+
+/**
+* demoOutputLed - sets LED output on/off
+*
+* const uiOnOffMode = 0/1
+*
+*
+* */
+void demoOutpuLed(const u08_t ucOnOffMode)
+{
+#ifdef D_NEXYS_A7
+  M_PSP_ASSERT(uiOnOffMode>1);
+  M_PSP_WRITE_REGISTER_32(D_LED_BASE_ADDRESS, ucOnOffMode);
 #endif
 }
 

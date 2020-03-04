@@ -105,7 +105,7 @@ extern void vTaskExitCritical( void );
  * So we have to use a global parameter to preserve interrupts status over disable & enable of interrupts */
 extern unsigned int g_uInterruptsPreserveMask;
 #define portDISABLE_INTERRUPTS()	                            M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&g_uInterruptsPreserveMask);
-#define portENABLE_INTERRUPTS()		                            M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(g_uInterruptsPreserveMask);
+#define portENABLE_INTERRUPTS()		                        M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(g_uInterruptsPreserveMask);
 
 #define portENTER_CRITICAL()	                                vTaskEnterCritical()
 #define portEXIT_CRITICAL()		                                vTaskExitCritical()
