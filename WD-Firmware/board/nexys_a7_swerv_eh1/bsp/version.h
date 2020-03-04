@@ -13,13 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __PRINTF_H
-#define __PRINTF_H
-#include "psp_types.h"
+#ifndef __VERSION_H
+#define __VERSION_H
 
-u32_t  printfNexys(const char * cFormat, ... );
-void   uartInit(void);
-void   printfSetUartStatus(u08_t ucStatus);
-u08_t  printfGetUartStatus(void);
+/* version sturct */
+typedef struct swervolfVersion
+{
+  u08_t ucRev;
+  u08_t ucMinor;
+  u08_t ucMajor;
+  u08_t ucSha;
+  u08_t ucDirty;
+} swervolfVersion_t;
+
+/**
+ *
+* The function return version num
+*
+* @param inputs: ucRev, minor, major, sha, dirty
+*
+*/
+void versionGetSwervolfVer(swervolfVersion_t *pSwervolfVersion);
 
 #endif //__PRINTF_H
+
