@@ -32,6 +32,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /**
 * include files
 */
+#include "common_types.h"
 #include "comrv_config.h"
 #include "comrv.h"
 #include "comrv_api.h"
@@ -800,10 +801,11 @@ D_COMRV_TEXT_SECTION void comrvGetStatus(comrvStatus_t* pComrvStatus)
 */
 D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
 {
+   u32_t uiOutPrevIntState;
    comrvStackFrame_t *pStackPool, *pStackFrame;
 
    /* disable ints */
-   M_COMRV_DISABLE_INTS();
+   M_COMRV_DISABLE_INTS(uiOutPrevIntState);
    /* read stack pool register (t4) */
    M_COMRV_READ_POOL_REG(pStackPool);
    /* save the address of the next available stack frame */
@@ -813,7 +815,7 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
    /* write the new stack pool address */
    M_COMRV_WRITE_POOL_REG(pStackPool);
    /* enable ints */
-   M_COMRV_ENABLE_INTS();
+   M_COMRV_ENABLE_INTS(uiOutPrevIntState);
    /* set the address of COMRV stack in t3 */
    M_COMRV_WRITE_STACK_REG(pStackFrame);
    /* mark the last stack frame */

@@ -24,8 +24,8 @@
 /**
 * include files
 */
-#include "psp_pragmas.h"
 #include "psp_types.h"
+#include "psp_api.h"
 
 #ifdef D_HI_FIVE1
    #include "encoding.h"
@@ -38,8 +38,9 @@
 
 /* LEDs outputs definition */
 #ifdef D_HI_FIVE1
-    #define D_LED_GREEN_ON 1
-    #define D_LED_BLUE_ON  2
+    #define D_LED_GREEN_ON 0
+    #define D_LED_BLUE_ON  1
+
 #elif D_NEXYS_A7
     #define D_LED_GREEN_ON 'X' //unknown
     #define D_LED_BLUE_ON  'X' //unknown
@@ -101,16 +102,30 @@ void demoPlatformInit(void);
 * u32_t uiSize - number of characters to print
 *
 * */
-void demoOutputMsg(const void *pStr, u32_t uiSize);
+#ifdef D_HI_FIVE1
+   void demoOutputMsg(const void *pStr, u32_t uiSize);
+#elif defined(D_NEXYS_A7)
+   #include "printf.h"
+   #define demoOutputMsg(f_,...)  printfNexys((f_), ##__VA_ARGS__)
+#else
+   #define demoOutputMsg(f_,...)
+#endif
 
 /**
-* demoOutputLed - sets LED output according input request.
+* demoOutputToggelLed - sets LED output according input request.
 *
-* const s32_t - LED action to do
 *
 * The "LED action" is defined per each platform
 *
 * */
-void demoOutputLed(const s32_t siLedAct);
+void demoOutputToggelLed(void);
 
+/**
+* demoOutputLed - sets LED output on/off
+*
+* const uiOnOffMode = 0/1
+*
+*
+* */
+void demoOutpuLed(const u08_t ucOnOffMode);
 

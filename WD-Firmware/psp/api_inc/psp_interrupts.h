@@ -42,7 +42,7 @@
 #define M_PSP_M_ENABLE_INTERRUPT_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
 
 /* Disable Interrupts (all privilege levels) */
-#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(mask)  pspInterruptsDisable(mask)
+#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(pMask) pspInterruptsDisable(pMask)
 /* Restore interrupts to their previous state */
 #define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(mask)  pspInterruptsRestore(mask)
 /* Enable interrupts regardless their previous state */
