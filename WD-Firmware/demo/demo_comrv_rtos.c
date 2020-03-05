@@ -23,6 +23,8 @@
 #include "rtosal_task_api.h"
 #include "rtosal_mutex_api.h"
 #include "rtosal_queue_api.h"
+#include "rtosal_time_api.h"
+#include "psp_interrupts.h"
 
 /**
 * definitions
@@ -57,6 +59,7 @@ meaning the send task should always find the queue empty. */
 void demoRtosalCreateTasks(void *pParam);
 void demoRtosalReceiveMsgTask( void *pvParameters );
 void demoRtosalTxMsgTask( void *pvParameters );
+void demoRtosalcalculateTimerPeriod(void);
 
 /**
 * external prototypes
@@ -65,7 +68,6 @@ void demoRtosalTxMsgTask( void *pvParameters );
 /**
 * global variables
 */
-extern void* _OVERLAY_STORAGE_START_ADDRESS_;
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
@@ -79,6 +81,7 @@ static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
 static rtosalMsgQueue_t stMsgQueue;
 static rtosalMutex_t stComrvMutex;
+static u32_t uiPrevIntState;
 
 /**
 * functions
@@ -118,8 +121,8 @@ void demoRtosalCreateTasks(void *pParam)
    pspExceptionCause_t cause;
 
    /* Disable the machine & timer interrupts until setup is done. */
-   M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MEIP);
-   M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
+   M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
+   M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MTIE_MASK);
 
    /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
    for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST_COMMON ; cause++)
@@ -133,7 +136,7 @@ void demoRtosalCreateTasks(void *pParam)
    }
 
    /* Enable the Machine-External bit in MIE */
-   M_PSP_SET_CSR(mie, D_PSP_MIP_MEIP);
+   M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 
    /* Create the queue used by the send-msg and receive-msg tasks. */
    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH,
@@ -171,6 +174,9 @@ void demoRtosalCreateTasks(void *pParam)
       demoOutputMsg("comrv mutex creation failed\n", 28);
       M_ENDLESS_LOOP();
    }
+
+   /* Calculates timer period */
+   demoRtosalcalculateTimerPeriod();
 }
 
 /**
@@ -268,89 +274,6 @@ void demoRtosalReceiveMsgTask( void *pvParameters )
 }
 
 /**
-* memory copy hook
-*
-* @param  none
-*
-* @return none
-*/
-void comrvMemcpyHook(void* pDest, void* pSrc, u32_t sizeInBytes)
-{
-   u32_t loopCount = sizeInBytes/(sizeof(u32_t)), i;
-   /* copy dwords */
-   for (i = 0; i < loopCount ; i++)
-   {
-      *((u32_t*)pDest + i) = *((u32_t*)pSrc + i);
-   }
-   loopCount = sizeInBytes - (loopCount*(sizeof(u32_t)));
-   /* copy bytes */
-   for (i = (i-1)*(sizeof(u32_t)) ; i < loopCount ; i++)
-   {
-      *((u08_t*)pDest + i) = *((u08_t*)pSrc + i);
-   }
-}
-
-/**
-* load overlay group hook
-*
-* @param pLoadArgs - refer to comrvLoadArgs_t for exact args
-*
-* @return loaded address or NULL if unable to load
-*/
-void* comrvLoadOvlayGroupHook(comrvLoadArgs_t* pLoadArgs)
-{
-   comrvMemcpyHook(pLoadArgs->pDest, (u08_t*)&_OVERLAY_STORAGE_START_ADDRESS_ + pLoadArgs->uiGroupOffset, pLoadArgs->uiSizeInBytes);
-   /* it is upto the end user of comrv to synchronize the instruction and data stream after
-      overlay data has been written to destination memory */
-   M_DEMO_COMRV_RTOS_FENCE();
-
-   return pLoadArgs->pDest;
-}
-
-/**
-* notification hook
-*
-* @param  pInstArgs - pointer to instrumentation arguments
-*
-* @return none
-*/
-#ifdef D_COMRV_FW_INSTRUMENTATION
-void comrvInstrumentationHook(const comrvInstrumentationArgs_t* pInstArgs)
-{
-   g_stInstArgs = *pInstArgs;
-}
-#endif /* D_COMRV_FW_INSTRUMENTATION */
-
-/**
-* error hook
-*
-* @param  pErrorArgs - pointer to error arguments
-*
-* @return none
-*/
-void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
-{
-   comrvStatus_t stComrvStatus;
-   comrvGetStatus(&stComrvStatus);
-   /* we can't continue so loop forever */
-   M_ENDLESS_LOOP();
-}
-
-/**
-* crc calculation hook (itt)
-*
-* @param pAddress         - memory address to calculate
-*        memSizeInBytes   - number of bytes to calculate
-*        uiExpectedResult - expected crc result
-*
-* @return calculated CRC
-*/
-u32_t comrvCrcCalcHook (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult)
-{
-   return 0;
-}
-
-/**
 * enter critical section
 *
 * @param None
@@ -368,7 +291,7 @@ u32_t comrvEnterCriticalSectionHook(void)
    }
    else
    {
-      M_PSP_DISABLE_INTERRUPTS();
+      M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&uiPrevIntState);
    }
 
    return 0;
@@ -392,20 +315,25 @@ u32_t comrvExitCriticalSectionHook(void)
    }
    else
    {
-      M_PSP_ENABLE_INTERRUPTS();
+      M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(uiPrevIntState);
    }
 
    return 0;
 }
 
-/******************** start temporary build issue workaround ****************/
-void _kill(void)
+/**
+ * demoRtosalcalculateTimerPeriod - Calculates Timer period
+ *
+ */
+void demoRtosalcalculateTimerPeriod(void)
 {
+   u32_t uiTimerPeriod = 0;
+
+    #if (0 == D_CLOCK_RATE) || (0 == D_TICK_TIME_MS)
+        #error "Core frequency values definitions are missing"
+    #endif
+
+   uiTimerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
+   /* Store calculated timerPeriod for future use */
+   rtosalTimerSetPeriod(uiTimerPeriod);
 }
-void _sbrk(void)
-{
-}
-void _getpid(void)
-{
-}
-/******************** end temporary build issue workaround ****************/

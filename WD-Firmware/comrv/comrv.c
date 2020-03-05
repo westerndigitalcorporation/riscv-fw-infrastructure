@@ -32,6 +32,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /**
 * include files
 */
+#include "common_types.h"
 #include "comrv_config.h"
 #include "comrv.h"
 #include "comrv_api.h"
@@ -66,6 +67,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT        2
 #define D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT          9
 #define D_COMRV_GROUP_NOT_FOUND                       0xFFFF
+#define D_COMRV_EMPTY_CALLEE_MULTIGROUP               0xFFFF
 #define D_COMRV_LAST_MULTI_GROUP_ENTRY                0
 #define D_COMRV_TABLES_CACHE_ENTRY_INDEX              (D_COMRV_NUM_OF_CACHE_ENTRIES-1)
 #define D_COMRV_LAST_CACHE_ENTRY_INDEX                (D_COMRV_TABLES_CACHE_ENTRY_INDEX)
@@ -246,7 +248,10 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
    /* initialize all stack entries */
    for (ucIndex = 0 ; ucIndex < D_COMRV_CALL_STACK_DEPTH ; ucIndex++, pStackPool++)
    {
-      pStackPool->ssOffsetPrevFrame = (s16_t)-sizeof(comrvStackFrame_t);
+      pStackPool->ssOffsetPrevFrame            = (s16_t)-sizeof(comrvStackFrame_t);
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+      pStackPool->usCalleeMultiGroupTableEntry = D_COMRV_EMPTY_CALLEE_MULTIGROUP;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    }
 
    /* point to the last frame */
@@ -290,9 +295,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 {
    comrvCacheEntry_t   *pEntry;
    comrvOverlayToken_t  unToken;
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t     stErrArgs;
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
    comrvLoadArgs_t      stLoadArgs;
    u08_t                ucIsInvoke;
    comrvStackFrame_t   *pComrvStackFrame;
@@ -307,6 +312,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    u32_t                uiTemp;
    u16_t                usSelectedMultiGroupEntry;
+   comrvOverlayToken_t* pMultigroup = (comrvOverlayToken_t*)pOverlayMultiGroupTokensTable;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 #ifdef D_COMRV_RTOS_SUPPORT
    u32_t                ret;
@@ -347,8 +353,8 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* search for token */
       usSearchResultIndex = comrvSearchForLoadedOverlayGroup(unToken);
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-      /* must be set to 0 in case no multi-group */
-      usSelectedMultiGroupEntry = 0;
+      /* must be set to empty in case no multi-group */
+      usSelectedMultiGroupEntry = D_COMRV_EMPTY_CALLEE_MULTIGROUP;
    }
    /* search for a multi-group overlay token */
    else
@@ -359,9 +365,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       do
       {
          /* search for the token */
-         usSearchResultIndex = comrvSearchForLoadedOverlayGroup(pOverlayMultiGroupTokensTable[ucEntryIndex++]);
+         usSearchResultIndex = comrvSearchForLoadedOverlayGroup(pMultigroup[ucEntryIndex++]);
       /* continue the search as long as the group wasn't found and we have additional tokens */
-      } while ((usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) && (pOverlayMultiGroupTokensTable[ucEntryIndex].uiValue != D_COMRV_LAST_MULTI_GROUP_ENTRY));
+      } while ((usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) && (pMultigroup[ucEntryIndex].uiValue != D_COMRV_LAST_MULTI_GROUP_ENTRY));
 
       /* save the selected multi group entry */
       usSelectedMultiGroupEntry = ucEntryIndex-1;
@@ -382,7 +388,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       {
          /* for now we take the first token in the list of tokens */
          // TODO: need to have a more sophisticated way to select the multi-group */
-         unToken = pOverlayMultiGroupTokensTable[unToken.stFields.uiOverlayGroupID];
+         unToken = pMultigroup[unToken.stFields.uiOverlayGroupID];
          /* save the selected multi group entry; usSelectedMultiGroupEntry is used to
             update comrv stack frame with the loaded multi group table entry.
             It is used to calculate the actual return offset in case we
@@ -537,7 +543,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* get the already loaded overlay token */
       if (unToken.stFields.uiMultiGroup)
       {
-         unToken = pOverlayMultiGroupTokensTable[usSelectedMultiGroupEntry];
+         unToken = pMultigroup[usSelectedMultiGroupEntry];;
       }
       /* get the group size */
      usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
@@ -558,11 +564,11 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
          pComrvStackFrame->uiCalleeToken holds the return address */
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
       /* In multi group token we need to get the offset from previously loaded token */
-      if (pComrvStackFrame->usCalleeMultiGroupTableEntry)
+      if (pComrvStackFrame->usCalleeMultiGroupTableEntry != D_COMRV_EMPTY_CALLEE_MULTIGROUP)
       {
          /* we now are at the point of loading a multi-group token so we need to take the
             previous token for which the return address refers to */
-         unToken = pOverlayMultiGroupTokensTable[pComrvStackFrame->usCalleeMultiGroupTableEntry];
+         unToken = pMultigroup[pComrvStackFrame->usCalleeMultiGroupTableEntry];
          /* get the offset */
          uiTemp = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken);
          /* get the token group size */
@@ -570,7 +576,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
          /* calculate the actual return offset */
          usOffset += ((u32_t)(pReturnAddress) - uiTemp) & (--usOverlayGroupSize);
          /* clear the save multi token so it won't be reused */
-         pComrvStackFrame->usCalleeMultiGroupTableEntry = 0;
+         pComrvStackFrame->usCalleeMultiGroupTableEntry = D_COMRV_EMPTY_CALLEE_MULTIGROUP;
       }
       else
       {
@@ -795,10 +801,11 @@ D_COMRV_TEXT_SECTION void comrvGetStatus(comrvStatus_t* pComrvStatus)
 */
 D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
 {
+   u32_t uiOutPrevIntState;
    comrvStackFrame_t *pStackPool, *pStackFrame;
 
    /* disable ints */
-   M_COMRV_DISABLE_INTS();
+   M_COMRV_DISABLE_INTS(uiOutPrevIntState);
    /* read stack pool register (t4) */
    M_COMRV_READ_POOL_REG(pStackPool);
    /* save the address of the next available stack frame */
@@ -808,7 +815,7 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
    /* write the new stack pool address */
    M_COMRV_WRITE_POOL_REG(pStackPool);
    /* enable ints */
-   M_COMRV_ENABLE_INTS();
+   M_COMRV_ENABLE_INTS(uiOutPrevIntState);
    /* set the address of COMRV stack in t3 */
    M_COMRV_WRITE_STACK_REG(pStackFrame);
    /* mark the last stack frame */
@@ -852,9 +859,9 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 {
    void            *pAddress;
    comrvLoadArgs_t  stLoadArgs;
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t stErrArgs;
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
 
    /* at this point comrv cache is empty so we take the
       last entry and use it to store the multigroup and
@@ -981,9 +988,9 @@ D_COMRV_TEXT_SECTION void comrvDisable(void)
 */
 D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
 {
-#ifdef M_COMRV_ERROR_NOTIFICATIONS
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t stErrArgs;
-#endif /* M_COMRV_ERROR_NOTIFICATIONS */
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
    M_COMRV_ERROR(stErrArgs, D_COMRV_INVOKED_WHILE_DISABLED, D_COMRV_INVALID_TOKEN);
 }
 
