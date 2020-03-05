@@ -56,8 +56,7 @@ WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
           ├── ihfive-unleashed (not supported yet)
-          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1) 
-          ├── nexys_a7_swerv_eh1_swervolf (Support for SweRV eh1 with full SoC) 
+          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1, also support SweRVolf)
           ├── whisper (Support for SweRV eh1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
