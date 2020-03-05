@@ -23,14 +23,17 @@
 .option nowarnreservedreg
 #endif /* __clang__ */
 
-	.section ".text.init"
-	.global	_start
-	.type   _start, @function
+  .section ".text.init"
+  .global _start
+  .type   _start, @function
+
+
+
 
 _start:
-	#clear minstret
-    csrw minstret, zero 
-	csrw minstreth, zero
+  #clear minstret
+  csrw minstret, zero
+  csrw minstreth, zero
 
 	#clear registers
 	li  x1, 0
@@ -69,7 +72,6 @@ _start:
       	#cache configuration
 	li t1, 0x55555555
 	csrw 0x7c0, t1
-
 	# initialize global pointer
 	.option push
 	.option norelax
@@ -113,9 +115,10 @@ _start:
 #OS	csrr a0, mhartid
 #OS	li   a1, 1
 #OS 1:  bgeu a0, a1, 1b
-    # argc = argv = 0 
+    # argc = argv = 0 t0
     li a0, 0
     li a1, 0
+
     call main
     
     #[OS]: no need for exit, just endless loop here.....was: tail atexit
