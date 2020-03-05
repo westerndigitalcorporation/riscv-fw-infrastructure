@@ -20,7 +20,7 @@
       "bits" : 15
    },
    "memmap" : {
-      "cosnoleio" : "0xd0580000"
+      "cosnoleio" : "0x80002000"
    },
    "harts" : 1,
    "num_mmode_perf_regs" : "4",

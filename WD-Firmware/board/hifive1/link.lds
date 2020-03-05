@@ -7,8 +7,6 @@ MEMORY
   flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
   ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 16K
   ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
-  /* TODO: Temporary old section. Will be removed shortly */
-  ovltmp           : ORIGIN = 0xF0000000, LENGTH = 0x10000
 }
 
 PHDRS

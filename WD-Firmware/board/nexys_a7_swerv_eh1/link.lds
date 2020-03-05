@@ -25,8 +25,9 @@ ENTRY( _start )
 
 MEMORY
 {
-  ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 128K
-  ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
+  ram (wxa!ri)  : ORIGIN = 0x00000000, LENGTH = 128K
+  dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
+  ovl           : ORIGIN = 0xE0000000, LENGTH = 4k
 }
 
 PHDRS
@@ -36,6 +37,7 @@ PHDRS
   ram_load PT_LOAD;
   ovl PT_NULL;
 }
+
 
 /*----------------------------------------------------------------------*/
 /* Sections                            */
@@ -50,7 +52,7 @@ SECTIONS
   {
     *(.text.init)
     . = ALIGN(8);
-  } > ram : rom_load
+  } > ram : ram_load
 
   .text :
   {
@@ -60,6 +62,7 @@ SECTIONS
     *(.gnu.linkonce.t.*)
     . = ALIGN(4);
   } >ram : ram_load
+
 
   .rodata :
   {
@@ -91,6 +94,7 @@ SECTIONS
     PROVIDE( _data = . );
   } > ram : ram_load
   
+  
   .data :
   {
     *(.data .data.*)
@@ -108,14 +112,7 @@ SECTIONS
     *(.srodata .srodata.*)
    . = ALIGN(8);
   } > ram : ram_load
-  
-  .sbss :
-  {
-    *(.sbss .sbss.* .gnu.linkonce.sb.*)
-    *(.scommon)
-    . = ALIGN(8);
-  } > ram : ram_load
-  
+
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -125,6 +122,8 @@ SECTIONS
   
   .bss :
   {
+    *(.sbss .sbss.* .gnu.linkonce.sb.*)
+    *(.scommon)
     *(.bss)
     . = ALIGN(8);
   } >ram : ram_load
@@ -138,6 +137,7 @@ SECTIONS
     _sp = .;
   } > ram : ram_load
 
+
   /* this area is used for loading and executing the comrv 
      overlay groups */
   .overlay_sec ALIGN(__comrv_align_size) :
@@ -145,7 +145,7 @@ SECTIONS
     __OVERLAY_CACHE_START__ = . ;
     . = __comrv_cache_size; 
     __OVERLAY_CACHE_END__ = . ;
-  }  >ram 
+  } > ram : ram_load
 
   /* this is the location of all comrv overlay groups.
      after linking, we'll use objcopy utility and copy
