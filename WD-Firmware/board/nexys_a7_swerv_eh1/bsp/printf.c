@@ -46,6 +46,7 @@
 #define M_UART_WR_REG_IER(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x01) )) = _VAL_) /* Interrupt enable reg.          */
 #define M_UART_WR_REG_FCR(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x02) )) = _VAL_) /* FIFO control reg.              */
 #define M_UART_WR_REG_LCR(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x03) )) = _VAL_) /* Line control reg.              */
+#define M_UART_WR_REG_LSR(_VAL_)  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x05) )) = _VAL_) /* Line control reg.              */
 
 #define M_UART_RD_REG_LSR()  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x05) )))              /* Line status reg.               */
 
@@ -67,7 +68,6 @@
 /*---------------------------------------------------*/
 /* static                                            */
 /*---------------------------------------------------*/
-static u08_t g_ucStatus = 1;
 
 /*---------------------------------------------------*/
 /* strlen											 */
@@ -133,6 +133,9 @@ int printUartPutchar(char ch)
 */
 void uartInit(void)
 {
+  /* SET LSR to be 1's so Whisper will be happy that ch is ready */
+  M_UART_WR_REG_LSR(0xff);
+
   /* Set DLAB bit in LCR */
   M_UART_WR_REG_LCR(D_UART_DLAB_BIT);
 
@@ -451,28 +454,17 @@ u32_t printfNexys( const char * cFormat, ... )
   u32_t uiRes = 0;
   va_list argp;
 
-  if (printfGetUartStatus() == 1)
+  if (cFormat)
   {
-      if (cFormat)
-      {
-         va_start( argp, cFormat);
-         // Setup target to be stdout function
-         uiRes = uart_printf( cFormat, argp);
-         va_end( argp);
-      }
-
-      printUartPutchar('\n');
+     va_start( argp, cFormat);
+     // Setup target to be stdout function
+     uiRes = uart_printf( cFormat, argp);
+     va_end( argp);
   }
+
+  printUartPutchar('\n');
 
   return uiRes;
 }
 
-void printfSetUartStatus(u08_t ucStatus)
-{
-   g_ucStatus = ucStatus;
-}
 
-u08_t printfGetUartStatus(void)
-{
-   return g_ucStatus;
-}

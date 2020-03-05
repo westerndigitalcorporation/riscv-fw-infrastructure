@@ -25,9 +25,9 @@ ENTRY( _start )
 
 MEMORY
 {
-  ram (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 128K
+  ram (wxa!ri)  : ORIGIN = 0x00000000, LENGTH = 128K
   dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
-  ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
+  ovl           : ORIGIN = 0xE0000000, LENGTH = 4k
 }
 
 PHDRS
@@ -93,6 +93,7 @@ SECTIONS
     . = ALIGN(4);
     PROVIDE( _data = . );
   } > ram : ram_load
+  
   
   .data :
   {
