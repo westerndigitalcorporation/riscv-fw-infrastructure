@@ -45,7 +45,9 @@ The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. This demo
 
 #### Current Platform and Core support:
 - **HiFive1** 
-- **SweRV** - running on *Nexys-A7 FPGA*
+- **SweRV**    - running on *Nexys-A7 FPGA*
+- **SweRVolf** - running on *Nexys-A7 FPGA* EH1 with full SoC
+- **Whisper**  - ISS tool running on SweRVolf EH1
 
 
 ### Source tree structure 
