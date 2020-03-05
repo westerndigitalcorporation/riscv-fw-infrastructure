@@ -102,6 +102,11 @@ SECTIONS
     . = ALIGN(8);
   } > ram : ram_load
 
+  PSP_DATA_SEC : ALIGN(16)
+  {
+  
+  }  > ram : ram_load
+
   .sdata :
   {
     . = ALIGN(8);
@@ -113,6 +118,8 @@ SECTIONS
    . = ALIGN(8);
   } > ram : ram_load
 
+
+  
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -136,8 +143,8 @@ SECTIONS
     . = . + __stack_size;
     _sp = .;
   } > ram : ram_load
-
-
+  
+  
   /* this area is used for loading and executing the comrv 
      overlay groups */
   .overlay_sec ALIGN(__comrv_align_size) :
