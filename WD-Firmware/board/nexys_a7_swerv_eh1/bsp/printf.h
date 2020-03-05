@@ -15,9 +15,11 @@
 
 #ifndef __PRINTF_H
 #define __PRINTF_H
+#include "psp_types.h"
 
-#include "mem_map.h"
-
-int	printfNexys(const char* format, ... );
+u32_t  printfNexys(const char * cFormat, ... );
+void   uartInit(void);
+void   printfSetUartStatus(u08_t ucStatus);
+u08_t  printfGetUartStatus(void);
 
 #endif //__PRINTF_H
