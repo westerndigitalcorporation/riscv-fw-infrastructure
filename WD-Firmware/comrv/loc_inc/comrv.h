@@ -28,6 +28,7 @@
 * include files
 */
 #include "psp_macros.h"
+#include "psp_interrupts.h"
 
 /**
 * definitions
@@ -63,8 +64,8 @@
 
 #ifdef D_COMRV_RTOS_SUPPORT
    // TODO: replace M_PSP_ with new interface
-   #define M_COMRV_DISABLE_INTS()   M_PSP_DISABLE_INTERRUPTS()
-   #define M_COMRV_ENABLE_INTS()    M_PSP_ENABLE_INTERRUPTS()
+   #define M_COMRV_DISABLE_INTS(uiOutPrevIntState) pspInterruptsDisable(&uiOutPrevIntState)
+   #define M_COMRV_ENABLE_INTS(uiOutPrevIntState)  pspInterruptsRestore(uiOutPrevIntState)
    #define M_COMRV_ENTER_CRITICAL_SECTION()  ret = comrvEnterCriticalSectionHook(); \
                                              M_COMRV_ASSERT(ret, D_COMRV_SUCCESS, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken.uiValue);
    #define M_COMRV_EXIT_CRITICAL_SECTION()   ret = comrvExitCriticalSectionHook(); \
@@ -72,10 +73,9 @@
 #else
    #define M_COMRV_ENTER_CRITICAL_SECTION()
    #define M_COMRV_EXIT_CRITICAL_SECTION()
-   #define M_COMRV_DISABLE_INTS()
-   #define M_COMRV_ENABLE_INTS()
+   #define M_COMRV_DISABLE_INTS(uiOutPrevIntState) (void)uiOutPrevIntState
+   #define M_COMRV_ENABLE_INTS(uiOutPrevIntState)  (void)uiOutPrevIntState
 #endif /* D_COMRV_RTOS_SUPPORT */
-
 
 /* M_PSP_BUILTIN_EXPECT instruction provides branch
    prediction information. The condition parameter is the expected

@@ -17,11 +17,21 @@
 #ifndef __MEM_MAP_H
 #define __MEM_MAP_H
 
-//Memory map
-#define EXT_SRAM_BASE_ADDRES 	0x00000000
-#define ICCM_BASE_ADDRESS		0xEE000000
-#define DCCM_BASE_ADDRESS		0xF0080000
-#define UART_BASE_ADDRESS		0x44A00000
+//[OS]: this is currently obsolete
+//Memory map SweRV EH1 (Arup)
+//[OS] #define EXT_SRAM_BASE_ADDRES 	0x00000000
+//[OS] #define ICCM_BASE_ADDRESS		0xEE000000
+//[OS] #define DCCM_BASE_ADDRESS		0xF0080000
+//[OS] #define UART_BASE_ADDRESS		0x44A00000
+
+//Memory map SweRV EH1 (SweRVWolf - Olof)
+#define D_UART_BASE_ADDRESS		0x80002000
+#define D_LED_BASE_ADDRESS      0x80001010
+#define D_VERSION_REV           0x80001000
+#define D_VERSION_MINOR         0x80001001
+#define D_VERSION_MAJOR         0x80001002
+#define D_VERSION_DIRTY         0x80001003
+#define D_VERSION_SHA           0x80001004
 
 
 #endif //__MEM_MAP_H

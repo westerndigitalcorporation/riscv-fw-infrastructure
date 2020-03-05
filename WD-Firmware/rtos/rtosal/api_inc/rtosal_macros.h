@@ -42,6 +42,7 @@
    #define M_RTOSAL_VALIDATE_FUNC_PARAM(param, conditionMet, returnCode)
 #endif /* #if (D_RTOSAL_ERROR_CHECK==1) */
 
+//TODO: update RTOSAL_SECTION to D_RTOSAL_SECTION
 #define RTOSAL_SECTION __attribute__((section("RTOSAL_SEC")))
 
 #endif /* __RTOSAL_MACRO_H__ */
