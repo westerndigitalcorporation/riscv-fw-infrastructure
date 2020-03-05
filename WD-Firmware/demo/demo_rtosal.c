@@ -57,14 +57,17 @@
 /**
 * include files
 */
-#include "psp_api.h"
+#ifdef D_HI_FIVE1
+    #include <stdlib.h>	
+#endif
+#include "common_types.h"
 #include "demo_platform_al.h"
 #include "rtosal_task_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
-#include <stdlib.h>
+
 
 /**
 * definitions
@@ -105,9 +108,7 @@ static void demoRtosalSendMsgTask(void *pParameters);
 static void demoRtosalSemaphoreTask(void *pParameters);
 static void demoRtosalTimerCallback(void *pTimer);
 static void demoRtosalcalculateTimerPeriod(void);
-
 void demoRtosalTimerTickHandler(void);
-
 
 /**
 * external prototypes
@@ -268,7 +269,7 @@ void demoRtosalCreateTasks(void *pParameters)
  */
 void demoRtosalTimerTickHandler(void)
 {
-static u32_t uiCount = 0;
+    static u32_t uiCount = 0;
 
     /* The RTOS tick hook function is enabled by setting configUSE_TICK_HOOK to
     1 in FreeRTOSConfig.h.
@@ -299,15 +300,7 @@ static u32_t uiCount = 0;
          uiCount = 0UL;
 
          demoOutputMsg("Giving Semaphore\n", 17);
-#ifdef D_HI_FIVE1
-         demoOutputLed(D_LED_GREEN_ON);
-#else
-    /* Developer: please add here implementation that fits your environment */
-    M_PSP_NOP();
-    M_PSP_NOP();
-    M_PSP_NOP();
-    M_PSP_NOP();
-#endif
+         demoOutputToggelLed();
     }
 }
 
@@ -324,9 +317,11 @@ static void demoRtosalTimerCallback(void* pTimer)
     execute periodically. */
     uiCountOfTimerCallbackExecutions++;
 
-    demoOutputMsg("RTOS Timer Callback\n", 20);
+    demoOutputToggelLed();
 #ifdef D_HI_FIVE1
-    demoOutputLed(D_LED_BLUE_ON);
+    demoOutputMsg("RTOS Timer Callback\n", 20);
+#elif defined(D_NEXYS_A7)
+    demoOutputMsg("RTOS Timer Callback\n");
 #else
     /* Developer: please add here implementation that fits your environment */
     M_PSP_NOP();
@@ -344,7 +339,7 @@ static void demoRtosalTimerCallback(void* pTimer)
  */
 static void demoRtosalSendMsgTask( void *pParameters )
 {
-const u32_t uiValueToSend = 100UL;
+    const u32_t uiValueToSend = 100UL;
 
     /* Initialise xNextWakeTime - this only needs to be done once. */
     for( ;; )
@@ -372,7 +367,6 @@ const u32_t uiValueToSend = 100UL;
 static void demoRtosalReceiveMsgTask( void *pParameters )
 {
 	u32_t uiReceivedValue;
-    char  cStringValue[10];
 
     for( ;; )
     {
@@ -380,10 +374,15 @@ static void demoRtosalReceiveMsgTask( void *pParameters )
         /* Wait until something arrives in the queue - this task will block
         indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
         FreeRTOSConfig.h. */
+#ifdef D_HI_FIVE1
+        char cStringValue[10];
         itoa(uiReceivedValue,cStringValue, 10);
-        demoOutputMsg("Recieved: ", 10);
+        demoOutputMsg("Received: ", 10);
         demoOutputMsg(cStringValue, 3);
-		demoOutputMsg("\n",1);
+        demoOutputMsg("\n",1);
+#else
+        demoOutputMsg("Received %d: ",uiReceivedValue);
+#endif
 
         /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */
