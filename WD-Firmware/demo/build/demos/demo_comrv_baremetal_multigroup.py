@@ -16,30 +16,33 @@
 #*/
 import os
 
+cacheSize = "1024"
+
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "comrv_baremetal"
+    self.strDemoName   = "comrv_baremetal_multigroup"
     self.rtos_core     = ""
     self.toolchain     = ""
     self.toolchainPath = ""
-    self.strGrpFile    = os.path.join("..", "comrv-baremetal.csv")
-    self.strComrvCacheSize = "1536"
+    self.strGrpFile    = os.path.join("..", "comrv-baremetal-multigroup.csv")
+    self.strComrvCacheSize = cacheSize
     self.strLinkFilePrefix = ''
-    
+
     self.public_defs = [
         'D_BARE_METAL',
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
         'D_COMRV_ENABLE_ERROR_NOTIFICATIONS',
+        'D_COMRV_ENABLE_MULTI_GROUP_SUPPORT',
         'D_COMRV_MIN_GROUP_SIZE_IN_BYTES=512',
         'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
         'D_COMRV_MAX_CALL_STACK_DEPTH=10',
-        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES=1536',
+        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES='+cacheSize,
     ]
 
     self.listSconscripts = [
       'comrv_baremetal',
-      'demo_comrv_baremetal',
+      'demo_comrv_baremetal_multigroup',
     ]
 
     self.listDemoSpecificCFlags = [
