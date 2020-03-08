@@ -73,16 +73,16 @@ def fnProduceSectionsSize(target, source, env):
    f.close()
    return None
 
-# delete/clean elf file from prev build
-def fnCleanElf(target, source, env):
 
 # delete/clean elf file from prev build
-def fnCleanElf(target, source, env):
-   if platform.uname()[0] == STR_PLATFORM_LINUX:
-     fnExecuteCommand(STR_REMOVE_FILE_LINUX % Env['ELF_FILE'], "unable to delete file " + Env['ELF_FILE'])
+def fnCleanElf(strFileWithPatg):
+   if os.path.exists(strFileWithPatg):
+     if platform.uname()[0] == STR_PLATFORM_LINUX:
+       fnExecuteCommand(STR_REMOVE_FILE_LINUX % strFileWithPatg, "unable to delete file " + strFileWithPatg)
+     else:
+       fnExecuteCommand(STR_REMOVE_FILE_WIN % strFileWithPatg, "unable to delete file " + strFileWithPatg)
    else:
-     fnExecuteCommand(STR_REMOVE_FILE_WIN % Env['ELF_FILE'], "unable to delete file " + Env['ELF_FILE'])
-         
+       "no elf file to delete"  
 
 
 # create the dump file
