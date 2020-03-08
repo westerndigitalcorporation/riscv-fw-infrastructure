@@ -32,9 +32,11 @@ STR_MAP_SIZE_APPEND = "%s %s >> %s"
 ##### Dependencies check
 STR_LIST_PKGS = "dpkg -s %s > tmp.txt 2>&1"
 STR_TMP_FILE = "tmp.txt"
-STR_PLATFORM = "Linux"
+STR_PLATFORM_LINUX = "Linux"
+STR_PLATFORM_WIN = "Windows"
 STR_NO_INSTALL = "not installed"
-STR_REMOVE_FILE = "rm %s"
+STR_REMOVE_FILE_LINUX = "rm %s"
+STR_REMOVE_FILE_WIN = "del %s"
 
 STR_TC_LLVM                  = "llvm"
 STR_BINUTILS                 = "binutils"
@@ -70,6 +72,18 @@ def fnProduceSectionsSize(target, source, env):
       fnExecuteCommand(STR_MAP_SIZE_APPEND % (strSizeUtilName, strElfName, env['MAP_FILE']))
    f.close()
    return None
+
+# delete/clean elf file from prev build
+def fnCleanElf(target, source, env):
+
+# delete/clean elf file from prev build
+def fnCleanElf(target, source, env):
+   if platform.uname()[0] == STR_PLATFORM_LINUX:
+     fnExecuteCommand(STR_REMOVE_FILE_LINUX % Env['ELF_FILE'], "unable to delete file " + Env['ELF_FILE'])
+   else:
+     fnExecuteCommand(STR_REMOVE_FILE_WIN % Env['ELF_FILE'], "unable to delete file " + Env['ELF_FILE'])
+         
+
 
 # create the dump file
 def fnProduceDump(target, source, env):
@@ -125,21 +139,21 @@ def fnCopyOverlaySection(target, source, env):
          print "'%s' is too small [%s] while '%s' size is [%s]" %(STR_RESERVED_OVL_SEC_NAME, hex(intReservedSectionSize), STR_OVL_DATA_SEC_NAME, hex(intOvlSectionSize))
          fnExecuteCommand("rm " + env['ELF_FILE'])
    # delete the temporary file
-   fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE, "unable to delete temporary file")
+   fnExecuteCommand(STR_REMOVE_FILE_LINUX % STR_TMP_FILE, "unable to delete temporary file")
    
    return None
 
 # under linux, verify installation dependencies
 def fnCheckInstalledDependencis(listDependencis):
-  if platform.uname()[0] == STR_PLATFORM:
+  if platform.uname()[0] == STR_PLATFORM_LINUX:
     for strDependency in listDependencis:
       fnExecuteCommand(STR_LIST_PKGS % strDependency, "dpkg failed executing")
       if STR_NO_INSTALL in open(STR_TMP_FILE).read():
         print("Error: please install missing library - " + strDependency)
-        fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE)
+        fnExecuteCommand(STR_REMOVE_FILE_LINUX % STR_TMP_FILE)
         exit(1)
 
-    fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE, "Remove temporary file failed")
+    fnExecuteCommand(STR_REMOVE_FILE_LINUX % STR_TMP_FILE, "Remove temporary file failed")
   else: 
     # currently only linux is supported 
     print("unsupported environment, please switch to a linux based machine")
