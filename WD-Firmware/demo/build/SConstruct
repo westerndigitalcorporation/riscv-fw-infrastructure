@@ -158,6 +158,10 @@ print strEndHeader
 for strSconscript in objDemo.listSconscripts:
   arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
 
+#execute pre build actions
+AddPostAction(objBundle, Action(utils.fnCleanElf))
+
+
 objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
 # execute post build actions
 # todo:" to check depend soultion
