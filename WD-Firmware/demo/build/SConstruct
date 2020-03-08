@@ -159,7 +159,7 @@ for strSconscript in objDemo.listSconscripts:
   arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
 
 #execute pre build actions
-AddPostAction(objBundle, Action(utils.fnCleanElf))
+utils.fnCleanElf(Env['ELF_FILE'])
 
 
 objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
