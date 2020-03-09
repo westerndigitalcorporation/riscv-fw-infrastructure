@@ -159,7 +159,6 @@ for strSconscript in objDemo.listSconscripts:
   arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
 
 #execute pre build actions
-#utils.fnCleanElf(Env['ELF_FILE'])
 Execute(Delete(Env['ELF_FILE']))
 
 
