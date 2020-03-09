@@ -50,7 +50,7 @@ comrvInstrumentationArgs_t g_stInstArgs;
 /**
 * external prototypes
 */
-
+extern u32_t xcrc32(const u08_t *pBuf, s32_t siLen, u32_t uiInit);
 
 /**
 * global variables
@@ -129,7 +129,7 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 }
 
 /**
-* crc calculation hook (itt)
+* crc calculation hook
 *
 * @param pAddress         - memory address to calculate
 *        memSizeInBytes   - number of bytes to calculate
@@ -137,10 +137,14 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 *
 * @return calculated CRC
 */
-u32_t comrvCrcCalcHook (const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult)
+#ifdef D_COMRV_ENABLE_CRC_SUPPORT
+u32_t comrvCrcCalcHook(const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExpectedResult)
 {
-   return 0;
+   volatile u32_t uiCrc;
+   uiCrc = xcrc32(pAddress, usMemSizeInBytes, 0xffffffff);
+   return !(uiExpectedResult == uiCrc);
 }
+#endif /* D_COMRV_ENABLE_CRC_SUPPORT */
 
 /******************** start temporary build issue workaround ****************/
 void _kill(void)
