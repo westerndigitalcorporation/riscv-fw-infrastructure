@@ -34,6 +34,7 @@ STR_LIST_PKGS = "dpkg -s %s > tmp.txt 2>&1"
 STR_TMP_FILE = "tmp.txt"
 STR_PLATFORM = "Linux"
 STR_NO_INSTALL = "not installed"
+#todo : consider using SCons API: Execute(Delete("the file))
 if platform.uname()[0] == STR_PLATFORM:
     STR_REMOVE_FILE = "rm %s"
 else:
@@ -74,14 +75,6 @@ def fnProduceSectionsSize(target, source, env):
       fnExecuteCommand(STR_MAP_SIZE_APPEND % (strSizeUtilName, strElfName, env['MAP_FILE']))
    f.close()
    return None
-
-
-# delete/clean elf file from prev build
-def fnCleanElf(strFileWithPatg):
-   if os.path.exists(strFileWithPatg):
-     fnExecuteCommand(STR_REMOVE_FILE % strFileWithPatg, "unable to delete file " + strFileWithPatg)
-   else:
-      print ("no elf file to delete")  
 
 
 # create the dump file
