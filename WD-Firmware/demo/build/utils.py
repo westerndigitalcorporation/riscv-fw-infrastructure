@@ -34,7 +34,12 @@ STR_LIST_PKGS = "dpkg -s %s > tmp.txt 2>&1"
 STR_TMP_FILE = "tmp.txt"
 STR_PLATFORM = "Linux"
 STR_NO_INSTALL = "not installed"
-STR_REMOVE_FILE = "rm %s"
+#todo : consider using SCons API: Execute(Delete("the file))
+if platform.uname()[0] == STR_PLATFORM:
+    STR_REMOVE_FILE = "rm %s"
+else:
+    STR_REMOVE_FILE = "del %s"
+    
 
 STR_TC_LLVM                  = "llvm"
 STR_BINUTILS                 = "binutils"
@@ -129,6 +134,7 @@ def fnCopyOverlaySection(target, source, env):
    
    return None
 
+#TODO[OS]: we need to see if this is needed for Windows
 # under linux, verify installation dependencies
 def fnCheckInstalledDependencis(listDependencis):
   if platform.uname()[0] == STR_PLATFORM:
