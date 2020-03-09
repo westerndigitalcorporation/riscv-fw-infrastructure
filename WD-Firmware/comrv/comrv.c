@@ -77,6 +77,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_LUI_TOKEN_20_BITS_MASK                0xFFFFF000
 #define D_COMRV_ADDI_TOKEN_12_BITS_MASK               0xFFF00000
 #define D_COMRV_ADDI_TOKEN_SHMT                       20
+#define D_COMRV_TABLES_TOKEN                          0x00000001
 
 /**
 * macros
@@ -121,8 +122,15 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
       {                                                           \
          M_COMRV_ERROR(stErrArgs, D_COMRV_CRC_CHECK_ERR, unToken.uiValue);   \
       }
+
+#define M_COMRV_VERIFY_TABLES_CRC(pAddressToCalc, usMemSizeInBytes)  \
+      unToken.uiValue = D_COMRV_TABLES_TOKEN; \
+      M_COMRV_VERIFY_CRC(pAddressToCalc, (usMemSizeInBytes)-sizeof(u32_t), \
+                         *((u32_t*)(pAddressToCalc + ((usMemSizeInBytes)-sizeof(u32_t)))));
+
 #else
 #define M_COMRV_VERIFY_CRC(pAddressToCalc, usMemSizeInBytes, uiExpectedResult)
+#define M_COMRV_VERIFY_TABLES_CRC(pAddressToCalc, usMemSizeInBytes)
 #endif /* D_COMRV_CRC */
 
 /* calculate the cache address for a given cache entry */
@@ -527,7 +535,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       }
 
       M_COMRV_VERIFY_CRC(pAddress, usOverlayGroupSize-sizeof(u32_t),
-                        *((u08_t*)pAddress + (usOverlayGroupSize-sizeof(u32_t))));
+                        *((u32_t*)(pAddress + (usOverlayGroupSize-sizeof(u32_t)))));
 
       /* at this point we are sure comrv data is valid - debugger can now collect it */
       M_COMRV_DEBUGGER_HOOK_SYMBOL();
@@ -862,6 +870,9 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 #ifdef D_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t stErrArgs;
 #endif /* D_COMRV_ERROR_NOTIFICATIONS */
+#ifdef D_COMRV_CRC
+   comrvOverlayToken_t  unToken;
+#endif /* D_COMRV_CRC */
 
    /* at this point comrv cache is empty so we take the
       last entry and use it to store the multigroup and
@@ -879,6 +890,10 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    {
       M_COMRV_ERROR(stErrArgs, D_COMRV_TBL_LOAD_ERR, D_COMRV_TABLES_TOKEN);
    }
+
+   /* check tables CRC */
+   M_COMRV_VERIFY_TABLES_CRC(pAddress, stLoadArgs.uiSizeInBytes);
+
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* calculate the offset to the multi group table */
    g_stComrvCB.ucMultiGroupOffset = ((u16_t*)&__OVERLAY_MULTIGROUP_TABLE_START - (u16_t*)&__OVERLAY_GROUP_TABLE_START);
