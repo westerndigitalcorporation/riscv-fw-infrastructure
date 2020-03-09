@@ -76,7 +76,6 @@ def fnProduceSectionsSize(target, source, env):
    f.close()
    return None
 
-
 # create the dump file
 def fnProduceDump(target, source, env):
    strDmpName     = env['DMP_FILE']
