@@ -556,11 +556,16 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* get the group size */
      usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+     /* update the entry access */
+     comrvUpdateCacheEvectionParams(usSearchResultIndex);
      /* get the loaded address */
      pAddress           = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(usSearchResultIndex);
      /* the group size in bytes */
 	  usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
+
+   /* flush data cache */
+   M_COMRV_DCACHE_FLUSH_MLINES(g_stComrvCB, sizeof(g_stComrvCB));
 
    /* get actual function/data offset */
    usOffset = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken);
@@ -728,7 +733,7 @@ D_COMRV_TEXT_SECTION static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayT
       /* if token already loaded */
       if (pCacheEntry->unToken.stFields.uiOverlayGroupID == unToken.stFields.uiOverlayGroupID)
       {
-         /* return the actual function location within the loaded overlay group */
+         /* return the actual cache entry of the loaded overlay group */
          return ucEntryIndex;
       }
    }
@@ -927,6 +932,8 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    /* set the address of COMRV entry point in register t6 -
       from this point end user can call overlay functions/load overlay data */
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
+   /* flush data cache */
+   M_COMRV_DCACHE_FLUSH_MLINES(g_stComrvCB, sizeof(g_stComrvCB));
 }
 
 /**

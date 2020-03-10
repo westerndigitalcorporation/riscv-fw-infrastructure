@@ -84,6 +84,7 @@
    this provides us a way to take rare cases out of the critical execution path */
 #define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
 
+#define M_COMRV_DCACHE_FLUSH_MLINES(pAddress, uiNumOfBytes)
 
 /**
 * types
