@@ -146,6 +146,19 @@ u32_t comrvCrcCalcHook(const void* pAddress, u16_t usMemSizeInBytes, u32_t uiExp
 }
 #endif /* D_COMRV_ENABLE_CRC_SUPPORT */
 
+/**
+* Invalidate data cache hook
+*
+* @param pAddress         - memory address to invalidate
+*        uiNumSizeInBytes - number of bytes to invalidate
+*
+* @return none
+*/
+void comrvInvalidateDataCacheHook(const void* pAddress, u32_t uiNumSizeInBytes)
+{
+   (void)pAddress;
+   (void)uiNumSizeInBytes;
+}
 /******************** start temporary build issue workaround ****************/
 void _kill(void)
 {

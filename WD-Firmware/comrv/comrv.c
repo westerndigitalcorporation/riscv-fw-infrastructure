@@ -180,7 +180,7 @@ extern u32_t comrvCrcCalcHook         (const void* pAddress, u16_t usMemSizeInBy
 #ifdef D_COMRV_FW_INSTRUMENTATION
 extern void  comrvInstrumentationHook (const comrvInstrumentationArgs_t* pInstArgs);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
-
+extern void comrvInvalidateDataCacheHook(const void* pAddress, u32_t uiNumSizeInBytes);
 #ifdef D_COMRV_RTOS_SUPPORT
 extern void comrv_ret_from_callee(void);
 #endif /* D_COMRV_RTOS_SUPPORT */
@@ -564,8 +564,8 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 	  usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
 
-   /* flush data cache */
-   M_COMRV_DCACHE_FLUSH_MLINES(g_stComrvCB, sizeof(g_stComrvCB));
+   /* invalidate data cache */
+   M_COMRV_DCACHE_FLUSH_MLINES(&g_stComrvCB, sizeof(g_stComrvCB));
 
    /* get actual function/data offset */
    usOffset = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken);
@@ -932,8 +932,8 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    /* set the address of COMRV entry point in register t6 -
       from this point end user can call overlay functions/load overlay data */
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
-   /* flush data cache */
-   M_COMRV_DCACHE_FLUSH_MLINES(g_stComrvCB, sizeof(g_stComrvCB));
+   /* invalidate data cache */
+   M_COMRV_DCACHE_FLUSH_MLINES(&g_stComrvCB, sizeof(g_stComrvCB));
 }
 
 /**
