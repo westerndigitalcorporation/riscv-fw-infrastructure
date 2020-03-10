@@ -28,6 +28,7 @@ listCFiles=[
    (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
    (os.path.join('demo' , 'demo_comrv_rtos.c'), os.path.join(strOutDir, 'demo_comrv_rtos.o')),
    (os.path.join('demo' , 'demo_comrv_common.c'), os.path.join(strOutDir, 'demo_comrv_common.o')),
+   (os.path.join('demo' , 'crc32.c'), os.path.join(strOutDir, 'crc32.o')),
 ]
 
 # Assembly language source and out files in list of tupples
