@@ -69,8 +69,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_GROUP_NOT_FOUND                       0xFFFF
 #define D_COMRV_EMPTY_CALLEE_MULTIGROUP               0xFFFF
 #define D_COMRV_LAST_MULTI_GROUP_ENTRY                0
-#define D_COMRV_TABLES_CACHE_ENTRY_INDEX              (D_COMRV_NUM_OF_CACHE_ENTRIES-1)
-#define D_COMRV_LAST_CACHE_ENTRY_INDEX                (D_COMRV_TABLES_CACHE_ENTRY_INDEX)
 #define D_COMRV_TABLES_OFFSET                         0
 #define D_COMRV_TABBLES_NOT_LOADED                    0
 #define D_COMRV_TABBLES_LOADED                        1
@@ -136,12 +134,12 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* calculate the cache address for a given cache entry */
 #define M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucEntryIndex) ((u08_t*)pComrvCacheBaseAddress + (ucEntryIndex<<9))
 
-#define M_COMRV_CACHE_SIZE_IN_BYTES()   ((u08_t*)&__OVERLAY_CACHE_END__ - (u08_t*)&__OVERLAY_CACHE_START__)
+#define M_COMRV_CACHE_SIZE_IN_BYTES()   ((u08_t*)&__OVERLAY_CACHE_END__ - (u08_t*)pComrvCacheBaseAddress)
 /* this macro is only for code readability (the symbol '__OVERLAY_CACHE_START__'
    is defined in the linker script and defines the start address of comrv cache) */
 #define pComrvCacheBaseAddress          (&__OVERLAY_CACHE_START__)
 /* address of offset table (last comrv cache entry) */
-#define pOverlayOffsetTable             ((u16_t*)((u08_t*)&__OVERLAY_CACHE_END__ - D_COMRV_OVL_GROUP_SIZE_MIN))
+#define pOverlayOffsetTable             ((u16_t*)((u08_t*)pComrvCacheBaseAddress + (g_stComrvCB.ucLastCacheEntry*(D_COMRV_OVL_GROUP_SIZE_MIN))))
 /* address of multi group table */
 #define pOverlayMultiGroupTokensTable   ((comrvOverlayToken_t*)(pOverlayOffsetTable + g_stComrvCB.ucMultiGroupOffset))
 /* Place a label, the debugger will stop here to query the overlay manager current status.  */
@@ -201,6 +199,11 @@ extern void *__OVERLAY_CACHE_START__, *__OVERLAY_CACHE_END__;
 /* symbols defining the start and end of the overlay managment tables */
 extern void *__OVERLAY_MULTIGROUP_TABLE_START,  *__OVERLAY_GROUP_TABLE_START;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+/* symbol defining the end of the overlay tables */
+/* TODO: un-comment the next line once we get the end of tables symbol */
+//extern void *__OVERLAY_TABLES_END_ADDR__;
+/* TODO: remove the next line once we get the end of tables symbol */
+#define __OVERLAY_TABLES_END_ADDR__ ((u08_t*)&__OVERLAY_CACHE_START__ + D_COMRV_OVL_GROUP_SIZE_MIN - 4)
 
 /**
 * COM-RV initialization function
@@ -234,7 +237,7 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 #ifdef D_COMRV_EVICTION_LRU
    /* initialize all cache entries (exclude last cache entry which is
       reserved for comrv tables) */
-   for (ucIndex = 0 ; ucIndex < D_COMRV_LAST_CACHE_ENTRY_INDEX ; ucIndex++)
+   for (ucIndex = 0 ; ucIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucIndex++)
    {
       pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
       /* initially each entry points to the previous and next neighbor cells */
@@ -243,11 +246,8 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
       pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
       pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
    }
-   /* mark the last entry in the LRU list */
-   g_stComrvCB.stOverlayCache[ucIndex-1].unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
-   /* set the index of the list LRU and MRU */
+   /* set the index of the LRU */
    g_stComrvCB.ucLruIndex = 0;
-   g_stComrvCB.ucMruIndex = ucIndex-1;
 
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
@@ -722,7 +722,7 @@ D_COMRV_TEXT_SECTION static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayT
    comrvCacheEntry_t *pCacheEntry;
 
    /* loop all entries excluding the last entry which holds the comrv tables */
-   for (ucEntryIndex = 0 ; ucEntryIndex < D_COMRV_LAST_CACHE_ENTRY_INDEX ; ucEntryIndex+=pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits)
+   for (ucEntryIndex = 0 ; ucEntryIndex < g_stComrvCB.ucLastCacheEntry ; ucEntryIndex+=pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits)
    {
       pCacheEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex];
       /* if token already loaded */
@@ -865,22 +865,26 @@ void* comrvMemset(void* pMemory, s32_t siVal, u32_t uiSizeInDwords)
 */
 D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 {
-   void            *pAddress;
-   comrvLoadArgs_t  stLoadArgs;
+   void                *pAddress;
+   comrvLoadArgs_t      stLoadArgs;
+   u08_t                ucNumOfCacheEntriesToAllocateForTables;
 #ifdef D_COMRV_ERROR_NOTIFICATIONS
-   comrvErrorArgs_t stErrArgs;
+   comrvErrorArgs_t     stErrArgs;
 #endif /* D_COMRV_ERROR_NOTIFICATIONS */
 #ifdef D_COMRV_CRC
    comrvOverlayToken_t  unToken;
 #endif /* D_COMRV_CRC */
 
    /* at this point comrv cache is empty so we take the
-      last entry and use it to store the multigroup and
+      first entry(s) and use it to store the multigroup and
       offset tables */
+   ucNumOfCacheEntriesToAllocateForTables = (u08_t)(((__OVERLAY_TABLES_END_ADDR__ + D_COMRV_OVL_GROUP_SIZE_MIN)-(u08_t*)&__OVERLAY_CACHE_START__)/(D_COMRV_OVL_GROUP_SIZE_MIN));
+   /* calculate the last cache entry index */
+   g_stComrvCB.ucLastCacheEntry = D_COMRV_NUM_OF_CACHE_ENTRIES - ucNumOfCacheEntriesToAllocateForTables;
    /* tables are located at offset 0 (first group) */
    stLoadArgs.uiGroupOffset = D_COMRV_TABLES_OFFSET;
    /* set the load group size */
-   stLoadArgs.uiSizeInBytes = D_COMRV_OVL_GROUP_SIZE_MIN;
+   stLoadArgs.uiSizeInBytes = ucNumOfCacheEntriesToAllocateForTables * (D_COMRV_OVL_GROUP_SIZE_MIN);
    /* load address is the last comrv cache entry */
    stLoadArgs.pDest         = pOverlayOffsetTable;
    /* load the tables */
@@ -897,13 +901,27 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* calculate the offset to the multi group table */
    g_stComrvCB.ucMultiGroupOffset = ((u16_t*)&__OVERLAY_MULTIGROUP_TABLE_START - (u16_t*)&__OVERLAY_GROUP_TABLE_START);
+#ifdef D_COMRV_CRC
+   /* we need to clear the CRC in case it follows the last multigroup entry -
+      when scanning for multigroup tokens, the loop termination is with 0 signaling
+      last token in the multigroup */
+   *((u32_t*)(pAddress + (stLoadArgs.uiSizeInBytes-sizeof(u32_t)))) = 0;
+#endif /* D_COMRV_CRC */
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
    /* set cache entry token and properties */
-   g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unToken.uiValue = D_COMRV_TABLES_TOKEN;
-   g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucLocked = D_COMRV_ENTRY_LOCKED;
+   g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unToken.uiValue = D_COMRV_TABLES_TOKEN;
+   g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unProperties.stFields.ucLocked = D_COMRV_ENTRY_LOCKED;
    /* we set the size 0 so that debugger will not continue scanning the cache entries */
-   g_stComrvCB.stOverlayCache[D_COMRV_LAST_CACHE_ENTRY_INDEX].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
+   g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
+#ifdef D_COMRV_EVICTION_LRU
+   /* mark the last entry in the LRU list */
+   g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry-1].unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
+   /* set the index of the list MRU */
+   g_stComrvCB.ucMruIndex = g_stComrvCB.ucLastCacheEntry-1;
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
    /* mark that the 'offset' and 'multigroup' tables are loaded */
    g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_LOADED;
    /* set the address of COMRV entry point in register t6 -
