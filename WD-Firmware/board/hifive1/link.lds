@@ -144,6 +144,11 @@ SECTIONS
     *(.srodata .srodata.*)
   } >ram AT>flash :ram_init
 
+  PSP_DATA_SEC : 
+  {
+ 
+  } >ram AT>flash :ram_init
+  
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -170,6 +175,8 @@ SECTIONS
     . = __stack_size;
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
+
+ 
 
   /* this area is used for loading and executing the comrv 
      overlay groups */
