@@ -31,22 +31,26 @@
 * definitions
 */
 
-/**
-* macros
-*/
-
-/* Disable/Enable specific interrupt */
-/* mie_interrupt is one of D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
-#define M_PSP_M_DISBLE_INTERRUPT_ID(mie_interrupt)  u32_t uiCsrVal; \
-	                                                M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, mie_interrupt);
-#define M_PSP_M_ENABLE_INTERRUPT_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
-
-/* Disable Interrupts (all privilege levels) */
-#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(pMask) pspInterruptsDisable(pMask)
-/* Restore interrupts to their previous state */
-#define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(mask)  pspInterruptsRestore(mask)
-/* Enable interrupts regardless their previous state */
-#define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable()
+/* External Interrupt Priorities */
+#define D_PSP_EXT_INT_PRIORITY_DISABLE_ALL  -1
+#define D_PSP_EXT_INT_PRIORITY_0            0 /* highest level */
+#define D_PSP_EXT_INT_PRIORITY_1            1
+#define D_PSP_EXT_INT_PRIORITY_2            2
+#define D_PSP_EXT_INT_PRIORITY_3            3
+#define D_PSP_EXT_INT_PRIORITY_4            4
+#define D_PSP_EXT_INT_PRIORITY_5            5
+#define D_PSP_EXT_INT_PRIORITY_6            6
+#define D_PSP_EXT_INT_PRIORITY_7            7
+#define D_PSP_EXT_INT_PRIORITY_8            8
+#define D_PSP_EXT_INT_PRIORITY_9            9
+#define D_PSP_EXT_INT_PRIORITY_10           10
+#define D_PSP_EXT_INT_PRIORITY_11           11
+#define D_PSP_EXT_INT_PRIORITY_12           12
+#define D_PSP_EXT_INT_PRIORITY_13           13
+#define D_PSP_EXT_INT_PRIORITY_14           14
+#define D_PSP_EXT_INT_PRIORITY_15           15 /* lowest level */
+#define D_PSP_MAX_EXT_INTERRUPT_PRIORITY    (NUMBER_OF_INTERRUPT_PRIORITIES)
+#define D_PSP_EXT_INT_PRIORITY_ENABLE_ALL   D_MAX_INTERRUPT_PRIORITY
 
 /**
 * types
@@ -110,6 +114,37 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * external prototypes
 */
+extern void (*fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
+extern void (*fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
+extern void (*fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
+extern void (*fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
+extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
+
+
+/**
+* macros
+*/
+
+/* Disable/Enable specific interrupt */
+/* mie_interrupt is one of D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
+#define M_PSP_M_DISBLE_INTERRUPT_ID(mie_interrupt)  u32_t uiCsrVal; \
+	                                                M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, mie_interrupt);
+#define M_PSP_M_ENABLE_INTERRUPT_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
+
+/* Disable Interrupts (all privilege levels) */
+#define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(pMask) pspInterruptsDisable(pMask);
+/* Restore interrupts to their previous state */
+#define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(mask)  pspInterruptsRestore(mask);
+/* Enable interrupts regardless their previous state */
+#define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable();
+
+/* External-interrupts macros */
+#define M_PSP_M_DISBLE_EXT_INTERRUPT_ID(ext_int_id)              fptrPspExternalInterruptDisableNumber(ext_int_id);
+#define M_PSP_M_ENSBLE_EXT_INTERRUPT_ID(ext_int_id)              fptrPspExternalInterruptEnableNumber(ext_int_id);
+#define M_PSP_M_SET_EXT_INTERRUPT_PRIORITY(ext_int_id, priority) fptrPspExternalInterruptSetPriority(ext_int_id, priority);
+#define M_PSP_M_SET_EXT_INTERRUPT_THRESHOLD(threshold)           fptrPspExternalInterruptSetThreshold)(threshold);
+#define M_PSP_M_REGISTER_EXT_INTERRUPT_HANDLER(vect_number, pIsr, pParameters) \
+		                                                         fptrPspExternalInterruptRegisterISR(vect_number, pIsr, pParameters);
 
 /**
 * global variables
@@ -120,6 +155,30 @@ typedef void (*pspInterruptHandler_t)(void);
 */
 
 /**
+* The function installs an interrupt service routine per risc-v cause
+*
+* @param  fptrInterruptHandler     – function pointer to the interrupt service routine
+* @param  interruptCause           – interrupt source
+* @return u32_t                   - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
+
+/**
+* The function installs an exception handler per exception cause
+*
+* @param  fptrInterruptHandler     – function pointer to the exception handler
+* @param  exceptionCause           – exception cause
+* @return u32_t                   - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
+
+/**
+*
+* Function that called upon unregistered Trap handler
+*/
+void pspTrapUnhandled(void);
+
+/**
 * Disable interrupts and return the current (== before the 'disable') interrupt state
 */
 void pspInterruptsDisable(u32_t  *pOutPrevIntState);
@@ -128,6 +187,7 @@ void pspInterruptsDisable(u32_t  *pOutPrevIntState);
 * Restore the interrupts state
 */
 void pspInterruptsRestore(u32_t uiPrevIntState);
+
 /**
 * Enable interrupts regardless their previous state
 */
