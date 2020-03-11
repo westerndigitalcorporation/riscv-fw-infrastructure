@@ -70,21 +70,20 @@
 /**
 * local prototypes
 */
+
+/* Default ISRs */
+void pspDefaultExceptionIntHandler_isr(void);
+void pspDefaultEmptyIntHandler_isr(void);
+
+/* External-interrupt related functions */
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
 D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
 D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
 D_PSP_TEXT_SECTION void pspExternalInterruptSetThreshold(u32_t uiThreshold);
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
-
-
-
-void pspDefaultExceptionIntHandler_isr(void);
-void pspDefaultEmptyIntHandler_isr(void);
-
-/* External-interrupt related functions */
-void pspExtIntSetInterruptMode(u32_t uiInterruptNum, u32_t uiInterruptMode);
-// NatiR - check what is this -
+// NatiR - continue with these. Check what they are
+//void pspExtIntSetInterruptMode(u32_t uiInterruptNum, u32_t uiInterruptMode);
 //void PSP_intStartup_vect (void);
 
 
@@ -141,13 +140,6 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDef
 
 /* External interrupt handlers */
 D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
-
-//void                  (*g_fptrExtIntDisableInterruptNumber)(u32_t uiInterruptNum)                                             = pspExtIntDisableInterruptNumber;
-//void                  (*g_fptrExtIntEnableInterruptNumber)(u32_t uiInterruptNum)                                              = pspExtIntEnableInterruptNumber;
-//void                  (*g_fptrExtIntSetInterruptPriority)(u32_t uiInterruptNum, u32_t uiPriority)                             = pspExtIntSetInterruptPriority;
-//void                  (*g_fptrExtIntSetInterruptThreshold)(u32_t uiThreshold)                                                 = pspExtIntSetInterruptThreshold;
-//pspInterruptHandler_t (*g_fptrExtIntRegisterExtInterrupt)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExtIntRegisterISR;
-
 
 
 /**
