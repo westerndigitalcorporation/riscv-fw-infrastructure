@@ -41,7 +41,7 @@ listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
 Env['PUBLIC_DEF'] += ['D_NEXYS_A7', 'D_MTIME_ADDRESS=0x80001020', 'D_MTIMECMP_ADDRESS=0x80001028',
-                      'D_CLOCK_RATE=50000000']
+                      'D_CLOCK_RATE=50000000', 'D_PIC_BASE_ADDRESS=0xA0000000', 'D_PIC_NUM_OF_EXT_INTERRUPTS=256', 'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0', 'D_EXT_INTERRUPT_LAST_SOURCE_USED=255']
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 

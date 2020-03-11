@@ -18,8 +18,7 @@
 * @file   psp_interrupts_hifive.c
 * @author Ronen Haen
 * @date   20.05.2019
-* @brief  The file supllies interrups services such as  - registration, default handlers and indication
-*         whether we are in interrpu context.
+* @brief  The file supplies interrupt services such as  - registration, default handlers and indication, whether we are in interrupt context, etc.
 *         The file is specific to hifive1 specifications
 * 
 */
@@ -34,11 +33,11 @@
 */
 
 /* The stack used by interrupt service routines */
-#ifdef D_ISR_STACK_SIZE
+#if (0 == D_ISR_STACK_SIZE)
+    #error "ISR Stack size is not defined"
+#else
 	static /*D_PSP_DATA_SECTION*/ D_PSP_16_ALIGNED pspStack_t udISRStack[ D_ISR_STACK_SIZE ] ;
 	const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
-#else
-    #error "ISR Stack size is not defined"
 #endif
 
 /**
@@ -54,6 +53,14 @@
 */
 void pspDefaultExceptionIntHandler_isr(void);
 void pspDefaultEmptyIntHandler_isr(void);
+
+/* External interrupts functions (empty functions for HiFive) */
+D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
+D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
+D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
+D_PSP_TEXT_SECTION void pspExternalInterruptSetThreshold(u32_t uiThreshold);
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
+
 
 /**
 * external prototypes
@@ -97,6 +104,16 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
+
+
+/* External-interrupts function pointers */
+void (*fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
+void (*fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
+void (*fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
+void (*fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptSetThreshold;
+pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
+
+
 
 /**
 * The function installs an interrupt service routine per risc-v cause
@@ -221,4 +238,42 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
 }
+
+
+/**
+* This function disables a specified external interrupt (empty function)
+*/
+D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
+{
+}
+
+/*
+* This function enables a specified external interrupt (empty function)
+*/
+D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
+{
+}
+
+/*
+*  This function sets the priority of a specified external interrupts (empty function)
+*/
+D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
+{
+}
+
+/*
+*  This function sets the priority threshold of the external interrupts (empty function)
+*/
+D_PSP_TEXT_SECTION void pspExternalInterruptSetThreshold(u32_t uiThreshold)
+{
+}
+
+/*
+* This function register external function handler (empty function)
+*/
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
+{
+  return 0 ;
+}
+
 

@@ -15,42 +15,29 @@
 * limitations under the License.
 */
 /**
-* @file   psp_api.h
-* @author Ronen Haen
-* @date   21.01.2019
-* @brief  The file defines the PSP API
+* @file   psp_util.h
+* @author Nati Rapaport
+* @date   26.02.2020
+* @brief  The file defines psp private definitions
+* 
 */
-#ifndef  __PSP_API_H__
-#define  __PSP_API_H__
-
-/***
-* include files
-*/
-#include "psp_types.h"
-#include "psp_intrinsics.h"
-#include "psp_defines.h"
-#include "psp_config.h"
-#include "psp_csrs.h"
-#include "psp_macros.h"
-#include "psp_interrupts.h"
-#include "psp_pragmas.h"
-#include "psp_attributes.h"
-#include "psp_timers.h"
-#ifdef D_NEXYS_A7
-    #include "psp_csrs_swerv_eh1.h"
-#endif
+#ifndef  __PSP_UTIL_H__
+#define  __PSP_UTIL_H__
 
 /**
-* definitions
+* include files
 */
-
 
 /**
 * macros
 */
 
-/* What is the current privilege-level */
-#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented */
+/**
+* definitions
+*/
+/* interrupt context indication values */
+#define D_PSP_NON_INT_CONTEXT              0
+#define D_PSP_INT_CONTEXT                  1
 
 /**
 * types
@@ -73,6 +60,4 @@
 */
 
 
-
-
-#endif /* __PSP_API_H__ */
+#endif /* __PSP_UTIL_H__ */
