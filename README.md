@@ -45,7 +45,9 @@ The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. This demo
 
 #### Current Platform and Core support:
 - **HiFive1** 
-- **SweRV** - running on *Nexys-A7 FPGA*
+- **SweRV**    - running on *Nexys-A7 FPGA*
+- **SweRVolf** - running on *Nexys-A7 FPGA* EH1 with full SoC
+- **Whisper**  - ISS tool running on SweRVolf EH1
 
 
 ### Source tree structure 
@@ -54,8 +56,7 @@ WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
           ├── ihfive-unleashed (not supported yet)
-          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1) 
-          ├── nexys_a7_swerv_eh1_swervolf (Support for SweRV eh1 with full SoC) 
+          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1, also support SweRVolf)
           ├── whisper (Support for SweRV eh1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
