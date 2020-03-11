@@ -51,6 +51,8 @@
 /**
 * local prototypes
 */
+
+/* Default ISRs */
 void pspDefaultExceptionIntHandler_isr(void);
 void pspDefaultEmptyIntHandler_isr(void);
 
