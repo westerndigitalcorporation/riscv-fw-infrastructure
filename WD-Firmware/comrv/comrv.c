@@ -565,7 +565,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
 
    /* invalidate data cache */
-   M_COMRV_DCACHE_FLUSH_MLINES(&g_stComrvCB, sizeof(g_stComrvCB));
+   M_COMRV_DCACHE_FLUSH(&g_stComrvCB, sizeof(g_stComrvCB));
 
    /* get actual function/data offset */
    usOffset = M_COMRV_GET_TOKEN_OFFSET_IN_BYTES(unToken);
@@ -933,7 +933,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
       from this point end user can call overlay functions/load overlay data */
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
    /* invalidate data cache */
-   M_COMRV_DCACHE_FLUSH_MLINES(&g_stComrvCB, sizeof(g_stComrvCB));
+   M_COMRV_DCACHE_FLUSH(&g_stComrvCB, sizeof(g_stComrvCB));
 }
 
 /**
