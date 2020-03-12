@@ -85,7 +85,7 @@
 #define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
 
 /* invalidate data cache */
-#define M_COMRV_DCACHE_FLUSH_MLINES(pAddress, uiNumOfBytes) comrvInvalidateDataCacheHook(pAddress, uiNumOfBytes);
+#define M_COMRV_DCACHE_FLUSH(pAddress, uiNumOfBytes) comrvInvalidateDataCacheHook(pAddress, uiNumOfBytes);
 
 /**
 * types
