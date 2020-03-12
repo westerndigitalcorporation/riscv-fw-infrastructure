@@ -86,7 +86,7 @@ This implementation supports riscv privileged v1.10
 #endif /* __clang__ */
 
 
-.section  .text.entry
+/*.section  .text.entry */
 .align 4
 .global   rtosal_vect_table
 .global    pxCurrentTCB
