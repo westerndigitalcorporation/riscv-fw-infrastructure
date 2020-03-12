@@ -32,7 +32,7 @@
 * definitions
 */
 /* Region Access Control Register */
-#define D_PSP_MRAC       (0x7c0)
+#define D_PSP_MRAC_NUM      (0x7c0)
 
 /**
 * macros
