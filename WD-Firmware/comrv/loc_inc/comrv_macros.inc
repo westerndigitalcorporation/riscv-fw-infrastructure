@@ -62,7 +62,7 @@
    M_PSP_RESTORE_MINTERRUPTS \restoreStatusFromReg
 .endm
 #else
-.macro m_COMRV_ENABLE_INTS restoreStatusFromReg
+.macro m_COMRV_RESTORE_INTS restoreStatusFromReg
 .endm
 #endif /* D_COMRV_RTOS_SUPPORT */
 
