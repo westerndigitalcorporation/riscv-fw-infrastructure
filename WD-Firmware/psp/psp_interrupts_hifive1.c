@@ -109,11 +109,11 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDef
 
 
 /* External-interrupts function pointers */
-void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
-void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
-void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
-void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptSetThreshold;
-pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
+D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
+D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
+D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
+D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptSetThreshold;
+D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
 
 
 

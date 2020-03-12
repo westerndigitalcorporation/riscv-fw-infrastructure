@@ -144,6 +144,11 @@ SECTIONS
     *(.srodata .srodata.*)
   } >ram AT>flash :ram_init
 
+  COMRV_DATA_SEC : ALIGN(16)
+  {
+  
+  }  >ram AT>flash :ram_init
+
   PSP_DATA_SEC : 
   {
  

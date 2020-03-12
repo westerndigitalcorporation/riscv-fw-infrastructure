@@ -102,6 +102,11 @@ SECTIONS
     . = ALIGN(8);
   } > ram : ram_load
 
+  COMRV_DATA_SEC : ALIGN(16)
+  {
+  
+  }  > ram : ram_load
+
   PSP_DATA_SEC : ALIGN(16)
   {
   
