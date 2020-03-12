@@ -143,8 +143,6 @@
 /* synchronize the instruction and data streams */
 #define M_PSP_INST_FENCEI()         asm volatile( "fence.i" )
 
-#define M_PSP_ICACHE_ENABLE()      M_PSP_WRITE_CSR(D_PSP_MRAC,0x55555555) //enable all regions without "side effects"
-#define M_PSP_ICACHE_DISABLE()     M_PSP_WRITE_CSR(D_PSP_MRAC,0x0)
 
 
 /*******************************************************/
