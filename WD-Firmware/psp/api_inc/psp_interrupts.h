@@ -114,10 +114,10 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * external prototypes
 */
-extern void (*fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
-extern void (*fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
-extern void (*fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
-extern void (*fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
+extern void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
+extern void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
+extern void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
+extern void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
 extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
 
@@ -139,12 +139,12 @@ extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVect
 #define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable();
 
 /* External-interrupts macros */
-#define M_PSP_M_DISBLE_EXT_INTERRUPT_ID(ext_int_id)              fptrPspExternalInterruptDisableNumber(ext_int_id);
-#define M_PSP_M_ENSBLE_EXT_INTERRUPT_ID(ext_int_id)              fptrPspExternalInterruptEnableNumber(ext_int_id);
-#define M_PSP_M_SET_EXT_INTERRUPT_PRIORITY(ext_int_id, priority) fptrPspExternalInterruptSetPriority(ext_int_id, priority);
-#define M_PSP_M_SET_EXT_INTERRUPT_THRESHOLD(threshold)           fptrPspExternalInterruptSetThreshold)(threshold);
+#define M_PSP_M_DISBLE_EXT_INTERRUPT_ID(ext_int_id)              g_fptrPspExternalInterruptDisableNumber(ext_int_id);
+#define M_PSP_M_ENSBLE_EXT_INTERRUPT_ID(ext_int_id)              g_fptrPspExternalInterruptEnableNumber(ext_int_id);
+#define M_PSP_M_SET_EXT_INTERRUPT_PRIORITY(ext_int_id, priority) g_fptrPspExternalInterruptSetPriority(ext_int_id, priority);
+#define M_PSP_M_SET_EXT_INTERRUPT_THRESHOLD(threshold)           g_fptrPspExternalInterruptSetThreshold)(threshold);
 #define M_PSP_M_REGISTER_EXT_INTERRUPT_HANDLER(vect_number, pIsr, pParameters) \
-		                                                         fptrPspExternalInterruptRegisterISR(vect_number, pIsr, pParameters);
+		                                                         g_fptrPspExternalInterruptRegisterISR(vect_number, pIsr, pParameters);
 
 /**
 * global variables
