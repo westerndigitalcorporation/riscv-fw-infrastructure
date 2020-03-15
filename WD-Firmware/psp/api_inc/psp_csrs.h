@@ -190,7 +190,7 @@
 /* Definitions for the various fields in CSRs */
 
 /* counteren CSR */
-#define D_PSP_MCOUNTEREN_NUM  0x305
+#define D_PSP_MCOUNTEREN_NUM  0x306
 #define D_PSP_MCOUNTEREN_MASK 0x0000007F
 
 /* misa CSR */
