@@ -39,7 +39,7 @@
 #define D_PSP_16_ALIGNED                               __attribute__ ((aligned(16)))
 #define D_PSP_WEAK                                     __attribute__(( weak ))
 #define D_PSP_TEXT_SECTION                             __attribute__((section("PSP_TEXT_SEC")))
-#define D_PSP_DATA_SECTION                             __attribute__((section("PSP_DATA_SEC"), aligned(16)))
+#define D_PSP_DATA_SECTION                             __attribute__((section("PSP_DATA_SEC")))
 
 #define D_PSP_CREATE_ATTR(name, val)                   __attribute__((section(#name),aligned(val)))
 #define D_PSP_GENERAL_DATA_SECTION(name, align_avl)    D_PSP_CREATE_ATTR( (#name), align_avl )
