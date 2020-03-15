@@ -83,7 +83,7 @@ void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod)
 * @return u64_t      – Timer counter value
 *
 ***************************************************************************************************/
-u64_t pspTimerCounterGet()
+u64_t pspTimerCounterGet(void)
 {
 	#if (0 == D_MTIME_ADDRESS)
         #error "MTIME address definition is missing"
@@ -99,7 +99,7 @@ u64_t pspTimerCounterGet()
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-u64_t pspTimeCompareCounterGet()
+u64_t pspTimeCompareCounterGet(void)
 {
 	#if (0 == D_MTIMECMP_ADDRESS)
         #error "MTIMECMP address definition is missing"
