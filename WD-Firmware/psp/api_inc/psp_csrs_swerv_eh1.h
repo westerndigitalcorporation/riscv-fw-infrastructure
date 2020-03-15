@@ -31,6 +31,8 @@
 /**
 * definitions
 */
+/* Region Access Control Register */
+#define D_PSP_MRAC_NUM      (0x7c0)
 
 /* mgpmc CSR */
 #define D_PSP_MGPMC_NUM     0x7D0
