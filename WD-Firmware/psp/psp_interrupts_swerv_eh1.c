@@ -341,7 +341,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
     G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
 
     /* dsync make sure changes go to memory */
-    //M_PSP_DSYNC(); /* Nati - check here - should I use fence */
+    //M_PSP_DSYNC(); /* Nati - check here - should I use fence. to continue after the pull request */
   }
 
   return(pOldIsr);
