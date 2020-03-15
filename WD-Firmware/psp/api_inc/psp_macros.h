@@ -31,6 +31,8 @@
 * macros
 */
 
+#define M_BIT_MASK(num) 1 << (num)
+
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
    /* TODO: need to add default function */
