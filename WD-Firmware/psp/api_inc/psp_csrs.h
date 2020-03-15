@@ -46,7 +46,7 @@
 
 #define D_PSP_MIDELEG_NUM     0x301
 #define D_PSP_MEDELEG_NUM     0x302
-#define D_PSP_MCOUNTEREN_NUM  0x305
+
 
 /* Machine Trap handling registers */
 #define D_PSP_MSCRATCH_NUM    0x340
@@ -189,7 +189,9 @@
 
 /* Definitions for the various fields in CSRs */
 
-
+/* counteren CSR */
+#define D_PSP_MCOUNTEREN_NUM  0x305
+#define D_PSP_MCOUNTEREN_MASK 0x0000007F
 
 /* misa CSR */
 #define D_PSP_MISA_NUM             0x301
