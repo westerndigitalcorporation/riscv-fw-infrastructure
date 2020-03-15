@@ -18,10 +18,11 @@
 */
 
 /**
-* @file
-* @author
-* @date
-* @brief
+* @file    psp_performance_monitor.h
+* @author  Nidal Faour
+* @date    15.03.2020
+* @brief   performance monitor api provider
+*
 */
 
 #ifndef _PSP_PERFORMANCE_MONITOR_H_
