@@ -43,5 +43,10 @@
 #define D_PSP_TRUE       1
 #define D_PSP_FALSE      0
 
+#define D_PSP_ON         1
+#define D_PSP_OFF        0
+
+
+
 
 #endif /* __PSP_DEFINES_H__ */

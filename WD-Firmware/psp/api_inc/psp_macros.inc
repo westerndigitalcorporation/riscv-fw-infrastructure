@@ -17,6 +17,8 @@
 
 .global xISRStackTop
 
+.equ D_PSP_MIE, 8
+
 .macro M_PSP_CALL_INT_HANDLER fptIntHandler
     /* load the address of provided fptIntHandler */
     la        a0, \fptIntHandler
@@ -119,13 +121,13 @@
     M_PSP_LOAD    sp, \spLocationInAppCB(sp)
 .endm
 
-/* TODO: remove once Nati's PR is pushed */
-.macro M_PSP_DISABLE_INTERRUPTS
-    csrc mstatus, 8
+/* disable machine interrupts after reading the current status */
+.macro M_PSP_DISABLE_MINTERRUPTS saveCurrentStatusToReg
+    csrrci \saveCurrentStatusToReg, mstatus, D_PSP_MIE
 .endm
 
-/* TODO: remove once Nati's PR is pushed */
-.macro M_PSP_ENABLE_INTERRUPTS
-    csrs mstatus, 8
+/* restore machine interrupts status */
+.macro M_PSP_RESTORE_MINTERRUPTS restorStatusFromReg
+    csrs mstatus, \restorStatusFromReg
 .endm
 
