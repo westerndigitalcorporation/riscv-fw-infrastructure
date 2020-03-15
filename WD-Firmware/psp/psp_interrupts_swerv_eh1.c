@@ -79,7 +79,7 @@ void pspDefaultEmptyIntHandler_isr(void);
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
 D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
 D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
-D_PSP_TEXT_SECTION void pspExternalInterruptSetThreshold(u32_t uiThreshold);
+D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
 // NatiR - continue with these. Check what they are
@@ -97,7 +97,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptSetThreshold;
+D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
 D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
 
 /* Exception handlers */
@@ -310,7 +310,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t ui
 * @param threshold = priority threshold to be programmed to PIC
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptSetThreshold(u32_t uiThreshold)
+D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold)
 {
 	/* Set in meipt CSR, the priority-threshold */
 	M_PSP_WRITE_CSR(D_PSP_MEIPT_NUM, uiThreshold);
@@ -341,7 +341,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
     G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
 
     /* dsync make sure changes go to memory */
-    //M_PSP_DSYNC(); /* Nati - check here - should I use fence. to continue after the pull request */
+    //M_PSP_DSYNC(); /* Nati - check here - should I use fence. to close it after the 1'st pull request */
   }
 
   return(pOldIsr);
