@@ -145,6 +145,8 @@
 /* synchronize the instruction and data streams */
 #define M_PSP_INST_FENCEI()         asm volatile( "fence.i" )
 
+
+
 /*******************************************************/
 
 
