@@ -50,7 +50,7 @@
 */
 
 /* What is the current privilege-level */
-#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented */
+#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented - use ebreak, then check MPP/SPP fields in mstatus, then return */
 
 /**
 * types
