@@ -25,7 +25,8 @@ ENTRY( _start )
 
 MEMORY
 {
-  ram (wxa!ri)  : ORIGIN = 0x00000000, LENGTH = 128K
+  ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
+  ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
   dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
   ovl           : ORIGIN = 0xE0000000, LENGTH = 4k
 }
@@ -99,18 +100,19 @@ SECTIONS
   {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
-    . = ALIGN(8);
+    . += 10; /* fix for linker false error message */
+    . = ALIGN(8); 
   } > ram : ram_load
 
   COMRV_DATA_SEC : ALIGN(16)
   {
   
-  }  > ram : ram_load
+  }  > ram2 : ram_load
 
   PSP_DATA_SEC : ALIGN(16)
   {
   
-  }  > ram : ram_load
+  }  > ram2 : ram_load
 
   .sdata :
   {
