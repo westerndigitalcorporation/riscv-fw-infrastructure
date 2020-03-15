@@ -97,7 +97,7 @@ void pspEnablePerfCounters(u32_t uiCountersEn)
 void pspPerfCounterSet(pspPerfMntrCounter_t tCounter, pspPerfMntrEvents_t tEvent)
 {
 	switch (tCounter)
-		{
+	{
 		case E_COUNTER0:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, tEvent); // 0x323
 				break;
@@ -110,7 +110,13 @@ void pspPerfCounterSet(pspPerfMntrCounter_t tCounter, pspPerfMntrEvents_t tEvent
 		case E_COUNTER3:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, tEvent); // 0x326
 				break;
-		}
+		case E_CYCLE_COUNTER:
+		case E_TIME_COUNTER:
+		case E_INSTRET_COUNTER:
+		case E_TIME_CMP_COUNTER:
+		default:
+			break;
+	}
 }
 /**
 * @brief The function gets the counter value
