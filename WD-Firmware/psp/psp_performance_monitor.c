@@ -28,11 +28,8 @@
 /**
 * include files
 */
-#include "psp_macros.h"
 #include "psp_api.h"
-#include "psp_csrs_swerv_eh1.h"
-#include "psp_timers.h"
-#include "psp_performance_monitor.h"
+#include <assert.h>
 
 /**
 * definitions
@@ -64,13 +61,13 @@
 /**
 * @brief The function enable/disable the group performance monitor
 *
-* @param uiMonitorEn           – monitor enable/disable
+* @param uiMonitorEnBit           – monitor enable/disable bit
 *
 * @return No return value
 */
-void pspEnableAllPerformanceMonitor(u32_t uiMonitorEn)
+void pspEnableAllPerformanceMonitor(u32_t uiMonitorEnBit)
 {
-	M_PSP_SET_CSR(D_PSP_MGPMC_NUM, uiMonitorEn & D_PSP_MGMPC_MASK);
+	M_PSP_SET_CSR(D_PSP_MGPMC_NUM, uiMonitorEnBit & D_PSP_MGMPC_MASK);
 }
 
 
@@ -81,7 +78,7 @@ void pspEnableAllPerformanceMonitor(u32_t uiMonitorEn)
 *
 * @return No return value
 */
-void pspEnablePerfCounters(u32_t uiCountersEn)
+void pspEnablePerformanceCounters(u32_t uiCountersEn)
 {
 	M_PSP_SET_CSR(D_PSP_MCOUNTEREN_NUM, uiCountersEn & D_PSP_MCOUNTEREN_MASK);
 }
@@ -89,46 +86,47 @@ void pspEnablePerfCounters(u32_t uiCountersEn)
 /**
 * @brief The function pair a counter to an event
 *
-* @param tCounter     – counter to be set
-* @param tEvent       – event to be paired to the selected counter
+* @param eCounter     – counter to be set
+* @param eEvent       – event to be paired to the selected counter
 *
 * @return No return value
 */
-void pspPerfCounterSet(pspPerfMntrCounter_t tCounter, pspPerfMntrEvents_t tEvent)
+void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPerformanceMonitorEvents_t eEvent)
 {
-	switch (tCounter)
+	switch (eCounter)
 	{
 		case E_COUNTER0:
-				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, tEvent); // 0x323
+				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, eEvent); // 0x323
 				break;
 		case E_COUNTER1:
-				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT4_NUM, tEvent); // 0x324
+				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT4_NUM, eEvent); // 0x324
 				break;
 		case E_COUNTER2:
-				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT5_NUM, tEvent); // 0x325
+				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT5_NUM, eEvent); // 0x325
 				break;
 		case E_COUNTER3:
-				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, tEvent); // 0x326
+				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, eEvent); // 0x326
 				break;
 		case E_CYCLE_COUNTER:
 		case E_TIME_COUNTER:
 		case E_INSTRET_COUNTER:
 		case E_TIME_CMP_COUNTER:
 		default:
+      assert("Invalid counter index");
 			break;
 	}
 }
 /**
 * @brief The function gets the counter value
 *
-* @param tCounter    – counter index
+* @param eCounter    – counter index
 *
 * @return u32_t      – Counter value
 */
-u64_t pspPerfCounterGet(pspPerfMntrCounter_t tCounter)
+u64_t pspPerformanceCounterGet(ePspPerformanceMonitorCounters_t eCounter)
 {
 	u64_t tCounterVal = 0;
-	switch (tCounter)
+	switch (eCounter)
 	{
 		case E_CYCLE_COUNTER:
 			tCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM); // 0xB00

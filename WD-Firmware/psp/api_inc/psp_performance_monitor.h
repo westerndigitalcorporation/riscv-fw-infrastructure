@@ -31,7 +31,7 @@
 /**
 * include files
 */
-#include "psp_macros.h"
+
 /**
 * definitions
 */
@@ -43,7 +43,10 @@
 /**
 * types
 */
-typedef enum pspCounters
+/*
+ * Performance monitoring counters
+*/
+typedef enum pspPerformanceMonitorCounters
 {
 	E_CYCLE_COUNTER    = M_BIT_MASK(0),
 	E_TIME_COUNTER     = M_BIT_MASK(1),
@@ -54,9 +57,12 @@ typedef enum pspCounters
 	E_COUNTER3         = M_BIT_MASK(6), //1<<6,
 	E_TIME_CMP_COUNTER = M_BIT_MASK(7)
 
-} pspPerfMntrCounter_t;
-/* Performance monitoring events */
-typedef enum pspPerfMntrEvents
+} ePspPerformanceMonitorCounters_t;
+
+/*
+ * Performance monitoring events
+*/
+typedef enum pspPerformanceMonitorEvents
 {
    /* Event 0 Reserved */
    E_CYCLES_CLOCKS_ACTIVE                     = 1,
@@ -110,7 +116,7 @@ typedef enum pspPerfMntrEvents
    E_CYCLES_INTERRUPTS_DISABLED               = 49,
    E_CYCLES_INTERRUPTS_STALLED_WHILE_DISABLED = 50,
    E_END
-} pspPerfMntrEvents_t;
+} ePspPerformanceMonitorEvents_t;
 
 
 /*typedef enum Nidal
@@ -153,25 +159,25 @@ void pspEnableAllPerformanceMonitor(u32_t uiMonitorEn);
 *
 * @return No return value
 */
-void pspEnablePerfCounters(u32_t uiCountersEn);
+void pspEnablePerformanceCounters(u32_t uiCountersEn);
 
 /**
 * @brief The function pair a counter to an event
 *
-* @param tCounter     – counter to be set
-* @param tEvent       – event to be paired to the selected counter
+* @param eCounter     – counter to be set
+* @param eEvent       – event to be paired to the selected counter
 *
 * @return No return value
 */
-void pspPerfCounterSet(pspPerfMntrCounter_t tCounter, pspPerfMntrEvents_t tEvent); // check typedef name coding convention
+void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPerformanceMonitorEvents_t eEvent); // check typedef name coding convention
 
 /**
 * @brief The function gets the counter value
 *
-* @param tCounter     – counter index
+* @param eCounter     – counter index
 *
 * @return u32_t      – Counter value
 */
-u64_t pspPerfCounterGet(pspPerfMntrCounter_t tCounter);
+u64_t pspPerformanceCounterGet(ePspPerformanceMonitorCounters_t eCounter);
 
 #endif /* _PSP_PERFORMANCE_MONITOR_H_ */
