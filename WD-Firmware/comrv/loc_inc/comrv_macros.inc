@@ -58,20 +58,20 @@
 .endm
 
 #ifdef D_COMRV_RTOS_SUPPORT
-.macro m_COMRV_ENABLE_INTS
-   M_PSP_ENABLE_INTERRUPTS
+.macro m_COMRV_RESTORE_INTS restoreStatusFromReg
+   M_PSP_RESTORE_MINTERRUPTS \restoreStatusFromReg
 .endm
 #else
-.macro m_COMRV_ENABLE_INTS
+.macro m_COMRV_RESTORE_INTS restoreStatusFromReg
 .endm
 #endif /* D_COMRV_RTOS_SUPPORT */
 
 #ifdef D_COMRV_RTOS_SUPPORT
-.macro m_COMRV_DISABLE_INTS
-   M_PSP_DISABLE_INTERRUPTS
+.macro m_COMRV_DISABLE_INTS saveStatusInReg
+   M_PSP_DISABLE_MINTERRUPTS \saveStatusInReg
 .endm
 #else
-.macro m_COMRV_DISABLE_INTS
+.macro m_COMRV_DISABLE_INTS saveStatusInReg
 .endm
 #endif /* D_COMRV_RTOS_SUPPORT */
 
