@@ -38,7 +38,7 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-listCompilationDefines = ['D_PIC_NUM_OF_EXT_INTERRUPTS=255'] + Env['PUBLIC_DEF']
+listCompilationDefines = [] + Env['PUBLIC_DEF']
 
 # public includes
 Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
