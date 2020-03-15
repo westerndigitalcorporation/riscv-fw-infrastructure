@@ -91,8 +91,8 @@ comrvEntry:
     /* allocate a new stack frame from the stack frame pool - we unlink the next
        free frame from the stack frame pool (t4) and assign its address to t2.
        t4 is updated with the next free stack frame */
-    /* disable interrupts */
-    m_COMRV_DISABLE_INTS
+    /* disable interrupts - save current status in t1*/
+    m_COMRV_DISABLE_INTS t1
     /* save the address of the next free stack frame in t2 - new stack frame
        for this engine call */
     mv          t2, t4
@@ -101,8 +101,8 @@ comrvEntry:
     /* set in t4 the address of the next free stack frame - will be used in
         the next engine call */
     add         t4, t2, t4
-    /* enable interrupts */
-    m_COMRV_ENABLE_INTS
+    /* restore interrupts from t1 register */
+    m_COMRV_RESTORE_INTS t1
     /* at this point t4 points to the next free frame, t3 points to the top
        of the com-rv stack and t2 holds the allocated stack frame. */
     /* link the allocated frame to its stack - we link the allocated frame
@@ -152,8 +152,8 @@ comrv_ret_from_callee:
     add         t5, t5, t3
 
 comrv_igonr_caller_thunk_stack_frame:
-    /* disable interrupts */
-    m_COMRV_DISABLE_INTS
+    /* disable interrupts - save current status in t1*/
+    m_COMRV_DISABLE_INTS t1
     /* link the freed stack frame back to the stack frames pool;
        t2 will hold the offset to the previous free stack frame */
     sub         t4, t4, t3
@@ -161,8 +161,8 @@ comrv_igonr_caller_thunk_stack_frame:
     sh          t4, D_COMRV_PREV_STACK_FRAME(t3)
     /* link the free stack frame back to the pool */
     mv          t4, t3
-    /* enable interrupts */
-    m_COMRV_ENABLE_INTS
+    /* restore interrupts from t1 register */
+    m_COMRV_RESTORE_INTS t1
     /* save the top of the stack to the stack register */
     mv          t3, t5
     /* read caller token (will be in the callee field now as we look at
