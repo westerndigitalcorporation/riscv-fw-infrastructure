@@ -26,6 +26,7 @@
 /**
 * include files
 */
+#include <assert.h>
 #include "psp_types.h"
 #include "psp_intrinsics.h"
 #include "psp_defines.h"
