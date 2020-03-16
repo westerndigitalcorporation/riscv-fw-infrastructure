@@ -40,24 +40,6 @@
 	const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
 #endif
 
-/* Number of external interrupt sources in the PIC */
-#if (0 == D_PIC_NUM_OF_EXT_INTERRUPTS)
-    #error "Definition of number of External interrupts in PIC is missing"
-#else
-    #define PSP_PIC_NUM_OF_EXT_INTERRUPTS D_PIC_NUM_OF_EXT_INTERRUPTS
-#endif
-
-/* Number of external interrupt sources in the PIC */
-#ifndef D_EXT_INTERRUPT_FIRST_SOURCE_USED /* Note we expect 1'st ext-int source to be 0 */
-    #error "Definition of 1'st External interrupt source is missing"
-#else
-    #define PSP_EXT_INTERRUPT_FIRST_SOURCE_USED    D_EXT_INTERRUPT_FIRST_SOURCE_USED
-#endif
-#if (0 == D_EXT_INTERRUPT_LAST_SOURCE_USED)
-    #error "Definition of last External interrupt source is missing"
-#else
-    #define PSP_EXT_INTERRUPT_LAST_SOURCE_USED     D_EXT_INTERRUPT_LAST_SOURCE_USED
-#endif
 
 /**
 * macros
@@ -72,20 +54,8 @@
 */
 
 /* Default ISRs */
-void pspDefaultExceptionIntHandler_isr(void);
-void pspDefaultEmptyIntHandler_isr(void);
-
-/* External-interrupt related functions */
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
-
-// NatiR - continue with these. Check what they are
-//void pspExtIntSetInterruptMode(u32_t uiInterruptNum, u32_t uiInterruptMode);
-//void PSP_intStartup_vect (void);
-
+D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void);
+D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 
 /**
 * external prototypes
@@ -94,11 +64,6 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 /**
 * global variables
 */
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
-D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
 
 /* Exception handlers */
 D_PSP_DATA_SECTION pspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
@@ -136,10 +101,6 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
-
-
-/* External interrupt handlers */
-D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
 
 /**
@@ -264,86 +225,5 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 */
 D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
-}
-
-
-/**
-* This function disables a specified external interrupt in the PIC
-*
-* @param intNum = the number of the external interrupt to disable
-* @return None
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
-{
-	/* Clear Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + (uiIntNum << 2)), 0);
-}
-
-/*
-* This function enables a specified external interrupt in the PIC
-*
-* @param intNum = the number of the external interrupt to enable
-* @return None
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
-{
-	/* Set Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + (uiIntNum << 2)), D_PSP_MEIE_INT_EN_MASK);
-}
-
-/*
-*  This function sets the priority of a specified external interrupt
-*
-*  @param intNum = the number of the external interrupt to disable
-*  @param priority = priority to be set
-* @return None
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
-{
-	/* Set priority in meipl register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + (uiIntNum << 2)), uiPriority);
-}
-
-/*
-* This function sets the priority threshold of the external interrupts in the PIC
-*
-* @param threshold = priority threshold to be programmed to PIC
-* @return None
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold)
-{
-	/* Set in meipt CSR, the priority-threshold */
-	M_PSP_WRITE_CSR(D_PSP_MEIPT_NUM, uiThreshold);
-}
-
-/*
-* This function registers external interrupt handler
-*
-* @param uiVectorNumber = the number of the external interrupt to register
-*        pIsr = the ISR to register
-*        pParameter = NOT IN USED for baremetal implementation
-* @return pOldIsr = pointer to the previously registered ISR
-*/
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
-{
-
-   void (*pOldIsr)(void) = 0;
-
-  /* check if uiVectorNumber is external interrupts, else do assert */
-  if(PSP_EXT_INTERRUPT_FIRST_SOURCE_USED > uiVectorNumber  || PSP_EXT_INTERRUPT_LAST_SOURCE_USED < uiVectorNumber)
-  {
-    pOldIsr = NULL;
-  }
-  else
-  {
-    /* register the interrupt */
-	pOldIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
-    G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
-
-    /* dsync make sure changes go to memory */
-    //M_PSP_DSYNC(); /* Nati - check here - should I use fence. to close it after the 1'st pull request */
-  }
-
-  return(pOldIsr);
 }
 
