@@ -107,10 +107,10 @@ void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPer
 		case E_COUNTER3:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, eEvent); // 0x326
 				break;
-		case E_CYCLE_COUNTER:
-		case E_TIME_COUNTER:
-		case E_INSTRET_COUNTER:
-		case E_TIME_CMP_COUNTER:
+		case E_CYCLE_COUNTER:                              //FallThrough
+		case E_TIME_COUNTER:                               //FallThrough
+		case E_INSTRET_COUNTER:                            //FallThrough
+		case E_TIME_CMP_COUNTER:                           //FallThrough
 		default:
       assert("Invalid counter index");
 			break;
@@ -129,13 +129,13 @@ u64_t pspPerformanceCounterGet(ePspPerformanceMonitorCounters_t eCounter)
 	switch (eCounter)
 	{
 		case E_CYCLE_COUNTER:
-			tCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM); // 0xB00
+			tCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM);       // 0xB00
 			break;
 		case E_TIME_COUNTER:
-			tCounterVal = pspTimerCounterGet();
+			tCounterVal = M_PSP_READ_CSR(D_PSP_TIME_NUM);         // 0xC01
 			break;
 		case E_INSTRET_COUNTER:
-			tCounterVal = M_PSP_READ_CSR(D_PSP_MINSTRET_NUM); // 0xB02
+			tCounterVal = M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);     // 0xB02
 			break;
 		case E_COUNTER0:
 			tCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER3_NUM); // 0xB03
@@ -149,9 +149,10 @@ u64_t pspPerformanceCounterGet(ePspPerformanceMonitorCounters_t eCounter)
 		case E_COUNTER3:
 			tCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER6_NUM); // 0xB06
 			break;
-		case E_TIME_CMP_COUNTER:
-			tCounterVal = pspTimeCompareCounterGet();
-			break;
+		case E_TIME_CMP_COUNTER:                                //FallThrough
+		default:
+		  assert("Invalid counter index");
+		  break;
 	}
 	return tCounterVal;
 }
