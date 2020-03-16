@@ -29,7 +29,6 @@
 * include files
 */
 #include "psp_api.h"
-#include <assert.h>
 
 /**
 * definitions
