@@ -53,15 +53,8 @@
 */
 
 /* Default ISRs */
-void pspDefaultExceptionIntHandler_isr(void);
-void pspDefaultEmptyIntHandler_isr(void);
-
-/* External interrupts functions (empty functions for HiFive) */
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
+D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void);
+D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 
 
 /**
@@ -106,15 +99,6 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
-
-
-/* External-interrupts function pointers */
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
-D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
-
 
 
 /**
@@ -241,41 +225,5 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
 }
 
-
-/**
-* This function disables a specified external interrupt (empty function)
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
-{
-}
-
-/*
-* This function enables a specified external interrupt (empty function)
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
-{
-}
-
-/*
-*  This function sets the priority of a specified external interrupts (empty function)
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
-{
-}
-
-/*
-*  This function sets the priority threshold of the external interrupts (empty function)
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold)
-{
-}
-
-/*
-* This function register external function handler (empty function)
-*/
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
-{
-  return 0 ;
-}
 
 

@@ -31,60 +31,10 @@
 * definitions
 */
 
-/* External Interrupt Priorities */
-#define D_PSP_EXT_INT_PRIORITY_0            0 /* In standard order - lowest level. In reversed order - highest level */
-#define D_PSP_EXT_INT_PRIORITY_1            1
-#define D_PSP_EXT_INT_PRIORITY_2            2
-#define D_PSP_EXT_INT_PRIORITY_3            3
-#define D_PSP_EXT_INT_PRIORITY_4            4
-#define D_PSP_EXT_INT_PRIORITY_5            5
-#define D_PSP_EXT_INT_PRIORITY_6            6
-#define D_PSP_EXT_INT_PRIORITY_7            7
-#define D_PSP_EXT_INT_PRIORITY_8            8
-#define D_PSP_EXT_INT_PRIORITY_9            9
-#define D_PSP_EXT_INT_PRIORITY_10           10
-#define D_PSP_EXT_INT_PRIORITY_11           11
-#define D_PSP_EXT_INT_PRIORITY_12           12
-#define D_PSP_EXT_INT_PRIORITY_13           13
-#define D_PSP_EXT_INT_PRIORITY_14           14
-#define D_PSP_EXT_INT_PRIORITY_15           15 /* In standard order - highest level. In reversed order - lowest level */
+/* Interrupt context indication values */
+#define D_PSP_NON_INT_CONTEXT              0
+#define D_PSP_INT_CONTEXT                  1
 
-/* In standard order, when priority is set to '0' it means - interrupt in this priority will never be served */
-#define D_PSP_EXT_INT_NEVER_INTERRUPT_STANDARD_ORDER       D_PSP_EXT_INT_PRIORITY_0
-/* In reversed order, when priority is set to '15' it means - interrupt in this priority will never be served */
-#define D_PSP_EXT_INT_NEVER_INTERRUPT_REVERSED_ORDER       D_PSP_EXT_INT_PRIORITY_15
-
-
-
-/* External Interrupt Threshold - only ext-interrupt with priority higher than given threshold will be served  */
-#define D_PSP_THRESHOLD_0       0
-#define D_PSP_THRESHOLD_1       1
-#define D_PSP_THRESHOLD_2       2
-#define D_PSP_THRESHOLD_3       3
-#define D_PSP_THRESHOLD_4       4
-#define D_PSP_THRESHOLD_5       5
-#define D_PSP_THRESHOLD_6       6
-#define D_PSP_THRESHOLD_7       7
-#define D_PSP_THRESHOLD_8       8
-#define D_PSP_THRESHOLD_9       9
-#define D_PSP_THRESHOLD_10      10
-#define D_PSP_THRESHOLD_11      11
-#define D_PSP_THRESHOLD_12      12
-#define D_PSP_THRESHOLD_13      13
-#define D_PSP_THRESHOLD_14      14
-#define D_PSP_THRESHOLD_15      15
-
-/* In standard order: */
-/* All interrupts will be masked */
-#define D_PSP_EXT_INT_MASK_ALL_INTERRUPTS_STANDARD_ORDER       D_PSP_EXT_INT_PRIORITY_15
-/* No interrupts will be masked (all served) */
-#define D_PSP_EXT_INT_NO_INTERRUPTS_MASKED_STANDARD_ORDER      D_PSP_EXT_INT_PRIORITY_0
-
-/* In reversed order: */
-/* All interrupts will be masked */
-#define D_PSP_EXT_INT_MASK_ALL_INTERRUPTS_REVERSED_ORDER       D_PSP_EXT_INT_PRIORITY_0
-/* No interrupts will be masked (all served) */
-#define D_PSP_EXT_INT_NO_INTERRUPTS_MASKED_REVERSED_ORDER      D_PSP_EXT_INT_PRIORITY_15
 
 /**
 * types
@@ -148,11 +98,6 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * external prototypes
 */
-extern void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
-extern void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
-extern void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
-extern void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
-extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
 
 /**
@@ -161,9 +106,9 @@ extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVect
 
 /* Disable/Enable specific interrupt */
 /* mie_interrupt is one of D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
-#define M_PSP_M_DISBLE_INTERRUPT_ID(mie_interrupt)  u32_t uiCsrVal; \
+#define M_PSP_INTERRUPT_DISBLE_ID(mie_interrupt)  u32_t uiCsrVal; \
 	                                                M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, mie_interrupt);
-#define M_PSP_M_ENABLE_INTERRUPT_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
+#define M_PSP_INTERRUPT_ENABLE_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
 
 /* Disable Interrupts (all privilege levels) */
 #define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(pMask) pspInterruptsDisable(pMask);
@@ -172,13 +117,6 @@ extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVect
 /* Enable interrupts regardless their previous state */
 #define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable();
 
-/* External-interrupts macros */
-#define M_PSP_M_DISBLE_EXT_INTERRUPT_ID(ext_int_id)              g_fptrPspExternalInterruptDisableNumber(ext_int_id);
-#define M_PSP_M_ENSBLE_EXT_INTERRUPT_ID(ext_int_id)              g_fptrPspExternalInterruptEnableNumber(ext_int_id);
-#define M_PSP_M_SET_EXT_INTERRUPT_PRIORITY(ext_int_id, priority) g_fptrPspExternalInterruptSetPriority(ext_int_id, priority);
-#define M_PSP_M_SET_EXT_INTERRUPTS_THRESHOLD(threshold)          g_fptrPspExternalInterruptsSetThreshold(threshold);
-#define M_PSP_M_REGISTER_EXT_INTERRUPT_HANDLER(vect_number, pIsr, pParameters) \
-		                                                         g_fptrPspExternalInterruptRegisterISR(vect_number, pIsr, pParameters);
 
 /**
 * global variables
