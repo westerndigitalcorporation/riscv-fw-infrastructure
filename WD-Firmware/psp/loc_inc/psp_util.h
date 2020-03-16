@@ -35,9 +35,6 @@
 /**
 * definitions
 */
-/* interrupt context indication values */
-#define D_PSP_NON_INT_CONTEXT              0
-#define D_PSP_INT_CONTEXT                  1
 
 /**
 * types
