@@ -107,6 +107,7 @@
 #define D_PSP_MHPMCOUNTER29_NUM    0xB1D
 #define D_PSP_MHPMCOUNTER30_NUM    0xB1E
 #define D_PSP_MHPMCOUNTER31_NUM    0xB1F
+#define D_PSP_TIME_NUM             0xC01
 #if __riscv_xlen == 32
     #define D_PSP_MCYCLEH_NUM           0xB80
     #define D_PSP_MINSTRETH_NUM         0xB82
@@ -139,7 +140,10 @@
     #define D_PSP_MHPMCOUNTER29H_NUM    0xB9D
     #define D_PSP_MHPMCOUNTER30H_NUM    0xB9E
     #define D_PSP_MHPMCOUNTER31H_NUM    0xB9F
+    #define D_PSP_TIMEH_NUM             0xC81
 #endif /* __riscv_xlen == 32 */
+
+
 
 /* Machine Counter setup registers */
 #define D_PSP_MHPMEVENT3_NUM     0x323
