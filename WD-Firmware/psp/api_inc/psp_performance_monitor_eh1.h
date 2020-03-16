@@ -51,10 +51,10 @@ typedef enum pspPerformanceMonitorCounters
 	E_CYCLE_COUNTER    = M_BIT_MASK(0),
 	E_TIME_COUNTER     = M_BIT_MASK(1),
 	E_INSTRET_COUNTER  = M_BIT_MASK(2),
-	E_COUNTER0         = M_BIT_MASK(3), //1<<3,
-	E_COUNTER1         = M_BIT_MASK(4), //1<<4,
-	E_COUNTER2         = M_BIT_MASK(5), //1<<5,
-	E_COUNTER3         = M_BIT_MASK(6), //1<<6,
+	E_COUNTER0         = M_BIT_MASK(3),
+	E_COUNTER1         = M_BIT_MASK(4),
+	E_COUNTER2         = M_BIT_MASK(5),
+	E_COUNTER3         = M_BIT_MASK(6),
 	E_TIME_CMP_COUNTER = M_BIT_MASK(7)
 
 } ePspPerformanceMonitorCounters_t;
@@ -169,7 +169,7 @@ void pspEnablePerformanceCounters(u32_t uiCountersEn);
 *
 * @return No return value
 */
-void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPerformanceMonitorEvents_t eEvent); // check typedef name coding convention
+void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPerformanceMonitorEvents_t eEvent);
 
 /**
 * @brief The function gets the counter value

@@ -111,7 +111,7 @@ void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPer
 		case E_INSTRET_COUNTER:
 		case E_TIME_CMP_COUNTER:
 		default:
-		  M_PSP_ASSERT("Invalid counter index");
+		  M_PSP_ASSERT(1);
 			break;
 	}
 }
@@ -151,7 +151,7 @@ u64_t pspPerformanceCounterGet(ePspPerformanceMonitorCounters_t eCounter)
 		case E_TIME_CMP_COUNTER:
 		default:
 		  tCounterVal = 0;
-		  M_PSP_ASSERT("Invalid counter index");
+		  M_PSP_ASSERT(1);
 		  break;
 	}
 	return tCounterVal;
