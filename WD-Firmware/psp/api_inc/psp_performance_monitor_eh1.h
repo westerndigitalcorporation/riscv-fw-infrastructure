@@ -119,13 +119,6 @@ typedef enum pspPerformanceMonitorEvents
 } ePspPerformanceMonitorEvents_t;
 
 
-/*typedef enum Nidal
-{
-#include "my events"
-	new_event = E_END +
-
-};*/
-
 /**
 * local prototypes
 */
