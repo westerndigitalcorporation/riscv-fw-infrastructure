@@ -173,7 +173,7 @@ void demoRtosalCreateTasks(void *pParameters)
 {
 	
     u32_t uiResult;
-    pspExceptionCause_t eCause;
+    ePspExceptionCause_t eCause;
 
     /* Disable the machine external & timer interrupts until setup is done. */
     pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);

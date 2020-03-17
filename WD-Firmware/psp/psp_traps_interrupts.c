@@ -196,9 +196,10 @@ void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 */
 void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 {
-	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW == uiInterruptNumber) ||
-			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber) ||
-				 (D_PSP_INTERRUPTS_USER_EXT== uiInterruptNumber));
+	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
+			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
+				 (D_PSP_INTERRUPTS_USER_EXT   == uiInterruptNumber));
+
 	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
@@ -217,9 +218,10 @@ void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 */
 void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 {
-	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW == uiInterruptNumber) ||
-			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber) ||
-				 (D_PSP_INTERRUPTS_USER_EXT== uiInterruptNumber));
+	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
+			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
+				 (D_PSP_INTERRUPTS_USER_EXT   == uiInterruptNumber));
+
 	M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
