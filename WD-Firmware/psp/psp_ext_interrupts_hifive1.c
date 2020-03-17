@@ -121,4 +121,5 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 */
 D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void)
 {
+	M_PSP_EBREAK();
 }
