@@ -35,6 +35,13 @@
 /**
 * definitions
 */
+#define D_PSP_CYCLE_COUNTER     M_PSP_BIT_MASK(0)
+#define D_PSP_TIME_COUNTER      M_PSP_BIT_MASK(1)
+#define D_PSP_INSTRET_COUNTER   M_PSP_BIT_MASK(2)
+#define D_PSP_COUNTER0          M_PSP_BIT_MASK(3)
+#define D_PSP_COUNTER1          M_PSP_BIT_MASK(4)
+#define D_PSP_COUNTER2          M_PSP_BIT_MASK(5)
+#define D_PSP_COUNTER3          M_PSP_BIT_MASK(6)
 
 /**
 * macros
@@ -43,21 +50,7 @@
 /**
 * types
 */
-/*
- * Performance monitoring counters
-*/
-typedef enum pspPerformanceMonitorCounters
-{
-	E_CYCLE_COUNTER    = M_BIT_MASK(0),
-	E_TIME_COUNTER     = M_BIT_MASK(1),
-	E_INSTRET_COUNTER  = M_BIT_MASK(2),
-	E_COUNTER0         = M_BIT_MASK(3),
-	E_COUNTER1         = M_BIT_MASK(4),
-	E_COUNTER2         = M_BIT_MASK(5),
-	E_COUNTER3         = M_BIT_MASK(6),
-	E_TIME_CMP_COUNTER = M_BIT_MASK(7)
 
-} ePspPerformanceMonitorCounters_t;
 
 /*
  * Performance monitoring events
@@ -157,20 +150,20 @@ void pspEnablePerformanceCounters(u32_t uiCountersEn);
 /**
 * @brief The function pair a counter to an event
 *
-* @param eCounter     – counter to be set
+* @param uiCounter    – counter to be set
 * @param eEvent       – event to be paired to the selected counter
 *
 * @return No return value
 */
-void pspPerformanceCounterSet(ePspPerformanceMonitorCounters_t eCounter, ePspPerformanceMonitorEvents_t eEvent);
+void pspPerformanceCounterSet(u32_t uiCounter, ePspPerformanceMonitorEvents_t eEvent);
 
 /**
 * @brief The function gets the counter value
 *
-* @param eCounter     – counter index
+* @param uiCounter     – counter index
 *
-* @return u32_t      – Counter value
+* @return u64_t      – Counter value
 */
-u64_t pspPerformanceCounterGet(ePspPerformanceMonitorCounters_t eCounter);
+u64_t pspPerformanceCounterGet(u32_t uiCounter);
 
 #endif /* _PSP_PERFORMANCE_MONITOR_H_ */
