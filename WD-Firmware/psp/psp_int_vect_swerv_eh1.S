@@ -73,6 +73,7 @@
 
 #include "psp_core_base.inc"
 #include "psp_macros.inc"
+#include "psp_int_vect_swerv_eh1.inc"
 
 #ifdef __clang__
 /* disable warning for reserved registers use - we are using comrv
@@ -173,7 +174,7 @@ psp_m_external_int:
     /* NatiR - TO DO - add indication of enter to Interrupt context (call it M_PSP_SET_INT_CONTEXT) */
     M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                  /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_PSP_VECT_TABLE */
-    M_PSP_CALL_INT_HANDLER g_fptrIntMExternIntHandler   /* Call the interrupt handler */
+	M_PSP_CALL_EXT_INT_HANDLER
     // Nati - replace with appropriate macro     M_PSP_CHANGE_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
     /* NatiR - TO DO - add indication of exit from Interrupt context (call it M_PSP_CLEAR_INT_CONTEXT) */
     M_PSP_POP_REGFILE                                    /* Restore the registers of current task from the stack */
