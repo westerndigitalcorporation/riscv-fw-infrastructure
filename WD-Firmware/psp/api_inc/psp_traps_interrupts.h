@@ -51,7 +51,7 @@ typedef enum pspInterruptCause
    E_RESERVED_EXTERNAL_CAUSE         = 10,
    E_MACHINE_EXTERNAL_CAUSE          = 11,
    E_LAST_COMMON_CAUSE
-} pspInterruptCause_t;
+} ePspInterruptCause_t;
 
 
 /* Exceptions */
@@ -74,7 +74,7 @@ typedef enum pspExceptionCause
    E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
    E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
    E_EXC_LAST_COMMON
-} pspExceptionCause_t;
+} ePspExceptionCause_t;
 
 typedef enum pspExternIntHandlerPrivilege
 {
@@ -82,7 +82,7 @@ typedef enum pspExternIntHandlerPrivilege
    E_EXT_SUPERVISOR_INT_HNDLR = E_SUPERVISOR_EXTERNAL_CAUSE,
    E_EXT_MACHINE_INT_HNDLR    = E_MACHINE_EXTERNAL_CAUSE,
    E_EXT_INT_HNDLR_LAST
-} pspExternIntHandlerPrivilege_t;
+} ePspExternIntHandlerPrivilege_t;
 
 
 /* interrupt handler definition */
@@ -144,6 +144,7 @@ typedef void (*pspInterruptHandler_t)(void);
 */
 pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
+
 /**
 * @brief - The function installs an exception handler per exception cause
 *
@@ -153,11 +154,18 @@ pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInte
 */
 pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
+
 /**
-*
+* @brief - default empty interrupt handler
+*/
+void pspDefaultEmptyIntHandler_isr(void);
+
+
+/**
 * @brief - Function that called upon unregistered Trap handler
 */
 void pspTrapUnhandled(void);
+
 
 /**
 * @brief - Disable interrupts and return the current interrupt state in each one of the privileged levels
@@ -165,6 +173,7 @@ void pspTrapUnhandled(void);
 * output parameter - Current (== before the 'disable') interrupts state in each one of the privileged levels (read from mstatus CSR)
 */
 void pspInterruptsDisable(u32_t  *pOutPrevIntState);
+
 
 /**
 * @brief - Restore the interrupts state in each one of the privileged levels.
@@ -174,9 +183,9 @@ void pspInterruptsDisable(u32_t  *pOutPrevIntState);
 */
 void pspInterruptsRestore(u32_t uiPrevIntState);
 
+
 /**
 * @brief - Enable interrupts (in all privilege levels) regardless their previous state
-*
 */
 void pspInterruptsEnable(void);
 
