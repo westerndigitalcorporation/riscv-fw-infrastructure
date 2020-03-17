@@ -392,9 +392,6 @@ RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
     /* register timer interrupt handler */
     pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
 
-    /* register external interrupt handler */
-    pspRegisterInterruptHandler(g_fptrPspExternalInterruptHandler, E_MACHINE_EXTERNAL_CAUSE);
-
     fptrInit(NULL);
     vTaskStartScheduler();
 #elif D_USE_THREADX
