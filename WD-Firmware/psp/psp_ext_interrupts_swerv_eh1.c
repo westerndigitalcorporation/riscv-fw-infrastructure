@@ -68,7 +68,6 @@ D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t ui
 D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void);
-D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void);
 
 
 // NatiR - continue with these. Check what they are
@@ -87,7 +86,6 @@ D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNu
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptHandler)(void)                                 = pspExternalIntHandlerIsr;
 D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
 
 
@@ -200,7 +198,7 @@ D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
 	/* Obtain external interrupt handler address from meihap register */
 	pClaimId = (u32_t*)M_PSP_READ_CSR(D_PSP_MEIHAP_NUM);
 
-	pExtIntHandler = (void(*)(void)) *pClaimId;
+	pExtIntHandler = *(void(*)(void))pClaimId;
 
 	M_PSP_ASSERT(pExtIntHandler != NULL);
 
