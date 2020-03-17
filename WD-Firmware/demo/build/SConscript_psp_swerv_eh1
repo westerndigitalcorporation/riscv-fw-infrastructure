@@ -35,7 +35,7 @@ listCFiles=[
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles=[
-   (os.path.join('psp', 'psp_int_vect.S'), os.path.join(strOutDir, 'psp_int_vect.o')),
+   (os.path.join('psp', 'psp_int_vect_swerv_eh1.S'), os.path.join(strOutDir, 'psp_int_vect_swerv_eh1.o')),
 ]
 
 # compiler directivs

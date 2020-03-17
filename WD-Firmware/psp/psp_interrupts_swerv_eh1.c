@@ -27,7 +27,7 @@
 * include files
 */
 #include "psp_api.h"
-
+#include "psp_csrs_swerv_eh1.h"
 /**
 * definitions
 */
@@ -74,6 +74,7 @@
 /* Default ISRs */
 void pspDefaultExceptionIntHandler_isr(void);
 void pspDefaultEmptyIntHandler_isr(void);
+void pspExternalIntHandler_isr(void);
 
 /* External-interrupt related functions */
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
@@ -134,7 +135,7 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimerIntHandler      = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspExternalIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
 
 
@@ -266,6 +267,31 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
 }
 
+
+/**
+* External interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+D_PSP_TEXT_SECTION void pspExternalIntHandler_isr(void)
+{
+	void (*pExtIntHandler)(void) = NULL;
+	u32_t* pClaimId;
+
+	/* Trigger capture of the interrupt source ID(handler address), write '1' to meicpct */
+	M_PSP_WRITE_CSR(D_PSP_MEICPCT_NUM, 0x1);
+
+	/* Obtain external interrupt handler address from meihap register */
+	pClaimId = (u32_t*)M_PSP_READ_CSR(D_PSP_MEIHAP_NUM);
+
+	pExtIntHandler = (void(*)(void)) *pClaimId;
+
+	M_PSP_ASSERT(pExtIntHandler != NULL);
+
+	pExtIntHandler();
+}
 
 /**
 * This function disables a specified external interrupt in the PIC
