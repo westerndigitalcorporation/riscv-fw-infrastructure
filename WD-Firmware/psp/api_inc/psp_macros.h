@@ -31,7 +31,7 @@
 * macros
 */
 
-#define M_BIT_MASK(num) 1 << (num)
+#define M_PSP_BIT_MASK(num) 1 << (num)
 
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
