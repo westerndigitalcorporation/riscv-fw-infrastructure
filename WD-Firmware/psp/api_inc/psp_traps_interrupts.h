@@ -15,20 +15,16 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts.h
+* @file   psp_traps_interrupts.h
 * @author Ronen Haen
 * @date   20.05.2019
-* @brief  The file defines the psp interrupt interfaces
+* @brief  The file defines the psp traps & interrupt interfaces
 */
-#ifndef __PSP_INTERRUPTS_H__
-#define __PSP_INTERRUPTS_H__
+#ifndef __PSP_TRAPS_INTERRUPTS_H__
+#define __PSP_TRAPS_INTERRUPTS_H__
 
 /**
 * include files
-*/
-
-/**
-* definitions
 */
 
 /* Interrupt context indication values */
@@ -57,22 +53,6 @@ typedef enum pspInterruptCause
    E_LAST_COMMON_CAUSE
 } pspInterruptCause_t;
 
-typedef enum pspInterruptEnableByNumber
-{
-   E_USER_SOFTWARE_INT_NUM             = M_PSP_BIT_MASK(E_USER_SOFTWARE_CAUSE),
-   E_SUPERVISOR_SOFTWARE_INT_NUM       = M_PSP_BIT_MASK(E_SUPERVISOR_SOFTWARE_CAUSE),
-   E_RESERVED_SOFTWARE_INT_NUM         = M_PSP_BIT_MASK(E_RESERVED_SOFTWARE_CAUSE),
-   E_MACHINE_SOFTWARE_INT_NUM          = M_PSP_BIT_MASK(E_MACHINE_SOFTWARE_CAUSE),
-   E_USER_TIMER_INT_NUM                = M_PSP_BIT_MASK(E_USER_TIMER_CAUSE),
-   E_SUPERVISOR_TIMER_INT_NUM          = M_PSP_BIT_MASK(E_SUPERVISOR_TIMER_CAUSE),
-   E_RESERVED_TIMER_INT_NUM            = M_PSP_BIT_MASK(E_RESERVED_TIMER_CAUSE),
-   E_MACHINE_TIMER_INT_NUM             = M_PSP_BIT_MASK(E_MACHINE_TIMER_CAUSE),
-   E_USER_EXTERNAL_INT_NUM             = M_PSP_BIT_MASK(E_USER_EXTERNAL_CAUSE),
-   E_SUPERVISOR_EXTERNAL_INT_NUM       = M_PSP_BIT_MASK(E_SUPERVISOR_EXTERNAL_CAUSE),
-   E_RESERVED_EXTERNAL_INT_NUM         = M_PSP_BIT_MASK(E_RESERVED_EXTERNAL_CAUSE),
-   E_MACHINE_EXTERNAL_INT_NUM          = M_PSP_BIT_MASK(E_MACHINE_EXTERNAL_CAUSE),
-   E_LAST_COMMON_INT_NUM
-} pspInterruptEnableByNumber_t;
 
 /* Exceptions */
 typedef enum pspExceptionCause
@@ -109,6 +89,24 @@ typedef enum pspExternIntHandlerPrivilege
 typedef void (*pspInterruptHandler_t)(void);
 
 /**
+* definitions
+*/
+
+/* Enable/Disable bits of SW, Timer and External interrupts in Machine privilege level */
+#define D_PSP_INTERRUPTS_MACHINE_SW        E_MACHINE_SOFTWARE_CAUSE
+#define D_PSP_INTERRUPTS_MACHINE_TIMER     E_MACHINE_TIMER_CAUSE
+#define D_PSP_INTERRUPTS_MACHINE_EXT       E_MACHINE_EXTERNAL_CAUSE
+/* Enable/Disable bits of SW, Timer and External interrupts in Supervisor privilege level */
+#define D_PSP_INTERRUPTS_SUPERVISOR_SW     E_SUPERVISOR_SOFTWARE_CAUSE
+#define D_PSP_INTERRUPTS_SUPERVISOR_TIMER  E_SUPERVISOR_TIMER_CAUSE
+#define D_PSP_INTERRUPTS_SUPERVISOR_EXT    E_SUPERVISOR_EXTERNAL_CAUSE
+/* Enable/Disable bits of SW, Timer and External interrupts in User privilege level */
+#define D_PSP_INTERRUPTS_USER_SW           E_USER_SOFTWARE_CAUSE
+#define D_PSP_INTERRUPTS_USER_TIMER        E_USER_TIMER_CAUSE
+#define D_PSP_INTERRUPTS_USER_EXT          E_USER_EXTERNAL_CAUSE
+
+
+/**
 * local prototypes
 */
 
@@ -120,11 +118,6 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * macros
 */
-
-/* Disable/Enable specific interrupt in the mie CSR */
-#define M_PSP_INTERRUPT_DISBLE_NUM_IN_MACHINE_LEVEL(interrupt_number)  M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, interrupt_number);
-#define M_PSP_INTERRUPT_ENABLE_NUM_IN_MACHINE_LEVEL(interrupt_number)  M_PSP_SET_CSR(D_PSP_MIE_NUM, interrupt_number);
-
 
 /* Disable all Interrupts (in all privilege levels) in mstatus CSR */
 #define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(pMask) pspInterruptsDisable(pMask);
@@ -189,5 +182,75 @@ void pspInterruptsEnable(void);
 
 
 
+/******************************************************************
+* @brief - Disable specified interrupt when called in MACHINE-LEVEL
+*                                                     *************
+* IMPORTANT NOTE: When you call this function, you can use either one of the following defined values:
+  *************** - D_PSP_INTERRUPTS_MACHINE_SW
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER
+                  - D_PSP_INTERRUPTS_MACHINE_EXT
+                  - D_PSP_INTERRUPTS_SUPERVISOR_SW
+                  - D_PSP_INTERRUPTS_SUPERVISOR_TIMER
+                  - D_PSP_INTERRUPTS_SUPERVISOR_EXT
+                  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+* input parameter - Interrupt number to disable
+*/
+void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
 
-#endif /* __PSP_INTERRUPTS_H__ */
+
+
+/*****************************************************************
+* @brief - Enable specified interrupt when called in MACHINE-LEVEL
+*                                                    *************
+* IMPORTANT NOTE: When you call this function, you can use either one of the following defined values:
+  *************** - D_PSP_INTERRUPTS_MACHINE_SW
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER
+                  - D_PSP_INTERRUPTS_MACHINE_EXT
+                  - D_PSP_INTERRUPTS_SUPERVISOR_SW
+                  - D_PSP_INTERRUPTS_SUPERVISOR_TIMER
+                  - D_PSP_INTERRUPTS_SUPERVISOR_EXT
+                  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+* input parameter - Interrupt number to enable
+*/
+void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
+
+
+
+/***************************************************************
+* @brief - Disable specified interrupt when called in USER-LEVEL
+*                                                     **********
+* IMPORTANT NOTE: When you call this function, use ONLY one of the following defined values:
+  **************  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+*
+* input parameter - Interrupt number to disable
+*/
+void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber);
+
+
+
+/***************************************************************
+* @brief - Enable specified interrupt when called in USER-LEVEL
+*                                                     **********
+* IMPORTANT NOTE: When you call this function, use ONLY one of the following defined values:
+  **************  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+*
+* input parameter - Interrupt number to enable
+*/
+void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber);
+
+
+
+
+#endif /* __PSP_TRAPS_INTERRUPTS_H__ */
