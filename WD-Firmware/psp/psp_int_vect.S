@@ -138,7 +138,7 @@ psp_exceptions_int:
     M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK               /* After RegFile is pushed onto task's-stack, we change sp to point to ISR-Stack */
 .endif /* D_PSP_VECT_TABLE */
     M_PSP_CALL_INT_HANDLER g_fptrIntExceptionIntHandler /* call the exception handler */
-   // NatiR - replace with appropriate macro M_PSP_CHANGE_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
+    // NatiR - replace with appropriate macro M_PSP_CHANGE_SP_FROM_ISR_TO_APP_STACK               /* Just before pop RegFile of the interrupted task - change sp to point to current Task-Stack */
     /* NatiR - TO DO - add indication of exit from Interrupt context (call it M_PSP_CLEAR_INT_CONTEXT) */
     M_PSP_POP_REGFILE                                   /* Restore the registers of current task from the stack */
     mret
