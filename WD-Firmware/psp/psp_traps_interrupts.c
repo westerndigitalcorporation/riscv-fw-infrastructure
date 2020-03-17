@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts.c
+* @file   psp_traps_interrupts.c
 * @author Nati Rapaport
 * @date   19.02.2020
-* @brief  The file contains the psp common parts of interrupts-related functions
+* @brief  The file contains the psp common parts of traps and interrupts-related functions
 */
 
 
@@ -134,6 +134,95 @@ void pspInterruptsEnable(void)
 {
 	M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
 }
+
+
+
+/******************************************************************
+* @brief - Disable specified interrupt when called in MACHINE-LEVEL
+*                                                     *************
+* IMPORTANT NOTE: When you call this function, you can use either one of the following defined values:
+  *************** - D_PSP_INTERRUPTS_MACHINE_SW
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER
+                  - D_PSP_INTERRUPTS_MACHINE_EXT
+                  - D_PSP_INTERRUPTS_SUPERVISOR_SW
+                  - D_PSP_INTERRUPTS_SUPERVISOR_TIMER
+                  - D_PSP_INTERRUPTS_SUPERVISOR_EXT
+                  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+* input parameter - Interrupt number to disable
+*/
+void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
+{
+	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+}
+
+
+
+/*****************************************************************
+* @brief - Enable specified interrupt when called in MACHINE-LEVEL
+*                                                    *************
+* IMPORTANT NOTE: When you call this function, you can use either one of the following defined values:
+  *************** - D_PSP_INTERRUPTS_MACHINE_SW
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER
+                  - D_PSP_INTERRUPTS_MACHINE_EXT
+                  - D_PSP_INTERRUPTS_SUPERVISOR_SW
+                  - D_PSP_INTERRUPTS_SUPERVISOR_TIMER
+                  - D_PSP_INTERRUPTS_SUPERVISOR_EXT
+                  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+* input parameter - Interrupt number to enable
+*/
+void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
+{
+	M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+}
+
+
+
+/***************************************************************
+* @brief - Disable specified interrupt when called in USER-LEVEL
+*                                                     **********
+* IMPORTANT NOTE: When you call this function, use ONLY one of the following defined values:
+  **************  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+*
+* input parameter - Interrupt number to disable
+*/
+void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
+{
+	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW == uiInterruptNumber) ||
+			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber) ||
+				 (D_PSP_INTERRUPTS_USER_EXT== uiInterruptNumber));
+	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+}
+
+
+
+/**************************************************************
+* @brief - Enable specified interrupt when called in USER-LEVEL
+*                                                    **********
+* IMPORTANT NOTE: When you call this function, use ONLY one of the following defined values:
+  **************  - D_PSP_INTERRUPTS_USER_SW
+                  - D_PSP_INTERRUPTS_USER_TIMER
+                  - D_PSP_INTERRUPTS_USER_EXT
+******************************************************************
+*
+* input parameter - Interrupt number to enable
+*/
+void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
+{
+	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW == uiInterruptNumber) ||
+			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber) ||
+				 (D_PSP_INTERRUPTS_USER_EXT== uiInterruptNumber));
+	M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+}
+
 
 
 /**
