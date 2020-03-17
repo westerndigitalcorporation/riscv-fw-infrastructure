@@ -24,9 +24,7 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join('psp', 'psp_interrupts_swerv_eh1.c'), os.path.join(strOutDir, 'psp_interrupts_swerv_eh1.o')),
    (os.path.join('psp', 'psp_ext_interrupts_swerv_eh1.c'), os.path.join(strOutDir, 'psp_ext_interrupts_swerv_eh1.o')),
-   (os.path.join('psp', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
    (os.path.join('psp', 'psp_interrupts.c'), os.path.join(strOutDir, 'psp_interrups.o')),
    (os.path.join('psp', 'psp_timers.c'), os.path.join(strOutDir, 'psp_timers.o')),
 ]

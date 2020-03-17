@@ -40,7 +40,6 @@
 * types
 */
 
-/* Cause of incoming interrupt - reflected by mcause CSR */
 typedef enum pspInterruptCause
 {
    E_USER_SOFTWARE_CAUSE             = 0,
@@ -57,6 +56,23 @@ typedef enum pspInterruptCause
    E_MACHINE_EXTERNAL_CAUSE          = 11,
    E_LAST_COMMON_CAUSE
 } pspInterruptCause_t;
+
+typedef enum pspInterruptEnableByNumber
+{
+   E_USER_SOFTWARE_INT_NUM             = M_PSP_BIT_MASK(E_USER_SOFTWARE_CAUSE),
+   E_SUPERVISOR_SOFTWARE_INT_NUM       = M_PSP_BIT_MASK(E_SUPERVISOR_SOFTWARE_CAUSE),
+   E_RESERVED_SOFTWARE_INT_NUM         = M_PSP_BIT_MASK(E_RESERVED_SOFTWARE_CAUSE),
+   E_MACHINE_SOFTWARE_INT_NUM          = M_PSP_BIT_MASK(E_MACHINE_SOFTWARE_CAUSE),
+   E_USER_TIMER_INT_NUM                = M_PSP_BIT_MASK(E_USER_TIMER_CAUSE),
+   E_SUPERVISOR_TIMER_INT_NUM          = M_PSP_BIT_MASK(E_SUPERVISOR_TIMER_CAUSE),
+   E_RESERVED_TIMER_INT_NUM            = M_PSP_BIT_MASK(E_RESERVED_TIMER_CAUSE),
+   E_MACHINE_TIMER_INT_NUM             = M_PSP_BIT_MASK(E_MACHINE_TIMER_CAUSE),
+   E_USER_EXTERNAL_INT_NUM             = M_PSP_BIT_MASK(E_USER_EXTERNAL_CAUSE),
+   E_SUPERVISOR_EXTERNAL_INT_NUM       = M_PSP_BIT_MASK(E_SUPERVISOR_EXTERNAL_CAUSE),
+   E_RESERVED_EXTERNAL_INT_NUM         = M_PSP_BIT_MASK(E_RESERVED_EXTERNAL_CAUSE),
+   E_MACHINE_EXTERNAL_INT_NUM          = M_PSP_BIT_MASK(E_MACHINE_EXTERNAL_CAUSE),
+   E_LAST_COMMON_INT_NUM
+} pspInterruptEnableByNumber_t;
 
 /* Exceptions */
 typedef enum pspExceptionCause
@@ -88,6 +104,7 @@ typedef enum pspExternIntHandlerPrivilege
    E_EXT_INT_HNDLR_LAST
 } pspExternIntHandlerPrivilege_t;
 
+
 /* interrupt handler definition */
 typedef void (*pspInterruptHandler_t)(void);
 
@@ -104,17 +121,16 @@ typedef void (*pspInterruptHandler_t)(void);
 * macros
 */
 
-/* Disable/Enable specific interrupt */
-/* mie_interrupt is one of D_PSP_MIE_USIE .. D_PSP_MIE_MEIE as defined in psp_csrs.h */
-#define M_PSP_INTERRUPT_DISBLE_ID(mie_interrupt)  u32_t uiCsrVal; \
-	                                                M_PSP_CLEAR_AND_READ_CSR(uiCsrVal, D_PSP_MIE_NUM, mie_interrupt);
-#define M_PSP_INTERRUPT_ENABLE_ID(mie_interrupt)  M_PSP_SET_CSR(D_PSP_MIE_NUM, mie_interrupt);
+/* Disable/Enable specific interrupt in the mie CSR */
+#define M_PSP_INTERRUPT_DISBLE_NUM_IN_MACHINE_LEVEL(interrupt_number)  M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, interrupt_number);
+#define M_PSP_INTERRUPT_ENABLE_NUM_IN_MACHINE_LEVEL(interrupt_number)  M_PSP_SET_CSR(D_PSP_MIE_NUM, interrupt_number);
 
-/* Disable Interrupts (all privilege levels) */
+
+/* Disable all Interrupts (in all privilege levels) in mstatus CSR */
 #define M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(pMask) pspInterruptsDisable(pMask);
 /* Restore interrupts to their previous state */
 #define M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(mask)  pspInterruptsRestore(mask);
-/* Enable interrupts regardless their previous state */
+/* Enable all interrupts regardless their previous state */
 #define M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL()       pspInterruptsEnable();
 
 
@@ -127,41 +143,47 @@ typedef void (*pspInterruptHandler_t)(void);
 */
 
 /**
-* The function installs an interrupt service routine per risc-v cause
+* @brief - The function installs an interrupt service routine per risc-v cause
 *
-* @param  fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param  interruptCause           – interrupt source
-* @return u32_t                   - previously registered ISR
+* input parameter  fptrInterruptHandler     - function pointer to the interrupt service routine
+* input parameter  interruptCause           - interrupt source
+* return u32_t                              - previously registered ISR
 */
 pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 /**
-* The function installs an exception handler per exception cause
+* @brief - The function installs an exception handler per exception cause
 *
-* @param  fptrInterruptHandler     – function pointer to the exception handler
-* @param  exceptionCause           – exception cause
-* @return u32_t                   - previously registered ISR
+* input parameter fptrInterruptHandler     - function pointer to the exception handler
+* input parameter exceptionCause           - exception cause
+* return u32_t                             - previously registered ISR
 */
 pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
 /**
 *
-* Function that called upon unregistered Trap handler
+* @brief - Function that called upon unregistered Trap handler
 */
 void pspTrapUnhandled(void);
 
 /**
-* Disable interrupts and return the current (== before the 'disable') interrupt state
+* @brief - Disable interrupts and return the current interrupt state in each one of the privileged levels
+*
+* output parameter - Current (== before the 'disable') interrupts state in each one of the privileged levels (read from mstatus CSR)
 */
 void pspInterruptsDisable(u32_t  *pOutPrevIntState);
 
 /**
-* Restore the interrupts state
+* @brief - Restore the interrupts state in each one of the privileged levels.
+*          i.e. if they were already disabled - they will stay disabled. If they were enabled - they will become enabled now.
+*
+* input parameter - Previous interrupts state in each one of the privileged levels
 */
 void pspInterruptsRestore(u32_t uiPrevIntState);
 
 /**
-* Enable interrupts regardless their previous state
+* @brief - Enable interrupts (in all privilege levels) regardless their previous state
+*
 */
 void pspInterruptsEnable(void);
 
