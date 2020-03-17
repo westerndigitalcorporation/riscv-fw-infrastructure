@@ -56,22 +56,22 @@
 
 
 /* External Interrupt Threshold - Only external interrupt with a priority HIGHER than the threshold will be served  */
-#define D_PSP__EXT_INT_THRESHOLD_0       0
-#define D_PSP__EXT_INT_THRESHOLD_1       1
-#define D_PSP__EXT_INT_THRESHOLD_2       2
-#define D_PSP__EXT_INT_THRESHOLD_3       3
-#define D_PSP__EXT_INT_THRESHOLD_4       4
-#define D_PSP__EXT_INT_THRESHOLD_5       5
-#define D_PSP__EXT_INT_THRESHOLD_6       6
-#define D_PSP__EXT_INT_THRESHOLD_7       7
-#define D_PSP__EXT_INT_THRESHOLD_8       8
-#define D_PSP__EXT_INT_THRESHOLD_9       9
-#define D_PSP__EXT_INT_THRESHOLD_10      10
-#define D_PSP__EXT_INT_THRESHOLD_11      11
-#define D_PSP__EXT_INT_THRESHOLD_12      12
-#define D_PSP__EXT_INT_THRESHOLD_13      13
-#define D_PSP__EXT_INT_THRESHOLD_14      14
-#define D_PSP__EXT_INT_THRESHOLD_15      15
+#define D_PSP_EXT_INT_THRESHOLD_0       0
+#define D_PSP_EXT_INT_THRESHOLD_1       1
+#define D_PSP_EXT_INT_THRESHOLD_2       2
+#define D_PSP_EXT_INT_THRESHOLD_3       3
+#define D_PSP_EXT_INT_THRESHOLD_4       4
+#define D_PSP_EXT_INT_THRESHOLD_5       5
+#define D_PSP_EXT_INT_THRESHOLD_6       6
+#define D_PSP_EXT_INT_THRESHOLD_7       7
+#define D_PSP_EXT_INT_THRESHOLD_8       8
+#define D_PSP_EXT_INT_THRESHOLD_9       9
+#define D_PSP_EXT_INT_THRESHOLD_10      10
+#define D_PSP_EXT_INT_THRESHOLD_11      11
+#define D_PSP_EXT_INT_THRESHOLD_12      12
+#define D_PSP_EXT_INT_THRESHOLD_13      13
+#define D_PSP_EXT_INT_THRESHOLD_14      14
+#define D_PSP_EXT_INT_THRESHOLD_15      15
 
 
 /**
@@ -90,7 +90,7 @@ extern void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
 extern void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
 extern void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
 extern void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
-extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
+extern pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
 
 /**
