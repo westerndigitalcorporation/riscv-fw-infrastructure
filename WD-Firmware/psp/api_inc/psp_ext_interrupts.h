@@ -90,6 +90,7 @@ extern void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
 extern void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
 extern void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
 extern void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
+extern void (*g_fptrPspExternalInterruptHandler)(void);
 extern pspInterruptHandler_t (*fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
 
