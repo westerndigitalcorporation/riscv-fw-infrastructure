@@ -85,14 +85,19 @@ void pspEnablePerformanceCounters(u32_t uiCountersEn)
 /**
 * @brief The function pair a counter to an event
 *
-* @param uiCounter     – counter to be set
+* @param eCounter     – counter to be set
+*                     – supported counters are:
+*                         D_PSP_COUNTER0
+*                         D_PSP_COUNTER1
+*                         D_PSP_COUNTER2
+*                         D_PSP_COUNTER3
 * @param eEvent       – event to be paired to the selected counter
 *
 * @return No return value
 */
-void pspPerformanceCounterSet(u32_t uiCounter, ePspPerformanceMonitorEvents_t eEvent)
+void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEvent)
 {
-	switch (uiCounter)
+	switch (eCounter)
 	{
 		case D_PSP_COUNTER0:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, eEvent);
@@ -114,14 +119,22 @@ void pspPerformanceCounterSet(u32_t uiCounter, ePspPerformanceMonitorEvents_t eE
 /**
 * @brief The function gets the counter value
 *
-* @param uiCounter    – counter index
+* @param eCounter    – counter index
+*                     – supported counters are:
+*                         D_PSP_CYCLE_COUNTER
+*                         D_PSP_TIME_COUNTER
+*                         D_PSP_INSTRET_COUNTER
+*                         D_PSP_COUNTER0
+*                         D_PSP_COUNTER1
+*                         D_PSP_COUNTER2
+*                         D_PSP_COUNTER3
 *
 * @return u64_t      – Counter value
 */
-u64_t pspPerformanceCounterGet(u32_t uiCounter)
+u64_t pspPerformanceCounterGet(u32_t eCounter)
 {
 	u64_t udCounterVal = 0;
-	switch (uiCounter)
+	switch (eCounter)
 	{
 		case D_PSP_CYCLE_COUNTER:
 		  udCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM);
