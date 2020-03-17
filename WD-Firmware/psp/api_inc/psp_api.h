@@ -33,6 +33,7 @@
 #include "psp_csrs.h"
 #include "psp_macros.h"
 #include "psp_interrupts.h"
+#include "psp_ext_interrupts.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
 #include "psp_timers.h"
@@ -50,7 +51,7 @@
 */
 
 /* What is the current privilege-level */
-#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented - use ebreak, then check MPP/SPP fields in mstatus, then return */
+#define M_PSP_GET_CURRENT_PRIVILEGE_LEVEL() /* Nati - to be implemented - use ebreak, then check MPP/SPP fields in mstatus, then return */
 
 /**
 * types
