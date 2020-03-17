@@ -161,8 +161,8 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
    fptrPrevIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
    G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
 
-   /* dsync make sure changes go to memory */
-   //M_PSP_DSYNC(); /* Nati - check here - should I use fence. to close it after the 1'st pull request */
+   /* Make sure changes are synced */
+   M_PSP_INST_FENCEI();
 
    return(fptrPrevIsr);
 }
@@ -176,6 +176,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 */
 D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void)
 {
+	M_PSP_EBREAK();
 }
 
 
