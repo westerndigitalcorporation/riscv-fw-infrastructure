@@ -46,8 +46,7 @@
 #define D_PSP_ON         1
 #define D_PSP_OFF        0
 
-#define D_PSP_MULT_BY_4 2
-
+#define D_PSP_MULT_BY_4(val) ((val) << 2)
 
 
 #endif /* __PSP_DEFINES_H__ */
