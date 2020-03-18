@@ -50,7 +50,6 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
 D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
 D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
-D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void);
 
 /**
 * external prototypes
@@ -111,15 +110,3 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
   return 0 ;
 }
 
-
-/**
-* default empty external interrupt handler
-*
-* @param none
-*
-* @return none
-*/
-D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void)
-{
-	M_PSP_EBREAK();
-}
