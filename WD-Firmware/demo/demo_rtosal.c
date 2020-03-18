@@ -153,11 +153,6 @@ static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
  */
 void demoStart(void)
 {
-#if defined(D_NEXYS_A7)
-    /* register external interrupt handler */
-    pspRegisterInterruptHandler(pspExternalIntHandlerIsr, E_MACHINE_EXTERNAL_CAUSE);
-#endif
-
 	rtosalStart(demoRtosalCreateTasks);
 }
 
@@ -197,7 +192,7 @@ void demoRtosalCreateTasks(void *pParameters)
     }
 
     /* register external interrupt handler */
-    /* pspRegisterInterruptHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
+    pspRegisterInterruptHandler(pspExternalIntHandlerIsr, E_MACHINE_EXTERNAL_CAUSE);
 
     /* Enable the Machine-External interrupt */
     pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
