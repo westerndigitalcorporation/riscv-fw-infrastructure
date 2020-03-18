@@ -102,13 +102,13 @@ void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEv
 		case D_PSP_COUNTER0:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, eEvent);
 				break;
-		case D_PSP_COUNTER0:
+		case D_PSP_COUNTER1:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT4_NUM, eEvent);
 				break;
-		case D_PSP_COUNTER0:
+		case D_PSP_COUNTER2:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT5_NUM, eEvent);
 				break;
-		case D_PSP_COUNTER0:
+		case D_PSP_COUNTER3:
 				M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, eEvent);
 				break;
 		default:
