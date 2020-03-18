@@ -40,8 +40,13 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_NEXYS_A7', 'D_MTIME_ADDRESS=0x80001020', 'D_MTIMECMP_ADDRESS=0x80001028',
-                      'D_CLOCK_RATE=50000000']
+Env['PUBLIC_DEF'] += ['D_NEXYS_A7', 'D_MTIME_ADDRESS=0x80001020', 'D_MTIMECMP_ADDRESS=0x80001028','D_CLOCK_RATE=50000000',
+                      # SweRVolf FPGA external interrupts support: (Pending information from Olof. For the meantime these are the values in use:) 
+                      #    - PIC base address = (use crex address)  
+                      #    - Number of external interrupts = 256 (maximum by EHX1 PRM)
+                      #    - First ext interrupt = 0 
+                      #    - Last ext interrupt =  255
+                      'D_PIC_BASE_ADDRESS=0xA0000000', 'D_PIC_NUM_OF_EXT_INTERRUPTS=256', 'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0', 'D_EXT_INTERRUPT_LAST_SOURCE_USED=255']
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 
