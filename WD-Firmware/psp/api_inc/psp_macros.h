@@ -32,6 +32,8 @@
 */
 
 #define M_PSP_BIT_MASK(num) (1 << (num))
+#define M_PSP_MULT_BY_4(val) ((val) << 2)
+
 
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
