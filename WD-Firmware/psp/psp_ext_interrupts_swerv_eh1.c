@@ -38,8 +38,12 @@
     #define PSP_PIC_NUM_OF_EXT_INTERRUPTS D_PIC_NUM_OF_EXT_INTERRUPTS
 #endif
 
-/* 1'st Ext-Interrupt source could be any number (including 0) so there's no point to check with #if.. */
-#define PSP_EXT_INTERRUPT_FIRST_SOURCE_USED    D_EXT_INTERRUPT_FIRST_SOURCE_USED
+/* Number of first External interrupt source in the PIC (0 is a valid number) */
+#ifndef  D_EXT_INTERRUPT_FIRST_SOURCE_USED
+    #error "Definition of first External interrupt source is missing"
+#else
+    #define PSP_EXT_INTERRUPT_FIRST_SOURCE_USED    D_EXT_INTERRUPT_FIRST_SOURCE_USED
+#endif
 
 /* Number of last External interrupt source in the PIC */
 #if (0 == D_EXT_INTERRUPT_LAST_SOURCE_USED)
@@ -99,7 +103,7 @@ D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 {
 	/* Clear Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIE_ADDR + D_PSP_MULT_BY_4(uiIntNum) , 0);
+	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum) , 0);
 }
 
 /*
@@ -111,7 +115,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 {
 	/* Set Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + D_PSP_MULT_BY_4(uiIntNum)), D_PSP_MEIE_INT_EN_MASK);
+	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum)), D_PSP_MEIE_INT_EN_MASK);
 }
 
 /*
@@ -124,7 +128,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
 {
 	/* Set priority in meipl register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + D_PSP_MULT_BY_4(uiIntNum)), uiPriority);
+	M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + M_PSP_MULT_BY_4(uiIntNum)), uiPriority);
 }
 
 /*
