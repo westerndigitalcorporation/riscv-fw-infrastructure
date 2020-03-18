@@ -186,7 +186,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void)
 */
 D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
 {
-	void (*pExtIntHandler)(void) = NULL;
+	fptrFunction fptrExtIntHandler = NULL;
 	u32_t* pClaimId;
 
 	/* Trigger capture of the interrupt source ID(handler address), write '1' to meicpct */
@@ -195,11 +195,11 @@ D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
 	/* Obtain external interrupt handler address from meihap register */
 	pClaimId = (u32_t*)M_PSP_READ_CSR(D_PSP_MEIHAP_NUM);
 
-	pExtIntHandler = *(void(*)(void))pClaimId;
+	fptrExtIntHandler = *((fptrFunction)pClaimId);
 
 	M_PSP_ASSERT(pExtIntHandler != NULL);
 
-	pExtIntHandler();
+	fptrExtIntHandler();
 }
 
 
