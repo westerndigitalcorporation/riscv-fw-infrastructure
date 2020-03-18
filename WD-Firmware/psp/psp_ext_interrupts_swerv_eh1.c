@@ -38,12 +38,10 @@
     #define PSP_PIC_NUM_OF_EXT_INTERRUPTS D_PIC_NUM_OF_EXT_INTERRUPTS
 #endif
 
-/* Number of external interrupt sources in the PIC */
-#ifndef D_EXT_INTERRUPT_FIRST_SOURCE_USED /* Note we expect 1'st ext-int source to be 0 */
-    #error "Definition of 1'st External interrupt source is missing"
-#else
-    #define PSP_EXT_INTERRUPT_FIRST_SOURCE_USED    D_EXT_INTERRUPT_FIRST_SOURCE_USED
-#endif
+/* 1'st Ext-Interrupt source could be any number (including 0) so there's no point to check with #if.. */
+#define PSP_EXT_INTERRUPT_FIRST_SOURCE_USED    D_EXT_INTERRUPT_FIRST_SOURCE_USED
+
+/* Number of last External interrupt source in the PIC */
 #if (0 == D_EXT_INTERRUPT_LAST_SOURCE_USED)
     #error "Definition of last External interrupt source is missing"
 #else
@@ -67,7 +65,6 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
 D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
 D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
-D_PSP_TEXT_SECTION void pspExternalInterruptDefaultEmptyIsr(void);
 
 
 // NatiR - continue with these. Check what they are
@@ -103,7 +100,7 @@ D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 {
 	/* Clear Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + (uiIntNum << D_PSP_MULT_BY_4)), 0);
+	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIE_ADDR + D_PSP_MULT_BY_4(uiIntNum) , 0);
 }
 
 /*
@@ -115,7 +112,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 {
 	/* Set Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + (uiIntNum << D_PSP_MULT_BY_4)), D_PSP_MEIE_INT_EN_MASK);
+	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + D_PSP_MULT_BY_4(uiIntNum)), D_PSP_MEIE_INT_EN_MASK);
 }
 
 /*
@@ -128,7 +125,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
 {
 	/* Set priority in meipl register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + (uiIntNum << D_PSP_MULT_BY_4)), uiPriority);
+	M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + D_PSP_MULT_BY_4(uiIntNum)), uiPriority);
 }
 
 /*
