@@ -31,6 +31,7 @@
 * macros
 */
 
+
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
    /* TODO: need to add default function */
@@ -46,7 +47,7 @@
 
 /* assert macro */
 #ifdef D_PSP_DEBUG
-   #define M_PSP_ASSERT(checkedResult) if (checkedResult) \
+   #define M_PSP_ASSERT(checkedResult) if (M_PSP_BUILTIN_EXPECT(checkedResult, 0)) \
                                           M_PSP_EBREAK()
 #else
    #define M_PSP_ASSERT(checkedResult)
