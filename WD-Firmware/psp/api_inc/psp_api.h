@@ -37,6 +37,7 @@
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
 #include "psp_timers.h"
+#include "psp_performance_monitor_eh1.h"
 #ifdef D_NEXYS_A7
     #include "psp_csrs_swerv_eh1.h"
 #endif
