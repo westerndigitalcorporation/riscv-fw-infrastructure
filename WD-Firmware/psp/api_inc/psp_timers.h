@@ -60,4 +60,22 @@ extern void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod);
 * APIs
 */
 
+/**
+*
+* @brief Get Timer counter value
+*
+* @return u64_t      – Timer counter value
+*
+***************************************************************************************************/
+u64_t pspTimerCounterGet(void);
+
+/**
+*
+* @brief Get Time compare counter value
+*
+* @return u64_t      – Time compare counter value
+*
+***************************************************************************************************/
+u64_t pspTimeCompareCounterGet(void);
+
 #endif /* __PSP_TIMER_COUNTERS_H__ */
