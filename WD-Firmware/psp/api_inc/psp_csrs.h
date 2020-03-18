@@ -254,6 +254,12 @@
 #define D_PSP_MIE_SEIE_MASK    0x00000200                                          /* Supervisor mode */
 #define D_PSP_MIE_MEIE_MASK    0x00000800                                          /* Machine mode */
 
+/* uie CSR */
+#define D_PSP_UIE_NUM          0x004
+#define D_PSP_UIE_USIE_MASK    0x00000001  /* Software Interrupt enable/disable */ /* User mode */
+#define D_PSP_UIE_UTIE_MASK    0x00000010  /* Timer Interrupt enable/disable */    /* User mode */
+#define D_PSP_UIE_UEIE_MASK    0x00000100  /* External Interrupt enable/disable */ /* User mode */
+
 /* mcause CSR */
 #define D_PSP_MCAUSE_NUM                         0x342
 #define D_PSP_MCAUSE_U_SW_INT_MASK               0x80000000
