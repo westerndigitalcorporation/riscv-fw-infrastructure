@@ -24,7 +24,7 @@
 #include "rtosal_mutex_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
-#include "psp_interrupts.h"
+#include "psp_traps_interrupts.h"
 
 /**
 * definitions
@@ -118,11 +118,11 @@ void demoRtosalCreateTasks(void *pParam)
 {
 
    u32_t res;
-   pspExceptionCause_t cause;
+   ePspExceptionCause_t cause;
 
-   /* Disable the machine & timer interrupts until setup is done. */
-   M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
-   M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MTIE_MASK);
+   /* Disable the machine external & timer interrupts until setup is done. */
+   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
    /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
    for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST_COMMON ; cause++)
@@ -136,7 +136,7 @@ void demoRtosalCreateTasks(void *pParam)
    }
 
    /* Enable the Machine-External bit in MIE */
-   M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
+   pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
 
    /* Create the queue used by the send-msg and receive-msg tasks. */
    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH,
