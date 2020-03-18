@@ -233,13 +233,13 @@ void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 * input parameter -  fptrInterruptHandler     - function pointer to the interrupt service routine
 * input parameter -  uiInterruptCause         - uiInterruptCause  – interrupt source
 *
-* @return u32_t                   - previously registered ISR
+* @return u32_t                               - previously registered ISR. If NULL then registeration had an error
 */
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiInterruptCause >= E_LAST_COMMON_CAUSE);
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiInterruptCause < E_LAST_COMMON_CAUSE);
 
    switch (uiInterruptCause)
    {
@@ -310,8 +310,8 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause)
 {
    pspInterruptHandler_t fptrFunc;
-
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiExceptionCause >= E_EXC_LAST_COMMON);
+   
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_COMMON);
 
    fptrFunc = g_fptrExceptions_ints[uiExceptionCause];
 
