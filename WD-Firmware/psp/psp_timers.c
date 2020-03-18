@@ -76,3 +76,30 @@ void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod)
     *pMtimecmp = udThen;
 }
 
+/**
+*
+* @brief Get Timer counter value
+*
+* @return u64_t      – Timer counter value
+*
+***************************************************************************************************/
+u64_t pspTimerCounterGet(void)
+{
+	volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
+	return *pMtime;
+}
+
+/**
+*
+* @brief Get Time compare counter value
+*
+* @return u64_t      – Time compare counter value
+*
+***************************************************************************************************/
+u64_t pspTimeCompareCounterGet(void)
+{
+	volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+	return *pMtimecmp;
+}
+
+
