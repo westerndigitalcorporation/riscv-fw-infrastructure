@@ -145,6 +145,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* Place a label, the debugger will stop here to query the overlay manager current status.  */
 #define M_COMRV_DEBUGGER_HOOK_SYMBOL()            asm volatile (".globl _ovly_debug_event\n" \
                                                       "_ovly_debug_event:");
+/* offset and multigroup tables total size in bytes */
+#define D_COMRV_TABLES_TOTAL_SIZE_IN_BYTES ((u32_t)&__OVERLAY_MULTIGROUP_TABLE_END - (u32_t)&__OVERLAY_GROUP_TABLE_START)
 
 /**
 * types
@@ -195,15 +197,14 @@ D_COMRV_DATA_SECTION static comrvStackFrame_t g_stComrvStackPool[D_COMRV_CALL_ST
 
 /* symbols defining the start and end of the overlay cache */
 extern void *__OVERLAY_CACHE_START__, *__OVERLAY_CACHE_END__;
+/* symbol defining the start of the offset management table */
+extern void *__OVERLAY_GROUP_TABLE_START;
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
-/* symbols defining the start and end of the overlay managment tables */
-extern void *__OVERLAY_MULTIGROUP_TABLE_START,  *__OVERLAY_GROUP_TABLE_START;
+/* symbol defining the start of the multigroup management table */
+extern void *__OVERLAY_MULTIGROUP_TABLE_START;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
-/* symbol defining the end of the overlay tables */
-/* TODO: un-comment the next line once we get the end of tables symbol */
-//extern void *__OVERLAY_TABLES_END_ADDR__;
-/* TODO: remove the next line once we get the end of tables symbol */
-#define __OVERLAY_TABLES_END_ADDR__ ((u08_t*)&__OVERLAY_CACHE_START__ + D_COMRV_OVL_GROUP_SIZE_MIN - 4)
+/* symbol defining the end of the overlay table */
+extern void *__OVERLAY_MULTIGROUP_TABLE_END;
 
 /**
 * COM-RV initialization function
@@ -883,7 +884,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
    /* at this point comrv cache is empty so we take the
       first entry(s) and use it to store the multigroup and
       offset tables */
-   ucNumOfCacheEntriesToAllocateForTables = (u08_t)(((__OVERLAY_TABLES_END_ADDR__ + D_COMRV_OVL_GROUP_SIZE_MIN)-(u08_t*)&__OVERLAY_CACHE_START__)/(D_COMRV_OVL_GROUP_SIZE_MIN));
+   ucNumOfCacheEntriesToAllocateForTables = (u08_t)(((D_COMRV_TABLES_TOTAL_SIZE_IN_BYTES + (D_COMRV_OVL_GROUP_SIZE_MIN - 1)) & -D_COMRV_OVL_GROUP_SIZE_MIN)/D_COMRV_OVL_GROUP_SIZE_MIN);
    /* calculate the last cache entry index */
    g_stComrvCB.ucLastCacheEntry = D_COMRV_NUM_OF_CACHE_ENTRIES - ucNumOfCacheEntriesToAllocateForTables;
    /* tables are located at offset 0 (first group) */
