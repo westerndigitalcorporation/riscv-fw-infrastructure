@@ -218,6 +218,8 @@ void demoStart(void)
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
+   /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
+
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
 
