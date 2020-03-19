@@ -441,11 +441,3 @@ void demoRtosalcalculateTimerPeriod(void)
 	rtosalTimerSetPeriod(uiTimerPeriod);
 }
 
-#ifdef D_HI_FIVE1
-void pspExternalIntHandlerIsr(void)
-{
-	/*TODO: External interrupt handler for HI FIVE1 board is empty for now.
-	 * In the future create "psp_ext_interrupts_hi_five1.c" file and implement it there
-	 * */
-}
-#endif
