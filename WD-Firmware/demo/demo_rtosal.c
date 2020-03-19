@@ -190,6 +190,7 @@ void demoRtosalCreateTasks(void *pParameters)
     	}
         pspRegisterExceptionHandler(pspTrapUnhandled, eCause);
     }
+    /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
 
     /* register external interrupt handler */
     pspRegisterInterruptHandler(pspExternalIntHandlerIsr, E_MACHINE_EXTERNAL_CAUSE);
