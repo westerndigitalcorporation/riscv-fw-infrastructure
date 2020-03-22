@@ -100,7 +100,7 @@ extern pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVe
 #define M_PSP_EXT_INT_DISBLE_ID(ext_int_id)              g_fptrPspExternalInterruptDisableNumber(ext_int_id);
 #define M_PSP_EXT_INT_ENABLE_ID(ext_int_id)              g_fptrPspExternalInterruptEnableNumber(ext_int_id);
 #define M_PSP_EXT_INT_SET_PRIORITY(ext_int_id, priority) g_fptrPspExternalInterruptSetPriority(ext_int_id, priority);
-#define M_PSP_EXT_INT_SET_THRESHOLD(threshold)           g_fptrPspExternalInterruptsSetThreshold(threshold);
+#define M_PSP_EXT_INT_SET_THRESHOLD(threshold)           g_fptrPspExternalInterruptSetThreshold(threshold);
 #define M_PSP_EXT_INT_REGISTER_HANDLER(vect_number, pIsr, pParameters) \
 		                                                       g_fptrPspExternalInterruptRegisterISR(vect_number, pIsr, pParameters);
 
