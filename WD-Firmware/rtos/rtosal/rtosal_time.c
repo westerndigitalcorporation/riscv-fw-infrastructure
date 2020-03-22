@@ -400,7 +400,7 @@ void rtosalTimerSetup(void)
 	M_PSP_ASSERT(0 == g_uTimerPeriod);
 
 	/* Enable timer interrupt */
-	M_PSP_M_ENABLE_INTERRUPT_ID(D_PSP_MIE_MTIE_MASK);
+	pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
 	/* Activates Core's timer with the calculated period */
 	M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
@@ -415,7 +415,7 @@ void rtosalTimerSetup(void)
 void rtosalTimerIntHandler(void)
 {
 	/* Disable Machine-Timer interrupt */
-	M_PSP_M_DISBLE_INTERRUPT_ID(D_PSP_MIE_MTIE_MASK);
+	pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
     /* Increment the RTOS tick. */
     rtosalTick();

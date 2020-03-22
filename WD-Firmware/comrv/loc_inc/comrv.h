@@ -28,7 +28,7 @@
 * include files
 */
 #include "psp_macros.h"
-#include "psp_interrupts.h"
+#include "psp_traps_interrupts.h"
 
 /**
 * definitions
@@ -84,6 +84,8 @@
    this provides us a way to take rare cases out of the critical execution path */
 #define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
 
+/* invalidate data cache */
+#define M_COMRV_DCACHE_FLUSH(pAddress, uiNumOfBytes) comrvInvalidateDataCacheHook(pAddress, uiNumOfBytes);
 
 /**
 * types

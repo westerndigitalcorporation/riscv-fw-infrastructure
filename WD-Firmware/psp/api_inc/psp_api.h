@@ -23,7 +23,7 @@
 #ifndef  __PSP_API_H__
 #define  __PSP_API_H__
 
-/**
+/***
 * include files
 */
 #include "psp_types.h"
@@ -32,10 +32,12 @@
 #include "psp_config.h"
 #include "psp_csrs.h"
 #include "psp_macros.h"
-#include "psp_interrupts.h"
+#include "psp_traps_interrupts.h"
+#include "psp_ext_interrupts.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
 #include "psp_timers.h"
+#include "psp_performance_monitor_eh1.h"
 #ifdef D_NEXYS_A7
     #include "psp_csrs_swerv_eh1.h"
 #endif
@@ -50,7 +52,7 @@
 */
 
 /* What is the current privilege-level */
-#define M_PSP_GET_CURRENT_PRIV_LEVEL() /* Nati - to be implemented */
+#define M_PSP_GET_CURRENT_PRIVILEGE_LEVEL() /* Nati - to be implemented - use ebreak, then check MPP/SPP fields in mstatus, then return */
 
 /**
 * types
@@ -71,34 +73,6 @@
 /**
 * APIs
 */
-
-
-/**
-* The function installs an interrupt service routine per risc-v cause
-*
-* @param fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param interruptCause           – interrupt source
-*
-* @return u32_t                   - previously registered ISR
-*/
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
-
-
-/**
-* The function installs an exception handler per exception cause
-*
-* @param fptrInterruptHandler     – function pointer to the exception handler
-* @param exceptionCause           – exception cause
-*
-* @return u32_t                   - previously registered ISR
-*/
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
-
-/**
-*
-* Function that called upon unregistered Trap handler
-*/
-void pspTrapUnhandled(void);
 
 
 
