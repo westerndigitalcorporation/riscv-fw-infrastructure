@@ -95,7 +95,8 @@ def generate(env):
     env['SHCC'] = '$CC'
     env['SHCFLAGS'] = SCons.Util.CLVar('$CFLAGS')
     env['SHCCCOM'] = '$SHCC -o $TARGET -c $SHCFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES'
-
+    env['LINKCOM'] = '$LINK -o $TARGET $LINKFLAGS -Wl,--start-group $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS -Wl,--end-group'
+    
     env['CPPDEFPREFIX'] = '-D'
     env['CPPDEFSUFFIX'] = ''
     env['INCPREFIX'] = '-I'
