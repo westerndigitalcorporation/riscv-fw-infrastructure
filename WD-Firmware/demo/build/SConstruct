@@ -118,6 +118,10 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
                     '-Wl,-gc-sections',
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
+    
+Env['LINKCOM_START_GROUP'] = '-Wl,--start-group'
+Env['LINKCOM_END_GROUP'] = '-Wl,--end-group'
+    
 # temporary solution until we have a unified linker script
 if hasattr(objDemo, 'strLinkFilePrefix'):
     strLinkerScriptFile += objDemo.strLinkFilePrefix
