@@ -89,6 +89,7 @@ D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum,
 D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
 D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
 
+
 /* External interrupt handlers Global Table */
 D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
@@ -166,6 +167,32 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
    M_PSP_INST_FENCEI();
 
    return(fptrPrevIsr);
+}
+
+
+/**
+* External interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
+{
+	fptrFunction fptrExtIntHandler = NULL;
+	u32_t* pClaimId;
+
+	/* Trigger capture of the interrupt source ID(handler address), write '1' to meicpct */
+	M_PSP_WRITE_CSR(D_PSP_MEICPCT_NUM, 0x1);
+
+	/* Obtain external interrupt handler address from meihap register */
+	pClaimId = (u32_t*)M_PSP_READ_CSR(D_PSP_MEIHAP_NUM);
+
+	fptrExtIntHandler = *((fptrFunction)pClaimId);
+
+	M_PSP_ASSERT(pExtIntHandler != NULL);
+
+	fptrExtIntHandler();
 }
 
 
