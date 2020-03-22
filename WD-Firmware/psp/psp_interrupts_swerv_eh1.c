@@ -113,7 +113,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiInterruptCause >= E_LAST_COMMON_CAUSE);
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiInterruptCause < E_LAST_COMMON_CAUSE);
 
    switch (uiInterruptCause)
    {
@@ -185,7 +185,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterrup
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler == NULL && uiExceptionCause >= E_EXC_LAST_COMMON);
+   M_PSP_ASSERT(fptrInterruptHandler =! NULL || uiExceptionCause < E_EXC_LAST_COMMON);
 
    fptrFunc = g_fptrExceptions_ints[uiExceptionCause];
 

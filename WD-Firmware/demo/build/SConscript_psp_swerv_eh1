@@ -24,10 +24,10 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join('psp', 'psp_interrupts_swerv_eh1.c'), os.path.join(strOutDir, 'psp_interrupts_swerv_eh1.o')),
-   (os.path.join('psp', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
-   (os.path.join('psp', 'psp_interrupts.c'), os.path.join(strOutDir, 'psp_interrups.o')),
+   (os.path.join('psp', 'psp_ext_interrupts_swerv_eh1.c'), os.path.join(strOutDir, 'psp_ext_interrupts_swerv_eh1.o')),
+   (os.path.join('psp', 'psp_traps_interrupts.c'), os.path.join(strOutDir, 'psp_traps_interrups.o')),
    (os.path.join('psp', 'psp_timers.c'), os.path.join(strOutDir, 'psp_timers.o')),
+   (os.path.join('psp', 'psp_performance_monitor_eh1.c'), os.path.join(strOutDir, 'psp_performance_monitor.o')),
 ]
 
    
@@ -35,7 +35,7 @@ listCFiles=[
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles=[
-   (os.path.join('psp', 'psp_int_vect.S'), os.path.join(strOutDir, 'psp_int_vect.o')),
+   (os.path.join('psp', 'psp_int_vect_swerv_eh1.S'), os.path.join(strOutDir, 'psp_int_vect_swerv_eh1.o')),
 ]
 
 # compiler directivs

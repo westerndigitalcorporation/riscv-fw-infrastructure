@@ -116,8 +116,15 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,--wrap=read', '-Wl,--wrap=write', '-Wl,--wrap=fstat', '-Wl,--wrap=stat', '-Wl,--wrap=close', 
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
-                    '-Wl,-gc-sections',  '-Wl,--start-group',
+                    '-Wl,-gc-sections',
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
+
+# library dependency in link time, new ld prefere it wrappin the libraries
+# -Wl, --start-group liba libb libc -Wl, --end-group
+# Due to new linker changes (March/2020) when using "start" we have to use "end". 
+Env['LINKCOM_START_GROUP'] = '-Wl,--start-group'
+Env['LINKCOM_END_GROUP'] = '-Wl,--end-group'
+    
 # temporary solution until we have a unified linker script
 if hasattr(objDemo, 'strLinkFilePrefix'):
     strLinkerScriptFile += objDemo.strLinkFilePrefix
