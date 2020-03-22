@@ -120,7 +120,8 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
 
 # library dependency in link time, new ld prefere it wrappin the libraries
-# -Wl, --start-group liba libb libc -Wl, --end-group    
+# -Wl, --start-group liba libb libc -Wl, --end-group
+# Due to new linker changes (March/2020) when using "start" we have to use "end". 
 Env['LINKCOM_START_GROUP'] = '-Wl,--start-group'
 Env['LINKCOM_END_GROUP'] = '-Wl,--end-group'
     
