@@ -110,3 +110,15 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
   return 0 ;
 }
 
+/**
+* External interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
+{
+	/* TODO: add functionality here when relevant for HiFive*/
+}
+
