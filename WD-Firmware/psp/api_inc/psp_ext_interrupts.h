@@ -31,9 +31,17 @@
 * definitions
 */
 
+/* External-Interrupts type */
+#define D_PSP_EXT_INT_LEVEL_TRIG_TYPE  0
+#define D_PSP_EXT_INT_EDGE_TRIG_TYPE   1
+
+/* External-Interrupts polarity */
+#define D_PSP_EXT_INT_ACTIVE_HIGH  0
+#define D_PSP_EXT_INT_ACTIVE_LOW   1
+
 /* External-Interrupts priority-order */
-#define D_PSP_STANDARD_PRIORITY_ORDER 0
-#define D_PSP_REVERSE_PRIORITY_ORDER  1
+#define D_PSP_EXT_INT_STANDARD_PRIORITY  0
+#define D_PSP_EXT_INT_REVERSED_PRIORITY  1
 
 
 /* External Interrupt Priorities */
@@ -86,42 +94,36 @@
 /**
 * external prototypes
 */
-extern void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum);
-extern void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum);
-extern void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority);
-extern void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold);
-extern pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
 
 
 /**
 * macros
 */
 
-#define M_PSP_EXT_INT_DISBLE_ID(ext_int_id)              g_fptrPspExternalInterruptDisableNumber(ext_int_id);
-#define M_PSP_EXT_INT_ENABLE_ID(ext_int_id)              g_fptrPspExternalInterruptEnableNumber(ext_int_id);
-#define M_PSP_EXT_INT_SET_PRIORITY(ext_int_id, priority) g_fptrPspExternalInterruptSetPriority(ext_int_id, priority);
-#define M_PSP_EXT_INT_SET_THRESHOLD(threshold)           g_fptrPspExternalInterruptsSetThreshold(threshold);
-#define M_PSP_EXT_INT_REGISTER_HANDLER(vect_number, pIsr, pParameters) \
-		                                                       g_fptrPspExternalInterruptRegisterISR(vect_number, pIsr, pParameters);
+/* Set the highest priority level in meiplS (External Interrupt Priority Level Register)
+ * In case of standard-priority-order the priority is 15, in case of reversed priority order - 0 */
+#define M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE \
+		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+		                                                                      ? D_PSP_EXT_INT_PRIORITY_15 : D_PSP_EXT_INT_PRIORITY_0
 
 /* When set this priority level in meiplS (External Interrupt Priority Level Register) the corresponding interrupt will
  * not be served.
  * In case of standard-priority-order the priority is 0, in case of reversed priority order - 15 */
 #define M_PSP_EXT_INT_PRIORITY_SET_TO_MASKED_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_STANDARD_PRIORITY_ORDER \
+		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
 		                                                                      ? D_PSP_EXT_INT_PRIORITY_0 : D_PSP_EXT_INT_PRIORITY_15
 
 /* When set this threshold level in meipt (External Interrupt Priority Threshold Register) all interrupts will be masked (not served)
  * In case of standard priority order - 15, in case of reversed priority order - 0 */
 #define M_PSP_EXT_INT_THRESHOLD_MASK_ALL_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_STANDARD_PRIORITY_ORDER \
-		                                                                      ? D_PSP_THRESHOLD_15 : D_PSP_THRESHOLD_0
+		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+		                                                                      ? D_PSP_EXT_INT_THRESHOLD_15 : D_PSP_EXT_INT_THRESHOLD_0
 
 /* When set this threshold level in meipt (External Interrupt Priority Threshold Register) no interrupt will be masked (all served)
  * In case of standard priority order - 0, in case of reversed priority order - 15 */
 #define M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_STANDARD_PRIORITY_ORDER \
-		                                                                      ? D_PSP_THRESHOLD_0 : D_PSP_THRESHOLD_15
+		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+		                                                                      ? D_PSP_EXT_INT_THRESHOLD_0 : D_PSP_EXT_INT_THRESHOLD_15
 
 /**
 * global variables
@@ -130,6 +132,110 @@ extern pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVe
 /**
 * APIs
 */
+
+/*
+* This function registers external interrupt handler
+*
+* @param uiVectorNumber = the number of the external interrupt to register
+*        pIsr = the ISR to register
+*        pParameter = NOT IN USE for baremetal implementation
+* @return pOldIsr = pointer to the previously registered ISR (Null in case of a failure)
+*/
+pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
+
+
+/*
+* This function disables a specified external interrupt in the PIC
+*
+* @param intNum = the number of the external interrupt to disable
+* @return None
+*/
+void pspExternalInterruptDisableNumber(u32_t uiIntNum);
+
+
+/*
+* This function enables a specified external interrupt in the PIC
+*
+* @param intNum = the number of the external interrupt to enable
+* @return None
+*/
+void pspExternalInterruptEnableNumber(u32_t uiIntNum);
+
+
+/*
+* This function checks whether a given external interrupt is pending or not
+*
+* @param uiExtInterrupt = Number of external interrupt
+* @return = pending (1) or not (0)
+*/
+u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt);
+
+
+/*
+* This function set external-interrupt type (Level-triggered or Edge-triggered)
+*
+* @param uiIntNum  = Number of external interrupt
+* @param uiIntType = Type of the interrupt (level or edge)
+*/
+void  pspExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType);
+
+
+/*
+* This function set external-interrupt polarity (active-high or active-low)
+*
+* @param uiIntNum   = Number of external interrupt
+* @param uiPolarity = active-high or active-low
+*/
+void  pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolarity);
+
+
+/*
+* This function clears the indicated gateway
+*
+* @param uiIntNum   = Number of external interrupt (== gateway number)
+*/
+void  pspExtInterruptClearGateway(u32_t uiSourceId);
+
+
+/*
+* This function set Priority Order (Standard or Reserved)
+*
+* @param uiPriorityOrder = Standard or Reserved
+*/
+void  pspExtInterruptSetPriorityOrder(u32_t uiPriorityOrder);
+
+/*
+*  This function sets the priority of a specified external interrupt
+*
+*  @param intNum = the number of the external interrupt to disable
+*  @param priority = priority to be set
+* @return None
+*/
+void  pspExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
+
+/*
+* This function sets the priority threshold of the external interrupts in the PIC
+*
+* @param threshold = priority threshold to be programmed to PIC
+* @return None
+*/
+void  pspExtInterruptsSetThreshold(u32_t uiThreshold);
+
+/*
+* This function get the current selected external interrupt (claim-id)
+*
+* @return - claim-id number
+*/
+u32_t pspExtInterruptGetClaimId(void);
+
+
+/*
+* This function get the priority of currently selected external interrupt
+*
+* @return - priority level
+*/
+u32_t pspExtInterruptGetPriority(void);
+
 
 
 #endif /* __PSP_EXT_INTERRUPTS_H__ */
