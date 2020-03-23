@@ -46,6 +46,10 @@
 #define D_PSP_ON         1
 #define D_PSP_OFF        0
 
+/* Register width in bytes and bits */
+#define D_REGISTER32_BYTE_WIDTH    4
+#define D_REGISTER32_BIT_WIDTH     32
+
 
 
 #endif /* __PSP_DEFINES_H__ */
