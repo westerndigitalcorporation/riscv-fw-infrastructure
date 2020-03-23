@@ -72,6 +72,7 @@
 * global variables
 */
 
+
 /* External interrupt handlers Global Table */
 D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
@@ -256,5 +257,30 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptGetPriority(void )
 	u32_t uiPriorityLevel = (M_PSP_READ_CSR(D_PSP_MEICIDPL_NUM) & D_PSP_MEICIDPL_CLIDPRI_MASK) ;
 
 	return uiPriorityLevel;
+}
+
+/*
+* External interrupt handler
+*
+* @param none
+*
+* @return none
+*/
+D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
+{
+	fptrFunction fptrExtIntHandler = NULL;
+	u32_t* pClaimId;
+
+	/* Trigger capture of the interrupt source ID(handler address), write '1' to meicpct */
+	M_PSP_WRITE_CSR(D_PSP_MEICPCT_NUM, 0x1);
+
+	/* Obtain external interrupt handler address from meihap register */
+	pClaimId = (u32_t*)M_PSP_READ_CSR(D_PSP_MEIHAP_NUM);
+
+	fptrExtIntHandler = *((fptrFunction)pClaimId);
+
+	M_PSP_ASSERT(pExtIntHandler != NULL);
+
+	fptrExtIntHandler();
 }
 
