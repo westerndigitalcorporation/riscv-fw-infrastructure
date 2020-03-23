@@ -25,7 +25,10 @@
 /**
 * include files
 */
-#include "psp_api.h"
+#include "psp_pmc_swerv_eh1.h"
+#include "psp_csrs_swerv_eh1.h"
+#include "psp_macros.h"
+
 
 /**
 * definitions
@@ -42,8 +45,6 @@
 /**
 * local prototypes
 */
-void pspPmcHalt(void);
-void pspPmcPause(u32_t ticks);
 
 /**
 * external prototypes
@@ -52,8 +53,6 @@ void pspPmcPause(u32_t ticks);
 /**
 * global variables
 */
-void (*fptrPspPmcHalt)(void) = pspPmcHalt;
-void (*fptrPspPmcPause)(u32_t ticks) = pspPmcPause;
 
 /**
 * @brief Initiate core halt (i.e., transition to Halted (pmu/fw-halt, C3) state)
@@ -62,7 +61,7 @@ void (*fptrPspPmcPause)(u32_t ticks) = pspPmcPause;
 *
 * @return none
 */
-void pspPmcHalt()
+void pspPmcHalt(void)
 {
 	M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_PMC_INITIATE_HALT);
 }
@@ -74,9 +73,9 @@ void pspPmcHalt()
 *
 * @return none
 */
-void pspPmcPause(u32_t ticks)
+void pspPmcPause(u32_t uiTicks)
 {
-	M_PSP_WRITE_CSR(D_PSP_MCPC_NUM, ticks);
+	M_PSP_WRITE_CSR(D_PSP_MCPC_NUM, uiTicks);
 }
 
 
