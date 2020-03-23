@@ -27,6 +27,7 @@
 /**
 * include files
 */
+#include "psp_types.h"
 
 /**
 * definitions
@@ -44,8 +45,6 @@
 /**
 * external prototypes
 */
-extern void (*fptrPspPmcHalt)(void);
-extern void (*fptrPspPmcPause)(u32_t ticks);
 
 /**
 * global variables
@@ -54,13 +53,27 @@ extern void (*fptrPspPmcPause)(u32_t ticks);
 /**
 * macros
 */
-#define M_PSP_HALT_CORE()   	 fptrPspPmcHalt()
-#define M_PSP_PAUSE_CORE(ticks)  fptrPspPmcPause(ticks)
 
 /**
 * APIs
 */
 
+/**
+* @brief Initiate core halt (i.e., transition to Halted (pmu/fw-halt, C3) state)
+*
+* @param none
+*
+* @return none
+*/
+void pspPmcHalt(void);
 
+/**
+* @brief The following function pauses the RISCV core for given number of core clock cycles(ticks)
+*
+* @ticks - Number of core clock cycles
+*
+* @return none
+*/
+void pspPmcPause(u32_t uiTicks);
 
 #endif /* __PSP_PMC_H__ */
