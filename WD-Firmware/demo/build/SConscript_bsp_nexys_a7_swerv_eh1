@@ -46,7 +46,7 @@ Env['PUBLIC_DEF'] += ['D_NEXYS_A7', 'D_MTIME_ADDRESS=0x80001020', 'D_MTIMECMP_AD
                       #    - Number of external interrupts = 256 (maximum by EHX1 PRM)
                       #    - First ext interrupt = 0 
                       #    - Last ext interrupt =  255
-                      'D_PIC_BASE_ADDRESS=0xA0000000', 'D_PIC_NUM_OF_EXT_INTERRUPTS=256', 'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0', 'D_EXT_INTERRUPT_LAST_SOURCE_USED=255']
+                      'D_PIC_BASE_ADDRESS=0xf00c0000', 'D_PIC_NUM_OF_EXT_INTERRUPTS=256', 'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0', 'D_EXT_INTERRUPT_LAST_SOURCE_USED=255']
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 
