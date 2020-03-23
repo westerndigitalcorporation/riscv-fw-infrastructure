@@ -44,13 +44,6 @@
 * local prototypes
 */
 
-/* External interrupts functions (empty functions for HiFive) */
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
-
 /**
 * external prototypes
 */
@@ -58,15 +51,6 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 /**
 * global variables
 */
-
-/* External-interrupts function pointers */
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
-D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
-
-
 
 
 /**
@@ -88,7 +72,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 /*
 *  This function sets the priority of a specified external interrupts (empty function)
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
+D_PSP_TEXT_SECTION void pspExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
 {
 	/* TO DO: add functionality here when relevant for HiFive*/
 }
@@ -96,7 +80,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t ui
 /*
 *  This function sets the priority threshold of the external interrupts (empty function)
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold)
+D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 {
 	/* TO DO: add functionality here when relevant for HiFive*/
 }
