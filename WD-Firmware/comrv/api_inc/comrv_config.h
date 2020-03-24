@@ -36,6 +36,11 @@
 /* enable multi-group support */
 #ifdef D_COMRV_ENABLE_MULTI_GROUP_SUPPORT
    #define D_COMRV_MULTI_GROUP_SUPPORT
+   /* this will use upto 2^8 -1 multi groups; if not defined,
+      the maximum number of groups will be used (2^16 - 1) */
+   #ifdef D_COMRV_ENABLE_MIN_NUM_OF_MULTI_GROUP_SUPPORT
+      #define D_COMRV_MIN_NUM_OF_MULTI_GROUPS
+   #endif /* D_COMRV_ENABLE_MAX_MULTI_GROUP_SIZE_SUPPORT */
 #endif /* D_COMRV_USE_MULTI_GROUP_SUPPORT */
 
 /* enable instrumentation */
