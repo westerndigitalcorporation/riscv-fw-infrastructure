@@ -25,9 +25,7 @@
 /**
 * include files
 */
-#include "psp_pmc_swerv_eh1.h"
-#include "psp_csrs_swerv_eh1.h"
-#include "psp_macros.h"
+#include "psp_api.h"
 
 
 /**
