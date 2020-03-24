@@ -34,7 +34,7 @@ class demo(object):
         'D_COMRV_MIN_GROUP_SIZE_IN_BYTES=512',
         'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
         'D_COMRV_MAX_CALL_STACK_DEPTH=10',
-        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES=1536',
+        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES='+self.strComrvCacheSize,
     ]
 
     self.listSconscripts = [
