@@ -20,7 +20,7 @@ PHDRS
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
-  __comrv_align_size = __comrv_cache_size != 0 ? 512 : 0;
+  __comrv_align_size = __comrv_cache_size != 0 ? __comrv_cache_alignment_size : 0;
 
   .init           :
   {

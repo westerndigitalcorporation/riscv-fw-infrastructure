@@ -62,17 +62,17 @@ typedef struct comrvStackFrame
      number of D_COMRV_OVL_GROUP_SIZE_MIN. This value is used to help extracting the
      return offset from a return address */
   u08_t ucAlignmentToMaxGroupSize;
-#ifdef D_COMRV_MULTI_GROUP_SUPPORT
-  #ifndef D_COMRV_MIN_NUM_OF_MULTI_GROUPS
-  u08_t ucReserved[3];
-  #endif /* D_COMRV_MIN_NUM_OF_MULTI_GROUPS */
+#if defined(D_COMRV_MULTI_GROUP_SUPPORT) && defined(D_COMRV_MIN_NUM_OF_MULTI_GROUPS)
   /* if the callee token is a multi group token, this field holds the
      actual loaded token entry in the multi group table */
   multigroupEntryIndex_t tCalleeMultiGroupTableEntry;
+#elif defined(D_COMRV_MULTI_GROUP_SUPPORT)
+  u08_t ucReserved[3];
+  multigroupEntryIndex_t tCalleeMultiGroupTableEntry;
 #else
   /* padding */
-  u08_t usReserved;
-#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+  u08_t ucReserved;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT && D_COMRV_MIN_NUM_OF_MULTI_GROUPS */
 } comrvStackFrame_t;
 
 /* overlay token fields */
