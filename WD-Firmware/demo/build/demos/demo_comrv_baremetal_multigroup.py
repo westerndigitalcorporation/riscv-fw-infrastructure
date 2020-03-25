@@ -27,6 +27,7 @@ class demo(object):
     self.strGrpFile    = os.path.join("..", "comrv-baremetal-multigroup.csv")
     self.strComrvCacheSize = cacheSize
     self.strLinkFilePrefix = ''
+    self.strComrvCacheAlinmentSize = '512'
 
     self.public_defs = [
         'D_BARE_METAL',
@@ -54,6 +55,8 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       # provide user defined grouping file (file name is in self.strGrpFile))
       '-Wl,--grouping-file=' + self.strGrpFile,
-      # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
-      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
+      # __comrv_cache_size defines the size of ram size to reserve for overlay data and overlay functions execution 
+      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize,
+      # __comrv_cache_alignment_size defines the alinment size of the cache area 
+      '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
     ]
