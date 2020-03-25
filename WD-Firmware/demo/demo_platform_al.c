@@ -26,6 +26,7 @@
 */
 #if defined(D_HI_FIVE1)
    #include <unistd.h>
+   #include <stdlib.h>
 #elif defined(D_NEXYS_A7)
    #include "printf.h"
    #include "mem_map.h"
@@ -204,4 +205,37 @@ void demoOutpuLed(const u08_t ucOnOffMode)
   M_PSP_WRITE_REGISTER_32(D_LED_BASE_ADDRESS, ucOnOffMode);
 #endif
 }
+
+/**
+* demoLoopForDelay - run a loop to create a delay in the application
+*
+* uiNumberOfCycles - how many loop-iterations to run here
+*
+*
+* */
+void demoLoopForDelay(u32_t uiNumberOfIterations)
+{
+	u32_t uiIndex=0;
+
+	/* Display the number of iterations going to be run here */
+    #ifdef D_HI_FIVE1
+	    char ucStr[4];
+	    itoa(uiNumberOfIterations, ucStr,4);
+        demoOutputMsg("Loop ",5);
+        demoOutputMsg(ucStr,4);
+        demoOutputMsg(" Iterations:\n",13);
+    #elif defined (D_NEXYS_A7)
+        demoOutputMsg("Loop %d Iterations:\n", uiNumberOfIterations);
+     #endif
+
+	for (;uiIndex < uiNumberOfIterations; uiIndex++)
+	{
+        #ifdef D_HI_FIVE1
+		    demoOutputMsg("-- Iteration -- \n",17);
+        #elif defined (D_NEXYS_A7)
+		    demoOutputMsg("-- Iteration -- \n");
+        #endif
+	}
+}
+
 

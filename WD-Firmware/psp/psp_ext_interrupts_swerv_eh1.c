@@ -97,9 +97,6 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
    fptrPrevIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
    G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
 
-   /* Make sure changes are synced */
-   M_PSP_INST_FENCEI();
-
    return(fptrPrevIsr);
 }
 
@@ -160,15 +157,18 @@ D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 */
 D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
 {
-	u32_t uiRegister, uiBit;
+	u32_t uiRegister, uiBit, uiResult=0;
 
 	/* Calculate the meipX register to access to check the input interrupt number */
-	uiRegister = D_PSP_MEIP_ADDR + D_REGISTER32_BYTE_WIDTH * (uiExtInterrupt/D_REGISTER32_BIT_WIDTH);
+	uiRegister = D_PSP_MEIP_ADDR + D_PSP_REG32_BYTE_WIDTH * (uiExtInterrupt/D_PSP_REG32_BIT_WIDTH);
 
 	/* Calculate the bit in meipX register to access to check the input interrupt number */
-	uiBit = uiExtInterrupt - (uiRegister * D_REGISTER32_BIT_WIDTH);
+	uiBit = uiExtInterrupt - (uiRegister * D_PSP_REG32_BIT_WIDTH);
 
-	return (u32_t)(M_PSP_READ_REGISTER_32(uiRegister) & (1 << uiBit));
+	/* Check the specific bit */
+	uiResult = ( M_PSP_READ_REGISTER_32(uiRegister) & (1 << uiBit) );
+
+	return (uiResult);
 }
 
 
@@ -241,7 +241,8 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPriorityOrder(u32_t uiPriorityOrder)
 */
 D_PSP_TEXT_SECTION u32_t pspExtInterruptGetClaimId(void)
 {
-	u32_t uiClaimId = (M_PSP_READ_CSR(D_PSP_MEIHAP_NUM) & D_PSP_MEIHAP_CLAIMID_MASK) ;
+	u32_t uiClaimId = (M_PSP_READ_CSR(D_PSP_MEIHAP_NUM) & D_PSP_MEIHAP_CLAIMID_MASK)  ;
+	uiClaimId = uiClaimId >> D_PSP_SHIFT_2;
 
 	return uiClaimId;
 }
