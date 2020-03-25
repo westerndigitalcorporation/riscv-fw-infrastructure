@@ -47,8 +47,17 @@
 #define D_PSP_OFF        0
 
 /* Register width in bytes and bits */
-#define D_REGISTER32_BYTE_WIDTH    4
-#define D_REGISTER32_BIT_WIDTH     32
+#define D_PSP_REG32_BYTE_WIDTH    4
+#define D_PSP_REG32_BIT_WIDTH     32
+
+#define D_PSP_SHIFT_1    1
+#define D_PSP_SHIFT_2    2
+#define D_PSP_SHIFT_3    3
+#define D_PSP_SHIFT_4    4
+#define D_PSP_SHIFT_5    5
+#define D_PSP_SHIFT_6    6
+#define D_PSP_SHIFT_7    7
+#define D_PSP_SHIFT_8    8
 
 
 

@@ -26,17 +26,25 @@
 * definitions
 */
 
-/* Number of external interrupts sources to test with */
+/* In SwreVolf we have the capability to create 6 different external interrupts */
 #define D_DEMO_NUM_OF_EXT_INTS 9
-#define D_DEMO_ISR_0           0 /* Not in use */
-#define D_DEMO_ISR_1           1 /* Not in use */
-#define D_DEMO_ISR_2           2 /* Not in use */
-#define D_DEMO_ISR_3           3
-#define D_DEMO_ISR_4           4
-#define D_DEMO_ISR_5           5
-#define D_DEMO_ISR_6           6
-#define D_DEMO_ISR_7           7
-#define D_DEMO_ISR_8           8
+#define D_DEMO_IRQ_0           0 /* Not in use */
+#define D_DEMO_IRQ_1           1 /* Not in use */
+#define D_DEMO_IRQ_2           2 /* Not in use */
+#define D_DEMO_IRQ_3           3
+#define D_DEMO_IRQ_4           4
+#define D_DEMO_IRQ_5           5
+#define D_DEMO_IRQ_6           6
+#define D_DEMO_IRQ_7           7
+#define D_DEMO_IRQ_8           8
+
+#define D_DEMO_CREATE_IRQ3   (1 << (D_DEMO_IRQ_3-1)) /* In order to create irq3, set bit #2 */
+#define D_DEMO_CREATE_IRQ4   (1 << (D_DEMO_IRQ_4-1)) /* In order to create irq4, set bit #3 */
+#define D_DEMO_CREATE_IRQ5   (1 << (D_DEMO_IRQ_5-1)) /* In order to create irq5, set bit #4 */
+#define D_DEMO_CREATE_IRQ6   (1 << (D_DEMO_IRQ_6-1)) /* In order to create irq6, set bit #5 */
+#define D_DEMO_CREATE_IRQ7   (1 << (D_DEMO_IRQ_7-1)) /* In order to create irq7, set bit #6 */
+#define D_DEMO_CREATE_IRQ8   (1 << (D_DEMO_IRQ_8-1)) /* In order to create irq8, set bit #7 */
+
 
 /* Verification points at each ISR */
 #define D_DEMO_INITIAL_STATE               0
@@ -46,13 +54,17 @@
 
 /* Specified RAM address for generation of external interrupts (SwerVolf special implementation) */
 #if (0 != D_EXT_INTS_GENERATION_ADDRESS)
-    #define D_DEMO_EXT_INTS_GENERATION_ADDRESS D_EXT_INTS_GENERATION_ADDRESS
+    #define D_DEMO_EXT_INTS_GENERATION_ADDRESS    D_EXT_INTS_GENERATION_ADDRESS
 #else
     #error "External interrupts generation address is not defined"
 #endif
 
 /* In SwerVolf we have bits 3..8 at a specified address, available for generation of external interrupts */
-#define D_EXT_INTS_GENERATION_BITS 0x0000000111111000
+#if (0 != D_EXT_INTS_GENERATION_BITS)
+    #define D_DEMO_EXT_INTS_GENERATION_BITS    D_EXT_INTS_GENERATION_BITS
+#else
+    #error "External interrupts generation bits are not defined"
+#endif
 
 /**
 * macros
@@ -85,7 +97,7 @@ extern pspInterruptHandler_t G_Ext_Interrupt_Handlers[];
  * ISR in the current test */
 u08_t g_ucDemoExtIntsPassFailResult[D_DEMO_NUM_OF_EXT_INTS];
 
-/* Array of priority-level set by the test function for each external-interrupt source id */
+/* Array of priority-level set by the test function for each external-interrupt source-id */
 u16_t g_usPriorityLevelPerSourceId[D_DEMO_NUM_OF_EXT_INTS];
 
 
@@ -93,6 +105,7 @@ u16_t g_usPriorityLevelPerSourceId[D_DEMO_NUM_OF_EXT_INTS];
 /**
 * functions
 */
+
 
 /**
 * Initialize (zero) the array of test results - to be called before each test
@@ -108,16 +121,22 @@ void demoInitializeTestResults(void)
 }
 
 
+u32_t uiActivationMask; /* Nati - This is temporarily here for debug. will be removed later */
 /**
-* Generate external interrupt(s) - use mechanism in SwerVolf to create external interrupt by setting certain bit in dedicated memory address
+* Generate external interrupt(s) - use mechanism in SwerVolf to create external interrupt by setting certain bit(s) in dedicated memory address
 *
 * @param - usExtInterruptBitMap - bitmap of ext-interrupts to generate
 *
 */
-void demoGenerateExtInterrupt(u16_t usExtInterruptBitMap)
+void demoGenerateExtInterrupt(u32_t usExtInterruptBitMap)
 {
-	/* D_EXT_INTS_GENERATION_BITS is used to make sure we only affect bits 3..8 */
-	*(u16_t*)(D_DEMO_EXT_INTS_GENERATION_ADDRESS) |= (usExtInterruptBitMap & D_EXT_INTS_GENERATION_BITS) ;
+/* Nati - I have still a debug work to do around this one. */
+	uiActivationMask = usExtInterruptBitMap;
+//	uiActivationMask &= D_DEMO_EXT_INTS_GENERATION_BITS ;
+
+	/* D_DEMO_EXT_INTS_GENERATION_BITS is used to make sure we only affect bits 3..8 */
+	M_PSP_WRITE_REGISTER_32(D_DEMO_EXT_INTS_GENERATION_ADDRESS, uiActivationMask );
+	/* Nati - to do - check why |= is not working here (ext-ints not created) */
 }
 
 
@@ -129,20 +148,22 @@ void demoGenerateExtInterrupt(u16_t usExtInterruptBitMap)
 */
 void demoClearGenerationExtInterrupt(u16_t usExtInterruptBitMap)
 {
-	/* D_EXT_INTS_GENERATION_BITS is used to make sure we only affect bits 3..8 */
-	*(u16_t*)(D_DEMO_EXT_INTS_GENERATION_ADDRESS) &= ~(usExtInterruptBitMap & D_EXT_INTS_GENERATION_BITS);
+	/* D_DEMO_EXT_INTS_GENERATION_BITS is used to make sure we only affect bits 3..8 */
+	M_PSP_WRITE_REGISTER_32(D_DEMO_EXT_INTS_GENERATION_ADDRESS, 0 );
+	/* Nati - to do - expand usage for other mask besides '0'. For now - all ext-interrupts are ceased at once */
+	/* Nati - to do - check why &= is not working here (ext-ints not stop) */
 }
 
 
 /**
- * ISR for test #1, #2, #3 ,#4 and #5
+ * ISR for test #1, #2, #3 ,#4 and #5 (see the tests later in this file)
  *
  * The ISR indicates/marks 3 things:
  * - ISR of the current claim-id has been occurred
  * - Whether corresponding "pending" bit is set or not
  * - Corresponding "priority" field is correct
  *
- * Tests 1,2,3,4 and 5 does different things each. However all of them use same ISR.
+ * Tests 1,2,3,4 and 5 does different things each. However all of them use this ISR.
  */
 void demoExtIntTest_1_2_3_4_5_ISR(void)
 {
@@ -164,6 +185,12 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 		g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_CORRECT_PRIORITY ;
 	}
 
+	/* Clear the gateway */
+	/* pspExtInterruptClearGateway(ucIntSourceId); */ /* Nati - TBD see next comment */
+
+	/* Nati - to do - still under investigation why when in edge mode, clearing the pending bit do not stop the appearance
+	 * of the external interrupt. For the meantime - we stop ext-interrupts by "killing" the source */
+	demoClearGenerationExtInterrupt((u32_t)D_DEMO_EXT_INTS_GENERATION_BITS);
 }
 
 
@@ -180,7 +207,7 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 {
 	u32_t uiTestResult = 0 ;
 
-#if D_NEXYS_A7
+#ifdef D_NEXYS_A7
 
     /* Set Standard priority order */
 	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
@@ -210,20 +237,20 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 		pspExternalInterruptRegisterISR(uiSourceId, demoExtIntTest_1_2_3_4_5_ISR, 0);
 	}
 
+	/* Enable interrupts in mstatus CSR */ /* Nati - to do - add specific api to do it  */
+	M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, D_PSP_MSTATUS_MIE_MASK);
+
 	/* Disable external interrupts in mie CSR */ /* Nati - to do - add specific api to do it (along with machine-timer interrupt) */
 	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 
 	/* Generate external interrupts - all sources */
-	demoGenerateExtInterrupt((u16_t)D_EXT_INTS_GENERATION_BITS);
+	demoGenerateExtInterrupt((u32_t)D_DEMO_EXT_INTS_GENERATION_BITS);
 
 	/* Loop for a while.. */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x10); /* Nati - TBD - maybe not needed here at all */
 
 	/* Stop generation of external interrupts - all sources */
-	demoClearGenerationExtInterrupt((u16_t)D_EXT_INTS_GENERATION_BITS);
+	demoClearGenerationExtInterrupt((u32_t)D_DEMO_EXT_INTS_GENERATION_BITS);
 
 	/* Verify no external interrupts have been occurred */
 	for (u32_t uiExtIntsIndex = 0 ; uiExtIntsIndex < D_DEMO_NUM_OF_EXT_INTS; uiExtIntsIndex++)
@@ -231,12 +258,8 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 		if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
 		{
 			/* Output a failure message */
-            demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-            demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
- 			demoOutputMsg("External Interrupts, Test #1 Failed\n",36);
- 			demoOutputMsg("ISR # %d has jumped ",uiExtIntsIndex);
-            demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-            demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
+ 			demoOutputMsg("External Interrupts, Test #1 Failed\n");
+ 			demoOutputMsg("ISR # %d unexpectedly jumped\n ",uiExtIntsIndex);
 
 			/* Loop here to let debug */
 			M_ENDLESS_LOOP();
@@ -272,11 +295,7 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	/* Generate external interrupts - all sources */
 
 	/* Loop for a while.. */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
-
+	demoLoopForDelay(0x100);
 
 	/* Verify external interrupts occurred only on sources 5,7 and 8 */
 	for (u32_t uiExtIntsIndex = 0 ; uiExtIntsIndex < D_DEMO_NUM_OF_EXT_INTS; uiExtIntsIndex++)
@@ -284,45 +303,37 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	    switch (uiExtIntsIndex)
 	    {
 	        /* For source-ids 3, 4 ,6 the expected result is D_DEMO_INITIAL_STATE */
-            case D_DEMO_ISR_3:
-            case D_DEMO_ISR_4:
-            case D_DEMO_ISR_6:
+            case D_DEMO_IRQ_3:
+            case D_DEMO_IRQ_4:
+            case D_DEMO_IRQ_6:
             	if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
             	{
         			/* Output a failure message */
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-         			demoOutputMsg("External Interrupts, Test #2 Failed\n",36);
-         			demoOutputMsg("ISR # %d has jumped\n",uiExtIntsIndex);
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
+         			demoOutputMsg("External Interrupts, Test #2 Failed\n");
+         			demoOutputMsg("ISR # %d unexpectedly jumped\n",uiExtIntsIndex);
         			/* Loop here to let debug */
         			M_ENDLESS_LOOP();
             	}
                 break;
 
             /* For source-ids 5, 7 ,8 the expected result is D_DEMO_EXT_INT_CORRECT_PRIORITY */
-            case D_DEMO_ISR_5:
-            case D_DEMO_ISR_7:
-            case D_DEMO_ISR_8:
+            case D_DEMO_IRQ_5:
+            case D_DEMO_IRQ_7:
+            case D_DEMO_IRQ_8:
             	if (D_DEMO_EXT_INT_CORRECT_PRIORITY != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
             	{
         			/* Output a failure message */
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
          			demoOutputMsg("External Interrupts, Test #2 Failed\n",36);
          			demoOutputMsg("ISR # %d did not jump or it is wrong\n",uiExtIntsIndex);
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
-                    demoOutputMsg("------------!!!!!!!!!!!!--------------------\n");
         			/* Loop here to let debug */
         			M_ENDLESS_LOOP();
             	}
                 break;
 
             /* Not in use */
-            case D_DEMO_ISR_0:
-            case D_DEMO_ISR_1:
-            case D_DEMO_ISR_2:
+            case D_DEMO_IRQ_0:
+            case D_DEMO_IRQ_1:
+            case D_DEMO_IRQ_2:
             default:
             	break;
 	    } /* end of switch-case */
@@ -366,10 +377,7 @@ u32_t demoExtIntsTest3PriorityStandardOrder(void)
     /* Generate external interrupt at sources 3..8 */
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
 	/* Verify external interrupts occurred only on sources with priority higher than the threshold (i.e. 6,7,8) */
 
@@ -409,10 +417,7 @@ u32_t demoExtIntsTest4PriorityReversedOrder(void)
     /* Generate external interrupt at sources 3..8 */
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
 	/* Verify external interrupts occurred only on sources with priority less than the threshold (i.e. 3 and 4) */
 
@@ -431,10 +436,7 @@ u32_t demoExtIntsTest5ThresholdAndPriorityChanging(void)
 	u32_t uiTestResult = 0 ;
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
     return uiTestResult;
 }
@@ -450,12 +452,9 @@ u32_t demoExtIntsTest6GatweayConfiguration(void)
 	u32_t uiTestResult = 0 ;
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
-    return uiTestResult;
+	return uiTestResult;
 }
 
 
@@ -469,10 +468,7 @@ u32_t demoExtIntsTest7NestedInteeruptLowerPriority(void)
 	u32_t uiTestResult = 0 ;
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
     return uiTestResult;
 }
@@ -488,10 +484,7 @@ u32_t demoExtIntsTest8NestedInteeruptSamePriority(void)
 	u32_t uiTestResult = 0 ;
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
     return uiTestResult;
 }
@@ -507,10 +500,7 @@ u32_t demoExtIntsTest9NestedInteeruptHigherPriority(void)
 	u32_t uiTestResult = 0 ;
 
 	/* Loop for a while.. Let all pending ISRs to run */
-	for (u32_t uiEmptyLoop=0; uiEmptyLoop<0xFFFF;)
-	{
-		uiEmptyLoop++;
-	};
+	demoLoopForDelay(0x100);
 
     return uiTestResult;
 }

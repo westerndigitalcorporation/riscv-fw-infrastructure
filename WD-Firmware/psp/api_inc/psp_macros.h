@@ -154,6 +154,8 @@
 
 #define M_PSP_WRITE_REGISTER_32(reg, value)  ((*(volatile u32_t *)(void*)(reg)) = (value))//need to use _Uncached u32_t if we have d$
 #define M_PSP_READ_REGISTER_32(reg)          ((*(volatile u32_t *)(void*)(reg)))
+/* Nati - still not tested *//*#define M_PSP_SET_REGISTER_32(reg, bits)     ((*(volatile u32_t *)(void*)(reg)) |= (bits))*/ //need to use _Uncached u32_t if we have d$
+/* Nati - still not tested *//*#define M_PSP_CLEAR_REGISTER_32(reg, bits)   ((*(volatile u32_t *)(void*)(reg)) &= (~bits)) */ //need to use _Uncached u32_t if we have d$
 
 
 #endif /* __PSP_MACRO_H__ */
