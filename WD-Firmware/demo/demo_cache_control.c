@@ -28,6 +28,7 @@
 #include "psp_macros.h"
 #include "demo_platform_al.h"
 #include "psp_cache_control_eh1.h"
+#include "psp_timers.h"
 
 /**
 * definitions
@@ -61,7 +62,38 @@ extern void psp_vect_table(void);
 
 void demoStart(void)
 {
+   u32_t uiIndex;
+   volatile u64_t ulCounter1, ulCounter2, ulCounter3;
+
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
+
+   /* Disable Machine-Timer interrupt so we won't get interrupted */
+   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+
+   /* Activates Core's timer with the calculated period */
+   M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER,  0xFFFFFFFF);
+
+   ulCounter1 = pspTimerCounterGet();
+
+   M_PSP_DISABLE_MEM_REGION_ICACHE(0);
+
+   for (uiIndex = 0 ; uiIndex < 65536 ; uiIndex++)
+   {
+      asm volatile ("nop");
+   }
+
+   ulCounter2 = pspTimerCounterGet();
+
+   M_PSP_ENABLE_MEM_REGION_ICACHE(0);
+
+   for (uiIndex = 0 ; uiIndex < 65536 ; uiIndex++)
+   {
+      asm volatile ("nop");
+   }
+
+   ulCounter3 = pspTimerCounterGet();
+
+   asm volatile ("ebreak");
 }
 
