@@ -30,6 +30,7 @@
 /**
 * include files
 */
+#include "psp_csrs_swerv_eh1.h"
 
 /**
 * definitions
@@ -38,14 +39,21 @@
 /**
 * macros
 */
-/* Get region index*/
-#define M_CACHE_CONTROL_ICACHE_OFFSET(regionIndex)     (regionIndex << 1)
-#define M_CACHE_CONTROL_SIDEEFFECT_OFFSET(regionIndex) ((regionIndex << 1) + 1)
-
-/* MRAC registers - If more regions has to be cached in future keep or'ing to cacheable regions*/
-#define M_PSP_CACHE_CONTROL_ENABLE_ICACHE(regionIndex)     (1 << M_CACHE_CONTROL_ICACHE_OFFSET(regionIndex))
-/* if more regions has to be marked as sideeffect in future keep or'ing to following macro */
-#define M_PSP_CACHE_CONTROL_ENABLE_SIDEEFFECT(regionIndex) (1 << M_CACHE_CONTROL_SIDEEFFECT_OFFSET(regionIndex))
+/* convert region number to mrac offset */
+#define M_CACHE_CONTROL_ICACHE_OFFSET(memRegionId)       (memRegionId << 1)
+#define M_CACHE_CONTROL_SIDEEFFECT_OFFSET(memRegionId)   ((memRegionId << 1) + 1)
+/* mrac icache value of a specific memory region */
+#define M_PSP_CACHE_CONTROL_ICACHE_VAL(memRegionId)      (1 << M_CACHE_CONTROL_ICACHE_OFFSET(memRegionId))
+/* mrac sideeffect value of a specific region */
+#define M_PSP_CACHE_CONTROL_SIDEEFFECT_VAL(memRegionId)  (1 << M_CACHE_CONTROL_SIDEEFFECT_OFFSET(memRegionId))
+/* enable icache for a specific memory region */
+#define M_PSP_ENABLE_MEM_REGION_ICACHE(memRegionId)      (M_PSP_SET_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_ICACHE_VAL(memRegionId)))
+/* enable sideeffect for a specific memory region */
+#define M_PSP_ENABLE_MEM_REGION_SIDEEFFECT(memRegionId)  (M_PSP_SET_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_SIDEEFFECT_VAL(memRegionId)))
+/* disable icache for a specific memory region */
+#define M_PSP_DISABLE_MEM_REGION_ICACHE(memRegionId)     (M_PSP_CLEAR_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_ICACHE_VAL(memRegionId)))
+/* disable sideeffect for a specific memory region */
+#define M_PSP_DISABLE_MEM_REGION_SIDEEFFECT(memRegionId) (M_PSP_CLEAR_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_SIDEEFFECT_VAL(memRegionId)))
 
 /**
 * types
