@@ -35,6 +35,7 @@
 /**
 * definitions
 */
+#define D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS            16
 
 /**
 * macros

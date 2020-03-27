@@ -33,6 +33,7 @@
 /**
 * definitions
 */
+#define D_DEMO_MAX_LOOP_COUNT 65536
 
 /**
 * macros
@@ -68,32 +69,51 @@ void demoStart(void)
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
 
-   /* Disable Machine-Timer interrupt so we won't get interrupted */
+   /* clear all mrac bits - disable cache and sideeffect bits */
+   for (uiIndex = 0 ; uiIndex < D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS ; uiIndex++)
+   {
+      M_PSP_DISABLE_MEM_REGION_ICACHE(uiIndex);
+      M_PSP_DISABLE_MEM_REGION_SIDEEFFECT(uiIndex);
+   }
+
+   /* Disable Machine-Timer interrupt so we won't get interrupted
+      timer interrupt not needed in this demo */
    pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-   /* Activates Core's timer with the calculated period */
+   /* Activates Core's timer */
    M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER,  0xFFFFFFFF);
 
+   /* sample the timer value */
    ulCounter1 = pspTimerCounterGet();
 
+   /* we disable (again) the timer just to have the same amount
+      of measured instructions */
    M_PSP_DISABLE_MEM_REGION_ICACHE(0);
 
-   for (uiIndex = 0 ; uiIndex < 65536 ; uiIndex++)
+   for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++)
    {
       asm volatile ("nop");
    }
 
+   /* sample the timer value */
    ulCounter2 = pspTimerCounterGet();
 
+   /* enable cache for the main memory so we can measure how much
+      time execution takes */
    M_PSP_ENABLE_MEM_REGION_ICACHE(0);
 
-   for (uiIndex = 0 ; uiIndex < 65536 ; uiIndex++)
+   for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++)
    {
       asm volatile ("nop");
    }
 
+   /* sample the timer value */
    ulCounter3 = pspTimerCounterGet();
 
-   asm volatile ("ebreak");
+   /* verify we are OK with execution times when cache is enabled */
+   M_PSP_ASSERT(ulCounter3 - ulCounter2 < 20000);
+
+   /* verify we are OK with execution times when cache is disabled */
+   M_PSP_ASSERT(ulCounter2 - ulCounter1 > 3000000);
 }
 
