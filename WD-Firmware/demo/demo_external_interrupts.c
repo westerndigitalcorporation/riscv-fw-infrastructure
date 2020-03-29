@@ -20,30 +20,11 @@
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
-
+#include "external_interrupts.h"  /* BSP file - for generation of external interrupt upon demo test call */
 
 /**
 * definitions
 */
-
-/* In SwreVolf we have the capability to create 6 different external interrupts */
-#define D_DEMO_NUM_OF_EXT_INTS 9
-#define D_DEMO_IRQ_0           0 /* Not in use */
-#define D_DEMO_IRQ_1           1 /* Not in use */
-#define D_DEMO_IRQ_2           2 /* Not in use */
-#define D_DEMO_IRQ_3           3
-#define D_DEMO_IRQ_4           4
-#define D_DEMO_IRQ_5           5
-#define D_DEMO_IRQ_6           6
-#define D_DEMO_IRQ_7           7
-#define D_DEMO_IRQ_8           8
-
-#define D_DEMO_CREATE_IRQ3   (1 << (D_DEMO_IRQ_3-1)) /* In order to create irq3, set bit #2 */
-#define D_DEMO_CREATE_IRQ4   (1 << (D_DEMO_IRQ_4-1)) /* In order to create irq4, set bit #3 */
-#define D_DEMO_CREATE_IRQ5   (1 << (D_DEMO_IRQ_5-1)) /* In order to create irq5, set bit #4 */
-#define D_DEMO_CREATE_IRQ6   (1 << (D_DEMO_IRQ_6-1)) /* In order to create irq6, set bit #5 */
-#define D_DEMO_CREATE_IRQ7   (1 << (D_DEMO_IRQ_7-1)) /* In order to create irq7, set bit #6 */
-#define D_DEMO_CREATE_IRQ8   (1 << (D_DEMO_IRQ_8-1)) /* In order to create irq8, set bit #7 */
 
 
 /* Verification points at each ISR */
@@ -52,19 +33,6 @@
 #define D_DEMO_EXT_INT_PENDING_BIT_SET     2
 #define D_DEMO_EXT_INT_CORRECT_PRIORITY    3
 
-/* Specified RAM address for generation of external interrupts (SwerVolf special implementation) */
-#if (0 != D_EXT_INTS_GENERATION_ADDRESS)
-    #define D_DEMO_EXT_INTS_GENERATION_ADDRESS    D_EXT_INTS_GENERATION_ADDRESS
-#else
-    #error "External interrupts generation address is not defined"
-#endif
-
-/* In SwerVolf we have bits 3..8 at a specified address, available for generation of external interrupts */
-#if (0 != D_EXT_INTS_GENERATION_BITS)
-    #define D_DEMO_EXT_INTS_GENERATION_BITS    D_EXT_INTS_GENERATION_BITS
-#else
-    #error "External interrupts generation bits are not defined"
-#endif
 
 /**
 * macros
@@ -95,10 +63,10 @@ extern pspInterruptHandler_t G_Ext_Interrupt_Handlers[];
 
 /* Array of test results. It is used repeatedly per test. Each place in the array represents the results of corresponding
  * ISR in the current test */
-u08_t g_ucDemoExtIntsPassFailResult[D_DEMO_NUM_OF_EXT_INTS];
+u08_t g_ucDemoExtIntsPassFailResult[D_BSP_NUM_OF_EXT_INTS];
 
 /* Array of priority-level set by the test function for each external-interrupt source-id */
-u16_t g_usPriorityLevelPerSourceId[D_DEMO_NUM_OF_EXT_INTS];
+u16_t g_usPriorityLevelPerSourceId[D_BSP_NUM_OF_EXT_INTS];
 
 
 
@@ -106,53 +74,42 @@ u16_t g_usPriorityLevelPerSourceId[D_DEMO_NUM_OF_EXT_INTS];
 * functions
 */
 
-
 /**
 * Initialize (zero) the array of test results - to be called before each test
 *
 */
 void demoInitializeTestResults(void)
 {
-	for (u32_t i=0; i<D_DEMO_NUM_OF_EXT_INTS; i++)
+	u32_t uiTestResultsIndex;
+
+	for(uiTestResultsIndex=0 ; uiTestResultsIndex < D_BSP_NUM_OF_EXT_INTS; uiTestResultsIndex++)
 	{
 		/* Set test-result of all ISRs to "initial state" (0) */
-		g_ucDemoExtIntsPassFailResult[i] = D_DEMO_INITIAL_STATE;
+		g_ucDemoExtIntsPassFailResult[uiTestResultsIndex] = D_DEMO_INITIAL_STATE;
 	}
 }
 
 
-u32_t uiActivationMask; /* Nati - This is temporarily here for debug. will be removed later */
 /**
-* Generate external interrupt(s) - use mechanism in SwerVolf to create external interrupt by setting certain bit(s) in dedicated memory address
+* demoLoopForDelay - run a loop to create a delay in the application
 *
-* @param - usExtInterruptBitMap - bitmap of ext-interrupts to generate
+* uiNumberOfCycles - how many loop-iterations to run here
 *
-*/
-void demoGenerateExtInterrupt(u32_t usExtInterruptBitMap)
+*
+* */
+void demoLoopForDelay(u32_t uiNumberOfIterations)
 {
-/* Nati - I have still a debug work to do around this one. */
-	uiActivationMask = usExtInterruptBitMap;
-//	uiActivationMask &= D_DEMO_EXT_INTS_GENERATION_BITS ;
+	u32_t uiIndex=0;
 
-	/* D_DEMO_EXT_INTS_GENERATION_BITS is used to make sure we only affect bits 3..8 */
-	M_PSP_WRITE_REGISTER_32(D_DEMO_EXT_INTS_GENERATION_ADDRESS, uiActivationMask );
-	/* Nati - to do - check why |= is not working here (ext-ints not created) */
+	/* Display the number of iterations going to be run here */
+    demoOutputMsg("Loop %d Iterations:\n", uiNumberOfIterations);
+
+	for (;uiIndex < uiNumberOfIterations; uiIndex++)
+	{
+		demoOutputMsg("-- Iteration -- \n");
+	}
 }
 
-
-/**
-* Clear generation of external interrupt(s)
-*
-* @param - usExtInterruptBitMap - bitmap of ext-interrupts to clear
-*
-*/
-void demoClearGenerationExtInterrupt(u16_t usExtInterruptBitMap)
-{
-	/* D_DEMO_EXT_INTS_GENERATION_BITS is used to make sure we only affect bits 3..8 */
-	M_PSP_WRITE_REGISTER_32(D_DEMO_EXT_INTS_GENERATION_ADDRESS, 0 );
-	/* Nati - to do - expand usage for other mask besides '0'. For now - all ext-interrupts are ceased at once */
-	/* Nati - to do - check why &= is not working here (ext-ints not stop) */
-}
 
 
 /**
@@ -188,9 +145,9 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 	/* Clear the gateway */
 	/* pspExtInterruptClearGateway(ucIntSourceId); */ /* Nati - TBD see next comment */
 
-	/* Nati - to do - still under investigation why when in edge mode, clearing the pending bit do not stop the appearance
-	 * of the external interrupt. For the meantime - we stop ext-interrupts by "killing" the source */
-	demoClearGenerationExtInterrupt((u32_t)D_DEMO_EXT_INTS_GENERATION_BITS);
+	/* Stop generation of external interrupts - all sources */
+	bspClearExtInterrupt(D_BSP_IRQ_3);
+	//bspClearExtInterrupt(D_BSP_IRQ_4);
 }
 
 
@@ -205,9 +162,7 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
  */
 u32_t demoExtIntsTest1GlobalDisabled(void)
 {
-	u32_t uiTestResult = 0 ;
-
-#ifdef D_NEXYS_A7
+	u32_t uiSourceId, uiTestResult = 0;
 
     /* Set Standard priority order */
 	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
@@ -216,13 +171,16 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Initialize all Interrupt-sources & Register ISR for all */
-	for (u32_t uiSourceId = 0; uiSourceId < D_DEMO_NUM_OF_EXT_INTS; uiSourceId++)
+	for (uiSourceId=0 ; uiSourceId < D_BSP_NUM_OF_EXT_INTS; uiSourceId++)
 	{
 		/* Set Gateway Interrupt type */
 		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
 		/* Set gateway Polarity */
 		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
+
+		/* Nati - temporarily here. Set polarity (active-high) and int-type (level). to remove here when I'll complete the 2 above functions.. */
+		M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCTRL_OFFSET + M_PSP_MULT_BY_4(uiSourceId), 0);
 
 		/* Clear the gateway */
 		pspExtInterruptClearGateway(uiSourceId);
@@ -237,23 +195,21 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 		pspExternalInterruptRegisterISR(uiSourceId, demoExtIntTest_1_2_3_4_5_ISR, 0);
 	}
 
-	/* Enable interrupts in mstatus CSR */ /* Nati - to do - add specific api to do it  */
-	M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, D_PSP_MSTATUS_MIE_MASK);
+	/* Enable interrupts in mstatus CSR */
+	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
 
-	/* Disable external interrupts in mie CSR */ /* Nati - to do - add specific api to do it (along with machine-timer interrupt) */
+	/* Disable external interrupts in mie CSR */
 	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 
-	/* Generate external interrupts - all sources */
-	demoGenerateExtInterrupt((u32_t)D_DEMO_EXT_INTS_GENERATION_BITS);
+	/* Set interrupt source  - Active High, Level and trigger the interrupts (all sources)  */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	//bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
 	/* Loop for a while.. */
 	demoLoopForDelay(0x10); /* Nati - TBD - maybe not needed here at all */
 
-	/* Stop generation of external interrupts - all sources */
-	demoClearGenerationExtInterrupt((u32_t)D_DEMO_EXT_INTS_GENERATION_BITS);
-
 	/* Verify no external interrupts have been occurred */
-	for (u32_t uiExtIntsIndex = 0 ; uiExtIntsIndex < D_DEMO_NUM_OF_EXT_INTS; uiExtIntsIndex++)
+	for (u32_t uiExtIntsIndex = 0 ; uiExtIntsIndex < D_BSP_NUM_OF_EXT_INTS; uiExtIntsIndex++)
 	{
 		if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
 		{
@@ -265,8 +221,6 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 			M_ENDLESS_LOOP();
 		}
 	}
-
-#endif /* D_NEXYS_A7 */
 
     return uiTestResult;
 }
@@ -280,17 +234,15 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
  */
 u32_t demoExtIntsTest2SpecificDisabled(void)
 {
-	u32_t uiTestResult = 0 ;
-
-#if D_NEXYS_A7
+	u32_t uiExtIntsIndex, uiTestResult = 0 ;
 
 	/* Initialize external interrupts */
 
 	/* Set priority to each one of the external interrupt sources */
 
-	/* Enable external interrupts # 5, 7 and 8 */
+	/* Enable external interrupt #3 */
 
-	/* Disable external interrupts # 3, 4 and 6 */
+	/* Disable external interrupt #4 */
 
 	/* Generate external interrupts - all sources */
 
@@ -298,14 +250,12 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	demoLoopForDelay(0x100);
 
 	/* Verify external interrupts occurred only on sources 5,7 and 8 */
-	for (u32_t uiExtIntsIndex = 0 ; uiExtIntsIndex < D_DEMO_NUM_OF_EXT_INTS; uiExtIntsIndex++)
+	for (uiExtIntsIndex = 0 ; uiExtIntsIndex < D_BSP_NUM_OF_EXT_INTS; uiExtIntsIndex++)
 	{
 	    switch (uiExtIntsIndex)
 	    {
-	        /* For source-ids 3, 4 ,6 the expected result is D_DEMO_INITIAL_STATE */
-            case D_DEMO_IRQ_3:
-            case D_DEMO_IRQ_4:
-            case D_DEMO_IRQ_6:
+	        /* For source-id 4 the expected result is D_DEMO_INITIAL_STATE */
+            case D_BSP_IRQ_4:
             	if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
             	{
         			/* Output a failure message */
@@ -316,10 +266,8 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
             	}
                 break;
 
-            /* For source-ids 5, 7 ,8 the expected result is D_DEMO_EXT_INT_CORRECT_PRIORITY */
-            case D_DEMO_IRQ_5:
-            case D_DEMO_IRQ_7:
-            case D_DEMO_IRQ_8:
+            /* For source-ids 3 the expected result is D_DEMO_EXT_INT_CORRECT_PRIORITY */
+            case D_BSP_IRQ_3:
             	if (D_DEMO_EXT_INT_CORRECT_PRIORITY != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
             	{
         			/* Output a failure message */
@@ -330,16 +278,10 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
             	}
                 break;
 
-            /* Not in use */
-            case D_DEMO_IRQ_0:
-            case D_DEMO_IRQ_1:
-            case D_DEMO_IRQ_2:
             default:
             	break;
 	    } /* end of switch-case */
 	} /* end of loop */
-
-#endif /* D_NEXYS_A7 */
 
     return uiTestResult;
 }
@@ -513,13 +455,6 @@ u32_t demoExtIntsTest9NestedInteeruptHigherPriority(void)
  */
 void demoStart(void)
 {
-
-#ifdef D_HI_FIVE1
-
-	/* External interrupt testing is not relevant for Hifive1 */
-	for( ;; );
-
-#elif D_NEXYS_A7
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
@@ -556,7 +491,5 @@ void demoStart(void)
 
    /* Loop here to let debug */
    M_ENDLESS_LOOP();
-
-#endif /* D_NEXYS_A7 */
 }
 
