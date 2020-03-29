@@ -16,7 +16,7 @@
 #*/
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "ext_ints_baremetal"
+    self.strDemoName   = "external_interrupts"
     self.rtos_core     = ""
     self.toolchain     = ""
     self.toolchainPath = ""
@@ -31,7 +31,7 @@ class demo(object):
     ]
 
     self.listSconscripts = [
-      'demo_ext_ints_baremetal',
+      'demo_external_interrupts',
     ]
 
     self.listDemoSpecificCFlags = [
@@ -40,3 +40,7 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
+    
+    self.listSupportedTargetBoards = [
+      'swerv_eh1'
+	]

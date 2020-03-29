@@ -64,5 +64,5 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;memoryBlockExpressionList context=&quot;Context string&quot;&gt;&#10;&lt;memoryBlockExpression address=&quot;256&quot; label=&quot;0x100&quot;/&gt;&#10;&lt;/memoryBlockExpressionList&gt;&#10;"/>
 <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
-<stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value=" no parity, clear DLAB */,0x80001000,0x80001001,0x80001002,0x80001003,0x80001004,0x7c4,0x800,0x7c4+65,0x300,0x341,0x100,0x102,0x5000000"/>
+<stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value=" clear DLAB */,0x80001000,0x80001001,0x80001002,0x80001003,0x80001004,0x7c4,0x800,0x7c4+65,0x300,0x341,0x100,0x102,0x5000000,0xf00c3000"/>
 </launchConfiguration>
