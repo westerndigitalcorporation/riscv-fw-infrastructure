@@ -33,6 +33,14 @@
 /**
 * types
 */
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+   #ifdef D_COMRV_MIN_NUM_OF_MULTI_GROUPS
+      typedef u08_t multigroupEntryIndex_t;
+   #else
+      typedef u16_t multigroupEntryIndex_t;
+   #endif /* D_COMRV_MIN_NUM_OF_MULTI_GROUPS */
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+
 typedef enum comrvLockState
 {
    D_COMRV_GROUP_STATE_UNLOCK = 0,
@@ -50,14 +58,21 @@ typedef struct comrvStackFrame
   u32_t uiCalleeToken;
   /* holds the offset in bytes to the previous stack frame */
   s16_t ssOffsetPrevFrame;
-#ifdef D_COMRV_MULTI_GROUP_SUPPORT
-  /* if the calleetoken is a multi group token, this field holds the
+  /* alignment value to D_COMRV_OVL_GROUP_SIZE_MAX; granularity is expressed in
+     number of D_COMRV_OVL_GROUP_SIZE_MIN. This value is used to help extracting the
+     return offset from a return address */
+  u08_t ucAlignmentToMaxGroupSize;
+#if defined(D_COMRV_MULTI_GROUP_SUPPORT) && defined(D_COMRV_MIN_NUM_OF_MULTI_GROUPS)
+  /* if the callee token is a multi group token, this field holds the
      actual loaded token entry in the multi group table */
-  u16_t usCalleeMultiGroupTableEntry;
+  multigroupEntryIndex_t tCalleeMultiGroupTableEntry;
+#elif defined(D_COMRV_MULTI_GROUP_SUPPORT)
+  u08_t ucReserved[3];
+  multigroupEntryIndex_t tCalleeMultiGroupTableEntry;
 #else
   /* padding */
-  u16_t usReserved;
-#endif /* d_comrv_multi_group_support */
+  u08_t ucReserved;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT && D_COMRV_MIN_NUM_OF_MULTI_GROUPS */
 } comrvStackFrame_t;
 
 /* overlay token fields */
