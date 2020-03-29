@@ -33,9 +33,10 @@
 /**
 * definitions
 */
-#define D_DEMO_MAX_LOOP_COUNT 65536
+#define D_MAIN_MEM_INDEX                         0
+#define D_DEMO_MAX_LOOP_COUNT                    65536
 #define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON  150000
-#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF 5000000
+#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF 3000000
 
 /**
 * macros
@@ -94,7 +95,7 @@ void demoStart(void)
 
    /* we disable (again) the timer just to have the same amount
       of measured instructions */
-   M_PSP_DISABLE_MEM_REGION_ICACHE(0);
+   M_PSP_DISABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
 
    /* execute some code */
    M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
@@ -104,7 +105,7 @@ void demoStart(void)
 
    /* enable cache for the main memory so we can measure how much
       time execution takes */
-   M_PSP_ENABLE_MEM_REGION_ICACHE(0);
+   M_PSP_ENABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
 
    /* execute some code */
    M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
@@ -114,8 +115,10 @@ void demoStart(void)
 
    /* verify we are within execution time limits when cache
       is enabled/enabled */
-   if ((ulCounter3 - ulCounter2 > D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON) ||
-       (ulCounter2 - ulCounter1 < D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF))
+   ulCounter3 -= ulCounter2;
+   ulCounter2 -= ulCounter1;
+   if ((ulCounter3 > D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON) ||
+       (ulCounter2 < D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF))
    {
       asm volatile ("ebreak");
    }
