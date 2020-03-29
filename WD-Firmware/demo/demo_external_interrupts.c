@@ -61,12 +61,12 @@ extern pspInterruptHandler_t G_Ext_Interrupt_Handlers[];
 * global variables
 */
 
-/* Array of test results. It is used repeatedly per test. Each place in the array represents the results of corresponding
- * ISR in the current test */
-u08_t g_ucDemoExtIntsPassFailResult[D_BSP_NUM_OF_EXT_INTS];
+/* Array of test results. It is used repeatedly per test. Each place in the array represents the results of corresponding ISR in the current test.
+ * Note - As only irq3 and irq4 are functional, then places 0, 1 and 2 in the array are not in use */
+u32_t g_ucDemoExtIntsPassFailResult[D_BSP_LAST_IRQ_NUM+1];
 
 /* Array of priority-level set by the test function for each external-interrupt source-id */
-u16_t g_usPriorityLevelPerSourceId[D_BSP_NUM_OF_EXT_INTS];
+u32_t g_usPriorityLevelPerSourceId[D_BSP_LAST_IRQ_NUM+1];
 
 
 
@@ -82,7 +82,7 @@ void demoInitializeTestResults(void)
 {
 	u32_t uiTestResultsIndex;
 
-	for(uiTestResultsIndex=0 ; uiTestResultsIndex < D_BSP_NUM_OF_EXT_INTS; uiTestResultsIndex++)
+	for(uiTestResultsIndex=0 ; uiTestResultsIndex <= D_BSP_LAST_IRQ_NUM; uiTestResultsIndex++)
 	{
 		/* Set test-result of all ISRs to "initial state" (0) */
 		g_ucDemoExtIntsPassFailResult[uiTestResultsIndex] = D_DEMO_INITIAL_STATE;
@@ -146,8 +146,7 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 	/* pspExtInterruptClearGateway(ucIntSourceId); */ /* Nati - TBD see next comment */
 
 	/* Stop generation of external interrupts - all sources */
-	bspClearExtInterrupt(D_BSP_IRQ_3);
-	//bspClearExtInterrupt(D_BSP_IRQ_4);
+	bspClearExtInterrupt(ucIntSourceId);
 }
 
 
@@ -162,7 +161,7 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
  */
 u32_t demoExtIntsTest1GlobalDisabled(void)
 {
-	u32_t uiSourceId, uiTestResult = 0;
+	u32_t uiSourceId, uiExtIntsIndex, uiTestResult = 0;
 
     /* Set Standard priority order */
 	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
@@ -171,7 +170,7 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Initialize all Interrupt-sources & Register ISR for all */
-	for (uiSourceId=0 ; uiSourceId < D_BSP_NUM_OF_EXT_INTS; uiSourceId++)
+	for (uiSourceId=D_BSP_FIRST_IRQ_NUM ; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
 	{
 		/* Set Gateway Interrupt type */
 		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
@@ -202,14 +201,14 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 
 	/* Set interrupt source  - Active High, Level and trigger the interrupts (all sources)  */
-	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
-	//bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	//bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
 	/* Loop for a while.. */
 	demoLoopForDelay(0x10); /* Nati - TBD - maybe not needed here at all */
 
 	/* Verify no external interrupts have been occurred */
-	for (u32_t uiExtIntsIndex = 0 ; uiExtIntsIndex < D_BSP_NUM_OF_EXT_INTS; uiExtIntsIndex++)
+	for (uiExtIntsIndex = D_BSP_FIRST_IRQ_NUM ; uiExtIntsIndex <= D_BSP_LAST_IRQ_NUM; uiExtIntsIndex++)
 	{
 		if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
 		{
@@ -227,61 +226,80 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 
 
 /**
- *  Test # 2 - Disable specific external interrupts in meieS CSRs.
- *             Verify that only enabled external interrupt sources did occurred
+ *  Test # 2 - Enable IRQ3 and disable IRQ4in meieS CSRs.
+ *             Verify that only enabled external interrupt source did occurred
  *
  * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
 u32_t demoExtIntsTest2SpecificDisabled(void)
 {
-	u32_t uiExtIntsIndex, uiTestResult = 0 ;
+	u32_t uiSourceId, uiTestResult = 0;
 
-	/* Initialize external interrupts */
+    /* Set Standard priority order */
+	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
 
-	/* Set priority to each one of the external interrupt sources */
+    /* Set interrupts threshold to minimal (== all interrupts should be served) */
+	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
-	/* Enable external interrupt #3 */
+	/* Initialize all Interrupt-sources & Register ISR for all */
+	for (uiSourceId=D_BSP_FIRST_IRQ_NUM ; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
+	{
+		/* Set Gateway Interrupt type */
+		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
-	/* Disable external interrupt #4 */
+		/* Set gateway Polarity */
+		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
 
-	/* Generate external interrupts - all sources */
+		/* Nati - temporarily here. Set polarity (active-high) and int-type (level). to remove here when I'll complete the 2 above functions.. */
+		M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCTRL_OFFSET + M_PSP_MULT_BY_4(uiSourceId), 0);
+
+		/* Clear the gateway */
+		pspExtInterruptClearGateway(uiSourceId);
+
+		/* Set the priority level to highest to all interrupt sources */
+		pspExtInterruptSetPriority(uiSourceId, M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
+
+		/* Enable each one of the interrupts in the PIC */
+		pspExternalInterruptEnableNumber(uiSourceId);
+
+		/* Register ISRs to all interrupt sources (here we use same ISR to all of them) */
+		pspExternalInterruptRegisterISR(uiSourceId, demoExtIntTest_1_2_3_4_5_ISR, 0);
+	}
+
+	/* Enable interrupts in mstatus CSR */
+	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+
+	/* Enable external interrupts in mie CSR */
+	M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
+
+	/* Disable IRQ4 */
+	pspExternalInterruptEnableNumber(uiSourceId);
+
+	/* Set interrupt source  - Active High, Level and trigger the interrupts (all sources)  */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
 	/* Loop for a while.. */
-	demoLoopForDelay(0x100);
+	demoLoopForDelay(0x10); /* Nati - TBD - maybe not needed here at all */
 
-	/* Verify external interrupts occurred only on sources 5,7 and 8 */
-	for (uiExtIntsIndex = 0 ; uiExtIntsIndex < D_BSP_NUM_OF_EXT_INTS; uiExtIntsIndex++)
+	/* Verify external-interrupt 3 did happen with correct indications */
+    if (D_DEMO_EXT_INT_CORRECT_PRIORITY != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_3])
+    {
+	    /* Output a failure message */
+		    demoOutputMsg("External Interrupts, Test #2 Failed:\n");
+		    demoOutputMsg("ISR 3 did not jump or it has wrong indications\n");
+	    /* Loop here to let debug */
+	    M_ENDLESS_LOOP();
+    }
+	/* Verify external-interrupt 4 did not happen */
+	if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_4])
 	{
-	    switch (uiExtIntsIndex)
-	    {
-	        /* For source-id 4 the expected result is D_DEMO_INITIAL_STATE */
-            case D_BSP_IRQ_4:
-            	if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
-            	{
-        			/* Output a failure message */
-         			demoOutputMsg("External Interrupts, Test #2 Failed\n");
-         			demoOutputMsg("ISR # %d unexpectedly jumped\n",uiExtIntsIndex);
-        			/* Loop here to let debug */
-        			M_ENDLESS_LOOP();
-            	}
-                break;
-
-            /* For source-ids 3 the expected result is D_DEMO_EXT_INT_CORRECT_PRIORITY */
-            case D_BSP_IRQ_3:
-            	if (D_DEMO_EXT_INT_CORRECT_PRIORITY != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
-            	{
-        			/* Output a failure message */
-         			demoOutputMsg("External Interrupts, Test #2 Failed\n",36);
-         			demoOutputMsg("ISR # %d did not jump or it is wrong\n",uiExtIntsIndex);
-        			/* Loop here to let debug */
-        			M_ENDLESS_LOOP();
-            	}
-                break;
-
-            default:
-            	break;
-	    } /* end of switch-case */
-	} /* end of loop */
+		/* Output a failure message */
+			demoOutputMsg("External Interrupts, Test #2 Failed:\n");
+			demoOutputMsg("ISR # 4 unexpectedly jumped\n");
+		/* Loop here to let debug */
+		M_ENDLESS_LOOP();
+	}
 
     return uiTestResult;
 }

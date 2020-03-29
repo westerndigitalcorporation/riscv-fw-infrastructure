@@ -31,9 +31,10 @@
 * definitions
 */
 /* In SwreVolf we have the capability to create 2 different external interrupts */
-#define D_BSP_NUM_OF_EXT_INTS 2
-#define D_BSP_IRQ_3           0
-#define D_BSP_IRQ_4           1
+#define D_BSP_IRQ_3           3
+#define D_BSP_IRQ_4           4
+#define D_BSP_FIRST_IRQ_NUM   D_BSP_IRQ_3
+#define D_BSP_LAST_IRQ_NUM    D_BSP_IRQ_4
 
 
 
