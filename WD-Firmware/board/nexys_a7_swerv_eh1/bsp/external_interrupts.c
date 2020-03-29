@@ -88,9 +88,10 @@ Register 0x8000100B (offset B in sys_con memory, at SweRVolf FPGA) is used for g
 * @param - uiExtInterruptPolarity - Active High / Low
 * @param - uiExtInterruptType - Edge (pulse of 1 clock cycle) / Level (change level)
 */
-u32_t uiExtInterruptBitMap = 0;
 void bspGenerateExtInterrupt(u32_t uiExtInterruptNumber, u32_t uiExtInterruptPolarity, u32_t uiExtInterruptType)
 {
+	u32_t uiExtInterruptBitMap = 0;
+
 	if (D_BSP_IRQ_3 == uiExtInterruptNumber)
 	{
 		if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)
