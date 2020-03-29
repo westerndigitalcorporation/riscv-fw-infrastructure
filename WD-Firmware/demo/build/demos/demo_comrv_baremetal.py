@@ -54,6 +54,6 @@ class demo(object):
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
     
-    self.supportedTargetBoards = [
+    self.listSupportedTargetBoards = [
       'swerv_eh1', 'hifive1', 'hifive-un'
     ]
