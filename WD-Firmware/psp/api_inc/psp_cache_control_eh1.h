@@ -18,7 +18,7 @@
 */
 
 /**
-* @file    psp_cache_control.h
+* @file    psp_cache_control_eh1.h
 * @author  Ronen Haen
 * @date    26.03.2020
 * @brief   Cache control interface
