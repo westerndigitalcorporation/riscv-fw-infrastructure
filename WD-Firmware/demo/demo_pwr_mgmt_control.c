@@ -61,7 +61,7 @@ u32_t gTestWayPoints = 0;
  * demoMtimerIsrHandler - Handle machine timer ISR
  *
  */
-D_PSP_TEXT_SECTION void demoMtimerIsrHandler(void)
+void demoMtimerIsrHandler(void)
 {
 	/* Disable Machine-Timer interrupt */
 	pspDisableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
@@ -132,9 +132,6 @@ void demoStart(void)
 
 	/* Arriving here means all tests passed successfully */
 	demoOutputMsg("Power Management Control tests passed successfully\n",52);
-
-	/* Loop here to let debug */
-	M_ENDLESS_LOOP();
 
 }
 
