@@ -34,10 +34,16 @@
 * definitions
 */
 #define D_DEMO_MAX_LOOP_COUNT 65536
+#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON  150000
+#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF 5000000
 
 /**
 * macros
 */
+#define M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE() for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++) \
+                                               { \
+                                                  asm volatile ("nop"); \
+                                               }
 
 /**
 * types
@@ -90,10 +96,8 @@ void demoStart(void)
       of measured instructions */
    M_PSP_DISABLE_MEM_REGION_ICACHE(0);
 
-   for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++)
-   {
-      asm volatile ("nop");
-   }
+   /* execute some code */
+   M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
 
    /* sample the timer value */
    ulCounter2 = pspTimerCounterGet();
@@ -102,18 +106,18 @@ void demoStart(void)
       time execution takes */
    M_PSP_ENABLE_MEM_REGION_ICACHE(0);
 
-   for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++)
-   {
-      asm volatile ("nop");
-   }
+   /* execute some code */
+   M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
 
    /* sample the timer value */
    ulCounter3 = pspTimerCounterGet();
 
-   /* verify we are OK with execution times when cache is enabled */
-   M_PSP_ASSERT(ulCounter3 - ulCounter2 < 20000);
-
-   /* verify we are OK with execution times when cache is disabled */
-   M_PSP_ASSERT(ulCounter2 - ulCounter1 > 3000000);
+   /* verify we are within execution time limits when cache
+      is enabled/enabled */
+   if ((ulCounter3 - ulCounter2 > D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON) ||
+       (ulCounter2 - ulCounter1 < D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF))
+   {
+      asm volatile ("ebreak");
+   }
 }
 

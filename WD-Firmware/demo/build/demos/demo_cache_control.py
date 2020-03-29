@@ -27,7 +27,6 @@ class demo(object):
     self.public_defs = [
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
-        'D_PSP_DEBUG',
     ]
    
     self.listSconscripts = [
