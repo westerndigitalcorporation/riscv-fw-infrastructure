@@ -71,7 +71,6 @@ D_PSP_TEXT_SECTION void demoMtimerIsrHandler(void)
 }
 
 
-#ifdef D_NEXYS_A7
 /**
  * demoMtimerWakeupTest - verify that core wakes up upon machine timer interrupt
  *
@@ -121,17 +120,16 @@ void demoMtimerWakeupTest(void)
 		M_ENDLESS_LOOP();
 	}
 }
-#endif
+
 /**
  * demoStart - startup point of the demo application. called from main function.
  *
  */
 void demoStart(void)
 {
-#ifdef D_NEXYS_A7
 	/* verify cores wake up from halt(C3) state upon machine timer interrupt */
 	demoMtimerWakeupTest();
-#endif
+
 	/* Arriving here means all tests passed successfully */
 	demoOutputMsg("Power Management Control tests passed successfully\n",52);
 
