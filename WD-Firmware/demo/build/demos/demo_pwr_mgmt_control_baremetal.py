@@ -40,3 +40,7 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
+    
+    self.supportedTargetBoards = [
+      'swerv_eh1'
+    ]

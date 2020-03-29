@@ -26,7 +26,7 @@ utils.fnCreateFolder(strOutDir)
 listCFiles=[
    (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
    (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
-   (os.path.join('demo' , 'demo_pwr_mgmt_control_baremetal.c'), os.path.join(strOutDir, 'demo_pwr_mgmt_control_baremetal.o')),
+   (os.path.join('demo' , 'demo_pwr_mgmt_control.c'), os.path.join(strOutDir, 'demo_pwr_mgmt_control.o')),
 ]
 
 # Assembly language source and out files in list of tupples
