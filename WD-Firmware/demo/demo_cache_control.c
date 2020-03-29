@@ -114,7 +114,7 @@ void demoStart(void)
    ulCounter3 = pspTimerCounterGet();
 
    /* verify we are within execution time limits when cache
-      is enabled/enabled */
+      is enabled/disabled */
    ulCounter3 -= ulCounter2;
    ulCounter2 -= ulCounter1;
    if ((ulCounter3 > D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON) ||
