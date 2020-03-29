@@ -93,7 +93,7 @@ void demoStart(void)
    /* sample the timer value */
    ulCounter1 = pspTimerCounterGet();
 
-   /* we disable (again) the timer just to have the same amount
+   /* we disable (again) the cache just to have the same amount
       of measured instructions */
    M_PSP_DISABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
 
