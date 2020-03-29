@@ -129,12 +129,4 @@ void demoOutputToggelLed(void);
 * */
 void demoOutpuLed(const u08_t ucOnOffMode);
 
-/**
-* demoLoopForDelay - run a loop to create a delay in the application
-*
-* uiNumberOfCycles - how many loop-iterations to run here
-*
-*
-* */
-void demoLoopForDelay(u32_t uiNumberOfIterations);
 

@@ -26,6 +26,7 @@ utils.fnCreateFolder(strOutDir)
 listCFiles = [
    (os.path.join('board', 'nexys_a7_swerv_eh1', 'bsp', 'printf.c'), os.path.join(strOutDir, 'printf.o')),
    (os.path.join('board', 'nexys_a7_swerv_eh1', 'bsp', 'version.c'), os.path.join(strOutDir, 'version.o')),
+   (os.path.join('board', 'nexys_a7_swerv_eh1', 'bsp', 'external_interrupts.c'), os.path.join(strOutDir, 'external_interrupts.o')),
 ]
 
 
@@ -50,7 +51,7 @@ Env['PUBLIC_DEF'] += ['D_NEXYS_A7', 'D_MTIME_ADDRESS=0x80001020', 'D_MTIMECMP_AD
                       #    - Bits at that address to create external interrupts = 0x1F8 - 0000 0001 1111 1000 (bits 3..8)
                       'D_PIC_BASE_ADDRESS=0xf00c0000', 'D_PIC_NUM_OF_EXT_INTERRUPTS=256', 
                       'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0', 'D_EXT_INTERRUPT_LAST_SOURCE_USED=255',
-                      'D_EXT_INTS_GENERATION_ADDRESS=0x8000100B', 'D_EXT_INTS_GENERATION_BITS=0x1F8']
+                      'D_EXT_INTS_GENERATION_REG_ADDRESS=0x8000100B']
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 

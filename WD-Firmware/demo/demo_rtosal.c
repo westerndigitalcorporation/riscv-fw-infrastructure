@@ -113,7 +113,6 @@ void demoRtosalTimerTickHandler(void);
 /**
 * external prototypes
 */
-extern void pspExternalIntHandlerIsr(void);
 
 /**
 * global variables
@@ -191,9 +190,6 @@ void demoRtosalCreateTasks(void *pParameters)
         pspRegisterExceptionHandler(pspTrapUnhandled, eCause);
     }
     /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
-
-    /* register external interrupt handler */
-    pspRegisterInterruptHandler(pspExternalIntHandlerIsr, E_MACHINE_EXTERNAL_CAUSE);
 
     /* Enable the Machine-External interrupt */
     pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
