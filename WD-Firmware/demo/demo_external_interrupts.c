@@ -25,6 +25,16 @@
 /**
 * definitions
 */
+#define D_DEMO_EXT_INT_TEST_1  1
+#define D_DEMO_EXT_INT_TEST_2  2
+#define D_DEMO_EXT_INT_TEST_3  3
+#define D_DEMO_EXT_INT_TEST_4  4
+#define D_DEMO_EXT_INT_TEST_5  5
+#define D_DEMO_EXT_INT_TEST_6  6
+#define D_DEMO_EXT_INT_TEST_7  7
+#define D_DEMO_EXT_INT_TEST_8  8
+#define D_DEMO_EXT_INT_TEST_9  9
+#define D_DEMO_EXT_INT_TEST_10 10
 
 
 /* Verification points at each ISR */
@@ -37,6 +47,7 @@
 /**
 * macros
 */
+
 
 /**
 * types
@@ -56,7 +67,6 @@ extern void psp_vect_table(void);
 /* External interrupts vector table */
 extern pspInterruptHandler_t G_Ext_Interrupt_Handlers[];
 
-
 /**
 * global variables
 */
@@ -75,7 +85,7 @@ u32_t g_usPriorityLevelPerSourceId[D_BSP_LAST_IRQ_NUM+1];
 */
 
 /**
-* Initialize (zero) the array of test results - to be called before each test
+* @brief - Initialize (zero) the array of test results - to be called before each test
 *
 */
 void demoInitializeTestResults(void)
@@ -94,34 +104,82 @@ void demoInitializeTestResults(void)
 
 
 /**
-* demoLoopForDelay - run a loop to create a delay in the application
-*
-* uiNumberOfCycles - how many loop-iterations to run here
-*
-*
-* */
-void demoLoopForDelay(u32_t uiNumberOfIterations)
+ * @brief - Default initialization of PIC and Gateways. Called at the beginning of each test.
+ *
+ * @param - pIsr - pointer of ISR to register for this test
+ */
+void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
 {
-	u32_t uiIndex=0;
+	u32_t uiSourceId;
 
-	/* Display the number of iterations going to be run here */
-    demoOutputMsg("Loop %d Iterations:\n", uiNumberOfIterations);
+    /* Set Standard priority order */
+	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
 
-	for (;uiIndex < uiNumberOfIterations; uiIndex++)
+    /* Set interrupts threshold to minimal (== all interrupts should be served) */
+	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+
+	/* Initialize all Interrupt-sources & Register ISR for all */
+	for (uiSourceId = D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
 	{
-		demoOutputMsg("-- Iteration -- \n");
+		/* Set Gateway Interrupt type (Level) */
+		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
+
+		/* Set gateway Polarity (Active high) */
+		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
+
+		/* Clear the gateway */
+		pspExtInterruptClearGateway(uiSourceId);
+
+		/* Set the priority level to highest to all interrupt sources */
+		g_usPriorityLevelPerSourceId[uiSourceId] = M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
+		/* Priority-level is checked later so store it here as expected value */
+		pspExtInterruptSetPriority(uiSourceId, g_usPriorityLevelPerSourceId[uiSourceId]);
+
+		/* Enable each one of the interrupts in the PIC */
+		pspExternalInterruptEnableNumber(uiSourceId);
+
+		/* Register ISRs to all interrupt sources (here we use same ISR to all of them) */
+		pspExternalInterruptRegisterISR(uiSourceId, pTestIsr, 0);
 	}
+
+	/* Enable interrupts in mstatus CSR */
+	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+
+	/* Enable external interrupts in mie CSR */
+	M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 }
 
 
+/**
+ * @brief - Verify expected results for IRQ3 and IRQ4
+ *
+ * @param - uiTestNumber - Test number
+ * @param - uiExpectedResultFirstIRQ  - Expected result to verify for 1'st IRQ (IRQ3)
+ * @param - uiExpectedResultSecondIRQ - Expected result to verify for 2'nd IRQ (IRQ4)
+ */
+void demoVerifyExpectedTestResults(u32_t uiTestNumber, u32_t uiExpectedResultFirstIRQ, u32_t uiExpectedResultSecondIRQ)
+{
+	/* Verify expected results for external-interrupt 3 & 4 */
+    if ((uiExpectedResultFirstIRQ != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_3])
+    	||
+		(uiExpectedResultSecondIRQ != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_4]))
+    {
+	    /* Output a failure message */
+		demoOutputMsg("External Interrupts, Test #%d Failed:\n", uiTestNumber);
+	    /* Loop here to let debug */
+	    M_ENDLESS_LOOP();
+    }
+}
 
 /**
- * ISR for test #1, #2, #3 ,#4 and #5 (see the tests later in this file)
+ * ISR for test #1, #2, #3 ,#4 and #5 (see the tests details)
  *
  * The ISR indicates/marks 3 things:
  * - ISR of the current claim-id has been occurred
  * - Whether corresponding "pending" bit is set or not
  * - Corresponding "priority" field is correct
+ *
+ * In addition, this ISR clears the interrupt at its source (BSP api)
  *
  * Tests 1,2,3,4 and 5 does different things each. However all of them use this ISR.
  */
@@ -145,9 +203,6 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 		g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_CORRECT_PRIORITY;
 	}
 
-	/* Clear the gateway */
-	/* pspExtInterruptClearGateway(ucIntSourceId); */ /* Nati - TBD see next comment */
-
 	/* Stop generation of external interrupts - all sources */
 	bspClearExtInterrupt(ucIntSourceId);
 }
@@ -155,49 +210,17 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 
 /* TBD - following ISRs */
 
-
 /**
- *  Test # 1 - After full external interrupts initialization, disable external interrupts in mie CSR.
- *             Verify that external interrupts not occur at all.
+ * Test # 1 - After full external interrupts initialization, disable external interrupts in mie CSR.
+ *            Verify that external interrupts not occur at all.
  *
- * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest1GlobalDisabled(void)
+void demoExtIntsTest1GlobalDisabled(void)
 {
-	u32_t uiSourceId, uiExtIntsIndex, uiTestResult = 0;
+	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_1;
 
-    /* Set Standard priority order */
-	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
-
-    /* Set interrupts threshold to minimal (== all interrupts should be served) */
-	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
-
-	/* Initialize all Interrupt-sources & Register ISR for all */
-	for (uiSourceId=D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
-	{
-		/* Set Gateway Interrupt type (Level) */
-		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
-
-		/* Set gateway Polarity (Active high) */
-		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
-
-		/* Clear the gateway */
-		pspExtInterruptClearGateway(uiSourceId);
-
-		/* Set the priority level to highest to all interrupt sources */
-		g_usPriorityLevelPerSourceId[uiSourceId] = M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
-		/* Priority-level is checked later so store it here as expected value */
-		pspExtInterruptSetPriority(uiSourceId, g_usPriorityLevelPerSourceId[uiSourceId]);
-
-		/* Enable each one of the interrupts in the PIC */
-		pspExternalInterruptEnableNumber(uiSourceId);
-
-		/* Register ISRs to all interrupt sources (here we use same ISR to all of them) */
-		pspExternalInterruptRegisterISR(uiSourceId, demoExtIntTest_1_2_3_4_5_ISR, 0);
-	}
-
-	/* Enable interrupts in mstatus CSR */
-	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
+	demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
 
 	/* Disable external interrupts in mie CSR */
 	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
@@ -206,67 +229,22 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Verify no external interrupts have been occurred */
-	for (uiExtIntsIndex = D_BSP_FIRST_IRQ_NUM; uiExtIntsIndex <= D_BSP_LAST_IRQ_NUM; uiExtIntsIndex++)
-	{
-		if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
-		{
-			/* Output a failure message */
- 			demoOutputMsg("External Interrupts, Test #1 Failed\n");
- 			demoOutputMsg("ISR # %d unexpectedly jumped\n ",uiExtIntsIndex);
-
-			/* Loop here to let debug */
-			M_ENDLESS_LOOP();
-		}
-	}
-
-    return uiTestResult;
+	/* Expected results here are - No ISR has been occurred */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_INITIAL_STATE, D_DEMO_INITIAL_STATE);
 }
 
 
 /**
  *  Test # 2 - Enable IRQ3 and disable IRQ4 in meieS CSRs.
- *             Verify that only enabled external interrupt source did occurred
+ *             Verify that only enabled external-interrupt did occurred
  *
- * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest2SpecificDisabled(void)
+void demoExtIntsTest2SpecificDisabled(void)
 {
-	u32_t uiSourceId, uiTestResult = 0;
+	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_2;
 
-    /* Set Standard priority order */
-	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
-
-    /* Set interrupts threshold to minimal (== all interrupts should be served) */
-	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
-
-	/* Initialize all Interrupt-sources & Register ISR for all */
-	for (uiSourceId=D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
-	{
-		/* Set Gateway Interrupt type (Level) */
-		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
-
-		/* Set gateway Polarity (Active high) */
-		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
-
-		/* Clear the gateway */
-		pspExtInterruptClearGateway(uiSourceId);
-
-		/* Set the priority level to highest to all interrupt sources */
-		pspExtInterruptSetPriority(uiSourceId, M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
-
-		/* Enable each one of the interrupts in the PIC */
-		pspExternalInterruptEnableNumber(uiSourceId);
-
-		/* Register ISRs to all interrupt sources (here we use same ISR to all of them) */
-		pspExternalInterruptRegisterISR(uiSourceId, demoExtIntTest_1_2_3_4_5_ISR, 0);
-	}
-
-	/* Enable interrupts in mstatus CSR */
-	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
-
-	/* Enable external interrupts in mie CSR */
-	M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
+	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
+	demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
 
 	/* Disable IRQ4 */
 	pspExternalInterruptDisableNumber(D_BSP_IRQ_4);
@@ -275,142 +253,123 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Loop for a while.. */
-	demoLoopForDelay(0x10); /* Nati - TBD - maybe not needed here at all */
-
-	/* Verify external-interrupt 3 did happen with correct indications */
-    if (D_DEMO_EXT_INT_CORRECT_PRIORITY != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_3])
-    {
-	    /* Output a failure message */
-		demoOutputMsg("External Interrupts, Test #2 Failed:\n");
-		demoOutputMsg("ISR 3 did not jump or it has wrong indications\n");
-	    /* Loop here to let debug */
-	    M_ENDLESS_LOOP();
-    }
-	/* Verify external-interrupt 4 did not happen */
-	if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_4])
-	{
-		/* Output a failure message */
-		demoOutputMsg("External Interrupts, Test #2 Failed:\n");
-		demoOutputMsg("ISR # 4 unexpectedly jumped\n");
-		/* Loop here to let debug */
-		M_ENDLESS_LOOP();
-	}
-
-    return uiTestResult;
+	/* Expected results here are - IRQ3 occurred, IRQ4 did not occur */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_EXT_INT_CORRECT_PRIORITY, D_DEMO_INITIAL_STATE);
 }
 
 /**
  *  Test # 3 - Set priority & threshold in standard priority-order
  *             Verify external interrupts occurred only on sources with priority higher than threshold
  *
- * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest3PriorityStandardOrder(void)
+void demoExtIntsTest3PriorityStandardOrder(void)
 {
-	u32_t uiTestResult = 0;
+	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_3;
 
-	/* Initialize external interrupts */
+	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
+	demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
 
-	/* Enable external interrupts # 3..8 */
+	/* Part1: Set the priority of both IRQ3 and IRQ4 not higher than threshold. Expect no ISR to jump */
 
-	/* Set standard priority order */
+	/* Set interrupts threshold to 7 */
+	pspExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_7);
 
-	/* Set theshold to 7 */
+	/* Set IRQ3 priority to 6 */
+	g_usPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_6;
+	/* Priority-level is checked later so store it here as expected value */
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_usPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
-	/* Set irq 3 priority to 5 */
+	/* Set IRQ4 priority to 7 */
+	g_usPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_7;
+	/* Priority-level is checked later so store it here as expected value */
+	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_usPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
-	/* Set irq 4 priority to 6 */
+	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Set irq 5 priority to 7 */
+	/* Expected results here are - No ISR has been occurred */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_INITIAL_STATE, D_DEMO_INITIAL_STATE);
 
-	/* Set irq 6 priority to 8 */
+	/* Part2: Set only IRQ3 priority higher than threshold. Expect only ISR3 to jump */
 
-	/* Set irq 7 priority to 9 */
+    /* Initialize test results array and parameters */
+	demoInitializeTestResults();
 
-	/* Set irq 8 priority to 10 */
+	/* Set IRQ3 priority to 8 */
+	g_usPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_8;
+	/* Priority-level is checked later so store it here as expected value */
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_usPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
-    /* Generate external interrupt at sources 3..8 */
+	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-	/* Verify external interrupts occurred only on sources with priority higher than the threshold (i.e. 6,7,8) */
-
-    return uiTestResult;
+	/* Expected results here are - IRQ3 occurred, IRQ4 did not occur */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_EXT_INT_CORRECT_PRIORITY, D_DEMO_INITIAL_STATE);
 }
 
 /**
  *  Test # 4 - Set priority & threshold in reversed priority-order
  *             Verify external interrupts occurred only on sources with priority lower than threshold
  *
- * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest4PriorityReversedOrder(void)
+void demoExtIntsTest4PriorityReversedOrder(void)
 {
-	u32_t uiTestResult = 0;
+	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_4;
 
-	/* Initialize external interrupts */
+	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
+	demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
+    /* Set Reversed priority order */
+	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_REVERSED_PRIORITY);
 
-	/* Enable external interrupts # 3..8 */
+	/* Part1: Set the priority of both IRQ3 and IRQ4 not lower than threshold. Expect no ISR to jump */
 
-	/* Set reversed priority order */
+	/* Set interrupts threshold to 5 */
+	pspExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_5);
 
-	/* Set theshold to 7 */
+	/* Set IRQ3 priority to 5 */
+	g_usPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_5;
+	/* Priority-level is checked later so store it here as expected value */
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_usPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
-	/* Set irq 3 priority to 5 */
+	/* Set IRQ4 priority to 6 */
+	g_usPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_6;
+	/* Priority-level is checked later so store it here as expected value */
+	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_usPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
-	/* Set irq 4 priority to 6 */
+	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Set irq 5 priority to 7 */
+	/* Expected result here is - No ISR has been occurred */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_INITIAL_STATE, D_DEMO_INITIAL_STATE);
 
-	/* Set irq 6 priority to 8 */
+	/* Part2: Set only IRQ3 priority lower than threshold. Expect only ISR3 to jump */
 
-	/* Set irq 7 priority to 9 */
+    /* Initialize test results array and parameters */
+	demoInitializeTestResults();
 
-	/* Set irq 8 priority to 10 */
+	/* Set IRQ3 priority to 4 */
+	g_usPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_4;
+	/* Priority-level is checked later so store it here as expected value */
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_usPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
-    /* Generate external interrupt at sources 3..8 */
+	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-	/* Verify external interrupts occurred only on sources with priority less than the threshold (i.e. 3 and 4) */
-
-    return uiTestResult;
+	/* Expected results here are - IRQ3 occurred, IRQ4 did not occur */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_EXT_INT_CORRECT_PRIORITY, D_DEMO_INITIAL_STATE);
 }
 
 
 /**
- *  Test # 5 - Change priority & threshold on the go
- *             Verify external interrupts occurred only on sources with priority higher than threshold
+ *  Test # 5 - Test correct gateway (level-triggered or edge-triggered) behavior
  *
- * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest5ThresholdAndPriorityChanging(void)
+void demoExtIntsTest5GatweayConfiguration(void)
 {
-	u32_t uiTestResult = 0;
-
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-    return uiTestResult;
-}
-
-
-/**
- *  Test # 6 - Test correct gateway (level-triggered or edge-triggered) behavior
- *
- * @return - returns 0 (success). In case of a failure the function enters an endless loop
- */
-u32_t demoExtIntsTest6GatweayConfiguration(void)
-{
-	u32_t uiTestResult = 0;
-
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-	return uiTestResult;
 }
 
 
@@ -419,14 +378,8 @@ u32_t demoExtIntsTest6GatweayConfiguration(void)
  *
  * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest7NestedInteeruptLowerPriority(void)
+void demoExtIntsTest7NestedInteeruptLowerPriority(void)
 {
-	u32_t uiTestResult = 0;
-
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-    return uiTestResult;
 }
 
 
@@ -435,14 +388,8 @@ u32_t demoExtIntsTest7NestedInteeruptLowerPriority(void)
  *
  * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest8NestedInteeruptSamePriority(void)
+void demoExtIntsTest8NestedInteeruptSamePriority(void)
 {
-	u32_t uiTestResult = 0;
-
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-    return uiTestResult;
 }
 
 
@@ -451,14 +398,8 @@ u32_t demoExtIntsTest8NestedInteeruptSamePriority(void)
  *
  * @return - returns 0 (success). In case of a failure the function enters an endless loop
  */
-u32_t demoExtIntsTest9NestedInteeruptHigherPriority(void)
+void demoExtIntsTest9NestedInteeruptHigherPriority(void)
 {
-	u32_t uiTestResult = 0;
-
-	/* Loop for a while.. Let all pending ISRs to run */
-	demoLoopForDelay(0x100);
-
-    return uiTestResult;
 }
 
 
@@ -487,21 +428,17 @@ void demoStart(void)
    demoInitializeTestResults();
    /* Test #2 - Disable specific exernal interrup */
    demoExtIntsTest2SpecificDisabled();
-#if 0
+
    /* Initialize test results array and parameters */
    demoInitializeTestResults();
    /* Test #3 - Priority & Threshold - standard order */
    demoExtIntsTest3PriorityStandardOrder();
+#if 0
 
    /* Initialize test results array and parameters */
    demoInitializeTestResults();
    /* Test #4 - Priority & Threshold - reversed order*/
    demoExtIntsTest4PriorityReversedOrder();
-
-   /* Initialize test results array and parameters */
-   demoInitializeTestResults();
-   /* Test #5 - Changing Priority & Threshold - */
-   demoExtIntsTest5ThresholdAndPriorityChanging();
 
    /* Initialize test results array and parameters */
    demoInitializeTestResults();
