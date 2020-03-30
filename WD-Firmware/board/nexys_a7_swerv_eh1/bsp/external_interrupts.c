@@ -131,19 +131,16 @@ void bspClearExtInterrupt(u32_t uiExtInterruptNumber)
 {
 	u32_t uiExtInterruptBitMap = 0;
 
-//	if (D_BSP_IRQ_3 == uiExtInterruptNumber)
-//	{
-//		uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ3_ACTIVATE_BIT);
-//	}
-//	else
-//	{
-//		uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ4_ACTIVATE_BIT);
-//	}
-//	M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiExtInterruptBitMap );
-	M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiExtInterruptBitMap );
+	if (D_BSP_IRQ_3 == uiExtInterruptNumber)
+	{
+		uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ3_ACTIVATE_BIT);
+	}
+	else
+	{
+		uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ4_ACTIVATE_BIT);
+	}
 
-	/* Nati - to do - expand usage for other mask besides '0'. For now - all ext-interrupts are ceased at once */
-	/* Nati - to do - check why &= is not working here (ext-ints not stop) */
+	M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiExtInterruptBitMap );
 }
 
 

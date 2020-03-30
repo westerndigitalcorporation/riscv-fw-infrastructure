@@ -109,7 +109,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 {
 	/* Clear Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum) , 0);
+	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum)) , 0);
 }
 
 /*
@@ -157,7 +157,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 */
 D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
 {
-	u32_t uiRegister, uiBit, uiResult=0;
+	u32_t uiRegister, uiBit, uiResult;
 
 	/* Calculate the meipX register to access to check the input interrupt number */
 	uiRegister = D_PSP_MEIP_ADDR + D_PSP_REG32_BYTE_WIDTH * (uiExtInterrupt/D_PSP_REG32_BIT_WIDTH);
@@ -166,7 +166,7 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
 	uiBit = uiExtInterrupt - (uiRegister * D_PSP_REG32_BIT_WIDTH);
 
 	/* Check the specific bit */
-	uiResult = ( M_PSP_READ_REGISTER_32(uiRegister) & (1 << uiBit) );
+	uiResult = !!( M_PSP_READ_REGISTER_32(uiRegister) & (1 << uiBit) );
 
 	return (uiResult);
 }
@@ -185,7 +185,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType)
 	M_PSP_ASSERT((D_PSP_EXT_INT_LEVEL_TRIG_TYPE == uiIntType) || (D_PSP_EXT_INT_EDGE_TRIG_TYPE == uiIntType));
 
 	/* Set interrupt type */
-	/* Nati - To Do - Add 'SET' api to register - M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCTRL_OFFSET + M_PSP_MULT_BY_4(uiIntNum), uiIntType) ; */
+	M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiIntType << D_PSP_MEIGWCTRL_TYPE_BIT_OFFSET);
 }
 
 
@@ -202,7 +202,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolar
 	M_PSP_ASSERT((D_PSP_EXT_INT_ACTIVE_HIGH == uiPolarity) || (D_PSP_EXT_INT_ACTIVE_LOW == uiPolarity));
 
 	/* Set interrupt type */
-	/* Nati - To Do - Add 'SET' api to register - M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCTRL_OFFSET + M_PSP_MULT_BY_4(uiIntNum), uiPolarity) ; */
+	M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiPolarity << D_PSP_MEIGWCTRL_POLARITY_BIT_OFFSET);
 }
 
 
