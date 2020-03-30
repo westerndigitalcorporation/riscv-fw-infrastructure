@@ -26,7 +26,6 @@
 */
 #if defined(D_HI_FIVE1)
    #include <unistd.h>
-   #include <stdlib.h>
 #elif defined(D_NEXYS_A7)
    #include "printf.h"
    #include "mem_map.h"

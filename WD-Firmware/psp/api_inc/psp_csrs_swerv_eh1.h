@@ -110,10 +110,10 @@
 #define D_PSP_MPICCFG_PRIORD_MASK   0x00000001 /* bit 0 */
 
 /* meigwctrl CSR */
-#define D_PSP_PIC_MEIGWCTRL_OFFSET	   0x4000
-#define D_PSP_PIC_MEIGWCTRL_ADDR       PSP_PIC_BASE_ADDRESS + D_PSP_PIC_MEIGWCTRL_OFFSET	/* External interrupts gateway configuration */
-#define D_PSP_MEIGWCTRL_POLARITY_MASK  0x00000001 /* bit 0 */
-#define D_PSP_MEIGWCTRL_TYPE_MASK      0x00000002 /* bit 1 */
+#define D_PSP_PIC_MEIGWCTRL_OFFSET	         0x4000
+#define D_PSP_PIC_MEIGWCTRL_ADDR             PSP_PIC_BASE_ADDRESS + D_PSP_PIC_MEIGWCTRL_OFFSET	/* External interrupts gateway configuration */
+#define D_PSP_MEIGWCTRL_POLARITY_BIT_OFFSET  0 /* bit 0 */
+#define D_PSP_MEIGWCTRL_TYPE_BIT_OFFSET      1 /* bit 1 */
 
 /* meigwclr CSR */
 #define D_PSP_PIC_MEIGWCLR_OFFSET	0x5000
