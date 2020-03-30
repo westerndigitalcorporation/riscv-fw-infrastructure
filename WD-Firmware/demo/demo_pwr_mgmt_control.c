@@ -51,7 +51,7 @@ extern void psp_vect_table(void);
 /**
 * global variables
 */
-u32_t gTestWayPoints = 0;
+u32_t g_uiTestWayPoints = 0;
 
 /**
 * functions
@@ -67,7 +67,7 @@ void demoMtimerIsrHandler(void)
 	pspDisableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
 
 	/* Mark that ISR visited */
-	gTestWayPoints |= M_PSP_BIT_MASK(D_IN_MTIMER_ISR);
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_IN_MTIMER_ISR);
 }
 
 
@@ -83,7 +83,7 @@ void demoMtimerWakeupTest(void)
 	/* register trap handler */
 	M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
-	/* register Machine timer timer interrupt handler */
+	/* register Machine timer interrupt handler */
 	pspRegisterInterruptHandler(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
 
 	/* Enable machine timer interrupt */
@@ -95,7 +95,7 @@ void demoMtimerWakeupTest(void)
 	/* Enable all machine level interrupts */
 	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
 
-	gTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_HALT);
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_HALT);
 
 	udTimeBeforeSleep = pspTimerCounterGet();
 
@@ -104,10 +104,10 @@ void demoMtimerWakeupTest(void)
 
 	udTimeAfterSleep = pspTimerCounterGet();
 
-	gTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_HALT);
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_HALT);
 
 	/* verify all test way points wore visited */
-	if(gTestWayPoints != D_MTIMER_WAKEUP_TEST_RESULT)
+	if(g_uiTestWayPoints != D_MTIMER_WAKEUP_TEST_RESULT)
 	{
 		/* Test failed */
 		M_ENDLESS_LOOP();
