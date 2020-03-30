@@ -82,10 +82,13 @@ void demoInitializeTestResults(void)
 {
 	u32_t uiTestResultsIndex;
 
-	for(uiTestResultsIndex=0 ; uiTestResultsIndex <= D_BSP_LAST_IRQ_NUM; uiTestResultsIndex++)
+	for(uiTestResultsIndex=0; uiTestResultsIndex <= D_BSP_LAST_IRQ_NUM; uiTestResultsIndex++)
 	{
 		/* Set test-result of all ISRs to "initial state" (0) */
 		g_ucDemoExtIntsPassFailResult[uiTestResultsIndex] = D_DEMO_INITIAL_STATE;
+
+		/* Make sure the external-interrupt triggers are cleared */
+		bspClearExtInterrupt(uiTestResultsIndex);
 	}
 }
 
@@ -128,18 +131,18 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 	u08_t ucIntSourceId = pspExtInterruptGetClaimId();
 
 	/* Indication that this ISR has been occurred */
-	g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_ISR_JUMPED ;
+	g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_ISR_JUMPED;
 
 	/* Mark whether corresponding pending-bit is set or not */
 	if (D_PSP_ON == pspExtInterruptIsPending(ucIntSourceId))
 	{
-		g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_PENDING_BIT_SET ;
+		g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_PENDING_BIT_SET;
 	}
 
 	/* Verify correct priority-level (clidpri) field in meicidpl CSR */
 	if (pspExtInterruptGetPriority() ==  g_usPriorityLevelPerSourceId[ucIntSourceId])
 	{
-		g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_CORRECT_PRIORITY ;
+		g_ucDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_CORRECT_PRIORITY;
 	}
 
 	/* Clear the gateway */
@@ -170,22 +173,21 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Initialize all Interrupt-sources & Register ISR for all */
-	for (uiSourceId=D_BSP_FIRST_IRQ_NUM ; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
+	for (uiSourceId=D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
 	{
-		/* Set Gateway Interrupt type */
+		/* Set Gateway Interrupt type (Level) */
 		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
-		/* Set gateway Polarity */
+		/* Set gateway Polarity (Active high) */
 		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
-
-		/* Nati - temporarily here. Set polarity (active-high) and int-type (level). to remove here when I'll complete the 2 above functions.. */
-		M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCTRL_OFFSET + M_PSP_MULT_BY_4(uiSourceId), 0);
 
 		/* Clear the gateway */
 		pspExtInterruptClearGateway(uiSourceId);
 
 		/* Set the priority level to highest to all interrupt sources */
-		pspExtInterruptSetPriority(uiSourceId, M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
+		g_usPriorityLevelPerSourceId[uiSourceId] = M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
+		/* Priority-level is checked later so store it here as expected value */
+		pspExtInterruptSetPriority(uiSourceId, g_usPriorityLevelPerSourceId[uiSourceId]);
 
 		/* Enable each one of the interrupts in the PIC */
 		pspExternalInterruptEnableNumber(uiSourceId);
@@ -200,15 +202,12 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 	/* Disable external interrupts in mie CSR */
 	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 
-	/* Set interrupt source  - Active High, Level and trigger the interrupts (all sources)  */
-	//bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
+	/* Generate external interrupts 3 & 4 (with Active-High polarity, Level trigger type) */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
-	/* Loop for a while.. */
-	demoLoopForDelay(0x10); /* Nati - TBD - maybe not needed here at all */
-
 	/* Verify no external interrupts have been occurred */
-	for (uiExtIntsIndex = D_BSP_FIRST_IRQ_NUM ; uiExtIntsIndex <= D_BSP_LAST_IRQ_NUM; uiExtIntsIndex++)
+	for (uiExtIntsIndex = D_BSP_FIRST_IRQ_NUM; uiExtIntsIndex <= D_BSP_LAST_IRQ_NUM; uiExtIntsIndex++)
 	{
 		if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[uiExtIntsIndex])
 		{
@@ -226,7 +225,7 @@ u32_t demoExtIntsTest1GlobalDisabled(void)
 
 
 /**
- *  Test # 2 - Enable IRQ3 and disable IRQ4in meieS CSRs.
+ *  Test # 2 - Enable IRQ3 and disable IRQ4 in meieS CSRs.
  *             Verify that only enabled external interrupt source did occurred
  *
  * @return - returns 0 (success). In case of a failure the function enters an endless loop
@@ -242,16 +241,13 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Initialize all Interrupt-sources & Register ISR for all */
-	for (uiSourceId=D_BSP_FIRST_IRQ_NUM ; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
+	for (uiSourceId=D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
 	{
-		/* Set Gateway Interrupt type */
+		/* Set Gateway Interrupt type (Level) */
 		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
-		/* Set gateway Polarity */
+		/* Set gateway Polarity (Active high) */
 		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
-
-		/* Nati - temporarily here. Set polarity (active-high) and int-type (level). to remove here when I'll complete the 2 above functions.. */
-		M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCTRL_OFFSET + M_PSP_MULT_BY_4(uiSourceId), 0);
 
 		/* Clear the gateway */
 		pspExtInterruptClearGateway(uiSourceId);
@@ -273,9 +269,9 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
 
 	/* Disable IRQ4 */
-	pspExternalInterruptEnableNumber(uiSourceId);
+	pspExternalInterruptDisableNumber(D_BSP_IRQ_4);
 
-	/* Set interrupt source  - Active High, Level and trigger the interrupts (all sources)  */
+	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
 
@@ -286,8 +282,8 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
     if (D_DEMO_EXT_INT_CORRECT_PRIORITY != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_3])
     {
 	    /* Output a failure message */
-		    demoOutputMsg("External Interrupts, Test #2 Failed:\n");
-		    demoOutputMsg("ISR 3 did not jump or it has wrong indications\n");
+		demoOutputMsg("External Interrupts, Test #2 Failed:\n");
+		demoOutputMsg("ISR 3 did not jump or it has wrong indications\n");
 	    /* Loop here to let debug */
 	    M_ENDLESS_LOOP();
     }
@@ -295,8 +291,8 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
 	if (D_DEMO_INITIAL_STATE != g_ucDemoExtIntsPassFailResult[D_BSP_IRQ_4])
 	{
 		/* Output a failure message */
-			demoOutputMsg("External Interrupts, Test #2 Failed:\n");
-			demoOutputMsg("ISR # 4 unexpectedly jumped\n");
+		demoOutputMsg("External Interrupts, Test #2 Failed:\n");
+		demoOutputMsg("ISR # 4 unexpectedly jumped\n");
 		/* Loop here to let debug */
 		M_ENDLESS_LOOP();
 	}
@@ -312,7 +308,7 @@ u32_t demoExtIntsTest2SpecificDisabled(void)
  */
 u32_t demoExtIntsTest3PriorityStandardOrder(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Initialize external interrupts */
 
@@ -352,7 +348,7 @@ u32_t demoExtIntsTest3PriorityStandardOrder(void)
  */
 u32_t demoExtIntsTest4PriorityReversedOrder(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Initialize external interrupts */
 
@@ -393,7 +389,7 @@ u32_t demoExtIntsTest4PriorityReversedOrder(void)
  */
 u32_t demoExtIntsTest5ThresholdAndPriorityChanging(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Loop for a while.. Let all pending ISRs to run */
 	demoLoopForDelay(0x100);
@@ -409,7 +405,7 @@ u32_t demoExtIntsTest5ThresholdAndPriorityChanging(void)
  */
 u32_t demoExtIntsTest6GatweayConfiguration(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Loop for a while.. Let all pending ISRs to run */
 	demoLoopForDelay(0x100);
@@ -425,7 +421,7 @@ u32_t demoExtIntsTest6GatweayConfiguration(void)
  */
 u32_t demoExtIntsTest7NestedInteeruptLowerPriority(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Loop for a while.. Let all pending ISRs to run */
 	demoLoopForDelay(0x100);
@@ -441,7 +437,7 @@ u32_t demoExtIntsTest7NestedInteeruptLowerPriority(void)
  */
 u32_t demoExtIntsTest8NestedInteeruptSamePriority(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Loop for a while.. Let all pending ISRs to run */
 	demoLoopForDelay(0x100);
@@ -457,7 +453,7 @@ u32_t demoExtIntsTest8NestedInteeruptSamePriority(void)
  */
 u32_t demoExtIntsTest9NestedInteeruptHigherPriority(void)
 {
-	u32_t uiTestResult = 0 ;
+	u32_t uiTestResult = 0;
 
 	/* Loop for a while.. Let all pending ISRs to run */
 	demoLoopForDelay(0x100);
@@ -484,26 +480,49 @@ void demoStart(void)
 
    /* Initialize test results array and parameters */
    demoInitializeTestResults();
-
    /* Test #1 - Global disable exernal interrups */
    demoExtIntsTest1GlobalDisabled();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #2 - Disable specific exernal interrup */
    demoExtIntsTest2SpecificDisabled();
+#if 0
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #3 - Priority & Threshold - standard order */
    demoExtIntsTest3PriorityStandardOrder();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #4 - Priority & Threshold - reversed order*/
    demoExtIntsTest4PriorityReversedOrder();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #5 - Changing Priority & Threshold - */
    demoExtIntsTest5ThresholdAndPriorityChanging();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #6 - Gateways Level/Edge setting*/
    demoExtIntsTest6GatweayConfiguration();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #7 - Nested interrupts - lower priority */
    demoExtIntsTest7NestedInteeruptLowerPriority();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #8 - Nested interrupts - same priority */
    demoExtIntsTest8NestedInteeruptSamePriority();
+
+   /* Initialize test results array and parameters */
+   demoInitializeTestResults();
    /* Test #9 - Nested interrupts - higher priority */
    demoExtIntsTest9NestedInteeruptHigherPriority();
-
+#endif
    /* Arriving here means all tests passed successfully */
    demoOutputMsg("External Interrupts tests passed successfully\n");
 
