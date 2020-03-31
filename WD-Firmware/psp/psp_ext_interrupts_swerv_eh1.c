@@ -150,6 +150,21 @@ D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 }
 
 /*
+* This function sets the nesting priority threshold of the external interrupts in the PIC
+*
+* @param threshold = nesting priority threshold to be programmed to PIC
+* @return None
+*/
+void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold)
+{
+	/* Set in meicidpl CSR, the nesting priority priority-threshold */
+	M_PSP_WRITE_CSR(D_PSP_MEICIDPL_NUM, uiNestingPriorityThreshold);
+
+	/* Set in meicurpl CSR, the nesting priority priority-threshold */
+	M_PSP_WRITE_CSR(D_PSP_MEICURPL_NUM, uiNestingPriorityThreshold);
+}
+
+/*
 * This function checks whether a given external interrupt is pending or not
 *
 * @param uiExtInterrupt = Number of external interrupt

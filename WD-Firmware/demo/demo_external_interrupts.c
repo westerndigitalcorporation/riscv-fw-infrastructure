@@ -118,6 +118,9 @@ void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
     /* Set interrupts threshold to minimal (== all interrupts should be served) */
 	pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
+	/* Set the nesting priority threshold to minimal (== all interrupts should be served) */
+	pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+
 	/* Initialize all Interrupt-sources & Register ISR for all */
 	for (uiSourceId = D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
 	{
@@ -320,13 +323,18 @@ void demoExtIntsTest4PriorityReversedOrder(void)
 
 	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
 	demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
-    /* Set Reversed priority order */
+
+	/* Set Reversed priority order */
 	pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_REVERSED_PRIORITY);
 
 	/* Part1: Set the priority of both IRQ3 and IRQ4 not lower than threshold. Expect no ISR to jump */
 
 	/* Set interrupts threshold to 5 */
 	pspExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_5);
+
+	/* As priority-order has been set to 'reversed', need to set again the nesting priority threshold to minimum (== all should be served)
+	 * - now it should be '15' */
+	pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Set IRQ3 priority to 5 */
 	g_usPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_5;
@@ -335,6 +343,7 @@ void demoExtIntsTest4PriorityReversedOrder(void)
 
 	/* Set IRQ4 priority to 6 */
 	g_usPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_6;
+
 	/* Priority-level is checked later so store it here as expected value */
 	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_usPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
@@ -433,13 +442,13 @@ void demoStart(void)
    demoInitializeTestResults();
    /* Test #3 - Priority & Threshold - standard order */
    demoExtIntsTest3PriorityStandardOrder();
-#if 0
 
    /* Initialize test results array and parameters */
    demoInitializeTestResults();
    /* Test #4 - Priority & Threshold - reversed order*/
    demoExtIntsTest4PriorityReversedOrder();
 
+#if 0
    /* Initialize test results array and parameters */
    demoInitializeTestResults();
    /* Test #6 - Gateways Level/Edge setting*/
