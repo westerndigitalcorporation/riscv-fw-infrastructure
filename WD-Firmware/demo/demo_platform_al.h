@@ -129,4 +129,3 @@ void demoOutputToggelLed(void);
 * */
 void demoOutpuLed(const u08_t ucOnOffMode);
 
-
