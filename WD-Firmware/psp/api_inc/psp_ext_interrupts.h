@@ -222,6 +222,14 @@ void  pspExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
 void  pspExtInterruptsSetThreshold(u32_t uiThreshold);
 
 /*
+* This function sets the nesting priority threshold of the external interrupts in the PIC
+*
+* @param threshold = nesting priority threshold to be programmed to PIC
+* @return None
+*/
+void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold);
+
+/*
 * This function get the current selected external interrupt (claim-id)
 *
 * @return - claim-id number
