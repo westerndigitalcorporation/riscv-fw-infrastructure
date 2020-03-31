@@ -175,7 +175,7 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
 	u32_t uiRegister, uiBit, uiResult;
 
 	/* Calculate the meipX register to access to check the input interrupt number */
-	uiRegister = D_PSP_MEIP_ADDR + D_PSP_REG32_BYTE_WIDTH * (uiExtInterrupt/D_PSP_REG32_BIT_WIDTH);
+	uiRegister = D_PSP_MEIP_ADDR + D_PSP_REG32_BYTE_WIDTH * (uiExtInterrupt >> D_PSP_SHIFT_5);
 
 	/* Calculate the bit in meipX register to access to check the input interrupt number */
 	uiBit = uiExtInterrupt - (uiRegister * D_PSP_REG32_BIT_WIDTH);
@@ -282,7 +282,7 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptGetPriority(void )
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
+D_PSP_TEXT_SECTION void pspExtInterruptIsr(void)
 {
 	fptrFunction fptrExtIntHandler = NULL;
 	u32_t* pClaimId;

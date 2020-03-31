@@ -113,6 +113,9 @@ void demoRtosalTimerTickHandler(void);
 /**
 * external prototypes
 */
+#ifdef D_NEXYS_A7
+    extern void pspExtInterruptIsr(void);
+#endif
 
 /**
 * global variables
@@ -191,8 +194,12 @@ void demoRtosalCreateTasks(void *pParameters)
     }
     /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
 
+#ifdef D_NEXYS_A7
+    pspRegisterInterruptHandler(pspExtInterruptIsr, E_MACHINE_EXTERNAL_CAUSE);
+
     /* Enable the Machine-External interrupt */
     pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+#endif
 
     /* Create the queue used by the send-msg and receive-msg tasks. */
     uiResult = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
