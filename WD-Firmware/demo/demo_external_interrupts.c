@@ -343,7 +343,6 @@ void demoExtIntsTest4PriorityReversedOrder(void)
 
 	/* Set IRQ4 priority to 6 */
 	g_usPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_6;
-
 	/* Priority-level is checked later so store it here as expected value */
 	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_usPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
