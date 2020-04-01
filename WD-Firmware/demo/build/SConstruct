@@ -133,6 +133,9 @@ strLinkerScriptFile += '.lds'
 if Env['TARGET_BOARD'] not in listSupportedTargets:
   print "missing target=%s" % " | ".join(listSupportedTargets)
   exit(1)
+if Env['TARGET_BOARD'] not in  objDemo.listSupportedTargetBoards:
+  print "demo not supported for %s board" % Env['TARGET_BOARD']
+  exit(1)
 if Env['TARGET_BOARD'] in listNexysA7Targets:
 	strBsp       = strBsp + strNexys
 	strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, strNexys+Env['TARGET_BOARD'])

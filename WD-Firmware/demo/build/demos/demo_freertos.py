@@ -44,3 +44,7 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
+    
+    self.listSupportedTargetBoards = [
+      'swerv_eh1', 'hifive1', 'hifive-un'
+    ]

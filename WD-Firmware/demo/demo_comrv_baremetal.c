@@ -30,9 +30,99 @@
 #define M_DEMO_COMRV_RTOS_FENCE()   M_PSP_INST_FENCE(); \
                                     M_PSP_INST_FENCEI();
 
-#define M_OVL_DUMMY_FUNCTION(x) \
+#define M_OVL_DUMMY_FUNCTION(x,y) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
   { \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    OvlTestFunc_##y##_();  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+  };
+
+#define M_OVL_DUMMY_FUNCTION_LEAF(x) \
+  void _OVERLAY_ OvlTestFunc_##x##_() \
+  { \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
+    asm volatile ("nop");  \
     asm volatile ("nop");  \
     asm volatile ("nop");  \
     asm volatile ("nop");  \
@@ -86,22 +176,21 @@
   };
 
 #define M_OVL_FUNCTIONS_GENERATOR \
-  M_OVL_DUMMY_FUNCTION(10) \
-  M_OVL_DUMMY_FUNCTION(11) \
-  M_OVL_DUMMY_FUNCTION(12) \
-  M_OVL_DUMMY_FUNCTION(13) \
-  M_OVL_DUMMY_FUNCTION(14) \
-  M_OVL_DUMMY_FUNCTION(15)
+  M_OVL_DUMMY_FUNCTION_LEAF(11) \
+  M_OVL_DUMMY_FUNCTION_LEAF(12) \
+  M_OVL_DUMMY_FUNCTION_LEAF(13) \
+  M_OVL_DUMMY_FUNCTION(14,11)   \
+  M_OVL_DUMMY_FUNCTION(15,12)   \
+  M_OVL_DUMMY_FUNCTION(16,13)
 
-M_OVL_DUMMY_FUNCTION(16)
+
+M_OVL_DUMMY_FUNCTION_LEAF(10)
+M_OVL_FUNCTIONS_GENERATOR
 
 #define M_OVL_FUNCTIONS_CALL \
-  OvlTestFunc_10_(); \
-  OvlTestFunc_11_(); \
-  OvlTestFunc_12_(); \
-  OvlTestFunc_13_(); \
   OvlTestFunc_14_(); \
-  OvlTestFunc_15_();
+  OvlTestFunc_15_(); \
+  OvlTestFunc_16_();
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
@@ -171,7 +260,7 @@ u32_t OVL_OverlayFunc3 OverlayFunc3(u32_t uiVal1, u32_t uiVal2, u32_t uiVal3, u3
       overlay group containing OvlTestFunc_16_) */
    comrvLockUnlockOverlayGroupByFunction(OverlayFunc1, D_COMRV_GROUP_STATE_UNLOCK);
    /* call other overlay function to make sure args remain valid */
-   OvlTestFunc_16_();
+   OvlTestFunc_10_();
    return uiVal1+uiVal2+uiVal3+uiVal4+uiVal5+uiVal6+uiVal7+uiVal8+uiVal9;
 }
 
@@ -208,8 +297,6 @@ void comrvEntryDisable(void)
 {
 }
 #endif /* D_COMRV_CONTROL_SUPPORT */
-
-M_OVL_FUNCTIONS_GENERATOR
 
 void demoStart(void)
 {
