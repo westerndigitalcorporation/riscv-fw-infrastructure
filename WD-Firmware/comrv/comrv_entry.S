@@ -67,7 +67,7 @@
 .equ D_COMRV_CALLER_RA_STACK_OFFSET,        REGBYTES * 0
 .equ D_COMRV_CALLEE_TOKEN_STACK_OFFSET,     REGBYTES * 1
 .equ D_COMRV_PREV_STACK_FRAME,              REGBYTES * 2
-
+.equ D_COMRV_ALIGN_VAL_STACK_OFFSET,        10
 
 .global comrvEntry
 .global comrvEntryDisable
@@ -205,6 +205,10 @@ comrv_handle_thunk_token:
     /* save the actual token to previous stack frame before
        we skip current stack frame */
     M_PSP_STORE t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t2)
+    /* load from current stack frame into t5 the 'load address alignment value' */
+    lb          t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t3)
+    /* save the 'load address alignment value' in previous stack frame */
+    sb          t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t2)
     /* optimization to save 'lh' instruction above 'comrv_igonr_caller_thunk_stack_frame:'*/
     mv          t5, t2
     /* now we can skip to the previous stack frame */
