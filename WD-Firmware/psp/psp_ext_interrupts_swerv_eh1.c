@@ -190,7 +190,7 @@ D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
 
 	fptrExtIntHandler = *((fptrFunction)pClaimId);
 
-	M_PSP_ASSERT(pExtIntHandler != NULL);
+	M_PSP_ASSERT(fptrExtIntHandler != NULL);
 
 	fptrExtIntHandler();
 }
