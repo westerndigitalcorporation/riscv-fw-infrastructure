@@ -56,3 +56,7 @@ class demo(object):
       # __comrv_cache_alignment_size defines the alinment size of the cache area 
       '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
     ]
+    
+    self.listSupportedTargetBoards = [
+      'swerv_eh1', 'hifive1', 'hifive-un'
+    ]
