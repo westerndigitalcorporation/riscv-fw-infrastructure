@@ -72,11 +72,21 @@
 * global variables
 */
 
-
 /* External interrupt handlers Global Table */
 D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
 
+/**
+* functions
+*/
+
+/**
+* @brief - Set external interrupts vector-table address at MEIVT CSR
+*/
+void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
+{
+    M_PSP_WRITE_CSR(D_PSP_MEIVT_NUM, pExtIntVectTable);
+}
 
 /*
 * This function registers external interrupt handler
@@ -92,6 +102,9 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 
    /* Assert if uiVectorNumber is beyond first or last interrupts-in-use */
    M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiVectorNumber)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiVectorNumber))
+
+   /* Set external-interrupts vector-table address in MEIVT CSR */
+   pspExternalInterruptSetVectorTableAddress(G_Ext_Interrupt_Handlers);
 
    /* Register the interrupt */
    fptrPrevIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
