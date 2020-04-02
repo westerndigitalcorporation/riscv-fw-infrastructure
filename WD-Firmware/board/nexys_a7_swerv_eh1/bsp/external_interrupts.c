@@ -82,6 +82,24 @@ Register 0x8000100B (offset B in sys_con memory, at SweRVolf FPGA) is used for g
 */
 
 /**
+* Zero the register that used for IRQs generation
+*
+*/
+void bspClearGenerationRegister(u32_t uiExtInterruptPolarity)
+{
+	u32_t uiRegisterClear = 0;
+
+	/* For Active-High the value of uiRegisterClear is 0 */
+	if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)
+	{
+		uiRegisterClear = 0x22; /* 00100010 */
+	}
+
+	M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiRegisterClear);
+}
+
+
+/**
 * For IRQ3 or IRQ4 on the SweRVolf FPGA board, set polarity, type(i.e.edge/level) and triggering the interrupt
 *
 * @param - uiExtInterruptNumber - D_BSP_IRQ_3 or D_BSP_IRQ_4
@@ -105,7 +123,7 @@ void bspGenerateExtInterrupt(u32_t uiExtInterruptNumber, u32_t uiExtInterruptPol
 		uiExtInterruptBitMap |= (1 << D_BSP_IRQ3_ACTIVATE_BIT);  /* Set the trigger bit */
 	}
 
-	else /* D_BSP_IRQ_4 == uiExtInterruptNumber */
+	else if (D_BSP_IRQ_4 == uiExtInterruptNumber)
 	{
 		if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)
 		{
@@ -122,20 +140,20 @@ void bspGenerateExtInterrupt(u32_t uiExtInterruptNumber, u32_t uiExtInterruptPol
 }
 
 /**
-* Clear generation of external interrupt(s)
+* Clear the trigger that generate external interrupt
 *
 * @param - uiExtInterruptNumber - D_BSP_IRQ_3 or D_BSP_IRQ_4
 *
 */
 void bspClearExtInterrupt(u32_t uiExtInterruptNumber)
 {
-	u32_t uiExtInterruptBitMap = 0;
+	u32_t uiExtInterruptBitMap = M_PSP_READ_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER);
 
 	if (D_BSP_IRQ_3 == uiExtInterruptNumber)
 	{
 		uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ3_ACTIVATE_BIT);
 	}
-	else
+	else if (D_BSP_IRQ_4 == uiExtInterruptNumber)
 	{
 		uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ4_ACTIVATE_BIT);
 	}
