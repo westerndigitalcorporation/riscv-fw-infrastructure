@@ -81,7 +81,6 @@ void demoIllegalInstructionExceptionHandlingTest(void)
 	/* register trap handler */
 	M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
-
 	pspRegisterExceptionHandler(demoIllegalInstructionExceptionHandler, E_EXC_ILLEGAL_INSTRUCTION);
 
 	/* create illegal instruction exception by writing to non valid CSR address */
