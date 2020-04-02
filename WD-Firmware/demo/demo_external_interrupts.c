@@ -64,8 +64,6 @@
 
 /* General vector table */
 extern void psp_vect_table(void);
-/* External interrupts vector table */
-extern pspInterruptHandler_t G_Ext_Interrupt_Handlers[];
 
 /**
 * global variables
@@ -488,10 +486,7 @@ void demoExtIntsTest9NestedInteeruptHigherPriority(void)
 void demoStart(void)
 {
    /* Register interrupt vector */
-   M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
-
-   /* Register external-interrupts vector */
-   M_PSP_WRITE_CSR(D_PSP_MEIVT_NUM, G_Ext_Interrupt_Handlers);
+   pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
    /* Initialize test results array and parameters */
    demoInitializeTestResults();

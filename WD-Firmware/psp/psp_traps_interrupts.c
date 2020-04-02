@@ -105,6 +105,14 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDef
 */
 
 /**
+* @brief - Set vector-table address at mtvec CSR
+*/
+void pspInterruptsSetVectorTableAddress(void* pVectTable)
+{
+    M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, pVectTable);
+}
+
+/**
 * @brief - Disable interrupts and return the current interrupt state in each one of the privileged levels
 *
 * output parameter - *pOutPrevIntState - Current (== before the 'disable') interrupts state in each one of the privileged levels (read from mstatus CSR)

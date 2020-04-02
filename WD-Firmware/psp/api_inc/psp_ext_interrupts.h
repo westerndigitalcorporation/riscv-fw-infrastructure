@@ -133,6 +133,11 @@
 * APIs
 */
 
+/**
+* @brief - Set external interrupts vector-table address at MEIVT CSR
+*/
+void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable);
+
 /*
 * This function registers external interrupt handler
 *

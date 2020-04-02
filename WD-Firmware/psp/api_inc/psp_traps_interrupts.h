@@ -136,6 +136,12 @@ typedef void (*pspInterruptHandler_t)(void);
 */
 
 /**
+* @brief - Set vector-table address at mtvec CSR
+*/
+void pspInterruptsSetVectorTableAddress(void* pVectTable);
+
+
+/**
 * @brief - The function installs an interrupt service routine per risc-v cause
 *
 * input parameter  fptrInterruptHandler     - function pointer to the interrupt service routine
