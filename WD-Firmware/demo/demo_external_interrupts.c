@@ -170,24 +170,23 @@ void demoVerifyExpectedTestResults(u32_t uiTestNumber, u32_t uiExpectedResultFir
     }
 }
 
+
 /**
- * ISR for test #1, #2, #3 ,#4 and #5 (see the tests details)
  *
- * The ISR indicates/marks 3 things:
+ * @brief - The function indicates/marks 3 things:
  * - ISR of the current claim-id has been occurred
  * - Whether corresponding "pending" bit is set or not
  * - Corresponding "priority" field is correct
  *
- * In addition, this ISR clears the interrupt at its source (BSP api)
+ * @return - ucIntSourceId - numer of current interrupt
  *
- * Tests 1,2,3,4 and 5 does different things each. However all of them use this ISR.
  */
-void demoExtIntTest_1_2_3_4_5_ISR(void)
+u08_t demoCheckInterruptStatusInISR(void)
 {
 	/* Get the claim-id (== source-id) of the current ISR */
 	u08_t ucIntSourceId = pspExtInterruptGetClaimId();
 
-	/* Indication that this ISR has been occurred */
+	/* Indication of the ISR occurrence */
 	g_uiDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_ISR_JUMPED;
 
 	/* Mark whether corresponding pending-bit is set or not */
@@ -196,15 +195,56 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 		g_uiDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_PENDING_BIT_SET;
 	}
 
-	/* Verify correct priority-level (clidpri) field in meicidpl CSR */
+	/* Check correct priority-level (clidpri) field in meicidpl CSR */
 	if (pspExtInterruptGetPriority() ==  g_uiPriorityLevelPerSourceId[ucIntSourceId])
 	{
 		g_uiDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_CORRECT_PRIORITY;
 	}
 
+	return (ucIntSourceId);
+}
+
+/**
+ * ISR for test #1, #2, #3 ,#4 and #5 (see the tests details)
+ *
+ *
+ * In addition, this ISR clears the interrupt at its source (BSP api)
+ *
+ * Tests 1,2,3,4 and 5 does different things each. However all of them use this ISR.
+ */
+void demoExtIntTest_1_2_3_4_5_ISR(void)
+{
+	u08_t ucIntSourceId;
+
+	/* Check some interrupt's indication */
+	ucIntSourceId = demoCheckInterruptStatusInISR();
+
 	/* Stop the generation of the specific external interrupt */
 	bspClearExtInterrupt(ucIntSourceId);
 
+}
+
+
+/**
+ * ISR for test #6 (see the test details)
+ *
+ * The ISR indicates/marks 3 things:
+ * - ISR of the current claim-id has been occurred
+ * - Whether corresponding "pending" bit is set or not
+ * - Corresponding "priority" field is correct
+ *
+ * In addition, this ISR clears the interrupt at the gateway
+ *
+ */
+void demoExtIntTest_6_ISR(void)
+{
+	u08_t ucIntSourceId;
+
+    /* Check some interrupt's indication */
+	ucIntSourceId = demoCheckInterruptStatusInISR();
+
+	/* Stop the generation of the specific external interrupt */
+	pspExtInterruptClearGateway(ucIntSourceId);
 }
 
 
@@ -445,6 +485,29 @@ void demoExtIntsTest5GatweayPolarity(void)
  */
 void demoExtIntsTest6GatweayConfiguration(void)
 {
+	u32_t uiSourceId, uiTestNumber = D_DEMO_EXT_INT_TEST_6;
+
+	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
+	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+
+	/* Cleanup previous test results before proceeding */
+	demoInitializeTestResults();
+
+	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
+	demoDefaultInitialization(demoExtIntTest_6_ISR);
+
+	/* Set Gateway Interrupt type (Edge) */
+	for (uiSourceId = D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
+	{
+		pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_EDGE_TRIG_TYPE);
+	}
+
+	/* Generate external interrupts 3 & 4 (with Active-Low, Level trigger type) */
+	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_EDGE_TRIG_TYPE );
+	bspGenerateExtInterrupt(D_BSP_IRQ_4, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_EDGE_TRIG_TYPE );
+
+	/* Expected result here is - ISRs has been occurred */
+	demoVerifyExpectedTestResults(uiTestNumber, D_DEMO_EXT_INT_CORRECT_PRIORITY, D_DEMO_EXT_INT_CORRECT_PRIORITY);
 }
 
 
@@ -505,10 +568,10 @@ void demoStart(void)
    /* Test #5 - Polarity - active-high/active-low */
    demoExtIntsTest5GatweayPolarity();
 
-#if 0
    /* Test #6 - Gateways Level/Edge setting*/
    demoExtIntsTest6GatweayConfiguration();
 
+#if 0
    /* Test #7 - Nested interrupts - lower priority */
    demoExtIntsTest7NestedInteeruptLowerPriority();
 
