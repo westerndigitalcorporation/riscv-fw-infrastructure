@@ -52,8 +52,6 @@ extern void psp_vect_table(void);
 * global variables
 */
 u32_t g_uiTestWayPoints = 0;
-u32_t g_uiData;
-
 
 /**
 * functions
