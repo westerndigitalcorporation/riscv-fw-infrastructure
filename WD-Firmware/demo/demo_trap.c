@@ -87,7 +87,7 @@ void demoIllegalInstructionExceptionHandlingTest(void)
 	/* create illegal instruction exception by writing to non valid CSR address */
 	M_PSP_WRITE_CSR(D_ILLEGAL_CSR_ADDRESS, 0);
 
-	/* verify all test way points wore visited */
+	/* verify all test way points were visited */
 	if(g_uiTestWayPoints != D_TRAPS_TEST_RESULT)
 	{
 		/* Test failed */
