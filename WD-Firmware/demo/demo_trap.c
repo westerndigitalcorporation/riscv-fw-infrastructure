@@ -91,7 +91,7 @@ void demoIllegalInstructionExceptionHandlingTest(void)
 	if(g_uiTestWayPoints != D_TRAPS_TEST_RESULT)
 	{
 		/* Test failed */
-		for( ;; );
+		M_PSP_EBREAK();
 	}
 }
 
