@@ -79,6 +79,7 @@ void demoIllegalInstructionExceptionHandler(void)
 void demoIllegalInstructionExceptionHandlingTest(void)
 {
 	/* register trap handler */
+	/* TODO: Replace trap handler registration with dedicated PSP API */
 	M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
 	pspRegisterExceptionHandler(demoIllegalInstructionExceptionHandler, E_EXC_ILLEGAL_INSTRUCTION);
@@ -90,7 +91,7 @@ void demoIllegalInstructionExceptionHandlingTest(void)
 	if(g_uiTestWayPoints != D_TRAPS_TEST_RESULT)
 	{
 		/* Test failed */
-		M_ENDLESS_LOOP();
+		for( ;; );
 	}
 }
 
