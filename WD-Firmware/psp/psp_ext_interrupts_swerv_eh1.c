@@ -18,7 +18,8 @@
 * @file   psp_ext_interrupts_swerv_eh1.c
 * @author Nati Rapaport
 * @date   15.03.2020
-* @brief  The file supplies external interrupt services. The file is specific to SweRV EH1 specifications
+* @brief  The file supplies external interrupt services (vector table installment, ISRs registration, PIC control API etc)
+*         The file is specific to SweRV EH1 specifications.
 * 
 */
 
@@ -233,19 +234,16 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolar
 	M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiPolarity << D_PSP_MEIGWCTRL_POLARITY_BIT_OFFSET);
 }
 
-
 /*
-* This function clears the indicated gateway
+* This function clears the indication of pending interrupt
 *
-* @param uiIntNum   = Number of external interrupt (== gateway number)
-*
+* @param uiIntNum   = Number of external interrupt
 */
-D_PSP_TEXT_SECTION void  pspExtInterruptClearGateway(u32_t uiIntNum)
+D_PSP_TEXT_SECTION void  pspExtInterruptClearPendingInt(u32_t uiIntNum)
 {
 	/* Clear the gwateway */
 	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCLR_ADDR + M_PSP_MULT_BY_4(uiIntNum), 0);
 }
-
 
 /*
 * This function set Priority Order (Standard or Reserved)

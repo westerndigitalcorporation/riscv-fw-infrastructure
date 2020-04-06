@@ -22,6 +22,7 @@
 #include "psp_macros.h"
 #include "comrv_api.h"
 #include "demo_platform_al.h"
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -108,7 +109,7 @@ void demoStart(void)
        gOverlayFunc1 != 5 || gOverlayFunc2 != 7)
    {
       /* loop forever */
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 }
 

@@ -16,11 +16,19 @@
 */
 
 /**
+* @file   demo_external_interrupts.c
+* @author Nati Rapaport
+* @date   25.03.2020
+* @brief  Demo application for external interrupts (using SweRVolf FPGA for SweRV EH1)
+*/
+
+/**
 * include files
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
 #include "external_interrupts.h"  /* BSP file - for generation of external interrupt upon demo test call */
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -36,23 +44,19 @@
 #define D_DEMO_EXT_INT_TEST_9  9
 #define D_DEMO_EXT_INT_TEST_10 10
 
-
 /* Verification points at each ISR */
 #define D_DEMO_INITIAL_STATE               0
 #define D_DEMO_EXT_INT_ISR_JUMPED          1
 #define D_DEMO_EXT_INT_PENDING_BIT_SET     2
 #define D_DEMO_EXT_INT_CORRECT_PRIORITY    3
 
-
 /**
 * macros
 */
 
-
 /**
 * types
 */
-
 
 /**
 * local prototypes
@@ -61,20 +65,21 @@
 /**
 * external prototypes
 */
-
 /* General vector table */
 extern void psp_vect_table(void);
 
 /**
 * global variables
 */
+/* Array with the bit-map expected value for each check-point of the test results */
+u32_t g_uiDemoResultsBitMapToCompare[D_DEMO_EXT_INT_CORRECT_PRIORITY+1] = {0x1,0x3,0x7,0xF};
 
 /* Array of test results. It is used repeatedly per test. Each place in the array represents the results of corresponding ISR in the current test.
  * Note - As only irq3 and irq4 are functional, then places 0, 1 and 2 in the array are not in use */
 u32_t g_uiDemoExtIntsPassFailResult[D_BSP_LAST_IRQ_NUM+1];
 
 /* Array of priority-level set by the test function for each external-interrupt source-id */
-u32_t g_uiPriorityLevelPerSourceId[D_BSP_LAST_IRQ_NUM+1];
+u32_t g_uiDemoPriorityLevelPerSourceId[D_BSP_LAST_IRQ_NUM+1];
 
 /**
 * functions
@@ -88,10 +93,10 @@ void demoInitializeTestResults(void)
 {
 	u32_t uiTestResultsIndex;
 
-	for(uiTestResultsIndex=D_BSP_FIRST_IRQ_NUM; uiTestResultsIndex <= D_BSP_LAST_IRQ_NUM; uiTestResultsIndex++)
+	for(uiTestResultsIndex = D_BSP_FIRST_IRQ_NUM; uiTestResultsIndex <= D_BSP_LAST_IRQ_NUM; uiTestResultsIndex++)
 	{
-		/* Set test-result of all ISRs to "initial state" (0) */
-		g_uiDemoExtIntsPassFailResult[uiTestResultsIndex] = D_DEMO_INITIAL_STATE;
+		/* Set test-result of all ISRs to "initial state" (bit0 = 1) */
+		g_uiDemoExtIntsPassFailResult[uiTestResultsIndex] = M_PSP_BIT_MASK(D_DEMO_INITIAL_STATE);
 
 		/* Make sure the external-interrupt triggers are cleared */
 		bspClearExtInterrupt(uiTestResultsIndex);
@@ -127,12 +132,12 @@ void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
 		pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
 
 		/* Clear the gateway */
-		pspExtInterruptClearGateway(uiSourceId);
+		pspExtInterruptClearPendingInt(uiSourceId);
 
 		/* Priority-level is checked after each test so store it here as "expected results"*/
-		g_uiPriorityLevelPerSourceId[uiSourceId] = M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
+		g_uiDemoPriorityLevelPerSourceId[uiSourceId] = M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
 		/* Set the priority level to highest to all interrupt sources */
-		pspExtInterruptSetPriority(uiSourceId, g_uiPriorityLevelPerSourceId[uiSourceId]);
+		pspExtInterruptSetPriority(uiSourceId, g_uiDemoPriorityLevelPerSourceId[uiSourceId]);
 
 		/* Enable each one of the interrupts in the PIC */
 		pspExternalInterruptEnableNumber(uiSourceId);
@@ -152,21 +157,21 @@ void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
 /**
  * @brief - Verify expected results for IRQ3 and IRQ4
  *
- * @param - uiTestNumber - Test number
+ * @param - uiTestNumber              - Test number
  * @param - uiExpectedResultFirstIRQ  - Expected result to verify for 1'st IRQ (IRQ3)
  * @param - uiExpectedResultSecondIRQ - Expected result to verify for 2'nd IRQ (IRQ4)
  */
 void demoVerifyExpectedTestResults(u32_t uiTestNumber, u32_t uiExpectedResultFirstIRQ, u32_t uiExpectedResultSecondIRQ)
 {
-	/* Verify expected results for external-interrupt 3 & 4 */
-    if ((uiExpectedResultFirstIRQ != g_uiDemoExtIntsPassFailResult[D_BSP_IRQ_3])
-    	||
-		(uiExpectedResultSecondIRQ != g_uiDemoExtIntsPassFailResult[D_BSP_IRQ_4]))
-    {
-	    /* Output a failure message */
-		demoOutputMsg("External Interrupts, Test #%d Failed:\n", uiTestNumber);
-	    /* Loop here to let debug */
-	    M_ENDLESS_LOOP();
+	/* Verify that both IRQ3 and IRQ4 passed through all checkpoints successfully */
+	if ((g_uiDemoResultsBitMapToCompare[uiExpectedResultFirstIRQ] != g_uiDemoExtIntsPassFailResult[D_BSP_IRQ_3])
+		||
+		(g_uiDemoResultsBitMapToCompare[uiExpectedResultSecondIRQ] != g_uiDemoExtIntsPassFailResult[D_BSP_IRQ_4]))
+	{
+        /* Output a failure message */
+        demoOutputMsg("External Interrupts, Test #%d Failed:\n", uiTestNumber);
+        /* Break here to let debug */
+        M_PSP_EBREAK();
     }
 }
 
@@ -178,7 +183,7 @@ void demoVerifyExpectedTestResults(u32_t uiTestNumber, u32_t uiExpectedResultFir
  * - Whether corresponding "pending" bit is set or not
  * - Corresponding "priority" field is correct
  *
- * @return - ucIntSourceId - numer of current interrupt
+ * @return - ucIntSourceId - number of current interrupt
  *
  */
 u08_t demoCheckInterruptStatusInISR(void)
@@ -187,18 +192,18 @@ u08_t demoCheckInterruptStatusInISR(void)
 	u08_t ucIntSourceId = pspExtInterruptGetClaimId();
 
 	/* Indication of the ISR occurrence */
-	g_uiDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_ISR_JUMPED;
+	g_uiDemoExtIntsPassFailResult[ucIntSourceId] |= M_PSP_BIT_MASK(D_DEMO_EXT_INT_ISR_JUMPED);
 
 	/* Mark whether corresponding pending-bit is set or not */
 	if (D_PSP_ON == pspExtInterruptIsPending(ucIntSourceId))
 	{
-		g_uiDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_PENDING_BIT_SET;
+		g_uiDemoExtIntsPassFailResult[ucIntSourceId] |= M_PSP_BIT_MASK(D_DEMO_EXT_INT_PENDING_BIT_SET);
 	}
 
 	/* Check correct priority-level (clidpri) field in meicidpl CSR */
-	if (pspExtInterruptGetPriority() ==  g_uiPriorityLevelPerSourceId[ucIntSourceId])
+	if (pspExtInterruptGetPriority() ==  g_uiDemoPriorityLevelPerSourceId[ucIntSourceId])
 	{
-		g_uiDemoExtIntsPassFailResult[ucIntSourceId] = D_DEMO_EXT_INT_CORRECT_PRIORITY;
+		g_uiDemoExtIntsPassFailResult[ucIntSourceId] |= M_PSP_BIT_MASK(D_DEMO_EXT_INT_CORRECT_PRIORITY);
 	}
 
 	return (ucIntSourceId);
@@ -221,7 +226,6 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
 
 	/* Stop the generation of the specific external interrupt */
 	bspClearExtInterrupt(ucIntSourceId);
-
 }
 
 
@@ -244,7 +248,7 @@ void demoExtIntTest_6_ISR(void)
 	ucIntSourceId = demoCheckInterruptStatusInISR();
 
 	/* Stop the generation of the specific external interrupt */
-	pspExtInterruptClearGateway(ucIntSourceId);
+	pspExtInterruptClearPendingInt(ucIntSourceId);
 }
 
 
@@ -259,8 +263,11 @@ void demoExtIntsTest1GlobalDisabled(void)
 {
 	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_1;
 
-	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+    /* Put the Generation-Register in its initial state (no external interrupts are generated) */
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+
+    /* Initialize test results array and parameters */
+    demoInitializeTestResults();
 
 	/* Initialize PIC, gateways and other External-Interrupt related CSRs */
 	demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
@@ -287,7 +294,7 @@ void demoExtIntsTest2SpecificDisabled(void)
 	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_2;
 
 	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Cleanup previous test results before proceeding */
 	demoInitializeTestResults();
@@ -316,7 +323,7 @@ void demoExtIntsTest3PriorityStandardOrder(void)
 	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_3;
 
 	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Cleanup previous test results before proceeding */
 	demoInitializeTestResults();
@@ -330,14 +337,14 @@ void demoExtIntsTest3PriorityStandardOrder(void)
 	pspExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_7);
 
 	/* Set IRQ3 priority to 6 */
-	g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_6;
+	g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_6;
 	/* Priority-level is checked later so store it here as expected value */
-	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
 	/* Set IRQ4 priority to 7 */
-	g_uiPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_7;
+	g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_7;
 	/* Priority-level is checked later so store it here as expected value */
-	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_uiPriorityLevelPerSourceId[D_BSP_IRQ_4]);
+	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
 	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -352,9 +359,9 @@ void demoExtIntsTest3PriorityStandardOrder(void)
 	demoInitializeTestResults();
 
 	/* Set IRQ3 priority to 8 */
-	g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_8;
+	g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_8;
 	/* Priority-level is checked later so store it here as expected value */
-	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
 	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -374,7 +381,7 @@ void demoExtIntsTest4PriorityReversedOrder(void)
 	u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_4;
 
 	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Cleanup previous test results before proceeding */
 	demoInitializeTestResults();
@@ -395,14 +402,14 @@ void demoExtIntsTest4PriorityReversedOrder(void)
 	pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Set IRQ3 priority to 5 */
-	g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_5;
+	g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_5;
 	/* Priority-level is checked later so store it here as expected value */
-	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
 	/* Set IRQ4 priority to 6 */
-	g_uiPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_6;
+	g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_6;
 	/* Priority-level is checked later so store it here as expected value */
-	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_uiPriorityLevelPerSourceId[D_BSP_IRQ_4]);
+	pspExtInterruptSetPriority(D_BSP_IRQ_4, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
 	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -417,9 +424,9 @@ void demoExtIntsTest4PriorityReversedOrder(void)
 	demoInitializeTestResults();
 
 	/* Set IRQ3 priority to 4 */
-	g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_4;
+	g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_4;
 	/* Priority-level is checked later so store it here as expected value */
-	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+	pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
 	/* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
 	bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -441,7 +448,7 @@ void demoExtIntsTest5GatweayPolarity(void)
     /* Part1 - Configure PIC to Active-High polarity. Trigger Interrupts in Active-Low polarity. Expect no ISR to occur  */
 
 	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Cleanup previous test results before proceeding */
 	demoInitializeTestResults();
@@ -459,7 +466,7 @@ void demoExtIntsTest5GatweayPolarity(void)
     /* Part2 - Configure PIC to Active-High polarity. Trigger Interrupts Active-High polarity. Expect ISRs to occur  */
 
 	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Cleanup previous test results before proceeding */
 	demoInitializeTestResults();
@@ -488,7 +495,7 @@ void demoExtIntsTest6GatweayConfiguration(void)
 	u32_t uiSourceId, uiTestNumber = D_DEMO_EXT_INT_TEST_6;
 
 	/* Put the Generation-Register in its initial state (no external interrupts are generated) */
-	bspClearGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
+	bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Cleanup previous test results before proceeding */
 	demoInitializeTestResults();
@@ -551,12 +558,10 @@ void demoStart(void)
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
-   /* Initialize test results array and parameters */
-   demoInitializeTestResults();
-   /* Test #1 - Global disable exernal interrups */
+   /* Test #1 - Global disable external interrupts */
    demoExtIntsTest1GlobalDisabled();
 
-   /* Test #2 - Disable specific exernal interrup */
+   /* Test #2 - Disable specific external interrupt */
    demoExtIntsTest2SpecificDisabled();
 
    /* Test #3 - Priority & Threshold - standard order */
@@ -584,7 +589,7 @@ void demoStart(void)
    /* Arriving here means all tests passed successfully */
    demoOutputMsg("External Interrupts tests passed successfully\n");
 
-   /* Loop here to let debug */
-   M_ENDLESS_LOOP();
+   /* Loop here */
+   M_DEMO_ENDLESS_LOOP();
 }
 
