@@ -27,6 +27,7 @@ class demo(object):
     self.strGrpFile    = os.path.join("..", "comrv-baremetal-multigroup.csv")
     self.strComrvCacheSize = cacheSize
     self.strLinkFilePrefix = ''
+    self.strComrvCacheAlinmentSize = '512'
 
     self.public_defs = [
         'D_BARE_METAL',
@@ -38,6 +39,7 @@ class demo(object):
         'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
         'D_COMRV_MAX_CALL_STACK_DEPTH=10',
         'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES='+cacheSize,
+        'D_COMRV_ENABLE_MIN_NUM_OF_MULTI_GROUP_SUPPORT',
     ]
 
     self.listSconscripts = [
@@ -53,6 +55,13 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       # provide user defined grouping file (file name is in self.strGrpFile))
       '-Wl,--grouping-file=' + self.strGrpFile,
-      # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
-      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
+      # __comrv_cache_size defines the size of ram size to reserve for overlay data and overlay functions execution 
+      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize,
+      # __comrv_cache_alignment_size defines the alinment size of the cache area 
+      '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
     ]
+    
+    self.listSupportedTargetBoards = [
+      'swerv_eh1', 'hifive1', 'hifive-un'
+    ]
+    

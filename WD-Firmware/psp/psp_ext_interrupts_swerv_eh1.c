@@ -306,7 +306,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptIsr(void)
 
 	fptrExtIntHandler = *((fptrFunction)pClaimId);
 
-	M_PSP_ASSERT(pExtIntHandler != NULL);
+	M_PSP_ASSERT(fptrExtIntHandler != NULL);
 
 	fptrExtIntHandler();
 }
