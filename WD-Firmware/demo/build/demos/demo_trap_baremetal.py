@@ -18,45 +18,31 @@ import os
 
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "comrv_baremetal"
+    self.strDemoName   = "trap_baremetal"
     self.rtos_core     = ""
     self.toolchain     = ""
     self.toolchainPath = ""
-    self.strGrpFile    = os.path.join("..", "comrv-baremetal.csv")
-    self.strComrvCacheSize = "1536"
+    self.strGrpFile    = ""
+    self.strComrvCacheSize = "0"
     self.strLinkFilePrefix = ''
-    self.strComrvCacheAlinmentSize = '1024'
 
     self.public_defs = [
         'D_BARE_METAL',
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
-        'D_COMRV_ENABLE_ERROR_NOTIFICATIONS',
-        'D_COMRV_MIN_GROUP_SIZE_IN_BYTES=512',
-        'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
-        'D_COMRV_MAX_CALL_STACK_DEPTH=10',
-        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES='+self.strComrvCacheSize,
     ]
 
     self.listSconscripts = [
-      'comrv_baremetal',
-      'demo_comrv_baremetal',
+      'demo_trap_baremetal',
     ]
 
     self.listDemoSpecificCFlags = [
-      # -fcomrv is used to enable llvm support for overlay functions/data
-      '-fcomrv',
     ]
 
     self.listDemoSpecificLinkerFlags = [
-      # provide user defined grouping file (file name is in self.strGrpFile))
-      '-Wl,--grouping-file=' + self.strGrpFile,
-      # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
-      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize,
-      # __comrv_cache_alignment_size defines the alinment size of the cache area 
-      '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
+      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
     
     self.listSupportedTargetBoards = [
-      'swerv_eh1', 'hifive1', 'hifive-un'
+      'swerv_eh1'
     ]
