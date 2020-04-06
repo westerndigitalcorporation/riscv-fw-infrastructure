@@ -15,27 +15,22 @@
 #* limitations under the License.
 #*/
 
-
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "freertos"
-    self.rtos_core     = "freertos"
+    self.strDemoName   = "cache_control"
+    self.rtos_core     = ""
     self.toolchain     = ""
     self.toolchainPath = ""
     self.strGrpFile    = ""
     self.strComrvCacheSize = "0"
 
     self.public_defs = [
-        'D_USE_RTOSAL',
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
-        'D_USE_FREERTOS'
     ]
    
     self.listSconscripts = [
-      'freertos',
-      'rtosal',
-      'demo_rtosal'
+      'demo_cache_control'
     ]
 
     self.listDemoSpecificCFlags = [
@@ -44,7 +39,7 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
-    
+
     self.listSupportedTargetBoards = [
-      'swerv_eh1', 'hifive1', 'hifive-un'
+      'swerv_eh1'
     ]
