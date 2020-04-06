@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_ext_interrupts.h
+* @file   psp_ext_interrupts_swerv_eh1.h
 * @author Nati Rapaport
 * @date   16.03.2020
-* @brief  The file defines the psp external interrupts interfaces
+* @brief  The file defines the psp external interrupts interfaces for SweRV EH1
 */
-#ifndef __PSP_EXT_INTERRUPTS_H__
-#define __PSP_EXT_INTERRUPTS_H__
+#ifndef __PSP_EXT_INTERRUPTS_SWERV_EH1_H__
+#define __PSP_EXT_INTERRUPTS_SWERV_EH1_H__
 
 /**
 * include files
@@ -195,11 +195,11 @@ void  pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolarity);
 
 
 /*
-* This function clears the indicated gateway
+* This function clears the indication of pending interrupt
 *
-* @param uiIntNum   = Number of external interrupt (== gateway number)
+* @param uiIntNum   = Number of external interrupt
 */
-void  pspExtInterruptClearGateway(u32_t uiSourceId);
+void  pspExtInterruptClearPendingInt(u32_t uiIntNum);
 
 
 /*
@@ -251,4 +251,4 @@ u32_t pspExtInterruptGetPriority(void);
 
 
 
-#endif /* __PSP_EXT_INTERRUPTS_H__ */
+#endif /* __PSP_EXT_INTERRUPTS_SWERV_EH1_H__ */

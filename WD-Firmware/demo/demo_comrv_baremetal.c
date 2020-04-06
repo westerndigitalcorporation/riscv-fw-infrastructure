@@ -23,6 +23,7 @@
 #include "comrv_api.h"
 #include "demo_platform_al.h"
 #include "psp_csrs.h"
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -242,7 +243,7 @@ void demoStart(void)
        gOverlayFunc1 != 7 || gOverlayFunc2 != 6)
    {
       /* loop forever */
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 
    /* check that the overlay group > 512B works */

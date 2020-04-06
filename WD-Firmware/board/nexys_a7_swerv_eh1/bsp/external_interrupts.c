@@ -82,15 +82,21 @@ Register 0x8000100B (offset B in sys_con memory, at SweRVolf FPGA) is used for g
 */
 
 /**
-* Zero the register that used for IRQs generation
+* Initialize the register that used for triggering IRQs generation
+*
+* @param uiExtInterruptPolarity - indicates the polarity mode. Based on that, the triggering register should be initialized.
 *
 */
-void bspClearGenerationRegister(u32_t uiExtInterruptPolarity)
+void bspInitializeGenerationRegister(u32_t uiExtInterruptPolarity)
 {
-	u32_t uiRegisterClear = 0;
+	u32_t uiRegisterClear;
 
-	/* For Active-High the value of uiRegisterClear is 0 */
-	if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)
+	/* For Active-High the initial value of uiRegisterClear is 0 */
+	if (D_PSP_EXT_INT_ACTIVE_HIGH == uiExtInterruptPolarity)
+	{
+		uiRegisterClear = 0;
+	}
+	else /*(D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity) */
 	{
 		uiRegisterClear = 0x22; /* 00100010 */
 	}

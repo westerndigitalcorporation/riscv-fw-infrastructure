@@ -66,11 +66,11 @@
 */
 
 /**
-* Zero the register that used for IRQs generation
+* Initialize the register that used for triggering IRQs generation
 *
-* @param - uiExtInterruptPolarity - Active High / Low
+* @param uiExtInterruptPolarity - indicates the polarity mode. Based on that, the triggering register should be initialized.
 */
-void bspClearGenerationRegister(u32_t uiExtInterruptPolarity);
+void bspInitializeGenerationRegister(u32_t uiExtInterruptPolarity);
 
 /**
 * For IRQ3 or IRQ4 on the SweRVolf FPGA board, set polarity, type(i.e.edge/level) and triggering the interrupt
