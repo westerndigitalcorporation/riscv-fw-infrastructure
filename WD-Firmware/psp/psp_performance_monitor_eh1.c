@@ -121,34 +121,34 @@ void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEv
 */
 u32_t pspPerformanceCounterGet(u32_t eCounter)
 {
-	u32_t uCounterVal = 0;
+	u32_t uiCounterVal = 0;
 	switch (eCounter)
 	{
 		case D_PSP_CYCLE_COUNTER:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM);
 			break;
 		case D_PSP_TIME_COUNTER:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_TIME_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_TIME_NUM);
 			break;
 		case D_PSP_INSTRET_COUNTER:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);
 			break;
 		case D_PSP_COUNTER0:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER3_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER3_NUM);
 			break;
 		case D_PSP_COUNTER1:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER4_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER4_NUM);
 			break;
 		case D_PSP_COUNTER2:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER5_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER5_NUM);
 			break;
 		case D_PSP_COUNTER3:
-		  uCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER6_NUM);
+		  uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER6_NUM);
 			break;
 		default:
 		  M_PSP_ASSERT(1);
 		  break;
 	}
-	return uCounterVal;
+	return uiCounterVal;
 }
 

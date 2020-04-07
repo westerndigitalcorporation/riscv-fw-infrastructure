@@ -56,13 +56,12 @@
 void printToTerminal(void)
 {
   u32_t i = 0;
-  while(1)
+  while(i <= 86)
   {
     printfNexys("Don't mind me just wasting your time! %d", i);
-    if (i >= 86)
-      break;
     i++;
   }
+  /* making sure the print has been sent out before continuing with the program */
   M_PSP_INST_FENCEI();
 }
 
@@ -72,25 +71,27 @@ void printToTerminal(void)
  */
 void demoStart(void)
 {
-    u32_t           udIPC = 0,   udTotalBranches = 0;
-    u32_t volatile  udCycle0,    udCycle1;
-    u32_t volatile  udInstRet0,  udInstRet1;
-    u32_t volatile  udBranch0,   udBranch1;
+  u32_t           uiIPC = 0,   uiTotalBranches = 0;
+  u32_t volatile  uiCycle0,    uiCycle1;
+  u32_t volatile  uiInstRet0,  uiInstRet1;
+  u32_t volatile  uiBranch0,   uiBranch1;
 
+  /* register trap handler */
+  M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
 
-   /* Setting event counter (0) for event branches take (26) */
-   pspPerformanceCounterSet(D_PSP_COUNTER0, E_BRANCHES_TAKEN);
+  /* Setting event counter (0) for event branches take (26) */
+  pspPerformanceCounterSet(D_PSP_COUNTER0, E_BRANCHES_TAKEN);
 
-   /* Get counters before the loop */
+  /* Get counters before the loop */
 
-   /* Get the cycle counter*/
-   udCycle0   = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
+  /* Get the cycle counter*/
+  uiCycle0   = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
 
-   /* Get the instruction retired counter */
-   udInstRet0 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
+  /* Get the instruction retired counter */
+  uiInstRet0 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
 
-   /* Get the branches taken counter */
-   udBranch0  = pspPerformanceCounterGet(D_PSP_COUNTER0);
+  /* Get the branches taken counter */
+  uiBranch0  = pspPerformanceCounterGet(D_PSP_COUNTER0);
 
 
    /* do something then get the counters values afterward */
@@ -100,21 +101,21 @@ void demoStart(void)
    /* Get counters after the loop */
 
    /* Get the cycle counter*/
-   udCycle1   = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
+   uiCycle1   = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
 
    /* Get the instruction retired counter */
-   udInstRet1 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
+   uiInstRet1 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
 
    /* Get the branches taken counter */
-   udBranch1  = pspPerformanceCounterGet(D_PSP_COUNTER0);
+   uiBranch1  = pspPerformanceCounterGet(D_PSP_COUNTER0);
 
    /* calculating deltas between counters */
-   udIPC           = (udCycle1 - udCycle0) / (udInstRet1 - udInstRet0);
-   udTotalBranches = udBranch1 - udBranch0;
+   uiIPC           = (uiCycle1 - uiCycle0) / (udInstRet1 - udInstRet0);
+   uiTotalBranches = uiBranch1 - uiBranch0;
 
    printfNexys("Total cycles %d\nTotal Instructions %d\nInstructions per cycle %d\nBranches per loop %d", \
-               (udCycle1 - udCycle0),     \
-               (udInstRet1 - udInstRet0), \
-               udIPC,                     \
-               udTotalBranches);
+               (uiCycle1 - uiCycle0),     \
+               (uiInstRet1 - uiInstRet0), \
+               uiIPC,                     \
+               uiTotalBranches);
 }
