@@ -588,8 +588,5 @@ void demoStart(void)
 #endif
    /* Arriving here means all tests passed successfully */
    demoOutputMsg("External Interrupts tests passed successfully\n");
-
-   /* Loop here */
-   M_DEMO_ENDLESS_LOOP();
 }
 
