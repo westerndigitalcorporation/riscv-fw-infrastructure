@@ -18,7 +18,8 @@
 * @file   psp_ext_interrupts_swerv_eh1.c
 * @author Nati Rapaport
 * @date   15.03.2020
-* @brief  The file supplies external interrupt services. The file is specific to SweRV EH1 specifications
+* @brief  The file supplies external interrupt services (vector table installment, ISRs registration, PIC control API etc)
+*         The file is specific to SweRV EH1 specifications.
 * 
 */
 
@@ -64,18 +65,6 @@
 * local prototypes
 */
 
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum);
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority);
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold);
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
-
-
-// NatiR - continue with these. Check what they are
-//void pspExtIntSetInterruptMode(u32_t uiInterruptNum, u32_t uiInterruptMode);
-//void PSP_intStartup_vect (void);
-
-
 /**
 * external prototypes
 */
@@ -83,17 +72,47 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 /**
 * global variables
 */
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptDisableNumber)(u32_t uiIntNum)                 = pspExternalInterruptDisableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptEnableNumber)(u32_t uiIntNum)                  = pspExternalInterruptEnableNumber;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetPriority)(u32_t uiIntNum, u32_t uiPriority) = pspExternalInterruptSetPriority;
-D_PSP_DATA_SECTION void (*g_fptrPspExternalInterruptSetThreshold)(u32_t uiThreshold)               = pspExternalInterruptsSetThreshold;
-D_PSP_DATA_SECTION pspInterruptHandler_t (*g_fptrPspExternalInterruptRegisterISR)(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter) = pspExternalInterruptRegisterISR;
-
 
 /* External interrupt handlers Global Table */
 D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
 
+/**
+* functions
+*/
+
+/**
+* @brief - Set external interrupts vector-table address at MEIVT CSR
+*/
+void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
+{
+    M_PSP_WRITE_CSR(D_PSP_MEIVT_NUM, pExtIntVectTable);
+}
+
+/*
+* This function registers external interrupt handler
+*
+* @param uiVectorNumber = the number of the external interrupt to register
+*        pIsr = the ISR to register
+*        pParameter = NOT IN USE for baremetal implementation
+* @return pOldIsr = pointer to the previously registered ISR
+*/
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
+{
+   pspInterruptHandler_t fptrPrevIsr = NULL;
+
+   /* Assert if uiVectorNumber is beyond first or last interrupts-in-use */
+   M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiVectorNumber)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiVectorNumber))
+
+   /* Set external-interrupts vector-table address in MEIVT CSR */
+   pspExternalInterruptSetVectorTableAddress(G_Ext_Interrupt_Handlers);
+
+   /* Register the interrupt */
+   fptrPrevIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
+   G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
+
+   return(fptrPrevIsr);
+}
 
 /**
 * This function disables a specified external interrupt in the PIC
@@ -104,7 +123,7 @@ D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF
 D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 {
 	/* Clear Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
-	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum) , 0);
+	M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum)) , 0);
 }
 
 /*
@@ -126,7 +145,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 *  @param priority = priority to be set
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
+D_PSP_TEXT_SECTION void pspExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
 {
 	/* Set priority in meipl register, corresponds to given source (interrupt-number) */
 	M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + M_PSP_MULT_BY_4(uiIntNum)), uiPriority);
@@ -138,46 +157,143 @@ D_PSP_TEXT_SECTION void pspExternalInterruptSetPriority(u32_t uiIntNum, u32_t ui
 * @param threshold = priority threshold to be programmed to PIC
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptsSetThreshold(u32_t uiThreshold)
+D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 {
 	/* Set in meipt CSR, the priority-threshold */
 	M_PSP_WRITE_CSR(D_PSP_MEIPT_NUM, uiThreshold);
 }
 
 /*
-* This function registers external interrupt handler
+* This function sets the nesting priority threshold of the external interrupts in the PIC
 *
-* @param uiVectorNumber = the number of the external interrupt to register
-*        pIsr = the ISR to register
-*        pParameter = NOT IN USED for baremetal implementation
-* @return pOldIsr = pointer to the previously registered ISR
+* @param threshold = nesting priority threshold to be programmed to PIC
+* @return None
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
+void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold)
 {
-   pspInterruptHandler_t fptrPrevIsr = NULL;
+	/* Set in meicidpl CSR, the nesting priority priority-threshold */
+	M_PSP_WRITE_CSR(D_PSP_MEICIDPL_NUM, uiNestingPriorityThreshold);
 
-   /* Assert if uiVectorNumber is beyond first or last interrupts-in-use */
-   M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiVectorNumber)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiVectorNumber))
+	/* Set in meicurpl CSR, the nesting priority priority-threshold */
+	M_PSP_WRITE_CSR(D_PSP_MEICURPL_NUM, uiNestingPriorityThreshold);
+}
 
-   /* Register the interrupt */
-   fptrPrevIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
-   G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
+/*
+* This function checks whether a given external interrupt is pending or not
+*
+* @param uiExtInterrupt = Number of external interrupt
+* @return = pending (1) or not (0)
+*/
+D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
+{
+	u32_t uiRegister, uiBit, uiResult;
 
-   /* Make sure changes are synced */
-   M_PSP_INST_FENCEI();
+	/* Calculate the meipX register to access to check the input interrupt number */
+	uiRegister = D_PSP_MEIP_ADDR + D_PSP_REG32_BYTE_WIDTH * (uiExtInterrupt >> D_PSP_SHIFT_5);
 
-   return(fptrPrevIsr);
+	/* Calculate the bit in meipX register to access to check the input interrupt number */
+	uiBit = uiExtInterrupt - (uiRegister * D_PSP_REG32_BIT_WIDTH);
+
+	/* Check the specific bit */
+	uiResult = !!( M_PSP_READ_REGISTER_32(uiRegister) & (1 << uiBit) );
+
+	return (uiResult);
 }
 
 
-/**
+/*
+* This function set external-interrupt type (Level-triggered or Edge-triggered)
+*
+* @param uiIntNum  = Number of external interrupt
+* @param uiIntType = Type of the interrupt (level or edge)
+*
+*/
+D_PSP_TEXT_SECTION void pspExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType)
+{
+	/* Assert on interrupt-type value */
+	M_PSP_ASSERT((D_PSP_EXT_INT_LEVEL_TRIG_TYPE == uiIntType) || (D_PSP_EXT_INT_EDGE_TRIG_TYPE == uiIntType));
+
+	/* Set interrupt type */
+	M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiIntType << D_PSP_MEIGWCTRL_TYPE_BIT_OFFSET);
+}
+
+
+/*
+* This function set external-interrupt polarity (active-high or active-low)
+*
+* @param uiIntNum   = Number of external interrupt
+* @param uiPolarity = active-high or active-low
+*
+*/
+D_PSP_TEXT_SECTION void pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolarity)
+{
+	/* Assert on interrupt-type value */
+	M_PSP_ASSERT((D_PSP_EXT_INT_ACTIVE_HIGH == uiPolarity) || (D_PSP_EXT_INT_ACTIVE_LOW == uiPolarity));
+
+	/* Set interrupt type */
+	M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiPolarity << D_PSP_MEIGWCTRL_POLARITY_BIT_OFFSET);
+}
+
+/*
+* This function clears the indication of pending interrupt
+*
+* @param uiIntNum   = Number of external interrupt
+*/
+D_PSP_TEXT_SECTION void  pspExtInterruptClearPendingInt(u32_t uiIntNum)
+{
+	/* Clear the gwateway */
+	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCLR_ADDR + M_PSP_MULT_BY_4(uiIntNum), 0);
+}
+
+/*
+* This function set Priority Order (Standard or Reserved)
+*
+* @param uiPriorityOrder = Standard or Reserved
+*
+*/
+D_PSP_TEXT_SECTION void pspExtInterruptSetPriorityOrder(u32_t uiPriorityOrder)
+{
+	/* Assert on priority-order value */
+	M_PSP_ASSERT((D_PSP_EXT_INT_STANDARD_PRIORITY == uiPriorityOrder) || (D_PSP_EXT_INT_REVERSED_PRIORITY == uiPriorityOrder));
+
+	/* Set Priority Order */
+	M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR, uiPriorityOrder);
+}
+
+/*
+* This function get the current selected external interrupt (claim-id)
+*
+* @return - claim-id number
+*/
+D_PSP_TEXT_SECTION u32_t pspExtInterruptGetClaimId(void)
+{
+	u32_t uiClaimId = (M_PSP_READ_CSR(D_PSP_MEIHAP_NUM) & D_PSP_MEIHAP_CLAIMID_MASK)  ;
+	uiClaimId = uiClaimId >> D_PSP_SHIFT_2;
+
+	return uiClaimId;
+}
+
+
+/*
+* This function get the priority of currently selected external interrupt
+*
+* @return - priority level
+*/
+D_PSP_TEXT_SECTION u32_t pspExtInterruptGetPriority(void )
+{
+	u32_t uiPriorityLevel = (M_PSP_READ_CSR(D_PSP_MEICIDPL_NUM) & D_PSP_MEICIDPL_CLIDPRI_MASK) ;
+
+	return uiPriorityLevel;
+}
+
+/*
 * External interrupt handler
 *
 * @param none
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
+D_PSP_TEXT_SECTION void pspExtInterruptIsr(void)
 {
 	fptrFunction fptrExtIntHandler = NULL;
 	u32_t* pClaimId;
@@ -194,5 +310,4 @@ D_PSP_TEXT_SECTION void pspExternalIntHandlerIsr(void)
 
 	fptrExtIntHandler();
 }
-
 
