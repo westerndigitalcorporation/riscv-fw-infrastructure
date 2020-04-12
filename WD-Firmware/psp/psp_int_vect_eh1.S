@@ -25,7 +25,7 @@
 
 #include "psp_core_base.inc"
 #include "psp_macros.inc"
-#include "psp_int_vect_swerv_eh1.inc"
+#include "psp_int_vect_eh1.inc"
 
 #ifdef __clang__
 /* disable warning for reserved registers use - we are using comrv

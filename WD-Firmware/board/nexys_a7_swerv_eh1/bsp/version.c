@@ -15,12 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts_swerv_eh1.c
-* @author Ronen Haen
-* @date   20.05.2019
-* @brief  The file supllies interrups services such as  - registration, default handlers and indication
-*         whether we are in interrpu context.
-*         The file is specific to swerv_eh1 specifications
+* @file   version.c
+* @author Ofer Shinaar
+* @date   24.02.2020
+* @brief  Supplies SweRVolf version information
 *
 */
 
