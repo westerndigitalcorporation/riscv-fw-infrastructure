@@ -30,7 +30,7 @@
 /**
 * include files
 */
-#include "psp_csrs_swerv_eh1.h"
+#include "psp_csrs_eh1.h"
 
 /**
 * definitions
