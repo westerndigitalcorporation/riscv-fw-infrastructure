@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_ext_interrupts_swerv_eh1.h
+* @file   psp_ext_interrupts_eh1.h
 * @author Nati Rapaport
 * @date   16.03.2020
 * @brief  The file defines the psp external interrupts interfaces for SweRV EH1
 */
-#ifndef __PSP_EXT_INTERRUPTS_SWERV_EH1_H__
-#define __PSP_EXT_INTERRUPTS_SWERV_EH1_H__
+#ifndef __PSP_EXT_INTERRUPTS_EH1_H__
+#define __PSP_EXT_INTERRUPTS_EH1_H__
 
 /**
 * include files
@@ -251,4 +251,4 @@ u32_t pspExtInterruptGetPriority(void);
 
 
 
-#endif /* __PSP_EXT_INTERRUPTS_SWERV_EH1_H__ */
+#endif /* __PSP_EXT_INTERRUPTS_EH1_H__ */
