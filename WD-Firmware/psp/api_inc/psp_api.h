@@ -41,6 +41,7 @@
     #include "psp_csrs_swerv_eh1.h"
 	#include "psp_pmc_swerv_eh1.h"
 	#include "psp_performance_monitor_eh1.h"
+    #include "psp_nmi_eh1.h"
 #endif
 
 /**
