@@ -18,9 +18,7 @@
 * @file   psp_interrupts_swerv_eh1.c
 * @author Ronen Haen
 * @date   20.05.2019
-* @brief  The file supllies interrups services such as  - registration, default handlers and indication
-*         whether we are in interrpu context.
-*         The file is specific to swerv_eh1 specifications
+* @brief  The file supplies interrupt and exception registration API for SweRV EH1 + default ISR and exception handlers.
 * 
 */
 
