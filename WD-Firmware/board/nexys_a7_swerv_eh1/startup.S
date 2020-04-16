@@ -126,3 +126,21 @@ _start:
  2:  j 2b
 
 
+/* Nati do to : (1) Set nmi_bus (pending Olof's response, whether via register or he tells the constant (hardwired) address)
+
+   This is reference from CREX code:
+	li t0, D_ROM_SFR_TOP_REG_RISCV_NMI_CONTROL_REG
+	la t1, handle_nmi
+	sw t1, 0(t0)
+*/
+
+/* (2) Based on what we get from Olof, we can (option A) set in nmi_bus an address for the nmi_handler (pspNmiHandlerSelector)
+       or (option B) do the following code (this is what CREX code is doing). Note that in case of B, I need to define .text.nmi
+       section in the linker script
+*/
+  .section ".text.nmi"
+  .global _nmi_handler
+  .type   _nmi_handler, @function
+
+_nmi_handler:
+    j pspNmiHandlerSelector
