@@ -19,6 +19,9 @@
 * include files
 */
 #include "psp_api.h"
+#include "psp_macros.h"
+#include "printf.h"
+#include "demo_platform_al.h"
 
 
 /**
@@ -40,6 +43,7 @@
 /**
 * external prototypes
 */
+extern void psp_vect_table(void);
 
 /**
 * global variables
@@ -94,24 +98,31 @@ void demoStart(void)
   uiBranch0  = pspPerformanceCounterGet(D_PSP_COUNTER0);
 
 
-   /* do something then get the counters values afterward */
-   printToTerminal();
+  /* do something then get the counters values afterward */
+  printToTerminal();
 
 
-   /* Get counters after the loop */
+  /* Get counters after the loop */
 
-   /* Get the cycle counter*/
-   uiCycle1   = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
+  /* Get the cycle counter*/
+  uiCycle1   = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
 
-   /* Get the instruction retired counter */
-   uiInstRet1 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
+  /* Get the instruction retired counter */
+  uiInstRet1 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
 
-   /* Get the branches taken counter */
-   uiBranch1  = pspPerformanceCounterGet(D_PSP_COUNTER0);
+  /* Get the branches taken counter */
+  uiBranch1  = pspPerformanceCounterGet(D_PSP_COUNTER0);
 
-   /* calculating deltas between counters */
-   uiIPC           = (uiCycle1 - uiCycle0) / (udInstRet1 - udInstRet0);
-   uiTotalBranches = uiBranch1 - uiBranch0;
+  /* calculating deltas between counters */
+  uiIPC           = (uiCycle1 - uiCycle0) / (uiInstRet1 - uiInstRet0);
+  uiTotalBranches = uiBranch1 - uiBranch0;
+
+  /* verify counters where read successfully */
+  if (uiCycle0 == 0 || uiCycle1 == 0 || uiInstRet0 == 0 || uiInstRet1 == 0)
+  {
+    /* endless loop */
+    M_ENDLESS_LOOP();
+  }
 
    printfNexys("Total cycles %d\nTotal Instructions %d\nInstructions per cycle %d\nBranches per loop %d", \
                (uiCycle1 - uiCycle0),     \
