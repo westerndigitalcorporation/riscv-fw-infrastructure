@@ -60,8 +60,27 @@ typedef void (*pspNmiHandler_t)(void);
 /**
 * APIs
 */
+
+/**
+* @brief - The function installs an Non-Maskable Interrupt (NMI) service routine
+*
+* input parameter -  fptrNmiHandler     - function pointer to the NMI service routine
+* input parameter -  uiNmiCause         - NMI source
+*                    Note that the value of this input parameter could be only one of these:
+*                    - D_PSP_NMI_EXT_PIN_ASSERTION
+*                    - D_PSP_NMI_D_BUS_STORE_ERROR
+*                    - D_PSP_NMI_D_BUS_LOAD_ERROR
+*
+* @return u32_t                               - previously registered ISR. If NULL then registeration had an error
+*/
 pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause);
 
+
+/**
+* @brief - This function is called upon NMI and selects the appropriate handler
+*
+*/
+void pspNmiHandlerSelector(void);
 
 
 #endif /* __PSP_NMI_EH1_H__ */
