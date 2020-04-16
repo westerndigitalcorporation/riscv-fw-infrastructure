@@ -20,7 +20,7 @@
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
-
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -110,14 +110,14 @@ void demoMtimerWakeupTest(void)
 	if(g_uiTestWayPoints != D_MTIMER_WAKEUP_TEST_RESULT)
 	{
 		/* Test failed */
-		M_ENDLESS_LOOP();
+		M_DEMO_ENDLESS_LOOP();
 	}
 
 	/* verify that core was indeed halted */
 	if(udTimeAfterSleep - udTimeBeforeSleep < D_HALT_TIME)
 	{
 		/* Test failed */
-		M_ENDLESS_LOOP();
+		M_DEMO_ENDLESS_LOOP();
 	}
 }
 
