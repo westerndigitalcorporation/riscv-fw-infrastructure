@@ -397,14 +397,14 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* if the requested token is a multi-group token */
       if (unToken.stFields.uiMultiGroup)
       {
-         /* for now we take the first token in the list of tokens */
          // TODO: need to have a more sophisticated way to select the multi-group */
-         unToken = pMultigroup[unToken.stFields.uiOverlayGroupID];
          /* save the selected multi group entry; tSelectedMultiGroupEntry is used to
             update comrv stack frame with the loaded multi group table entry.
             It is used to calculate the actual return offset in case we
             are returning to a multi group token */
          tSelectedMultiGroupEntry = unToken.stFields.uiOverlayGroupID;
+         /* for now we take the first token in the list of tokens */
+         unToken = pMultigroup[tSelectedMultiGroupEntry];
       }
       /* get the group size */
       usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
