@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_pmc.h
+* @file   psp_pmc_eh1.h
 * @author Alex Dvoskin
 * @date   March 2020
 * @brief  The file defines power management control(PMC) api services
 * 
 */
-#ifndef  __PSP_PMC_H__
-#define  __PSP_PMC_H__
+#ifndef  __PSP_PMC_EH1_H__
+#define  __PSP_PMC_EH1_H__
 
 /**
 * include files
@@ -75,4 +75,4 @@ void pspPmcHalt(void);
 */
 void pspPmcPause(u32_t uiTicks);
 
-#endif /* __PSP_PMC_H__ */
+#endif /* __PSP_PMC_EH1_H__ */
