@@ -24,16 +24,16 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles = [
-   (os.path.join('board', 'nexys_a7_swerv_eh1', 'bsp', 'printf.c'), os.path.join(strOutDir, 'printf.o')),
-   (os.path.join('board', 'nexys_a7_swerv_eh1', 'bsp', 'version.c'), os.path.join(strOutDir, 'version.o')),
-   (os.path.join('board', 'nexys_a7_swerv_eh1', 'bsp', 'external_interrupts.c'), os.path.join(strOutDir, 'external_interrupts.o')),
+   (os.path.join('board', 'nexys_a7_eh1', 'bsp', 'printf.c'), os.path.join(strOutDir, 'printf.o')),
+   (os.path.join('board', 'nexys_a7_eh1', 'bsp', 'version.c'), os.path.join(strOutDir, 'version.o')),
+   (os.path.join('board', 'nexys_a7_eh1', 'bsp', 'external_interrupts.c'), os.path.join(strOutDir, 'external_interrupts.o')),
 ]
 
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles = [
-   (os.path.join('board', 'nexys_a7_swerv_eh1', 'startup.S'), os.path.join(strOutDir, 'startup.o')),
+   (os.path.join('board', 'nexys_a7_eh1', 'startup.S'), os.path.join(strOutDir, 'startup.o')),
 ]
 
 # compiler flags
@@ -56,7 +56,7 @@ listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 
 # include paths
-Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'board', 'nexys_a7_swerv_eh1', 'bsp')]
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'board', 'nexys_a7_eh1', 'bsp')]
              
 # privte includes
 listIncPaths = [] + Env['PUBLIC_INC']

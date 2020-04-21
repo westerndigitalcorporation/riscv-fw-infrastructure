@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_macro_swerv_eh1.h
+* @file   psp_macro_eh1.h
 * @author Ofer Shinaar
 * @date   03/2020
 * @brief  The file defines the psp macros for SweRV EH1
 */
-#ifndef __PSP_MACRO_SWERV_EH1_H__
-#define __PSP_MACRO_SWERV_EH1_H__
+#ifndef __PSP_MACRO_EH1_H__
+#define __PSP_MACRO_EH1_H__
 
 /**
 * include files
@@ -39,4 +39,4 @@
 
 
 
-#endif /* __PSP_MACRO_H__ */
+#endif /* __PSP_MACRO_EH1_H__ */
