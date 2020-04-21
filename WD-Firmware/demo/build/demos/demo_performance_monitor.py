@@ -45,5 +45,5 @@ class demo(object):
     ]
     
     self.listSupportedTargetBoards = [
-      'swerv_eh1'
+      'eh1'
     ]
