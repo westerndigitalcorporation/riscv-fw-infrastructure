@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   psp_ext_interrupts_swerv_eh1.c
+* @file   psp_ext_interrupts_eh1.c
 * @author Nati Rapaport
 * @date   15.03.2020
 * @brief  The file supplies external interrupt services (vector table installment, ISRs registration, PIC control API etc)
