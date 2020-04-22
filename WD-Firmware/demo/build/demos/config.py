@@ -97,19 +97,19 @@ class clsGenerate(object):
   def scanDemos(self):
     # scan the build/demo folder and grab all the files with pattern "demo_xxxx.py
     listFiles = os.listdir(os.path.join(os.getcwd(), STR_DEMOS_FOLDER))
-    for strFile in listFiles:
+    for strFile in sorted(listFiles):
       if strFile.startswith(STR_DEMO_MODULE_PREFIX) and strFile.endswith(STR_DEMO_MODULE_SUFFIX):
         self.listDemos.append(strFile.replace(STR_DEMO_MODULE_PREFIX, "").replace(STR_DEMO_MODULE_SUFFIX, "")) 
 
   def scanToolchains(self):
     # scan the build/toolchain folder and grab all the folders
     listDirs = os.listdir(os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_SCONS_TOOLCHAIN))
-    for strDir in listDirs:
+    for strDir in sorted(listDirs):
       self.listToolchain.append(strDir) 
         
   def pickItem(self, strListName, listItems):
     # list all the demos found in the build/demos folder and wait for the user to pick one
-    for strItem in listItems:
+    for strItem in sorted(listItems):
       print "%s: %s" % (listItems.index(strItem), strItem)
     
     # @todo: get demo name from argument/argument file in the future
