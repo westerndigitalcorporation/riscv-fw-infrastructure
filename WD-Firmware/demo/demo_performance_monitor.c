@@ -21,7 +21,8 @@
 #include "psp_api.h"
 #include "psp_macros.h"
 #include "printf.h"
-#include "demo_platform_al.h"
+#include "demo_utils.h"
+
 
 
 /**
@@ -121,7 +122,7 @@ void demoStart(void)
   if (uiCycle0 == 0 || uiCycle1 == 0 || uiInstRet0 == 0 || uiInstRet1 == 0)
   {
     /* endless loop */
-    M_ENDLESS_LOOP();
+    M_DEMO_ENDLESS_LOOP();
   }
 
    printfNexys("Total cycles %d\nTotal Instructions %d\nInstructions per cycle %d\nBranches per loop %d", \
