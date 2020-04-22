@@ -37,7 +37,7 @@
 #define D_MAIN_MEM_INDEX                         0
 #define D_DEMO_MAX_LOOP_COUNT                    65536
 #define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON  200000
-#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF 4000000
+#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF 3000000
 #define D_DEMO_OLOF_SWERV                        0xC1
 
 /**
