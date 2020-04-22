@@ -60,16 +60,6 @@
 */
 
 /**
- * @brief - Handler of NMI in this demo
- *
- */
-void demoNmiHandler(void)
-{
-	/* Arriving here means all tests passed successfully */
-	demoOutputMsg("NMI test passed successfully\n");
-}
-
-/**
  * @brief -  demoStart - startup point of the demo application. called from main function.
  *
  */
