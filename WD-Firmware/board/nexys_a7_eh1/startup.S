@@ -119,11 +119,6 @@ _start:
     li a0, 0
     li a1, 0
 
-    /* set NMI handler address in nmi_bus */
-    li t0, D_NMI_VEC_ADDRESSS
-	la t1, pspNmiHandlerSelector
-	sw t1, 0(t0)
-
     call main
     
     #[OS]: no need for exit, just endless loop here.....was: tail atexit

@@ -72,13 +72,14 @@ D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler   = pspNmiDbusSt
 */
 
 /**
- * @brief - set NMI handler address in nmi_vec
+ * @brief - set address of NMI initial handler in nmi_vec
  *
- * Note - startup code is already installing NMI handler in the nmi-vec. Here we give the developer the possibility to install an alternative one
+ * @parameter - uiNmiVecAddress - address of NMI_VEC register
+ * @parameter - fptrNmiSelector - address of NMI initial handler
  */
-D_PSP_TEXT_SECTION void pspNmiSetVec(void)
+D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector)
 {
-    M_PSP_WRITE_REGISTER_32(D_PSP_NMI_VEC_ADDRESSS, (u32_t)pspNmiHandlerSelector);
+    M_PSP_WRITE_REGISTER_32(uiNmiVecAddress, (u32_t)fptrNmiSelector);
 }
 
 /**
