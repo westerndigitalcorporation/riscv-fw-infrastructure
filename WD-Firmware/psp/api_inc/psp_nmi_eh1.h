@@ -62,6 +62,14 @@ typedef void (*pspNmiHandler_t)(void);
 */
 
 /**
+ * @brief - set address of NMI initial handler in nmi_vec
+ *
+ * @parameter - uiNmiVecAddress - address of NMI_VEC register
+ * @parameter - fptrNmiSelector - address of NMI initial handler
+ */
+void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector);
+
+/**
 * @brief - The function installs an Non-Maskable Interrupt (NMI) service routine
 *
 * input parameter -  fptrNmiHandler     - function pointer to the NMI service routine
