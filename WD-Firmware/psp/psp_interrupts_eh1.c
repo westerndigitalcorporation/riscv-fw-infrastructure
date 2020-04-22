@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts_swerv_eh1.c
+* @file   psp_interrupts_eh1.c
 * @author Ronen Haen
 * @date   20.05.2019
 * @brief  The file supplies interrupt and exception registration API for SweRV EH1 + default ISR and exception handlers.
