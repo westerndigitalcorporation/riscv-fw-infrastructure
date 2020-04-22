@@ -31,6 +31,13 @@
 * definitions
 */
 
+/* Specified RAM address of nmi_vec */
+#if (0 != D_NMI_VEC_ADDRESSS)
+    #define D_PSP_NMI_VEC_ADDRESSS   D_NMI_VEC_ADDRESSS
+#else
+    #error "NMI-VEC address is not defined!\n"
+#endif
+
 /**
 * macros
 */
@@ -42,9 +49,9 @@
 /**
 * local prototypes
 */
-void pspNmiPinAssertionDefaultHandler(void);
-void pspNmiDbusLoadErrorDefaultHandler(void);
-void pspNmiDbusStoreErrorDefaultHandler(void);
+void pspNmiPinAssertionDefaultHandler(void);    /* Default handler for pin-asserted NMI */
+void pspNmiDbusLoadErrorDefaultHandler(void);   /* Default handler for D-bus load error NMI */
+void pspNmiDbusStoreErrorDefaultHandler(void);  /* Default handler for D-bus store error NMI */
 
 /**
 * external prototypes
@@ -53,7 +60,7 @@ void pspNmiDbusStoreErrorDefaultHandler(void);
 /**
 * global variables
 */
-u32_t g_uiPspNmiErrorAddress = 0;
+u32_t g_uiPspNmiErrorAddress = 0; /* Read upon D-bus load/store NMIs. For post mortem investigation */
 
 /* NMI handler pointers */
 D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiExtPinAssrtHandler    = pspNmiPinAssertionDefaultHandler;
@@ -64,9 +71,18 @@ D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler   = pspNmiDbusSt
 * functions
 */
 
+/**
+ * @brief - set NMI handler address in nmi_vec
+ *
+ * Note - startup code is already installing NMI handler in the nmi-vec. Here we give the developer the possibility to install an alternative one
+ */
+D_PSP_TEXT_SECTION void pspNmiSetVec(void)
+{
+    M_PSP_WRITE_REGISTER_32(D_PSP_NMI_VEC_ADDRESSS, (u32_t)pspNmiHandlerSelector);
+}
 
 /**
-* @brief - The function installs an Non-Maskable Interrupt (NMI) service routine
+* @brief - Register a Non-Maskable Interrupt (NMI) service routine
 *
 * input parameter -  fptrNmiHandler     - function pointer to the NMI service routine
 * input parameter -  uiNmiCause         - NMI source
@@ -75,14 +91,14 @@ D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler   = pspNmiDbusSt
 *                    - D_PSP_NMI_D_BUS_STORE_ERROR
 *                    - D_PSP_NMI_D_BUS_LOAD_ERROR
 *
-* @return u32_t                               - previously registered ISR. If NULL then registeration had an error
+* @return u32_t      - previously registered ISR. If NULL then registration is erroneous.
 */
 D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
 {
 	pspNmiHandler_t fptrNmiFunc;
 
-	M_PSP_ASSERT(fptrNmiHandler != NULL && uiNmiCause == D_PSP_NMI_EXT_PIN_ASSERTION
-			     && uiNmiCause == D_PSP_NMI_D_BUS_STORE_ERROR && uiNmiCause =d= D_PSP_NMI_D_BUS_LOAD_ERROR);
+	M_PSP_ASSERT((NULL != fptrNmiHandler) && (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) && (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
+			      && (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause))
 
     switch (uiNmiCause)
 	{
@@ -112,6 +128,7 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
 */
 D_PSP_TEXT_SECTION void pspNmiPinAssertionDefaultHandler(void)
 {
+	M_PSP_EBREAK();
 }
 
 /**
@@ -122,6 +139,8 @@ D_PSP_TEXT_SECTION void pspNmiDbusLoadErrorDefaultHandler(void)
 {
 	/* Get the address of the D-bus load error. Note that this read locks the CSR and until it unlocks no further D-Bus error NMIs are honored */
 	g_uiPspNmiErrorAddress = M_PSP_READ_CSR(D_PSP_MDSEAC_NUM);
+
+	M_PSP_EBREAK();
 }
 
 /**
@@ -132,6 +151,8 @@ D_PSP_TEXT_SECTION void pspNmiDbusStoreErrorDefaultHandler(void)
 {
 	/* Get the address of the D-bus store error. Note that this read locks the CSR and until it unlocks no further D-Bus error NMIs are honored */
 	g_uiPspNmiErrorAddress = M_PSP_READ_CSR(D_PSP_MDSEAC_NUM);
+
+	M_PSP_EBREAK();
 }
 
 /**
@@ -148,13 +169,13 @@ D_PSP_TEXT_SECTION void pspNmiHandlerSelector(void)
 	switch (uiNmiCode)
 	{
        case D_PSP_NMI_EXT_PIN_ASSERTION:
-       	   pspNmiPinAssertionDefaultHandler();
+    	   g_fptrNmiExtPinAssrtHandler();
        	   break;
        case D_PSP_NMI_D_BUS_LOAD_ERROR:
-       	   pspNmiDbusLoadErrorDefaultHandler();
+    	   g_fptrNmiDbusLoadErrHandler();
        	   break;
        case D_PSP_NMI_D_BUS_STORE_ERROR:
-       	   pspNmiDbusStoreErrorDefaultHandler();
+    	   g_fptrNmiDbusStoreErrHandler();
        	   break;
        default:
        	   break;

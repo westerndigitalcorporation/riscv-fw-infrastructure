@@ -69,7 +69,7 @@ _start:
 	li  x31,0
 
 	    
-      	#cache configuration
+    #cache configuration
 	li t1, 0x55555555
 	csrw 0x7c0, t1
 	# initialize global pointer
@@ -119,28 +119,13 @@ _start:
     li a0, 0
     li a1, 0
 
+    /* set NMI handler address in nmi_bus */
+    li t0, D_NMI_VEC_ADDRESSS
+	la t1, pspNmiHandlerSelector
+	sw t1, 0(t0)
+
     call main
     
     #[OS]: no need for exit, just endless loop here.....was: tail atexit
 	# loop here
  2:  j 2b
-
-
-/* Nati do to : (1) Set nmi_bus (pending Olof's response, whether via register or he tells the constant (hardwired) address)
-
-   This is reference from CREX code:
-	li t0, D_ROM_SFR_TOP_REG_RISCV_NMI_CONTROL_REG
-	la t1, handle_nmi
-	sw t1, 0(t0)
-*/
-
-/* (2) Based on what we get from Olof, we can (option A) set in nmi_bus an address for the nmi_handler (pspNmiHandlerSelector)
-       or (option B) do the following code (this is what CREX code is doing). Note that in case of B, I need to define .text.nmi
-       section in the linker script
-*/
-  .section ".text.nmi"
-  .global _nmi_handler
-  .type   _nmi_handler, @function
-
-_nmi_handler:
-    j pspNmiHandlerSelector
