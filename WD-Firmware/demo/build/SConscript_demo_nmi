@@ -31,7 +31,9 @@ listCFiles=[
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
-listAssemblyFiles=[]
+listAssemblyFiles=[
+   (os.path.join('demo', 'demo_nmi.S'), os.path.join(strOutDir, 'demo_nmi_asm.o')),
+]
 
 # compiler directivs
 listCCompilerDirectivs = [] + Env['C_FLAGS']
