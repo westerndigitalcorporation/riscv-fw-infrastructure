@@ -1,0 +1,84 @@
+
+
+
+    .equ REG_BRDL, (4*0x00) /* Baud rate divisor (LSB)        */
+    .equ REG_BRDH, (4*0x01) /* Baud rate divisor (MSB)        */
+    .equ REG_RDR, (4*0x00)  /* Receiver data reg.             */
+    .equ REG_MDC, (4*0x04)  /* Modem control reg.             */
+    .equ REG_IER, (4*0x01)  /* Interrupt enable reg.          */
+    .equ REG_IIR, (4*0x02)  /* Interrupt ID reg.              */
+    .equ REG_FCR, (4*0x02)  /* FIFO control reg.              */
+    .equ REG_LCR, (4*0x03)  /* Line control reg.              */
+    .equ REG_MDC, (4*0x04)  /* Modem control reg.             */
+    .equ REG_LSR, (4*0x05)  /* Line status reg.               */
+    .equ REG_MSR, (4*0x06)  /* Modem status reg.              */
+    .equ REG_DLF, (4*0xC0)  /* Divisor Latch Fraction         */
+
+    .equ LCR_CS8, 0x03   /* 8 bits data size */
+    .equ LCR_1_STB, 0x00 /* 1 stop bit */
+    .equ LCR_PDIS, 0x00  /* parity disable */
+
+    .equ MCR_DTR, 0x01  /* dtr output */
+    .equ MCR_RTS, 0x02  /* rts output */
+    .equ MCR_OUT2, 0x08 /* output #2 */
+
+    .equ LSR_THRE, 0x20
+    .equ FCR_FIFO, 0x01    /* enable XMIT and RCVR FIFO */
+    .equ FCR_RCVRCLR, 0x02 /* clear RCVR FIFO */
+    .equ FCR_XMITCLR, 0x04 /* clear XMIT FIFO */
+    .equ FCR_MODE0, 0x00 /* set receiver in mode 0 */
+    .equ FCR_MODE1, 0x08 /* set receiver in mode 1 */
+    .equ FCR_FIFO_8, 0x80  /* 8 bytes in RCVR FIFO */
+	
+	
+	
+    #lets test uart
+
+  	/* Init UART */
+	li	a0, 0x80002000
+
+	/* Set DLAB bit in LCR */
+	li	t3, 0x80
+	sb	t3, REG_LCR(a0)
+
+	/* Set divisor regs */
+	li	t4, 27
+	sb	t4, REG_BRDL(a0)
+
+	/* 8 data bits, 1 stop bit, no parity, clear DLAB */
+	li	t3, LCR_CS8 | LCR_1_STB | LCR_PDIS
+	sb	t3, REG_LCR(a0)
+
+	li	t3, FCR_FIFO | FCR_MODE0 | FCR_FIFO_8 | FCR_RCVRCLR | FCR_XMITCLR
+	sb	t3, REG_FCR(a0)
+
+	/* disable interrupts  */
+	sb	zero, REG_IER(a0)
+
+	/* Load string address to a0 */
+	la  a1,     _ofer_str
+
+	/* Load first byte */
+	lb t0, 0(a1)
+next:
+	/* Write to console and load next char until we get \0 */
+	jal put_byte
+	addi a1, a1, 1
+	lb t0, 0(a1)
+	bne t0, zero, next
+
+loop:	j loop
+	/* Halt simulation */
+	//li  a1,     HALT_ADDR
+	//sw zero, 0(a1)
+
+put_byte:
+	/* Check for space in UART FIFO */
+	lb	t6, REG_LSR(a0)
+	andi	t6, t6, LSR_THRE
+	beqz	t6, put_byte
+
+	sb	t0, 0(a0)
+	ret
+_ofer_str:
+	.string "SweRV+FuseSoC rocks\n"
