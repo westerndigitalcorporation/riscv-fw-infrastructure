@@ -44,5 +44,5 @@ class demo(object):
     ]
     
     self.listSupportedTargetBoards = [
-      'eh1'
+      'eh1','hifive1', 'hifive-un'
     ]
