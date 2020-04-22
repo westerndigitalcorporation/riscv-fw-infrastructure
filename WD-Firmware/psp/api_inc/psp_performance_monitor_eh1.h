@@ -137,16 +137,6 @@ typedef enum pspPerformanceMonitorEvents
 */
 void pspEnableAllPerformanceMonitor(u32_t uiMonitorEn);
 
-
-/**
-* @brief The function enables/disable the performance counters
-*
-* @param uiCountersEn     – counters to enable disable
-*
-* @return No return value
-*/
-void pspEnablePerformanceCounters(u32_t uiCountersEn);
-
 /**
 * @brief The function pair a counter to an event
 *
@@ -175,8 +165,8 @@ void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEv
 *                         D_PSP_COUNTER2
 *                         D_PSP_COUNTER3
 *
-* @return u64_t      – Counter value
+* @return u32_t      – Counter value
 */
-u64_t pspPerformanceCounterGet(u32_t eCounter);
+u32_t pspPerformanceCounterGet(u32_t eCounter);
 
 #endif /* _PSP_PERFORMANCE_MONITOR_H_ */
