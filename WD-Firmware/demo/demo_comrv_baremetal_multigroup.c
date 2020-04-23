@@ -39,6 +39,7 @@ void _OVERLAY_ OverlayFunc3(void);
 /**
 * types
 */
+typedef void (*funcPtr)(void);
 
 /**
 * local prototypes
@@ -53,7 +54,7 @@ extern void psp_vect_table(void);
 /**
 * global variables
 */
-
+funcPtr myFunc;
 volatile u32_t globalCount = 0;
 volatile u32_t gOverlayFunc0 = 0;
 volatile u32_t gOverlayFunc1 = 0;
@@ -78,7 +79,7 @@ void _OVERLAY_ OverlayFunc2(void)
 void _OVERLAY_ OverlayFunc1(void)
 {
    gOverlayFunc1+=3;
-   OverlayFunc2();
+   myFunc();
    gOverlayFunc1+=2;
 }
 
@@ -99,6 +100,9 @@ void demoStart(void)
 
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
+
+   /* demonstrate function pointer usage with multigroups */
+   myFunc = OverlayFunc2;
 
    globalCount+=1;
    OverlayFunc0();
