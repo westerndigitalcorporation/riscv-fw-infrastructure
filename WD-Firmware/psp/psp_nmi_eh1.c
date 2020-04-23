@@ -98,8 +98,8 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
 {
 	pspNmiHandler_t fptrNmiFunc;
 
-	M_PSP_ASSERT((NULL != fptrNmiHandler) && (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) && (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
-			      && (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause))
+	M_PSP_ASSERT((NULL != fptrNmiHandler) && ( (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) || (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
+			      || (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause) ) )
 
     switch (uiNmiCause)
 	{
