@@ -41,7 +41,6 @@
 /**
 * types
 */
-typedef void (*funcPtr)(void);
 
 
 /**
@@ -56,8 +55,7 @@ void demoNmiPinAssertionHandler(void); /* Pin-assertion-NMI handler for this tes
 /**
 * global variables
 */
-volatile u32_t g_uiJumpHereFromNmi;  /* Store the address to jump after NMI occurs in order to be able to return back to 'main' function */
-volatile u32_t g_uiStackPointer;     /* Store the stack-pointer contents */
+volatile u32_t g_uiReturnAddress;    /* Store the RA register contents */
 
 /**
 * functions
@@ -67,21 +65,27 @@ volatile u32_t g_uiStackPointer;     /* Store the stack-pointer contents */
  * @brief -  demoStart - startup point of the demo application. called from main function.
  *
  *  Flow of the test:
- *  1.  Set address of pspNmiHandlerSelector in nmi_vec
- *  2.  Register NMI handler for External-Pin-Assertion NMI
- *  3.  Set the timer to generate External-Pin-Assertion NMI upon expiration
- *  4.  Set 0.5 second duration in the timer
- *  5.  Let the timer to run (at its expiration - we expect to receive NMI)
- *  6.  Get current PC, add to it a delta of 0x30 bytes and save the result in a global parameter (g_uiJumpHereFromNmi)
+ *  1.  Store RA register in a global parameter
+ *  2.  Set address of pspNmiHandlerSelector in nmi_vec
+ *  3.  Register NMI handler for External-Pin-Assertion NMI
+ *  4.  Set the timer to generate External-Pin-Assertion NMI upon expiration
+ *  5.  Set 0.5 second duration in the timer
+ *  6.  Let the timer to run (at its expiration - we expect to receive NMI)
  *  7.  Delay in a loop (10 seconds)
  *  8.  Upon NMI (after 0.5 second), the NMI handler is called
- *  9.  NMI handler does a jump to the address that stored in g_uiJumpHereFromNmi parameter
- *  10. Test completed successfully and function returns to 'main'
- *  11. If NMI did not occur, The 10 seconds loop expires and function breaks. Test failed.
+ *  9.  NMI handler restore RA register from the global parameter and return to 'main' - Test completed successfully
+ *  10. If NMI did not occur, The 10 seconds loop expires and function breaks. Test failed.
  */
 void demoStart(void)
 {
 	u32_t uiIterationCounter;
+
+	/* ** Store RA register contents in a global parameter here **
+	 * This is required because the general NMI handler might do stack 'push' operations, hence changes the SP,
+	 * but it does not do equivalent 'pop' operations because it is not returned anywhere.
+	 * So, in order to be able to return from here to 'main', the RA register is stored here in a global parameter
+	 * and it is restored in the Pin-Asserted-NMI handler */
+	asm volatile ("mv %0, ra" : "=r" (g_uiReturnAddress)  : );
 
 	/* Register the initial NMI handler in nmi_vec register */
 	pspNmiSetVec(D_NMI_VEC_ADDRESSS, pspNmiHandlerSelector);
@@ -95,23 +99,6 @@ void demoStart(void)
 	/* Initialize Timer (at its expiration, it will create an NMI) */
 	bspSetTimerDurationMsec(500000);
 
-	/* ** Store SP in a global parameter here **
-	 * This is required here because when NMI handler is called, there might be
-	 * 'push' operations on the stack at the function entrance. However, the NMI handler is not
-	 * returning here, but instead we do a "jump" from the NMI handler back to here.
-	 * (just to be able to return to 'main'. Normally, NMI does not return anywhere)
-	 * That means there is no 'pop' from the stack at the NMI handler.
-	 * So, in order to maintain reliable stack in our demo application, we save SP before triggering the NMI
-	 * and we restore it at the NMI handler.
-	 * This way, when this function returns to 'main', the SP is correct.
-	 */
-	asm volatile ("mv %0, sp" : "=r" (g_uiStackPointer)  : );
-
-    /* Get the PC value, add 0x30 and store the result in g_uiJumpHereFromNmi
-     * The result address is beyond the loop herein, and within the sequence of NOPs */
-	asm volatile ("auipc %0, 0x0" : "=r" (g_uiJumpHereFromNmi)  : );
-	g_uiJumpHereFromNmi += 0x30;
-
 	/* Enable the timer to start running */
 	bspStartTimer();
 
@@ -123,28 +110,6 @@ void demoStart(void)
 	}
 	/* Arriving here means test failed, as the NMI should have been occurred already */
 	M_PSP_EBREAK();
-	/* Add some 'nop' instructions here to make sure the skip address is safe  */
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-	M_PSP_NOP();
-
-	/* Arriving here means the test passed successfully */
-	demoOutputMsg("** NMI test passed successfully **\n");
-
-    return;
 }
 
 
@@ -154,11 +119,14 @@ void demoStart(void)
  */
 void demoNmiPinAssertionHandler()
 {
-	/* Restore SP from the global parameter here */
-	asm volatile ("mv sp, %0" : : "r" (g_uiStackPointer) );
+	/* Restore RA from the global parameter here */
+	asm volatile ("mv ra, %0" : : "r" (g_uiReturnAddress) );
 
-	/* Jump to the address that stored in g_uiJumpHereFromNmi parameter */
-	((funcPtr)g_uiJumpHereFromNmi)();
+	/* Arriving here means the test passed successfully */
+	demoOutputMsg("** NMI test passed successfully **\n");
+
+	/* From here we return directly back to 'main', as we restored the RA register here */
+	return;
 }
 
 
