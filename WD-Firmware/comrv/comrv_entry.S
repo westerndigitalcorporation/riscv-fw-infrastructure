@@ -93,6 +93,11 @@
 .global comrv_ret_from_callee
 .global comrvNotifyDisabledError
 
+/*
+   COMRV_TEXT_SEC section flags:
+   a - ignored. (For compatibility with the ELF version)
+   x - executable section
+*/
 .section  COMRV_TEXT_SEC, "ax"
 
 .align 4
@@ -224,6 +229,9 @@ comrv_handle_thunk_token:
     /* save the actual token to previous stack frame before
        we skip current stack frame */
     M_PSP_STORE        t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t2)
+    /* TODO: in case of MG with min num of groups, we can save the
+       'load address alignmebt value' and the MG fields in one load/store
+       instrunction */
     /* load from current stack frame into t5 the 'load address alignment value' */
     lb                 t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t3)
     /* save the 'load address alignment value' in previous stack frame */
