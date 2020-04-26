@@ -93,8 +93,8 @@
 .global comrv_ret_from_callee
 .global comrvNotifyDisabledError
 
-/* TODO: need to set this code in COMRV_TEXT_SEC */
-.section  .text
+.section  COMRV_TEXT_SEC, "ax"
+
 .align 4
 /* This is the function responsible for invoking the overlay function
    Whenever there is a call to an overlay function, the compiler will plant instead
