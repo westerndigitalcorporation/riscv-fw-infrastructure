@@ -68,14 +68,38 @@
 .equ D_COMRV_CALLEE_TOKEN_STACK_OFFSET,     REGBYTES * 1
 .equ D_COMRV_PREV_STACK_FRAME,              REGBYTES * 2
 .equ D_COMRV_ALIGN_VAL_STACK_OFFSET,        10
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+   #ifdef D_COMRV_MIN_NUM_OF_MULTI_GROUPS
+      .equ D_COMRV_ALIGN_MG_STACK_OFFSET,         11
+      .macro M_COMRV_STORE_MG operand1,operand2
+          M_PSP_STORE_BYTE \operand1, \operand2
+      .endm
+      .macro M_COMRV_LOAD_MG operand1,operand2
+          M_PSP_LOAD_BYTE \operand1, \operand2
+      .endm
+   #else
+      .equ D_COMRV_ALIGN_MG_STACK_OFFSET,         14
+      .macro M_COMRV_STORE_MG operand1,operand2
+          M_PSP_STORE_HALF \operand1, \operand2
+      .endm
+      .macro M_COMRV_LOAD_MG operand1,operand2
+          M_PSP_LOAD_HALF \operand1, \operand2
+      .endm
+   #endif /* D_COMRV_MIN_NUM_OF_MULTI_GROUPS */
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 
 .global comrvEntry
 .global comrvEntryDisable
 .global comrv_ret_from_callee
 .global comrvNotifyDisabledError
 
-/* TODO: need to set this code in COMRV_TEXT_SEC */
-.section  .text
+/*
+   COMRV_TEXT_SEC section flags:
+   a - ignored. (For compatibility with the ELF version)
+   x - executable section
+*/
+.section  COMRV_TEXT_SEC, "ax"
+
 .align 4
 /* This is the function responsible for invoking the overlay function
    Whenever there is a call to an overlay function, the compiler will plant instead
@@ -196,23 +220,32 @@ comrv_exit_ret_to_caller:
 
 comrv_handle_thunk_token:
     /* remove the thunk indication */
-    lui         t2, D_COMRV_THUNK_UPPER_MASK
-    xor         t5, t5, t2
+    lui                t2, D_COMRV_THUNK_UPPER_MASK
+    xor                t5, t5, t2
     /* load the offset to previous stack frame */
-    lh          t2, D_COMRV_PREV_STACK_FRAME(t3)
+    lh                 t2, D_COMRV_PREV_STACK_FRAME(t3)
     /* t2 will point to the previous stack frame */
-    add         t2, t2, t3
+    add                t2, t2, t3
     /* save the actual token to previous stack frame before
        we skip current stack frame */
-    M_PSP_STORE t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t2)
+    M_PSP_STORE        t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t2)
+    /* TODO: in case of MG with min num of groups, we can save the
+       'load address alignmebt value' and the MG fields in one load/store
+       instrunction */
     /* load from current stack frame into t5 the 'load address alignment value' */
-    lb          t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t3)
+    lb                 t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t3)
     /* save the 'load address alignment value' in previous stack frame */
-    sb          t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t2)
+    sb                 t5, D_COMRV_ALIGN_VAL_STACK_OFFSET(t2)
+#ifdef D_COMRV_MULTI_GROUP_SUPPORT
+    /* load from current stack frame into t5 the 'multigroup table entry' */
+    M_COMRV_LOAD_MG   t5, D_COMRV_ALIGN_MG_STACK_OFFSET(t3)
+    /* save the 'multigroup table entry' in previous stack frame */
+    M_COMRV_STORE_MG  t5, D_COMRV_ALIGN_MG_STACK_OFFSET(t2)
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
     /* optimization to save 'lh' instruction above 'comrv_igonr_caller_thunk_stack_frame:'*/
-    mv          t5, t2
+    mv                 t5, t2
     /* now we can skip to the previous stack frame */
-    j comrv_igonr_caller_thunk_stack_frame
+    j                  comrv_igonr_caller_thunk_stack_frame
 
 /* for testing purpose, we use the .weak so we won't get stuck
    this also allows the end user to reimplement comrvEntryDisable
