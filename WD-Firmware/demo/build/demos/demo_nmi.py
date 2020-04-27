@@ -14,18 +14,16 @@
 #* See the License for the specific language governing permissions and
 #* limitations under the License.
 #*/
-import os
-
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "trap_baremetal"
+    self.strDemoName   = "nmi"
     self.rtos_core     = ""
     self.toolchain     = ""
     self.toolchainPath = ""
     self.strGrpFile    = ""
     self.strComrvCacheSize = "0"
     self.strLinkFilePrefix = ''
-
+    
     self.public_defs = [
         'D_BARE_METAL',
         'D_TICK_TIME_MS=4',
@@ -33,7 +31,7 @@ class demo(object):
     ]
 
     self.listSconscripts = [
-      'demo_trap_baremetal',
+      'demo_nmi',
     ]
 
     self.listDemoSpecificCFlags = [
@@ -44,5 +42,5 @@ class demo(object):
     ]
     
     self.listSupportedTargetBoards = [
-      'eh1','hifive1', 'hifive-un'
-    ]
+      'eh1'
+	]
