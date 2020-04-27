@@ -88,7 +88,7 @@ pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNm
 * @brief - This function is called upon NMI and selects the appropriate handler
 *
 */
-void pspNmiHandlerSelector(void);
+D_PSP_NO_RETURN void pspNmiHandlerSelector(void);
 
 
 #endif /* __PSP_NMI_EH1_H__ */
