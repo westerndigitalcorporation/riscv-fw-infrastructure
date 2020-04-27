@@ -42,7 +42,12 @@
 #define D_MTIMER_WAKEUP_TEST_RESULT    (M_PSP_BIT_MASK(D_BEFORE_HALT) | M_PSP_BIT_MASK(D_AFTER_HALT) | M_PSP_BIT_MASK(D_IN_MTIMER_ISR))
 #define D_EXT_INT_WAKEUP_TEST_RESULT   (M_PSP_BIT_MASK(D_BEFORE_HALT) | M_PSP_BIT_MASK(D_AFTER_HALT) | M_PSP_BIT_MASK(D_IN_EXT_INT_ISR))
 
-#define D_HALT_TIME  (10 * (D_CLOCK_RATE / D_PSP_MSEC))/*number of clock cycles equivalent to 10 msec*/
+/*number of clock cycles equivalent to 10 msec*/
+#define D_HALT_TIME  (10 * (D_CLOCK_RATE / D_PSP_MSEC))
+
+/* These definitions enables us to easily switch between IRQ3 and IRQ4 */
+#define D_DEMO_IRQ           D_BSP_IRQ_3
+#define D_DEMO_TIMER_TO_IRQ  E_TIMER_TO_IRQ3
 /**
 * macros
 */
@@ -98,16 +103,16 @@ void demoSetupExternalInterrupts(void)
 	pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
 	/* Set Gateway Interrupt type (Level) */
-	pspExtInterruptSetType(D_BSP_IRQ_3, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
+	pspExtInterruptSetType(D_DEMO_IRQ, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
 	/* Set gateway Polarity (Active high) */
-	pspExtInterruptSetPolarity(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH);
+	pspExtInterruptSetPolarity(D_DEMO_IRQ, D_PSP_EXT_INT_ACTIVE_HIGH);
 
 	/* Set the priority level to highest */
-	pspExtInterruptSetPriority(D_BSP_IRQ_3, M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
+	pspExtInterruptSetPriority(D_DEMO_IRQ, M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
 
 	/* Enable IRQ3 interrupt in the PIC */
-	pspExternalInterruptEnableNumber(D_BSP_IRQ_3);
+	pspExternalInterruptEnableNumber(D_DEMO_IRQ);
 
 	/* Enable external interrupts */
 	pspEnableInterruptNumberMachineLevel(E_MACHINE_EXTERNAL_CAUSE);
@@ -127,13 +132,13 @@ void demoExtInterruptsWakeupTest(void)
 	g_uiTestWayPoints = 0;
 
 	/* register external interrupt handler */
-	pspExternalInterruptRegisterISR(D_BSP_IRQ_3, demoExternalInterruptIsr, 0);
+	pspExternalInterruptRegisterISR(D_DEMO_IRQ, demoExternalInterruptIsr, 0);
 
 	/* Rout SweRVolf FPGA timer to IRQ3 assertion - i.e. when the timer expires, IRQ3 external interrupt is asserted */
-	bspRoutTimer(E_TIMER_TO_IRQ3);
+	bspRoutTimer(D_DEMO_TIMER_TO_IRQ);
 
 	/* Set SweRVolf FPGA Timer duration (upon expiration, it will trigger an external interrupt) */
-	bspSetTimerDurationMsec(500000);
+	bspSetTimerDurationMsec(D_HALT_TIME);
 
 	/* Setup external interrupts */
     demoSetupExternalInterrupts();
