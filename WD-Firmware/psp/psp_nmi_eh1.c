@@ -49,9 +49,9 @@
 /**
 * local prototypes
 */
-void D_PSP_NO_RETURN pspNmiPinAssertionDefaultHandler(void);    /* Default handler for pin-asserted NMI */
-void D_PSP_NO_RETURN pspNmiDbusLoadErrorDefaultHandler(void);   /* Default handler for D-bus load error NMI */
-void D_PSP_NO_RETURN pspNmiDbusStoreErrorDefaultHandler(void);  /* Default handler for D-bus store error NMI */
+D_PSP_NO_RETURN void pspNmiPinAssertionDefaultHandler(void);    /* Default handler for pin-asserted NMI */
+D_PSP_NO_RETURN void pspNmiDbusLoadErrorDefaultHandler(void);   /* Default handler for D-bus load error NMI */
+D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void);  /* Default handler for D-bus store error NMI */
 
 /**
 * external prototypes
