@@ -69,7 +69,7 @@ _start:
 	li  x31,0
 
 	    
-      	#cache configuration
+    #cache configuration
 	li t1, 0x55555555
 	csrw 0x7c0, t1
 	# initialize global pointer
@@ -124,5 +124,3 @@ _start:
     #[OS]: no need for exit, just endless loop here.....was: tail atexit
 	# loop here
  2:  j 2b
-
-
