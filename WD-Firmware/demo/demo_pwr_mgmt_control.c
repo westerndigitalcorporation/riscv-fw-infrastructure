@@ -19,7 +19,9 @@
 * @file   demo_pwr_mgmt_control.c
 * @author Alexander Dvoskin
 * @date   26.03.2020
-* @brief  Demo application for power-management unit. Tests that core is set to 'Halt' mode and then wakeup upon MTIME and EXTERNAL interrupts
+* @brief  Demo application for power-management unit. Tests that (1) core is set to 'Halt' mode and then wakeup upon MTIME and EXTERNAL interrupts.
+*         and (2) core is set to 'Pause' mode and then resumes upon count-down and upon MTIME and EXTERNAL interrupts.
+*
 *
 */
 
@@ -42,8 +44,18 @@
 #define D_MTIMER_WAKEUP_TEST_RESULT    (M_PSP_BIT_MASK(D_BEFORE_HALT) | M_PSP_BIT_MASK(D_AFTER_HALT) | M_PSP_BIT_MASK(D_IN_MTIMER_ISR))
 #define D_EXT_INT_WAKEUP_TEST_RESULT   (M_PSP_BIT_MASK(D_BEFORE_HALT) | M_PSP_BIT_MASK(D_AFTER_HALT) | M_PSP_BIT_MASK(D_IN_EXT_INT_ISR))
 
+
+#define D_BEFORE_PAUSE  (0)
+#define D_AFTER_PAUSE   (1)
+#define D_PAUSE_COUNTDOWN_TEST_RESULT (M_PSP_BIT_MASK(D_BEFORE_PAUSE) | M_PSP_BIT_MASK(D_AFTER_PAUSE))
+#define D_PAUSE_MTIME_INT_TEST_RESULT (M_PSP_BIT_MASK(D_BEFORE_PAUSE) | M_PSP_BIT_MASK(D_AFTER_PAUSE) | M_PSP_BIT_MASK(D_IN_MTIMER_ISR))
+#define D_PAUSE_EXT_INT_TEST_RESULT   (M_PSP_BIT_MASK(D_BEFORE_PAUSE) | M_PSP_BIT_MASK(D_AFTER_PAUSE) | M_PSP_BIT_MASK(D_IN_EXT_INT_ISR))
+
+
 /*number of clock cycles equivalent to 10 msec*/
-#define D_HALT_TIME  (10 * (D_CLOCK_RATE / D_PSP_MSEC))
+#define D_HALT_TIME           (10 * (D_CLOCK_RATE / D_PSP_MSEC))
+#define D_PAUSE_TIME          D_HALT_TIME
+#define D_PAUSE_TIME_LONGER   D_PAUSE_TIME*10
 
 /* These definitions enables us to easily switch between IRQ3 and IRQ4 */
 #define D_DEMO_IRQ           D_BSP_IRQ_3
@@ -161,7 +173,7 @@ void demoExtInterruptsWakeupTest(void)
 
 	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_HALT);
 
-	/* verify all test way points wore visited */
+	/* verify all test way points were visited */
 	if(g_uiTestWayPoints != D_EXT_INT_WAKEUP_TEST_RESULT)
 	{
 		/* Test failed */
@@ -227,7 +239,7 @@ void demoMtimerWakeupTest(void)
 
 	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_HALT);
 
-	/* verify all test way points wore visited */
+	/* verify all test way points were visited */
 	if(g_uiTestWayPoints != D_MTIMER_WAKEUP_TEST_RESULT)
 	{
 		/* Test failed */
@@ -242,6 +254,156 @@ void demoMtimerWakeupTest(void)
 	}
 }
 
+
+/**
+ * @brief - demoEnterPauseExitCountdown - verify core is enter 'pause' and exit it after count down completed in MCPC CS
+ *
+ */
+void demoEnterPauseExitCountdown(void)
+{
+	u64_t udTimeBeforePause;
+	u64_t udTimeAfterPause;
+
+	/* Zero the test results variable */
+	g_uiTestWayPoints = 0;
+
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_PAUSE);
+
+	udTimeBeforePause = pspTimerCounterGet();
+
+	/* Pause core */
+	pspPmcPause(D_PAUSE_TIME);
+
+	/* This line , and the following are executed only when core is not in 'Pause' */
+	udTimeAfterPause = pspTimerCounterGet();
+
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_PAUSE);
+
+	/* verify all test way points were visited */
+	if(g_uiTestWayPoints != D_PAUSE_COUNTDOWN_TEST_RESULT)
+	{
+		/* Test failed */
+		M_DEMO_ENDLESS_LOOP();
+	}
+
+	/* verify that core was indeed halted */
+	if(udTimeAfterPause - udTimeBeforePause < D_PAUSE_TIME)
+	{
+		/* Test failed */
+		M_DEMO_ENDLESS_LOOP();
+	}
+}
+
+/**
+ * @brief - demoEnterPauseExitCountdown - verify core is enter 'pause' and exit it upon MTIME interrupt
+ *
+ */
+void demoEnterPauseExitMtimeInterrupt(void)
+{
+	u64_t udTimeBeforePause;
+	u64_t udTimeAfterPause;
+
+	/* Zero the test results variable */
+	g_uiTestWayPoints = 0;
+
+	/* register Machine timer interrupt handler */
+	pspRegisterInterruptHandler(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
+
+	/* Enable machine timer interrupt */
+	pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
+
+	/* Activate machine timer */
+	M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER, D_PAUSE_TIME);
+
+	/* Enable all machine level interrupts */
+	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_PAUSE);
+
+	udTimeBeforePause = pspTimerCounterGet();
+
+	/* Pause core - for longer time than machine timer duration */
+	pspPmcPause(D_PAUSE_TIME_LONGER);
+
+	/* This line , and the following are executed only when core is not in 'Pause' */
+	udTimeAfterPause = pspTimerCounterGet();
+
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_PAUSE);
+
+	/* verify all test way points were visited */
+	if(g_uiTestWayPoints != D_PAUSE_MTIME_INT_TEST_RESULT)
+	{
+		/* Test failed */
+		M_DEMO_ENDLESS_LOOP();
+	}
+
+	/* verify that core was indeed paused */
+	if(udTimeAfterPause - udTimeBeforePause < D_PAUSE_TIME_LONGER)
+	{
+		/* Test failed */
+		M_DEMO_ENDLESS_LOOP();
+	}
+}
+
+
+/**
+ * @brief - demoEnterPauseExitCountdown - verify core is enter 'pause' and exit it upon external interrupt
+ *
+ */
+void demoEnterPauseExitExternalInterrupt(void)
+{
+	u64_t udTimeBeforePause;
+	u64_t udTimeAfterPause;
+
+	/* Zero the test results variable */
+	g_uiTestWayPoints = 0;
+
+	/* register external interrupt handler */
+	pspExternalInterruptRegisterISR(D_DEMO_IRQ, demoExternalInterruptIsr, 0);
+
+	/* Rout SweRVolf FPGA timer to IRQ3 assertion - i.e. when the timer expires, IRQ3 external interrupt is asserted */
+	bspRoutTimer(D_DEMO_TIMER_TO_IRQ);
+
+	/* Set SweRVolf FPGA Timer duration (upon expiration, it will trigger an external interrupt) */
+	bspSetTimerDurationMsec(D_PAUSE_TIME);
+
+	/* Setup external interrupts */
+    demoSetupExternalInterrupts();
+
+	/* Enable all machine level interrupts */
+	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_PAUSE);
+
+	udTimeBeforePause = pspTimerCounterGet();
+
+	/* Let the SweRVolf FPGA timer to start running */
+	bspStartTimer();
+
+	/* Pause core - for longer time than machine timer duration */
+	pspPmcPause(D_PAUSE_TIME_LONGER);
+
+	/* This line , and the following are executed only when core is not in 'Pause' */
+	udTimeAfterPause = pspTimerCounterGet();
+
+	g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_PAUSE);
+
+	/* verify all test way points were visited */
+	if(g_uiTestWayPoints != D_PAUSE_EXT_INT_TEST_RESULT)
+	{
+		/* Test failed */
+		M_DEMO_ENDLESS_LOOP();
+	}
+
+	/* verify that core was indeed paused */
+	if(udTimeAfterPause - udTimeBeforePause < D_PAUSE_TIME_LONGER)
+	{
+		/* Test failed */
+		M_DEMO_ENDLESS_LOOP();
+	}
+}
+
+
 /**
  * @brief - demoStart - startup point of the demo application. called from main function.
  *
@@ -251,10 +413,19 @@ void demoStart(void)
 	/* Register interrupt vector */
 	pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
+	/* Halt tests */
 	/* verify core wakes up from halt(C3) state upon machine timer interrupt */
 	demoMtimerWakeupTest();
 	/* verify core wakes up from halt(C3) state upon external interrupt */
 	demoExtInterruptsWakeupTest();
+
+	/* Pause tests */
+	/* verify core is enter 'pause' and exit it after count down completed in MCPC CSR */
+	demoEnterPauseExitCountdown();
+	/* verify core is enter 'pause' and exit it upon machine timer interrupt */
+	demoEnterPauseExitMtimeInterrupt();
+	/* verify core is enter 'pause' and exit it upon external interrupt */
+	demoEnterPauseExitExternalInterrupt();
 
 	/* Arriving here means all tests passed successfully */
 	demoOutputMsg("Power Management Control tests passed successfully\n",52);
