@@ -32,8 +32,8 @@
 /**
 * definitions
 */
-#define D_NUM_OF_ITERATIONS_IN_DELAY_LOOP 500000000  /* 500M iterations = 10 seconds (SweRVolf FGPA rate is 50Mhz) */
-
+#define D_DEMO_DURATION_MSEC    500                            /* Create a delay of 0.5 second */
+#define D_NUM_OF_ITERATIONS_IN_DELAY_LOOP    D_CLOCK_RATE * 10 /* 10 seconds of 50M cycles per second (SweRVolf FGPA rate is 50Mhz) */
 /**
 * macros
 */
@@ -97,7 +97,7 @@ void demoStart(void)
 	bspRoutTimer(E_TIMER_TO_NMI);
 	
 	/* Initialize Timer (at its expiration, it will create an NMI) */
-	bspSetTimerDurationMsec(500000);
+	bspSetTimerDurationMsec(D_DEMO_DURATION_MSEC);
 
 	/* Enable the timer to start running */
 	bspStartTimer();
