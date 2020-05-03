@@ -25,6 +25,7 @@
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
 #include "psp_traps_interrupts.h"
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -144,7 +145,7 @@ void demoRtosalCreateTasks(void *pParam)
    if (res != D_RTOSAL_SUCCESS)
    {
       demoOutputMsg("Msg-Q creation failed\n", 22);
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 
    /* Create the rx task */
@@ -154,7 +155,7 @@ void demoRtosalCreateTasks(void *pParam)
    if (res != D_RTOSAL_SUCCESS)
    {
       demoOutputMsg("Rx-Task creation failed\n", 24);
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 
    /* Create the tx task in exactly the same way */
@@ -164,7 +165,7 @@ void demoRtosalCreateTasks(void *pParam)
    if (res != D_RTOSAL_SUCCESS)
    {
       demoOutputMsg("Tx-Task creation failed\n", 24);
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 
    /* create the comrv mutex */
@@ -172,7 +173,7 @@ void demoRtosalCreateTasks(void *pParam)
    if (res != D_RTOSAL_SUCCESS)
    {
       demoOutputMsg("comrv mutex creation failed\n", 28);
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 
    /* Calculates timer period */

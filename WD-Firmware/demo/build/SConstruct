@@ -32,7 +32,7 @@ strBsp              = 'bsp_'
 strNexys			= 'nexys_a7_'
 strBoard 			= 'board'
 strSconscriptPrefix = 'SConscript_'
-listNexysA7Targets = ['swerv_eh1']
+listNexysA7Targets = ['eh1']
 listSupportedTargets = ['hifive1', 'hifive-un']
 listSupportedTargets += listNexysA7Targets
 listDependencies    = ['libftdi1-2']
@@ -132,6 +132,9 @@ strLinkerScriptFile += '.lds'
 # end of temporary solution
 if Env['TARGET_BOARD'] not in listSupportedTargets:
   print "missing target=%s" % " | ".join(listSupportedTargets)
+  exit(1)
+if Env['TARGET_BOARD'] not in  objDemo.listSupportedTargetBoards:
+  print "demo not supported for %s board" % Env['TARGET_BOARD']
   exit(1)
 if Env['TARGET_BOARD'] in listNexysA7Targets:
 	strBsp       = strBsp + strNexys
