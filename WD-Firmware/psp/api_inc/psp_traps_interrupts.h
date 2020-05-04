@@ -26,11 +26,7 @@
 /**
 * include files
 */
-
-/* Interrupt context indication values */
-#define D_PSP_NON_INT_CONTEXT              0
-#define D_PSP_INT_CONTEXT                  1
-
+#include "psp_interrupts_register.h"
 
 /**
 * types
@@ -47,7 +43,6 @@ typedef enum pspExternIntHandlerPrivilege
 /**
 * definitions
 */
-
 /* Enable/Disable bits of SW, Timer and External interrupts in Machine privilege level */
 #define D_PSP_INTERRUPTS_MACHINE_SW        E_MACHINE_SOFTWARE_CAUSE
 #define D_PSP_INTERRUPTS_MACHINE_TIMER     E_MACHINE_TIMER_CAUSE
