@@ -48,9 +48,6 @@
 #define		D_PSP_DICAD1_NUM     0x7CA 	/* I-cache array data 1 (debug mode only)  */
 #define		D_PSP_DICAGO_NUM     0x7CB 	/* I-cache array go (debug mode only)  */
 #define		D_PSP_MGPMC_NUM      0x7D0 	/* Group performance monitor control  */
-#define		D_PSP_MICECT_NUM     0x7F0 	/* I-cache error counter/threshold */
-#define		D_PSP_MICCMECT_NUM   0x7F1 	/* ICCM correctable error counter/threshold  */
-#define		D_PSP_MDCCMECT_NUM   0x7F2 	/* DCCM correctable error counter/threshold  */
 #define		D_PSP_MCGC_NUM       0x7F8 	/* Clock gating control  */
 #define		D_PSP_MFDC_NUM       0x7F9 	/* Feature disable control  */
 #define		D_PSP_MDEAU_NUM      0xBC0 	/* D-Bus error address unlock  */
@@ -119,11 +116,26 @@
 #define D_PSP_PIC_MEIGWCLR_OFFSET	0x5000
 #define D_PSP_PIC_MEIGWCLR_ADDR     PSP_PIC_BASE_ADDRESS + D_PSP_PIC_MEIGWCLR_OFFSET	/* External interrupts gateway clear */
 
-
-
+/***************************/
+/* Performance Monitor CSR */
+/***************************/
 /* mgpmc CSR */
 #define D_PSP_MGPMC_NUM     0x7D0
 #define D_PSP_MGMPC_MASK    0x00000001 /* Performance Monitor enable/disable */
+
+/**********************************/
+/* Correctable-Error counter CSRs */
+/**********************************/
+/* Threshold Field - common in all 3 CSRs */
+#define D_PSP_CORR_ERR_THRESH_SHIFT  27 /* 0xF8000000 */
+/* Counter Field - common in all 3 CSRs */
+#define D_PSP_CORR_ERR_COUNTER 0x7FFFFFF
+/* micect CSR */
+#define	D_PSP_MICECT_NUM     0x7F0 	/* I-cache error counter/threshold */
+/* miccmect CSR */
+#define	D_PSP_MICCMECT_NUM   0x7F1 	/* ICCM correctable error counter/threshold  */
+/* mdccmect CSR */
+#define D_PSP_MDCCMECT_NUM   0x7F2 	/* DCCM correctable error counter/threshold  */
 
 /**
 * macros
