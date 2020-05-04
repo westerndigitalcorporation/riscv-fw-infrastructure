@@ -32,7 +32,7 @@ strBsp              = 'bsp_'
 strNexys			= 'nexys_a7_'
 strBoard 			= 'board'
 strSconscriptPrefix = 'SConscript_'
-listNexysA7Targets = ['swerv_eh1', 'swerv_ehx1']
+listNexysA7Targets = ['eh1']
 listSupportedTargets = ['hifive1', 'hifive-un']
 listSupportedTargets += listNexysA7Targets
 listDependencies    = ['libftdi1-2']
@@ -116,9 +116,15 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,--wrap=read', '-Wl,--wrap=write', '-Wl,--wrap=fstat', '-Wl,--wrap=stat', '-Wl,--wrap=close', 
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
-                    '-Wl,--start-group', '-Wl,--end-group', '-Wl,-gc-sections', '-Wl,--start-group',
+                    '-Wl,-gc-sections',
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
 
+# library dependency in link time, new ld prefere it wrappin the libraries
+# -Wl, --start-group liba libb libc -Wl, --end-group
+# Due to new linker changes (March/2020) when using "start" we have to use "end". 
+Env['LINKCOM_START_GROUP'] = '-Wl,--start-group'
+Env['LINKCOM_END_GROUP'] = '-Wl,--end-group'
+    
 # temporary solution until we have a unified linker script
 if hasattr(objDemo, 'strLinkFilePrefix'):
     strLinkerScriptFile += objDemo.strLinkFilePrefix
@@ -126,6 +132,9 @@ strLinkerScriptFile += '.lds'
 # end of temporary solution
 if Env['TARGET_BOARD'] not in listSupportedTargets:
   print "missing target=%s" % " | ".join(listSupportedTargets)
+  exit(1)
+if Env['TARGET_BOARD'] not in  objDemo.listSupportedTargetBoards:
+  print "demo not supported for %s board" % Env['TARGET_BOARD']
   exit(1)
 if Env['TARGET_BOARD'] in listNexysA7Targets:
 	strBsp       = strBsp + strNexys
@@ -159,12 +168,16 @@ print strEndHeader
 for strSconscript in objDemo.listSconscripts:
   arrLibs.append(SConscript(strSconscriptPrefix + '%s' % strSconscript, exports='Env'))
 
+#execute pre build actions
+Execute(Delete(Env['ELF_FILE']))
+
+
 objBundle = Env.Program(Env['ELF_FILE'], arrLibs, LIBS=Env['TARGET_LIBS'])
 # execute post build actions
 # todo:" to check depend soultion
 AddPostAction(objBundle, Action(utils.fnProduceSectionsSize))
+AddPostAction(objBundle, Action(utils.fnCopyOverlaySection))
 AddPostAction(objBundle, Action(utils.fnProduceDump))
-AddPostAction(objBundle, Action(utils.fnMoveOverlaySection))
 
 #append to the map file the   
 #if downloadFlag != '0':

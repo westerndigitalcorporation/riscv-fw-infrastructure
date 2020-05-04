@@ -7,8 +7,6 @@ MEMORY
   flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
   ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 16K
   ovl          : ORIGIN = 0xE0000000, LENGTH = 0x1000
-  /* TODO: Temporary old section. Will be removed shortly */
-  ovltmp           : ORIGIN = 0xF0000000, LENGTH = 0x10000
 }
 
 PHDRS
@@ -22,7 +20,8 @@ PHDRS
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
-  __comrv_align_size = __comrv_cache_size != 0 ? 512 : 0;
+  /* __comrv_cache_alignment_size defines the alinment size of the start cache area */
+  __comrv_align_size = __comrv_cache_size != 0 ? __comrv_cache_alignment_size : 0;
 
   .init           :
   {
@@ -56,9 +55,9 @@ SECTIONS
   /* this is a placeholder for comrv overlay groups.
      after linking, we'll use objcopy utility and change the
      address of .ovlgrpdata to this address */ 
-  .reserved_ovl  :
+  .reserved_ovl : ALIGN(4)
   {
-    __OVERLAY_STORAGE_START__ADDRESS__ = .;
+    _OVERLAY_STORAGE_START_ADDRESS_ = .;
     . = 0xe00;
   } >flash AT>flash :flash
 
@@ -146,6 +145,16 @@ SECTIONS
     *(.srodata .srodata.*)
   } >ram AT>flash :ram_init
 
+  COMRV_DATA_SEC : 
+  {
+  
+  }  >ram AT>flash :ram_init
+
+  PSP_DATA_SEC : 
+  {
+ 
+  } >ram AT>flash :ram_init
+  
   . = ALIGN(4);
   PROVIDE( _edata = . );
   PROVIDE( edata = . );
@@ -173,6 +182,8 @@ SECTIONS
     PROVIDE( _sp = . );
   } >ram AT>ram :ram
 
+ 
+
   /* this area is used for loading and executing the comrv 
      overlay groups */
   .overlay_sec ALIGN(__comrv_align_size) :
@@ -183,15 +194,13 @@ SECTIONS
   }  >ram AT>ram :ram
 
   /* this is the location of all comrv overlay groups.
-     after linking, we'll use objcopy utility and change
-     this address to the .reserved_ovl address. we do this
+     after linking, we'll use objcopy utility and copy
+     it to the .reserved_ovl section. we do this
      to make sure there is no address dependency after linking */ 
-  .ovlgrpdata       : 
+  .ovlgrps (OVERLAY) : 
   {
-    PROVIDE (OVERLAY_START_OF_OVERLAYS = .);
-    /* *(SORT_BY_USER(.ovlinput.*)) */
+    OVERLAY_START_OF_OVERLAYS = .;
+    *(.ovlinput.*)
+    OVERLAY_END_OF_OVERLAYS = .;
   } >ovl AT>ovl :ovl
-
-  /* TODO: Temporary old section. Will be removed shortly */
-  .ovlgrp_legacy     : {*(.ovlgrpdata)} > ovltmp
 }
