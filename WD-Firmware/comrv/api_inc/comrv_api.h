@@ -59,9 +59,15 @@
 /**
 * APIs
 */
+void comrvEnable(void);
+void comrvDisable(void);
 void comrvLoadTables(void);
 void comrvInit(comrvInitArgs_t* pInitParams);
 void comrvGetStatus(comrvStatus_t* pComrvStatus);
 D_COMRV_NO_INLINE void comrvInitApplicationStack(void);
+u32_t comrvLockUnlockOverlayGroupByFunction(void* pAddress, comrvLockState_t eLockState);
+#ifdef D_COMRV_RTOS_SUPPORT
+   void comrvSaveContextSwitch(volatile u32_t* pMepc, volatile u32_t* pRegisterT3);
+#endif /* D_COMRV_RTOS_SUPPORT */
 
 #endif /* __COMRV_TASK_API_H__ */
