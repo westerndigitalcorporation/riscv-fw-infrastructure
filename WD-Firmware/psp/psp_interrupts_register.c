@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts_eh1.c
-* @author Ronen Haen
-* @date   20.05.2019
-* @brief  The file supplies interrupt and exception registration API for SweRV EH1 + default ISR and exception handlers.
+* @file   psp_interrupts_register.c
+* @author Nati Rapaport
+* @date   04.05.2020
+* @brief  The file supplies registration API for interrupt and exception service routines.
 * 
 */
 
@@ -31,14 +31,6 @@
 * definitions
 */
 
-/* The stack used by interrupt service routines */
-#ifdef D_ISR_STACK_SIZE
-	static /*D_PSP_DATA_SECTION*/ D_PSP_16_ALIGNED pspStack_t udISRStack[ D_ISR_STACK_SIZE ] ;
-	const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
-#else
-    #error "ISR Stack size is not defined"
-#endif
-
 /**
 * macros
 */
@@ -50,8 +42,9 @@
 /**
 * local prototypes
 */
-void pspDefaultExceptionIntHandler_isr(void);
-void pspDefaultEmptyIntHandler_isr(void);
+/* Default ISRs */
+D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void);
+D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 
 /**
 * external prototypes
@@ -60,8 +53,6 @@ void pspDefaultEmptyIntHandler_isr(void);
 /**
 * global variables
 */
-
-
 /* Exception handlers */
 D_PSP_DATA_SECTION pspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
                        pspDefaultEmptyIntHandler_isr,
@@ -81,11 +72,10 @@ D_PSP_DATA_SECTION pspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INT
                        pspDefaultEmptyIntHandler_isr };
 
 /* Exceptions handler pointer */
-//D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
-// [NatiR] Temporarily not in D_PSP_DATA_SECTION. need to further investigate jump to g_fptrIntExceptionIntHandler from ecall
-pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
 
 /* Interrupts handler pointers */
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdSoftIntHandler   = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
@@ -97,15 +87,18 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
 
 /**
-* The function installs an interrupt service routine per risc-v cause
+* APIs
+*/
+
+/**
+* @brief - The function installs an interrupt service routine per risc-v cause
 *
-* @param fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param uiInterruptCause           – interrupt source
+* @input parameter -  fptrInterruptHandler     - function pointer to the interrupt service routine
+* @input parameter -  uiInterruptCause         - uiInterruptCause  – interrupt source
 *
-* @return u32_t                   - previously registered ISR
+* @return u32_t                               - previously registered ISR. If NULL then registeration had an error
 */
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
@@ -172,18 +165,18 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 }
 
 /**
-* The function installs an exception handler per exception cause
+* @brief - The function installs an exception handler per exception cause
 *
-* @param fptrInterruptHandler     – function pointer to the exception handler
-* @param uiExceptionCause           – exception cause
+* @input parameter -  fptrInterruptHandler     - function pointer to the exception handler
+* @input parameter -  uiExceptionCause         - exception cause
 *
-* @return u32_t                   - previously registered ISR
+* @return u32_t                               - previously registered ISR
 */
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause)
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler =! NULL || uiExceptionCause < E_EXC_LAST_COMMON);
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_COMMON);
 
    fptrFunc = g_fptrExceptions_ints[uiExceptionCause];
 
@@ -193,7 +186,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterrup
 }
 
 /**
-* default exception interrupt handler
+* @brief - default exception interrupt handler
 *
 * @param none
 *
@@ -213,7 +206,7 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 
 
 /**
-* default empty interrupt handler
+* @brief - default empty interrupt handler
 *
 * @param none
 *
@@ -221,5 +214,7 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 */
 D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
+    M_PSP_EBREAK();
 }
+
 

@@ -15,18 +15,17 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupt_api_ehx1.h
+* @file   psp_interrupts_register_eh1.h
 * @author Nati Rapaport
 * @date   14.01.2020
-* @brief  The file defines the psp interrupt interfaces specific to SweRV-EHX1 core
+* @brief  The file supplies specific EH1 information for registration of interrupts service routines on EH1 core.
 */
-#ifndef __PSP_INTERRUPT_API_EHX1H__
-#define __PSP_INTERRUPT_API_EHX1H__
+#ifndef __PSP_INTERRUPTS_REGISTER_EH1_H__
+#define __PSP_INTERRUPTS_REGISTER_EH1_H__
 
 /**
 * include files
 */
-#include "psp_interrupt_api.h"
 
 /**
 * macros
@@ -37,28 +36,18 @@
 */
 
 /* */
-typedef enum pspInterruptCauseSweRVehx1
+typedef enum pspInterruptCauseEh1
 {
    E_MACHINE_INTERNAL_TIMER1_CAUSE   = 28,
    E_MACHINE_INTERNAL_TIMER0_CAUSE   = 29,
    E_MACHINE_CORRECTABLE_ERROR_CAUSE = 30,
-   E_LAST_EHX1_CAUSE
-} pspInterruptCauseSweRVehx1_t;
+   E_LAST_EH1_CAUSE
+} pspInterruptCauseEh1_t;
 
 /**
 * definitions
 */
-#define D_PSP_FIRST_EHX1_INT_CAUSE = E_MACHINE_INTERNAL_TIMER1_CAUSE;
-
-/* Exceptions */
-typedef enum pspExceptionCauseSweRVehx1
-{
-   /* TBD how to handle MACHINE_D_BUS_STORE_ERR_NMI and MACHINE_D_BUS_NON_BLOCKING_LOAD_ERR  NMIs*/
-   /*E_EXC_MACHINE_D_BUS_STORE_ERR_NMI              = ... */
-   /*  E_EXC_MACHINE_D_BUS_NON_BLOCKING_LOAD_ERR    = ... */
-   E_EXC_LAST_EHX1
-} pspExceptionCauseSweRVehx1_t;
-
+#define D_PSP_FIRST_EH1_INT_CAUSE = E_MACHINE_INTERNAL_TIMER1_CAUSE;
 
 /**
 * local prototypes
@@ -76,4 +65,4 @@ typedef enum pspExceptionCauseSweRVehx1
 * APIs
 */
 
-#endif /* __PSP_INTERRUPT_API_EHX1_H__ */
+#endif /* __PSP_INTERRUPTS_REGISTER_EH1_H__ */
