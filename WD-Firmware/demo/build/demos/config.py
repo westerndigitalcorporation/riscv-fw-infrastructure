@@ -34,7 +34,7 @@ STR_SCONS_TOOLCHAIN = "scons-tools"
 INT_DEMO_INDEX = 0
 INT_TOOLCHAIN_INDEX = 1
 INT_NUM_OF_CONFIGS = 2
-STR_COMRV_DEMO = "comrv_baremetal"
+STR_COMRV_DEMO = "comrv"
 STR_COMRV_TC = "llvm"
 
 
@@ -97,19 +97,19 @@ class clsGenerate(object):
   def scanDemos(self):
     # scan the build/demo folder and grab all the files with pattern "demo_xxxx.py
     listFiles = os.listdir(os.path.join(os.getcwd(), STR_DEMOS_FOLDER))
-    for strFile in listFiles:
+    for strFile in sorted(listFiles):
       if strFile.startswith(STR_DEMO_MODULE_PREFIX) and strFile.endswith(STR_DEMO_MODULE_SUFFIX):
         self.listDemos.append(strFile.replace(STR_DEMO_MODULE_PREFIX, "").replace(STR_DEMO_MODULE_SUFFIX, "")) 
 
   def scanToolchains(self):
     # scan the build/toolchain folder and grab all the folders
     listDirs = os.listdir(os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_SCONS_TOOLCHAIN))
-    for strDir in listDirs:
+    for strDir in sorted(listDirs):
       self.listToolchain.append(strDir) 
         
   def pickItem(self, strListName, listItems):
     # list all the demos found in the build/demos folder and wait for the user to pick one
-    for strItem in listItems:
+    for strItem in sorted(listItems):
       print "%s: %s" % (listItems.index(strItem), strItem)
     
     # @todo: get demo name from argument/argument file in the future
@@ -127,19 +127,19 @@ class clsGenerate(object):
     strConfiguration = STR_CONFIG_HEADER
     self.scanDemos()
     self.scanToolchains()
-    intItem = self.pickItem(STR_DEMO, self.listDemos)
-    strConfiguration += "\n" + STR_DEMO + self.listDemos[intItem]
+    intItemDemo = self.pickItem(STR_DEMO, self.listDemos)
+    strConfiguration += "\n" + STR_DEMO + self.listDemos[intItemDemo]
     
-    if self.listDemos[intItem] == STR_COMRV_DEMO:
-      intItem = self.listToolchain.index(STR_COMRV_TC)
-      print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItem], STR_COMRV_TC)
+    if self.listDemos[intItemDemo].find(STR_COMRV_DEMO) > -1:
+      intItemTool = self.listToolchain.index(STR_COMRV_TC)
+      print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItemDemo], STR_COMRV_TC)
     else:
-      intItem = self.pickItem(STR_TOOLCHAIN, self.listToolchain)
-    strConfiguration += "\n" + STR_TOOLCHAIN + self.listToolchain[intItem]
+      intItemTool = self.pickItem(STR_TOOLCHAIN, self.listToolchain)
+    strConfiguration += "\n" + STR_TOOLCHAIN + self.listToolchain[intItemTool]
 
     print "\nSelected:"
-    print "demo      = %s" % self.listDemos[intItem]
-    print "toolcahin = %s" % self.listToolchain[intItem]
+    print "demo      = %s" % self.listDemos[intItemDemo]
+    print "toolcahin = %s" % self.listToolchain[intItemTool]
     # save the configureation in the configure file in the build folder
     f  = open(STR_CONFIG_FILE, "w")
     f.write(strConfiguration)

@@ -24,9 +24,8 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join('psp', 'psp_interrupts_hifive1.c'), os.path.join(strOutDir, 'psp_interrupts_hifive1.o')),
-   (os.path.join('psp', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
-   (os.path.join('psp', 'psp_timer.c'), os.path.join(strOutDir, 'psp_timer.o')),
+   (os.path.join('psp', 'psp_traps_interrupts.c'), os.path.join(strOutDir, 'psp_traps_interrups.o')),
+   (os.path.join('psp', 'psp_timers.c'), os.path.join(strOutDir, 'psp_timers.o')),
 ]
 
    
@@ -50,7 +49,9 @@ Env['PUBLIC_INC'] += [
 ]
 
 # privte includes
-listIncPaths = [ ] + Env['PUBLIC_INC']
+listIncPaths = [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'loc_inc'),
+] + Env['PUBLIC_INC']
 
 
 if not Env["Scan"]:
