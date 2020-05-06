@@ -42,7 +42,6 @@
 /**
 * local prototypes
 */
-void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * external prototypes
@@ -51,19 +50,20 @@ void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod);
 /**
 * global variables
 */
-void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod) = pspTimerCounterActivate;
 
 /**
+* APIs
+*/
+
+/**
+* @brief Setup and activate core's Timer
 *
-* @brief Activate core's Timer
-*
-* @ timer  - indicates which timer (actually it is a counter) to setup
-* @ period - defines the timer's period
+* @parameter - timer         - indicates which timer to setup and run
+* @parameter - uiPeriodCycles  - defines the timer's period in cycles 
 *
 ***************************************************************************************************/
-void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod)
+void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 {
-
     #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
         #error "MTIME/MTIMECMP address definition is missing"
     #endif
@@ -72,31 +72,33 @@ void pspTimerCounterActivate(u32_t uiTimer, u32_t uiPeriod)
     volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
     volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
     u64_t udNow = *pMtime;
-    u64_t udThen = udNow + uiPeriod;
+    u64_t udThen = udNow + uiPeriodCycles;
     *pMtimecmp = udThen;
 }
 
 /**
-*
 * @brief Get Timer counter value
 *
-* @return u64_t      – Timer counter value
+* @parameter - timer - indicates which timer to setup and run
+*
+* @return u64_t      - Timer counter value
 *
 ***************************************************************************************************/
-u64_t pspTimerCounterGet(void)
+u64_t pspTimerCounterGet(u32_t uiTimer)
 {
 	volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
 	return *pMtime;
 }
 
 /**
-*
 * @brief Get Time compare counter value
+*
+* @parameter - timer - indicates which timer to setup and run
 *
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-u64_t pspTimeCompareCounterGet(void)
+u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 {
 	volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
 	return *pMtimecmp;
