@@ -74,7 +74,7 @@
 */
 
 /* External interrupt handlers Global Table */
-D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
+D_PSP_DATA_SECTION D_PSP_ALIGNED(1024) pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
 
 /**
@@ -86,7 +86,13 @@ D_PSP_DATA_SECTION pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF
 */
 void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
 {
+	/* Disable external interrupts */
+	pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+
     M_PSP_WRITE_CSR(D_PSP_MEIVT_NUM, pExtIntVectTable);
+
+	/* Enable external interrupts */
+    pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
 }
 
 /*
