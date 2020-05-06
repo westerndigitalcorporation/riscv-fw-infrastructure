@@ -67,7 +67,15 @@
 */
 void pspInterruptsSetVectorTableAddress(void* pVectTable)
 {
+	u32_t uiInterruptsState;
+
+	/* Disable interrupts */
+	pspInterruptsDisable(&uiInterruptsState);
+
     M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, pVectTable);
+
+    /* Restore interrupts */
+    pspInterruptsRestore(uiInterruptsState);
 }
 
 /**
