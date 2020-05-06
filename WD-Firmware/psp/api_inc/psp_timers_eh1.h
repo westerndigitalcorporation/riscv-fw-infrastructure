@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_timers.h
+* @file   psp_timers_eh1.h
 * @author Nati Rapaport
-* @date   28.01.2020
-* @brief  The file defines timer-counter api services
+* @date   05.05.2020
+* @brief  EH1 timers
 * 
 */
-#ifndef  __PSP_TIMER_COUNTERS_H__
-#define  __PSP_TIMER_COUNTERS_H__
+#ifndef  __PSP_TIMERS_EH1_H__
+#define  __PSP_TIMERS_EH1_H__
 
 /**
 * include files
@@ -31,7 +31,9 @@
 /**
 * definitions
 */
-#define D_PSP_CORE_TIMER 0
+#define D_PSP_INTERNAL_TIMER0 1
+#define D_PSP_INTERNAL_TIMER1 2
+
 
 /**
 * types
@@ -56,34 +58,37 @@
 /**
 * APIs
 */
-
 /**
-* @brief Setup and activate core's Timer
+* @brief Enable timer counting when core in sleep mode
 *
-* @parameter - timer            - indicates which timer to setup and run
-* @parameter - uiPeriodMseconds - defines the timer's period in mSeconds
+* @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodMseconds);
+void pspTimerEnableCountInSleepMode(u32_t uiTimer);
 
 /**
-* @brief Get Timer counter value
+* @brief Disable timer counting when core in sleep mode
 *
-* @parameter - timer - indicates which timer to setup and run
-*
-* @return u64_t      - Timer counter value
+* @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-u64_t pspTimerCounterGet(u32_t uiTimer);
+void pspTimerDisableCountInSleepMode(u32_t uiTimer);
 
 /**
-* @brief Get Time compare counter value
+* @brief Enable timer counting when core in in stall
 *
-* @parameter - timer - indicates which timer to setup and run
-*
-* @return u64_t      – Time compare counter value
+* @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-u64_t pspTimeCompareCounterGet(u32_t uiTimer);
+void pspTimerEnableCountInStallMode(u32_t uiTimer);
 
-#endif /* __PSP_TIMER_COUNTERS_H__ */
+/**
+* @brief Disable timer counting when core in in stall
+*
+* @parameter - uiTimer  - indicates which timer to setup
+*
+***************************************************************************************************/
+void pspTimerDisableCountInStallMode(u32_t uiTimer);
+
+
+#endif /* __PSP_TIMERS_EH1_H__ */

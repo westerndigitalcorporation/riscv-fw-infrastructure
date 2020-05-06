@@ -39,11 +39,12 @@
 #include "psp_timers.h"
 #ifdef D_NEXYS_A7  /* Nati TO DO - change D_NEXYS_A7 all over the place to EH1 */
     #include "psp_csrs_eh1.h"
-    #include "psp_interrupts_register_eh1.h"
+    #include "psp_interrupts_eh1.h"
     #include "psp_ext_interrupts_eh1.h"
 	#include "psp_pmc_eh1.h"
 	#include "psp_performance_monitor_eh1.h"
     #include "psp_nmi_eh1.h"
+    #include "psp_timers_eh1.h"
 #endif
 
 /**

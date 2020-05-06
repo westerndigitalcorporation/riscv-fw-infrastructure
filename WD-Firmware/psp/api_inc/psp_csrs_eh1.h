@@ -125,6 +125,34 @@
 #define D_PSP_MGPMC_NUM     0x7D0
 #define D_PSP_MGMPC_MASK    0x00000001 /* Performance Monitor enable/disable */
 
+
+/*************************************/
+/* TIMER0 and TIMER1 CSRs            */
+/*************************************/
+#define	D_PSP_MITCNT0_NUM            0x7D2 	/* Internal timer counter 0  */
+#define	D_PSP_MITBND0_NUM 	         0x7D3 	/* Internal timer bound 0  */
+#define	D_PSP_MITCNT1_NUM 	         0x7D5 	/* Internal timer counter 1  */
+#define	D_PSP_MITBND1_NUM 	         0x7D6 	/* Internal timer bound 1  */
+
+#define	D_PSP_MITCTL0_NUM 	         0x7D4 	/* Internal timer control 0  */
+#define	D_PSP_MITCTL1_NUM            0x7D7 	/* Internal timer control 1  */
+#define D_PSP_MITCTL_PAUSE_EN_MASK   0x00000004 /* bit #2 */
+#define D_PSP_MITCTL_HALT_EN_MASK    0x00000002 /* bit #1 */
+#define D_PSP_MITCTL_EN_MASK         0x00000001 /* bit #0 */
+
+/*****************************************************/
+/* EH1 specific fields in standard MIE and MIP CSRs  */
+/*****************************************************/
+/* mie CSR */
+#define D_PSP_MIE_TIMER1_INT_ENABLE_MASK    0x10000000  /* TIMER1 interrupt enable - bit 28 */
+#define D_PSP_MIE_TIMER0_INT_ENABLE_MASK    0x20000000  /* TIMER0 interrupt enable - bit 29 */
+#define D_PSP_MIE_CORR_ERR_INT_ENABLE_MASK  0x40000000  /* Correctable Error Counter interrupt enable - bit 30 */
+
+/* mip CSR */
+#define D_PSP_MIE_TIMER1_INT_PENDING_MASK    0x10000000 /* TIMER1 interrupt pending - bit 28 */
+#define D_PSP_MIE_TIMER0_INT_PENDING_MASK    0x20000000 /* TIMER0 interrupt pending - bit 29 */
+#define D_PSP_MIE_CORR_ERR_INT_PENDING_MASK  0x40000000 /* Correctable Error Counter interrupt pending - bit 30 */
+
 /**
 * macros
 */
