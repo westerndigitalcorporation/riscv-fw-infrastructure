@@ -26,7 +26,7 @@
 /**
 * include files
 */
-#include "psp_interrupts_register.h"
+#include "psp_interrupts.h"
 
 /**
 * types
