@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_timer.c
+* @file   psp_timer_hifive1.c
 * @author Nati Rapaport
 * @date   13.11.2019
-* @brief  This file implements core's timer-counter service functions
+* @brief  This file implements core's timer-counter service functions (for HiFive1 core)
 *
 */
 
