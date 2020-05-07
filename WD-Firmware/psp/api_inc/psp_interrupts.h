@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts_register.h
+* @file   psp_interrupts.h
 * @author Nati Rapaport
 * @date   04.05.2020
 * @brief  The file supplies registration API for interrupt and exception service routines.
 */
-#ifndef __PSP_INTERRUPTS_REGISTER_H__
-#define __PSP_INTERRUPTS_REGISTER_H__
+#ifndef __PSP_INTERRUPTS_H__
+#define __PSP_INTERRUPTS_H__
 
 /**
 * include files
@@ -119,4 +119,4 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 */
 void pspDefaultEmptyIntHandler_isr(void);
 
-#endif /* __PSP_INTERRUPTS_REGISTER_H__ */
+#endif /* __PSP_INTERRUPTS_H__ */
