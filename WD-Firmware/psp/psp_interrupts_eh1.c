@@ -1,13 +1,13 @@
-/* 
+/*
 * SPDX-License-Identifier: Apache-2.0
 * Copyright 2019 Western Digital Corporation or its affiliates.
-* 
+*
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
-* 
+*
 * http:*www.apache.org/licenses/LICENSE-2.0
-* 
+*
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,11 +15,11 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts_register.c
+* @file   psp_interrupts_eh1.c
 * @author Nati Rapaport
 * @date   04.05.2020
-* @brief  The file supplies registration API for interrupt and exception service routines.
-* 
+* @brief  The file supplies registration API for interrupt and exception service routines on EH1 core.
+*
 */
 
 /**
@@ -87,6 +87,8 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer0IntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer1IntHandler     = pspDefaultEmptyIntHandler_isr;
 
 /**
 * APIs
@@ -104,7 +106,8 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiInterruptCause < E_LAST_COMMON_CAUSE);
+   M_PSP_ASSERT((NULL != fptrInterruptHandler) && (E_LAST_COMMON_CAUSE > uiInterruptCause) &&
+		        (D_PSP_FIRST_EH1_INT_CAUSE <= uiInterruptCause) && (E_LAST_EH1_CAUSE > uiInterruptCause));
 
    switch (uiInterruptCause)
    {
@@ -156,6 +159,14 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
     	  fptrFunc = g_fptrIntMExternIntHandler;
     	  g_fptrIntMExternIntHandler = fptrInterruptHandler;
     	  break;
+      case E_MACHINE_INTERNAL_TIMER0_CAUSE:
+    	  fptrFunc = g_fptrIntMTimer0IntHandler;
+	      g_fptrIntMTimer0IntHandler = fptrInterruptHandler;
+	      break;
+      case E_MACHINE_INTERNAL_TIMER1_CAUSE:
+    	  fptrFunc = g_fptrIntMTimer1IntHandler;
+ 	      g_fptrIntMTimer1IntHandler = fptrInterruptHandler;
+ 	      break;
       default:
     	  fptrFunc = NULL;
     	  break;
