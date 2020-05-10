@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts.h
+* @file   psp_interrupts_hifive1.h
 * @author Nati Rapaport
 * @date   04.05.2020
-* @brief  The file supplies registration API for interrupt and exception service routines.
+* @brief  The file supplies information and registration API for interrupt and exception service routines on HiFive1 core.
 */
-#ifndef __PSP_INTERRUPTS_H__
-#define __PSP_INTERRUPTS_H__
+#ifndef __PSP_INTERRUPTS_HIFIVE1_H__
+#define __PSP_INTERRUPTS_HIFIVE1_H__
 
 /**
 * include files
@@ -44,7 +44,7 @@ typedef enum pspInterruptCause
    E_SUPERVISOR_EXTERNAL_CAUSE       = 9,
    E_RESERVED_EXTERNAL_CAUSE         = 10,
    E_MACHINE_EXTERNAL_CAUSE          = 11,
-   E_LAST_COMMON_CAUSE
+   E_LAST_CAUSE
 } ePspInterruptCause_t;
 
 /* Exceptions */
@@ -66,7 +66,7 @@ typedef enum pspExceptionCause
    E_EXC_LOAD_EXC_PAGE_FAULT                      = 13,
    E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
    E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
-   E_EXC_LAST_COMMON
+   E_EXC_LAST_CAUSE
 } ePspExceptionCause_t;
 
 /* interrupt handler definition */
@@ -99,18 +99,18 @@ typedef void (*pspInterruptHandler_t)(void);
 /**
 * @brief - The function installs an interrupt service routine per risc-v cause
 *
-* input parameter  fptrInterruptHandler     - function pointer to the interrupt service routine
-* input parameter  interruptCause           - interrupt source
-* return u32_t                              - previously registered ISR
+* @parameter - fptrInterruptHandler     - function pointer to the interrupt service routine
+* @parameter - interruptCause           - interrupt source
+* @return    - u32_t                    - previously registered ISR
 */
 pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 /**
 * @brief - The function installs an exception handler per exception cause
 *
-* input parameter fptrInterruptHandler     - function pointer to the exception handler
-* input parameter exceptionCause           - exception cause
-* return u32_t                             - previously registered ISR
+* @parameter -  fptrInterruptHandler     - function pointer to the exception handler
+* @parameter -  exceptionCause           - exception cause
+* @return    -  u32_t                    - previously registered ISR
 */
 pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
@@ -119,4 +119,4 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 */
 void pspDefaultEmptyIntHandler_isr(void);
 
-#endif /* __PSP_INTERRUPTS_H__ */
+#endif /* __PSP_INTERRUPTS_HIFIVE1_H__ */

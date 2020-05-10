@@ -26,19 +26,10 @@
 /**
 * include files
 */
-#include "psp_interrupts.h"
 
 /**
 * types
 */
-typedef enum pspExternIntHandlerPrivilege
-{
-   E_EXT_USER_INT_HNDLR       = E_USER_EXTERNAL_CAUSE,
-   E_EXT_SUPERVISOR_INT_HNDLR = E_SUPERVISOR_EXTERNAL_CAUSE,
-   E_EXT_MACHINE_INT_HNDLR    = E_MACHINE_EXTERNAL_CAUSE,
-   E_EXT_INT_HNDLR_LAST
-} ePspExternIntHandlerPrivilege_t;
-
 
 /**
 * definitions
