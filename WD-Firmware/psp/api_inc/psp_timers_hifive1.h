@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_timers.h
+* @file   psp_timers_hifive1.h
 * @author Nati Rapaport
 * @date   28.01.2020
-* @brief  The file defines timer-counter api services
+* @brief  The file defines timer-counter api services for HiFive1 core.
 * 
 */
-#ifndef  __PSP_TIMER_COUNTERS_H__
-#define  __PSP_TIMER_COUNTERS_H__
+#ifndef  __PSP_TIMERS_HIFIVE1_H__
+#define  __PSP_TIMERS_HIFIVE1_H__
 
 /**
 * include files
@@ -31,11 +31,15 @@
 /**
 * definitions
 */
-#define D_PSP_CORE_TIMER 0
 
 /**
 * types
 */
+typedef enum pspTimers
+{
+   E_MACHINE_TIMER  = 0,
+   E_LAST_TIMER
+} ePspTimers_t;
 
 /**
 * local prototypes
@@ -86,4 +90,4 @@ u64_t pspTimerCounterGet(u32_t uiTimer);
 ***************************************************************************************************/
 u64_t pspTimeCompareCounterGet(u32_t uiTimer);
 
-#endif /* __PSP_TIMER_COUNTERS_H__ */
+#endif /* __PSP_TIMERS_HIFIVE1_H__ */

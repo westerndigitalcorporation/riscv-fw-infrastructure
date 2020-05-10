@@ -201,14 +201,6 @@ void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 	M_PSP_SET_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
-
-
-
-
-
-
-#if defined (__GNUC__) || defined (__clang__)
-
 /**
 *
 * @brief Function that called upon unregistered Trap handler
@@ -228,6 +220,5 @@ void pspTrapUnhandled(void)
 	M_PSP_EBREAK();
 }
 
-#endif /* defined (__GNUC__) || defined (__clang__) */
 
 
