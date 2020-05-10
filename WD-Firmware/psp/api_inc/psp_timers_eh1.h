@@ -18,7 +18,7 @@
 * @file   psp_timers_eh1.h
 * @author Nati Rapaport
 * @date   05.05.2020
-* @brief  EH1 timers
+* @brief  The file defines timer api services for EH1 core.
 * 
 */
 #ifndef  __PSP_TIMERS_EH1_H__
@@ -31,13 +31,17 @@
 /**
 * definitions
 */
-#define D_PSP_INTERNAL_TIMER0 1
-#define D_PSP_INTERNAL_TIMER1 2
-
 
 /**
 * types
 */
+typedef enum pspTimers
+{
+   E_MACHINE_TIMER     = 0,
+   E_INTERNAL_TIMER0   = 1,
+   E_INTERNAL_TIMER1   = 2,
+   E_LAST_TIMER
+} ePspTimers_t;
 
 /**
 * local prototypes
@@ -58,6 +62,36 @@
 /**
 * APIs
 */
+
+/**
+* @brief Setup and activate core's Timer
+*
+* @parameter - timer            - indicates which timer to setup and run
+* @parameter - uiPeriodMseconds - defines the timer's period in mSeconds
+*
+***************************************************************************************************/
+void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodMseconds);
+
+/**
+* @brief Get Timer counter value
+*
+* @parameter - timer - indicates which timer to setup and run
+*
+* @return u64_t      - Timer counter value
+*
+***************************************************************************************************/
+u64_t pspTimerCounterGet(u32_t uiTimer);
+
+/**
+* @brief Get Time compare counter value
+*
+* @parameter - timer - indicates which timer to setup and run
+*
+* @return u64_t      – Time compare counter value
+*
+***************************************************************************************************/
+u64_t pspTimeCompareCounterGet(u32_t uiTimer);
+
 /**
 * @brief Enable timer counting when core in sleep mode
 *

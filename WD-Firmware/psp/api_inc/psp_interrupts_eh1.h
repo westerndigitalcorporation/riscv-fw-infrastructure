@@ -18,7 +18,7 @@
 * @file   psp_interrupts_eh1.h
 * @author Nati Rapaport
 * @date   14.01.2020
-* @brief  The file supplies specific EH1 information of interrupts service routines on EH1 core.
+* @brief  The file supplies information and registration API for interrupt and exception service routines on EH1 core.
 */
 #ifndef __PSP_INTERRUPTS_EH1_H__
 #define __PSP_INTERRUPTS_EH1_H__
@@ -34,15 +34,50 @@
 /**
 * types
 */
-
-/* */
-typedef enum pspInterruptCauseEh1
+typedef enum pspInterruptCause
 {
+   E_USER_SOFTWARE_CAUSE             = 0,
+   E_SUPERVISOR_SOFTWARE_CAUSE       = 1,
+   E_RESERVED_SOFTWARE_CAUSE         = 2,
+   E_MACHINE_SOFTWARE_CAUSE          = 3,
+   E_USER_TIMER_CAUSE                = 4,
+   E_SUPERVISOR_TIMER_CAUSE          = 5,
+   E_RESERVED_TIMER_CAUSE            = 6,
+   E_MACHINE_TIMER_CAUSE             = 7,
+   E_USER_EXTERNAL_CAUSE             = 8,
+   E_SUPERVISOR_EXTERNAL_CAUSE       = 9,
+   E_RESERVED_EXTERNAL_CAUSE         = 10,
+   E_MACHINE_EXTERNAL_CAUSE          = 11,
    E_MACHINE_INTERNAL_TIMER1_CAUSE   = 28,
    E_MACHINE_INTERNAL_TIMER0_CAUSE   = 29,
    E_MACHINE_CORRECTABLE_ERROR_CAUSE = 30,
-   E_LAST_EH1_CAUSE
-} pspInterruptCauseEh1_t;
+   E_LAST_CAUSE
+} ePspInterruptCause_t;
+
+/* Exceptions */
+typedef enum pspExceptionCause
+{
+   E_EXC_INSTRUCTION_ADDRESS_MISALIGNED           = 0,
+   E_EXC_INSTRUCTION_ACCESS_FAULT                 = 1,
+   E_EXC_ILLEGAL_INSTRUCTION                      = 2,
+   E_EXC_BREAKPOINT                               = 3,
+   E_EXC_LOAD_EXC_ADDRESS_MISALIGNED              = 4,
+   E_EXC_LOAD_EXC_ACCESS_FAULT                    = 5,
+   E_EXC_STORE_AMO_ADDRESS_MISALIGNED             = 6,
+   E_EXC_STORE_AMO_ACCESS_FAULT                   = 7,
+   E_EXC_ENVIRONMENT_CALL_FROM_UMODE              = 8,
+   E_EXC_ENVIRONMENT_CALL_FROM_SMODE              = 9,
+   E_EXC_RESERVED                                 = 10,
+   E_EXC_ENVIRONMENT_CALL_FROM_MMODE              = 11,
+   E_EXC_INSTRUCTION_PAGE_FAULT                   = 12,
+   E_EXC_LOAD_EXC_PAGE_FAULT                      = 13,
+   E_EXC_RESERVEE_EXC_FOR_FUTURE_STANDARE_EXC_USE = 14,
+   E_EXC_STORE_AMO_PAGE_FAULT                     = 15,
+   E_EXC_LAST_CAUSE
+} ePspExceptionCause_t;
+
+/* interrupt handler definition */
+typedef void (*pspInterruptHandler_t)(void);
 
 /**
 * definitions
@@ -69,5 +104,28 @@ typedef enum pspInterruptCauseEh1
 /**
 * APIs
 */
+
+/**
+* @brief - The function installs an interrupt service routine per risc-v cause
+*
+* @parameter - fptrInterruptHandler     - function pointer to the interrupt service routine
+* @parameter - interruptCause           - interrupt source
+* @return    - u32_t                    - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
+
+/**
+* @brief - The function installs an exception handler per exception cause
+*
+* @parameter -  fptrInterruptHandler     - function pointer to the exception handler
+* @parameter -  exceptionCause           - exception cause
+* @return    -  u32_t                    - previously registered ISR
+*/
+pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
+
+/**
+* @brief - default empty interrupt handler
+*/
+void pspDefaultEmptyIntHandler_isr(void);
 
 #endif /* __PSP_INTERRUPTS_EH1_H__ */
