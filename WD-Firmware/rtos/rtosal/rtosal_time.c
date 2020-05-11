@@ -403,7 +403,7 @@ void rtosalTimerSetup(void)
 	pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
 	/* Activates Core's timer with the calculated period */
-	M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER, g_uTimerPeriod);
+	pspTimerCounterSetupAndRun(E_MACHINE_TIMER, g_uTimerPeriod);
 }
 
 /**
