@@ -62,18 +62,18 @@
 ***************************************************************************************************/
 void pspTimerSetupMachineTimer(u32_t uiPeriodCycles)
 {
-    #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
-        #error "MTIME/MTIMECMP address definition is missing"
-    #endif
+  #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
+    #error "MTIME/MTIMECMP address definition is missing"
+  #endif
 
-	volatile u64_t *pMtime    = (u64_t*)D_MTIME_ADDRESS;
-	volatile u64_t *pMtimecmp = (u64_t*)D_MTIMECMP_ADDRESS;
-	u64_t udNow, udThen;
+  volatile u64_t *pMtime    = (u64_t*)D_MTIME_ADDRESS;
+  volatile u64_t *pMtimecmp = (u64_t*)D_MTIMECMP_ADDRESS;
+  u64_t udNow, udThen;
 
-    /* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
-    udNow = *pMtime;
-    udThen = udNow + uiPeriodCycles;
-    *pMtimecmp = udThen;
+  /* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
+  udNow = *pMtime;
+  udThen = udNow + uiPeriodCycles;
+  *pMtimecmp = udThen;
 }
 
 
@@ -90,34 +90,34 @@ void pspTimerSetupMachineTimer(u32_t uiPeriodCycles)
 ***************************************************************************************************/
 void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 {
-	u32_t uiNow, uiThen;
+  u32_t uiNow, uiThen;
 
-	M_PSP_ASSERT((E_MACHINE_TIMER == uiTimer) || (E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_MACHINE_TIMER == uiTimer) || (E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_MACHINE_TIMER:
-			pspTimerSetupMachineTimer(uiPeriodCycles);
-		    break;
-		case E_INTERNAL_TIMER0:
-			/* Read Timer0 counter */
-		    uiNow = M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
-		    uiThen = uiNow + uiPeriodCycles;
-		    /* Set Timer0 bound */
-		    M_PSP_WRITE_CSR(D_PSP_MITBND0_NUM, uiThen);
-		    /* Enable Timer0 counting */
-		    M_PSP_SET_CSR(D_PSP_MITCTL0_NUM, D_PSP_MITCTL_EN_MASK);
-		case E_INTERNAL_TIMER1:
-			/* Read Timer1 counter */
-		    uiNow = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
-		    uiThen = uiNow + uiPeriodCycles;
-		    /* Set Timer1 bound */
-		    M_PSP_WRITE_CSR(D_PSP_MITBND1_NUM, uiThen);
-		    /* Enable Timer1 counting */
-		    M_PSP_SET_CSR(D_PSP_MITCTL1_NUM, D_PSP_MITCTL_EN_MASK);
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_MACHINE_TIMER:
+      pspTimerSetupMachineTimer(uiPeriodCycles);
+      break;
+    case E_INTERNAL_TIMER0:
+      /* Read Timer0 counter */
+      uiNow = M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
+      uiThen = uiNow + uiPeriodCycles;
+      /* Set Timer0 bound */
+      M_PSP_WRITE_CSR(D_PSP_MITBND0_NUM, uiThen);
+      /* Enable Timer0 counting */
+      M_PSP_SET_CSR(D_PSP_MITCTL0_NUM, D_PSP_MITCTL_EN_MASK);
+    case E_INTERNAL_TIMER1:
+      /* Read Timer1 counter */
+      uiNow = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
+      uiThen = uiNow + uiPeriodCycles;
+      /* Set Timer1 bound */
+      M_PSP_WRITE_CSR(D_PSP_MITBND1_NUM, uiThen);
+      /* Enable Timer1 counting */
+      M_PSP_SET_CSR(D_PSP_MITCTL1_NUM, D_PSP_MITCTL_EN_MASK);
+    default:
+      break;
+  }
 }
 
 /**
@@ -130,26 +130,26 @@ void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 ***************************************************************************************************/
 u64_t pspTimerCounterGet(u32_t uiTimer)
 {
-	u64_t udCounter = 0;
+  u64_t udCounter = 0;
 
-	M_PSP_ASSERT((E_MACHINE_TIMER == uiTimer) || (E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_MACHINE_TIMER == uiTimer) || (E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_MACHINE_TIMER:
-			udCounter = *(u64_t*)D_MTIME_ADDRESS;
-		    break;
-		case E_INTERNAL_TIMER0:
-			udCounter = (u64_t)M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
-			break;
-		case E_INTERNAL_TIMER1:
-			udCounter = (u64_t)M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
-			break;
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_MACHINE_TIMER:
+      udCounter = *(u64_t*)D_MTIME_ADDRESS;
+      break;
+    case E_INTERNAL_TIMER0:
+      udCounter = (u64_t)M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
+      break;
+    case E_INTERNAL_TIMER1:
+      udCounter = (u64_t)M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
+      break;
+    default:
+      break;
+  }
 
-	return (udCounter);
+  return (udCounter);
 }
 
 /**
@@ -162,26 +162,26 @@ u64_t pspTimerCounterGet(u32_t uiTimer)
 ***************************************************************************************************/
 u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 {
-	u64_t udCounterCompare = 0;
+  u64_t udCounterCompare = 0;
 
-	M_PSP_ASSERT((E_MACHINE_TIMER == uiTimer) || (E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_MACHINE_TIMER == uiTimer) || (E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_MACHINE_TIMER:
-			udCounterCompare = *(u64_t*)D_MTIMECMP_ADDRESS;
-		    break;
-		case E_INTERNAL_TIMER0:
-			udCounterCompare = (u64_t)M_PSP_READ_CSR(D_PSP_MITBND0_NUM);
-			break;
-		case E_INTERNAL_TIMER1:
-			udCounterCompare = (u64_t)M_PSP_READ_CSR(D_PSP_MITBND1_NUM);
-			break;
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_MACHINE_TIMER:
+      udCounterCompare = *(u64_t*)D_MTIMECMP_ADDRESS;
+      break;
+    case E_INTERNAL_TIMER0:
+      udCounterCompare = (u64_t)M_PSP_READ_CSR(D_PSP_MITBND0_NUM);
+      break;
+    case E_INTERNAL_TIMER1:
+      udCounterCompare = (u64_t)M_PSP_READ_CSR(D_PSP_MITBND1_NUM);
+      break;
+    default:
+      break;
+  }
 
-	return (udCounterCompare);
+  return (udCounterCompare);
 }
 
 /**
@@ -192,19 +192,19 @@ u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 ***************************************************************************************************/
 void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 {
-	M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_INTERNAL_TIMER0:
-			M_PSP_SET_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_HALT_EN_MASK);
-			break;
-		case E_INTERNAL_TIMER1:
-			M_PSP_SET_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_HALT_EN_MASK);
-			break;
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_INTERNAL_TIMER0:
+      M_PSP_SET_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_HALT_EN_MASK);
+      break;
+    case E_INTERNAL_TIMER1:
+      M_PSP_SET_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_HALT_EN_MASK);
+      break;
+    default:
+      break;
+  }
 }
 
 /**
@@ -215,19 +215,19 @@ void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 ***************************************************************************************************/
 void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 {
-	M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_INTERNAL_TIMER0:
-			M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_HALT_EN_MASK);
-			break;
-		case E_INTERNAL_TIMER1:
-			M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_HALT_EN_MASK);
-			break;
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_INTERNAL_TIMER0:
+      M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_HALT_EN_MASK);
+      break;
+    case E_INTERNAL_TIMER1:
+      M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_HALT_EN_MASK);
+      break;
+    default:
+      break;
+  }
 }
 
 /**
@@ -238,19 +238,19 @@ void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 ***************************************************************************************************/
 void pspTimerEnableCountInStallMode(u32_t uiTimer)
 {
-	M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_INTERNAL_TIMER0:
-			M_PSP_SET_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
-			break;
-		case E_INTERNAL_TIMER1:
-			M_PSP_SET_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
-			break;
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_INTERNAL_TIMER0:
+      M_PSP_SET_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+      break;
+    case E_INTERNAL_TIMER1:
+      M_PSP_SET_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+      break;
+    default:
+      break;
+  }
 }
 
 /**
@@ -261,19 +261,19 @@ void pspTimerEnableCountInStallMode(u32_t uiTimer)
 ***************************************************************************************************/
 void pspTimerDisableCountInStallMode(u32_t uiTimer)
 {
-	M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
+  M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
-	switch (uiTimer)
-	{
-		case E_INTERNAL_TIMER0:
-			M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
-			break;
-		case E_INTERNAL_TIMER1:
-			M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
-			break;
-		default:
-		    break;
-	}
+  switch (uiTimer)
+  {
+    case E_INTERNAL_TIMER0:
+      M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+      break;
+    case E_INTERNAL_TIMER1:
+      M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+      break;
+    default:
+      break;
+  }
 }
 
 

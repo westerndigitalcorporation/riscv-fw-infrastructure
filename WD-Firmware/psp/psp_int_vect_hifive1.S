@@ -93,7 +93,7 @@ psp_vect_table:
     M_PSP_PUSH_REGFILE
     /* NatiR - TO DO - add indication of enter to Interrupt context (call it M_PSP_SET_INT_CONTEXT) */
     csrr    t0, mcause
-    bge	    t0, zero, psp_vect_table_
+    bge     t0, zero, psp_vect_table_
     slli    t0, t0, 2
     la      t1, psp_vect_table_
     add     t0, t0, t1

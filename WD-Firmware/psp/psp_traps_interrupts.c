@@ -52,10 +52,10 @@
 */
 /* The stack used by interrupt service routines */
 #if (0 == D_ISR_STACK_SIZE)
-    #error "ISR Stack size is not defined"
+  #error "ISR Stack size is not defined"
 #else
-	static /*D_PSP_DATA_SECTION*/ D_PSP_ALIGNED(16) pspStack_t udISRStack[ D_ISR_STACK_SIZE ] ;
-	const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
+  static /*D_PSP_DATA_SECTION*/ D_PSP_ALIGNED(16) pspStack_t udISRStack[ D_ISR_STACK_SIZE ] ;
+  const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
 #endif
 
 /**
@@ -67,15 +67,15 @@
 */
 void pspInterruptsSetVectorTableAddress(void* pVectTable)
 {
-	u32_t uiInterruptsState;
+  u32_t uiInterruptsState;
 
-	/* Disable interrupts */
-	pspInterruptsDisable(&uiInterruptsState);
+  /* Disable interrupts */
+  pspInterruptsDisable(&uiInterruptsState);
 
-    M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, pVectTable);
+  M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, pVectTable);
 
-    /* Restore interrupts */
-    pspInterruptsRestore(uiInterruptsState);
+  /* Restore interrupts */
+  pspInterruptsRestore(uiInterruptsState);
 }
 
 /**
@@ -85,8 +85,8 @@ void pspInterruptsSetVectorTableAddress(void* pVectTable)
 */
 void pspInterruptsDisable(u32_t *pOutPrevIntState)
 {
-	/* Disable interrupts (all privilege levels). Status of mstatus CSR before the 'disable' is saved in pOutPrevIntState */
-    M_PSP_CLEAR_AND_READ_CSR(*pOutPrevIntState, D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
+  /* Disable interrupts (all privilege levels). Status of mstatus CSR before the 'disable' is saved in pOutPrevIntState */
+  M_PSP_CLEAR_AND_READ_CSR(*pOutPrevIntState, D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
 }
 
 /**
@@ -97,7 +97,7 @@ void pspInterruptsDisable(u32_t *pOutPrevIntState)
 */
 void pspInterruptsRestore(u32_t uiPrevIntState)
 {
-	M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, uiPrevIntState);
+  M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, uiPrevIntState);
 }
 
 /**
@@ -106,7 +106,7 @@ void pspInterruptsRestore(u32_t uiPrevIntState)
 */
 void pspInterruptsEnable(void)
 {
-	M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
+  M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
 }
 
 
@@ -130,7 +130,7 @@ void pspInterruptsEnable(void)
 */
 void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 {
-	M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+  M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
 
@@ -154,7 +154,7 @@ void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 */
 void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 {
-	M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+  M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
 
@@ -172,11 +172,11 @@ void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 */
 void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 {
-	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
-			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
-				 (D_PSP_INTERRUPTS_USER_EXT   == uiInterruptNumber));
+  M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
+               (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
+               (D_PSP_INTERRUPTS_USER_EXT   == uiInterruptNumber));
 
-	M_PSP_CLEAR_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+  M_PSP_CLEAR_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
 
@@ -194,11 +194,11 @@ void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 */
 void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 {
-	M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
-			     (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
-				 (D_PSP_INTERRUPTS_USER_EXT   == uiInterruptNumber));
+  M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
+               (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
+               (D_PSP_INTERRUPTS_USER_EXT   == uiInterruptNumber));
 
-	M_PSP_SET_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
+  M_PSP_SET_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
 /**
@@ -208,16 +208,16 @@ void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 ***************************************************************************************************/
 void pspTrapUnhandled(void)
 {
-	volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
+  volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
 
-	uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
-	uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
-	uiLocalmtval =  M_PSP_READ_CSR(D_PSP_MTVAL_NUM);
+  uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
+  uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
+  uiLocalmtval =  M_PSP_READ_CSR(D_PSP_MTVAL_NUM);
 
-	if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
-	{}
+  if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
+  {}
 
-	M_PSP_EBREAK();
+  M_PSP_EBREAK();
 }
 
 
