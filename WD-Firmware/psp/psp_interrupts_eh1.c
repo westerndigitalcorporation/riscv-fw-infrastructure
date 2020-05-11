@@ -107,69 +107,69 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
    pspInterruptHandler_t fptrFunc;
 
    M_PSP_ASSERT((NULL != fptrInterruptHandler) && (E_LAST_COMMON_CAUSE > uiInterruptCause) &&
-		        (D_PSP_FIRST_EH1_INT_CAUSE <= uiInterruptCause) && (E_LAST_EH1_CAUSE > uiInterruptCause));
+            (D_PSP_FIRST_EH1_INT_CAUSE <= uiInterruptCause) && (E_LAST_EH1_CAUSE > uiInterruptCause));
 
    switch (uiInterruptCause)
    {
       case E_USER_SOFTWARE_CAUSE:
-    	  fptrFunc = g_fptrIntUSoftIntHandler;
-    	  g_fptrIntUSoftIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntUSoftIntHandler;
+        g_fptrIntUSoftIntHandler = fptrInterruptHandler;
+        break;
       case E_SUPERVISOR_SOFTWARE_CAUSE:
-    	  fptrFunc = g_fptrIntSSoftIntHandler;
-    	  g_fptrIntSSoftIntHandler = fptrInterruptHandler;
-          break;
+        fptrFunc = g_fptrIntSSoftIntHandler;
+        g_fptrIntSSoftIntHandler = fptrInterruptHandler;
+        break;
       case E_RESERVED_SOFTWARE_CAUSE:
-    	  fptrFunc = g_fptrIntRsrvdSoftIntHandler;
-    	  g_fptrIntRsrvdSoftIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntRsrvdSoftIntHandler;
+        g_fptrIntRsrvdSoftIntHandler = fptrInterruptHandler;
+        break;
       case E_MACHINE_SOFTWARE_CAUSE:
-    	  fptrFunc = g_fptrIntMSoftIntHandler;
-    	  g_fptrIntMSoftIntHandler = fptrInterruptHandler;
-          break;
+        fptrFunc = g_fptrIntMSoftIntHandler;
+        g_fptrIntMSoftIntHandler = fptrInterruptHandler;
+        break;
       case E_USER_TIMER_CAUSE:
-    	  fptrFunc = g_fptrIntUTimerIntHandler;
-    	  g_fptrIntUTimerIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntUTimerIntHandler;
+        g_fptrIntUTimerIntHandler = fptrInterruptHandler;
+        break;
       case E_SUPERVISOR_TIMER_CAUSE:
-    	  fptrFunc = g_fptrIntSTimerIntHandler;
-    	  g_fptrIntSTimerIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntSTimerIntHandler;
+        g_fptrIntSTimerIntHandler = fptrInterruptHandler;
+        break;
       case E_RESERVED_TIMER_CAUSE:
-    	  fptrFunc = g_fptrIntRsrvdTimerIntHandler;
-    	  g_fptrIntRsrvdTimerIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntRsrvdTimerIntHandler;
+        g_fptrIntRsrvdTimerIntHandler = fptrInterruptHandler;
+        break;
       case E_MACHINE_TIMER_CAUSE:
-    	  fptrFunc = g_fptrIntMTimerIntHandler;
-    	  g_fptrIntMTimerIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntMTimerIntHandler;
+        g_fptrIntMTimerIntHandler = fptrInterruptHandler;
+        break;
       case E_USER_EXTERNAL_CAUSE:
-    	  fptrFunc = g_fptrIntUExternIntHandler;
-    	  g_fptrIntUExternIntHandler = fptrInterruptHandler;
-          break;
+        fptrFunc = g_fptrIntUExternIntHandler;
+        g_fptrIntUExternIntHandler = fptrInterruptHandler;
+        break;
       case E_SUPERVISOR_EXTERNAL_CAUSE:
-    	  fptrFunc = g_fptrIntSExternIntHandler;
-    	  g_fptrIntSExternIntHandler = fptrInterruptHandler;
-          break;
+        fptrFunc = g_fptrIntSExternIntHandler;
+        g_fptrIntSExternIntHandler = fptrInterruptHandler;
+        break;
       case E_RESERVED_EXTERNAL_CAUSE:
-    	  fptrFunc = g_fptrIntRsrvdExternIntHandler;
-    	  g_fptrIntRsrvdExternIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntRsrvdExternIntHandler;
+        g_fptrIntRsrvdExternIntHandler = fptrInterruptHandler;
+        break;
       case E_MACHINE_EXTERNAL_CAUSE:
-    	  fptrFunc = g_fptrIntMExternIntHandler;
-    	  g_fptrIntMExternIntHandler = fptrInterruptHandler;
-    	  break;
+        fptrFunc = g_fptrIntMExternIntHandler;
+        g_fptrIntMExternIntHandler = fptrInterruptHandler;
+        break;
       case E_MACHINE_INTERNAL_TIMER0_CAUSE:
-    	  fptrFunc = g_fptrIntMTimer0IntHandler;
-	      g_fptrIntMTimer0IntHandler = fptrInterruptHandler;
-	      break;
+        fptrFunc = g_fptrIntMTimer0IntHandler;
+        g_fptrIntMTimer0IntHandler = fptrInterruptHandler;
+        break;
       case E_MACHINE_INTERNAL_TIMER1_CAUSE:
-    	  fptrFunc = g_fptrIntMTimer1IntHandler;
- 	      g_fptrIntMTimer1IntHandler = fptrInterruptHandler;
- 	      break;
+        fptrFunc = g_fptrIntMTimer1IntHandler;
+        g_fptrIntMTimer1IntHandler = fptrInterruptHandler;
+        break;
       default:
-    	  fptrFunc = NULL;
-    	  break;
+        fptrFunc = NULL;
+        break;
    }
 
    return fptrFunc;
@@ -225,7 +225,7 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 */
 D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
-    M_PSP_EBREAK();
+  M_PSP_EBREAK();
 }
 
 

@@ -64,16 +64,16 @@
 ***************************************************************************************************/
 void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 {
-    #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
-        #error "MTIME/MTIMECMP address definition is missing"
-    #endif
+  #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
+  #error "MTIME/MTIMECMP address definition is missing"
+  #endif
 
-	/* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
-    volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
-    volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
-    u64_t udNow = *pMtime;
-    u64_t udThen = udNow + uiPeriodCycles;
-    *pMtimecmp = udThen;
+  /* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */
+  volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
+  volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+  u64_t udNow = *pMtime;
+  u64_t udThen = udNow + uiPeriodCycles;
+  *pMtimecmp = udThen;
 }
 
 /**
@@ -86,8 +86,8 @@ void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 ***************************************************************************************************/
 u64_t pspTimerCounterGet(u32_t uiTimer)
 {
-	volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
-	return *pMtime;
+  volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
+  return *pMtime;
 }
 
 /**
@@ -100,8 +100,8 @@ u64_t pspTimerCounterGet(u32_t uiTimer)
 ***************************************************************************************************/
 u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 {
-	volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
-	return *pMtimecmp;
+  volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
+  return *pMtimecmp;
 }
 
 
