@@ -117,7 +117,7 @@
 .macro M_PSP_CHANGE_SP_FROM_ISR_TO_APP_STACK  pAppCB, spLocationInAppCB
     /* Load sp register with the address of current Application Control Block */
     M_PSP_LOAD    sp, \pAppCB
-	/* Update sp regsiter to point to Task's stack*/
+  /* Update sp regsiter to point to Task's stack*/
     M_PSP_LOAD    sp, \spLocationInAppCB(sp)
 .endm
 

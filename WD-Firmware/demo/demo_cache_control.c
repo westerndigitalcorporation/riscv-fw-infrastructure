@@ -25,11 +25,9 @@
 * include files
 */
 #include "common_types.h"
-#include "psp_macros.h"
 #include "demo_platform_al.h"
-#include "psp_cache_control_eh1.h"
-#include "psp_timers.h"
 #include "mem_map.h"
+#include "psp_api.h"
 
 /**
 * definitions
@@ -97,10 +95,10 @@ void demoStart(void)
       pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
       /* Activates Core's timer */
-      M_PSP_TIMER_COUNTER_ACTIVATE(D_PSP_CORE_TIMER,  0xFFFFFFFF);
+      pspTimerCounterSetupAndRun(E_MACHINE_TIMER,  0xFFFFFFFF);
 
       /* sample the timer value */
-      ulCounter1 = pspTimerCounterGet();
+      ulCounter1 = pspTimerCounterGet(E_MACHINE_TIMER);
 
       /* we disable (again) the cache just to have the same amount
          of measured instructions */
@@ -110,7 +108,7 @@ void demoStart(void)
       M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounter2 = pspTimerCounterGet();
+      ulCounter2 = pspTimerCounterGet(E_MACHINE_TIMER);
 
       /* enable cache for the main memory so we can measure how much
          time execution takes */
@@ -120,7 +118,7 @@ void demoStart(void)
       M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounter3 = pspTimerCounterGet();
+      ulCounter3 = pspTimerCounterGet(E_MACHINE_TIMER);
 
       /* verify we are within execution time limits when cache
          is enabled/disabled */
