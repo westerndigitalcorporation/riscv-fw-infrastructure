@@ -28,12 +28,17 @@
 #include "rtosal_task_api.h"
 #include "rtosal_macros.h"
 #include "rtosal_util.h"
+#include "rtosal_interrupt_api.h"
 #include "psp_api.h"
 #ifdef D_USE_FREERTOS
    #include "task.h"
 #else
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
+
+#ifdef D_COMRV
+   #include "comrv_api.h"
+#endif /* D_COMRV */
 
 /**
 * definitions
@@ -375,7 +380,7 @@ RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
 	/* Register interrupt vector */
-	M_PSP_WRITE_CSR(mtvec, &rtosal_vect_table);
+	pspInterruptsSetVectorTableAddress(&rtosal_vect_table);
 
 #ifdef D_USE_FREERTOS
 	/* Initialize the timer-tick handler function pointer to NULL */
@@ -417,4 +422,64 @@ RTOSAL_SECTION void rtosalEndScheduler( void )
 void rtosalRegisterTimerTickHandler(rtosalTimerTickHandler_t fptrHandler)
 {
 	fptrTimerTickHandler = fptrHandler;
+}
+
+/**
+* @brief retrieve scheduler state
+*
+* @return   D_RTOSAL_SCHEDULER_NOT_STARTED
+*           D_RTOSAL_SCHEDULER_RUNNING
+*           D_RTOSAL_SCHEDULER_SUSPENDED
+*           D_RTOSAL_SCHEDULER_UNKNOWN_STATE
+*/
+u32_t rtosalGetSchedulerState(void)
+{
+   u32_t uiRet;
+#ifdef D_USE_FREERTOS
+   uiRet = xTaskGetSchedulerState();
+   switch (uiRet)
+   {
+      case taskSCHEDULER_NOT_STARTED:
+         uiRet = D_RTOSAL_SCHEDULER_NOT_STARTED;
+         break;
+      case taskSCHEDULER_RUNNING:
+         uiRet = D_RTOSAL_SCHEDULER_RUNNING;
+         break;
+      case taskSCHEDULER_SUSPENDED:
+         uiRet = D_RTOSAL_SCHEDULER_SUSPENDED;
+         break;
+      default:
+         uiRet = D_RTOSAL_SCHEDULER_UNKNOWN_STATE;
+         break;
+   }
+#elif D_USE_THREADX
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
+#endif /* #ifdef D_USE_FREERTOS */
+   return uiRet;
+}
+
+/**
+* @brief This interface is called from the rtos porting layer to
+*        update the task stack if needed before context switch is performed.
+*        If comrv is enabled, it is called to save context in case switching is done
+*        while executing in an overlay function
+*
+* @param pxTopOfStack - pointer to current task stack
+*
+*/
+void rtosalUpdateStackPriorContextSwitch(volatile rtosalStack_t* pxTopOfStack)
+{
+#ifdef D_COMRV
+#ifdef D_USE_FREERTOS
+   /* save comrv context in case context switch is done while in an overlay function */
+   comrvSaveContextSwitch(&pxTopOfStack[D_RTOSAL_MEPC_INDEX_ON_STACK],
+                          &pxTopOfStack[D_RTOSAL_T3_INDEX_ON_STACK]);
+#elif D_USE_THREADX
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "Add appropriate RTOS definitions"
+#endif /* D_USE_FREERTOS */
+#endif /* D_COMRV */
 }

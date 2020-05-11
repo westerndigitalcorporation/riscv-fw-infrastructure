@@ -23,39 +23,43 @@
 #ifndef  __PSP_API_H__
 #define  __PSP_API_H__
 
-/**
+/***
 * include files
 */
-
+#include "psp_types.h"
 #include "psp_intrinsics.h"
 #include "psp_defines.h"
 #include "psp_config.h"
-#include "psp_interrupt_api.h"
+#include "psp_csrs.h"
 #include "psp_macros.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
-#ifdef D_NEXYS_A7
-    #include "psp_swerv_eh1_csrs.h"
+#ifdef D_HI_FIVE1
+    #include "psp_timers_hifive1.h"
+    #include "psp_interrupts_hifive1.h"
+#elif D_NEXYS_A7  /* Nati TO DO - change D_NEXYS_A7 all over the place to EH1 */
+    #include "psp_csrs_eh1.h"
+    #include "psp_timers_eh1.h"
+    #include "psp_interrupts_eh1.h"
+    #include "psp_ext_interrupts_eh1.h"
+    #include "psp_pmc_eh1.h"
+    #include "psp_performance_monitor_eh1.h"
+    #include "psp_nmi_eh1.h"
+    #include "psp_cache_control_eh1.h"
 #endif
+#include "psp_traps_interrupts.h"
 
 /**
 * definitions
 */
-#ifdef D_HI_FIVE1
-    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
-    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_SET_CSR(mie, D_PSP_MIP_MTIP);
-#elif D_NEXYS_A7
-    #define D_PSP_DISABLE_TIMER_INT()  M_PSP_DISABLE_SWERV_TIMER();
-    #define D_PSP_ENABLE_TIMER_INT()   M_PSP_ENABLE_SWERV_TIMER();
-#endif
-
-#define D_PSP_SETUP_SINGLE_TIMER_RUN(enableInterrupt)   pspTimerSetupSingleRun(enableInterrupt)
 
 
 /**
 * macros
 */
 
+/* What is the current privilege-level */
+#define M_PSP_GET_CURRENT_PRIVILEGE_LEVEL() /* Nati - to be implemented - use ebreak, then check MPP/SPP fields in mstatus, then return */
 
 /**
 * types
@@ -77,48 +81,6 @@
 * APIs
 */
 
-
-/**
-* The function installs an interrupt service routine per risc-v cause
-*
-* @param fptrInterruptHandler     – function pointer to the interrupt service routine
-* @param interruptCause           – interrupt source
-*
-* @return u32_t                   - previously registered ISR
-*/
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t interruptCause);
-
-
-/**
-* The function installs an exception handler per exception cause
-*
-* @param fptrInterruptHandler     – function pointer to the exception handler
-* @param exceptionCause           – exception cause
-*
-* @return u32_t                   - previously registered ISR
-*/
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t exceptionCause);
-
-/**
-*
-* Function that called upon unregistered Trap handler
-*/
-void pspTrapUnhandled(void);
-
-/**
-*
-* Setup function for M-Timer. Called upon initialization of the system
-*
-*/
-void pspTimerSetup(void);
-
-/**
-*
-* Setup function for Core's Timer for a single run
-*
-* @param enable     – indicates whether to enable timer interrupt or not
-*/
-void pspTimerSetupSingleRun(const unsigned int enableInterrupt);
 
 
 

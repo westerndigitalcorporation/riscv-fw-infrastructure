@@ -27,6 +27,8 @@
 /**
 * include files
 */
+#include "psp_macros.h"
+#include "psp_traps_interrupts.h"
 
 /**
 * definitions
@@ -35,15 +37,55 @@
 /**
 * macros
 */
-#define M_COMRV_ENTER_CRITICAL_SECTION()
-#define M_COMRV_EXIT_CRITICAL_SECTION()
-/* __builtin_expect instruction provides branch
+#define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
+#define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
+
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
+   #define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
+                                                   stError.uiToken    = token; \
+                                                   comrvErrorHook(&stError);
+#else
+   #define M_COMRV_ERROR(stError,errorNum,token)
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
+
+#ifdef D_COMRV_ASSERT_ENABLED
+   #ifdef D_COMRV_ERROR_NOTIFICATIONS
+      #define M_COMRV_ASSERT_ACTION(error,tokenVal)      M_COMRV_ERROR(stErrArgs,error,tokenVal);
+   #else
+      #define M_COMRV_ASSERT_ACTION(error,tokenVal)      while(1);
+   #endif /* D_COMRV_ERROR_NOTIFICATIONS */
+   #define M_COMRV_ASSERT(expression, expectedVlue, error, tokenVal)  if (M_COMRV_BUILTIN_EXPECT((expression) != (expectedVlue), 0)) \
+                                                                      { \
+                                                                         M_COMRV_ASSERT_ACTION(error,tokenVal); \
+                                                                      }
+#else
+   #define M_COMRV_ASSERT(expression, expectedVlue, error, tokenVal)
+#endif /* D_COMRV_ASSERT_ENABLED */
+
+#ifdef D_COMRV_RTOS_SUPPORT
+   // TODO: replace M_PSP_ with new interface
+   #define M_COMRV_DISABLE_INTS(uiOutPrevIntState) pspInterruptsDisable(&uiOutPrevIntState)
+   #define M_COMRV_ENABLE_INTS(uiOutPrevIntState)  pspInterruptsRestore(uiOutPrevIntState)
+   #define M_COMRV_ENTER_CRITICAL_SECTION()  ret = comrvEnterCriticalSectionHook(); \
+                                             M_COMRV_ASSERT(ret, D_COMRV_SUCCESS, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken.uiValue);
+   #define M_COMRV_EXIT_CRITICAL_SECTION()   ret = comrvExitCriticalSectionHook(); \
+                                             M_COMRV_ASSERT(ret, D_COMRV_SUCCESS, D_COMRV_EXIT_CRITICAL_SECTION_ERR, unToken.uiValue);
+#else
+   #define M_COMRV_ENTER_CRITICAL_SECTION()
+   #define M_COMRV_EXIT_CRITICAL_SECTION()
+   #define M_COMRV_DISABLE_INTS(uiOutPrevIntState) (void)uiOutPrevIntState
+   #define M_COMRV_ENABLE_INTS(uiOutPrevIntState)  (void)uiOutPrevIntState
+#endif /* D_COMRV_RTOS_SUPPORT */
+
+/* M_PSP_BUILTIN_EXPECT instruction provides branch
    prediction information. The condition parameter is the expected
    comparison value. If it is equal to 1 (true), the condition
    is likely to be true, in other case condition is likely to be false.
    this provides us a way to take rare cases out of the critical execution path */
-// TODO: use our psp
-#define _BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
+#define M_COMRV_BUILTIN_EXPECT(condition, expected)  M_PSP_BUILTIN_EXPECT(condition, expected)
+
+/* invalidate data cache */
+#define M_COMRV_DCACHE_FLUSH(pAddress, uiNumOfBytes) comrvInvalidateDataCacheHook(pAddress, uiNumOfBytes);
 
 /**
 * types

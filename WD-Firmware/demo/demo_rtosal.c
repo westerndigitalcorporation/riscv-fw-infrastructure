@@ -57,21 +57,17 @@
 /**
 * include files
 */
-
 #ifdef D_HI_FIVE1
-    #include <stdlib.h>
+    #include <stdlib.h>	
 #endif
-
 #include "common_types.h"
 #include "demo_platform_al.h"
-
-#include "psp_api.h"
-
 #include "rtosal_task_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
+
 
 /**
 * definitions
@@ -106,17 +102,20 @@ meaning the send task should always find the queue empty. */
 /**
 * local prototypes
 */
-static void demoRtosalCreateTasks(void *pParam);
-static void demoRtosalReceiveMsgTask( void *pvParameters );
-static void demoRtosalSendMsgTask( void *pvParameters );
-static void demoRtosalSemaphoreTask( void *pvParameters );
-static void demoRtosalTimerCallback( void* xTimer );
+static void demoRtosalCreateTasks(void *pParameters);
+static void demoRtosalReceiveMsgTask(void *pParameters);
+static void demoRtosalSendMsgTask(void *pParameters);
+static void demoRtosalSemaphoreTask(void *pParameters);
+static void demoRtosalTimerCallback(void *pTimer);
+static void demoRtosalcalculateTimerPeriod(void);
 void demoRtosalTimerTickHandler(void);
-
 
 /**
 * external prototypes
 */
+#ifdef D_NEXYS_A7
+    extern void pspExtInterruptIsr(void);
+#endif
 
 /**
 * global variables
@@ -132,18 +131,18 @@ static rtosalSemaphore_t stEventSemaphore;
 /* The counters used by the various examples.  The usage is described in the
  * comments at the top of this file.
  */
-static volatile u32_t ulCountOfTimerCallbackExecutions = 0;
-static volatile u32_t ulCountOfItemsReceivedOnQueue = 0;
-static volatile u32_t ulCountOfReceivedSemaphores = 0;
+static volatile u32_t uiCountOfTimerCallbackExecutions = 0;
+static volatile u32_t uiCountOfItemsReceivedOnQueue = 0;
+static volatile u32_t uiCountOfReceivedSemaphores = 0;
 
 /* Variables related to the tasks in this application */
 static rtosalTask_t stRxTask;
 static rtosalTask_t stTxTask;
 static rtosalTask_t stSemTask;
 static rtosalTimer_t stLedTimer;
-static rtosalStackType_t uRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
-static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
-static rtosalStackType_t uSemTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
+static rtosalStackType_t uiRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
+static rtosalStackType_t uiTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
+static rtosalStackType_t uiSemTaskStackBuffer[D_SEM_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
 
 
@@ -173,55 +172,58 @@ void demoStart(void)
  * and the tasks are start to be active
  *
  */
-void demoRtosalCreateTasks(void *pParam)
+void demoRtosalCreateTasks(void *pParameters)
 {
 	
-    u32_t res;
-    pspExceptionCause_t cause;
+    u32_t uiResult;
+    ePspExceptionCause_t eCause;
 
-    /* Disable the machine & timer interrupts until setup is done. */
-    M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MEIP);
-    M_PSP_CLEAR_CSR(mie, D_PSP_MIP_MTIP);
-    /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
-    for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST_COMMON ; cause++)
+    /* Disable the machine external & timer interrupts until setup is done. */
+    pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+	pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+
+	/* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
+    for (eCause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; eCause < E_EXC_LAST_CAUSE ; eCause++)
     {
     	/* Skip ECALL entry as we already registered there a handler */
-    	if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == cause)
+    	if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == eCause)
     	{
     		continue;
     	}
-        pspRegisterExceptionHandler(pspTrapUnhandled, cause);
+        pspRegisterExceptionHandler(pspTrapUnhandled, eCause);
     }
+    /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
 
-    /* register external interrupt handler */
-    /* pspRegisterInterruptHandler(handle_interrupt, E_MACHINE_EXTERNAL_CAUSE); */
+#ifdef D_NEXYS_A7
+    pspRegisterInterruptHandler(pspExtInterruptIsr, E_MACHINE_EXTERNAL_CAUSE);
 
-    /* Enable the Machine-External bit in MIE */
-    M_PSP_SET_CSR(mie, D_PSP_MIP_MEIP);
+    /* Enable the Machine-External interrupt */
+    pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+#endif
 
     /* Create the queue used by the send-msg and receive-msg tasks. */
-    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
-    if (res != D_RTOSAL_SUCCESS)
+    uiResult = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
+    if (uiResult != D_RTOSAL_SUCCESS)
     {
     	demoOutputMsg("Msg-Q creation failed\n", 22);
         for(;;);
     }
 
     /* Create the queue-receive task */
-    res = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_29,
-    		      demoRtosalReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE, uRxTaskStackBuffer,
+    uiResult = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_29,
+    		      demoRtosalReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE, uiRxTaskStackBuffer,
                   0, D_RTOSAL_AUTO_START, 0);
-	if (res != D_RTOSAL_SUCCESS)
+	if (uiResult != D_RTOSAL_SUCCESS)
 	{
 		demoOutputMsg("Rx-Task creation failed\n", 24);
 		for(;;);
 	}
 
 	/* Create the queue-send task in exactly the same way */
-    res = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_30,
+    uiResult = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_30,
     		      demoRtosalSendMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
-				  uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
-	if (res != D_RTOSAL_SUCCESS)
+				  uiTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
+	if (uiResult != D_RTOSAL_SUCCESS)
 	{
 		demoOutputMsg("Tx-Task creation failed\n", 24);
 		for(;;);
@@ -230,8 +232,8 @@ void demoRtosalCreateTasks(void *pParam)
 	/* Create the semaphore used by the FreeRTOS tick hook function and the
     event semaphore task.  NOTE: A semaphore is used for example purposes,
     using a direct to task notification will be faster! */
-    res = rtosalSemaphoreCreate(&stEventSemaphore, NULL, 0, 1);
-	if (res != D_RTOSAL_SUCCESS)
+    uiResult = rtosalSemaphoreCreate(&stEventSemaphore, NULL, 0, 1);
+	if (uiResult != D_RTOSAL_SUCCESS)
 	{
 		demoOutputMsg("Semaphore creation failed\n", 26);
 		for(;;);
@@ -239,19 +241,19 @@ void demoRtosalCreateTasks(void *pParam)
 
 	/* Create the task that is synchronized with an interrupt using the
     stEventSemaphore semaphore. */
-    res = rtosalTaskCreate(&stSemTask, (s08_t*)"SEM", E_RTOSAL_PRIO_29,
+    uiResult = rtosalTaskCreate(&stSemTask, (s08_t*)"SEM", E_RTOSAL_PRIO_29,
     		      demoRtosalSemaphoreTask, (u32_t)NULL, D_SEM_TASK_STACK_SIZE,
-				  uSemTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
-	if (res != D_RTOSAL_SUCCESS)
+				  uiSemTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
+	if (uiResult != D_RTOSAL_SUCCESS)
 	{
 		demoOutputMsg("Sem-Task creation failed\n", 25);
 	    for(;;);
 	}
 
     /* Create the software timer */
-    res = rtosTimerCreate(&stLedTimer, (s08_t*)"LEDTimer", demoRtosalTimerCallback, 0,
+    uiResult = rtosTimerCreate(&stLedTimer, (s08_t*)"LEDTimer", demoRtosalTimerCallback, 0,
                          D_RTOSAL_AUTO_START, D_MAIN_SOFTWARE_TIMER_PERIOD_TICKS, pdTRUE);
-    if (res != D_RTOSAL_SUCCESS)
+    if (uiResult != D_RTOSAL_SUCCESS)
     {
     	demoOutputMsg("Timer creation failed\n", 22);
         for(;;);
@@ -259,6 +261,9 @@ void demoRtosalCreateTasks(void *pParam)
 
     /* Register Timer-Tick interrupt handler function */
     rtosalRegisterTimerTickHandler(demoRtosalTimerTickHandler);
+
+    /* Calculates timer period */
+    demoRtosalcalculateTimerPeriod();
 
 }
 
@@ -270,14 +275,14 @@ void demoRtosalCreateTasks(void *pParam)
  */
 void demoRtosalTimerTickHandler(void)
 {
-static u32_t ulCount = 0;
+    static u32_t uiCount = 0;
 
     /* The RTOS tick hook function is enabled by setting configUSE_TICK_HOOK to
     1 in FreeRTOSConfig.h.
 
     "Give" the semaphore on every 500th tick interrupt. */
-    ulCount++;
-    if( ulCount >= 500UL )
+    uiCount++;
+    if( uiCount >= 500UL )
     {
          /* This function is called from an interrupt context (the RTOS tick interrupt),
           * so only ISR safe API functions can be used (those that end in "FromISR()".
@@ -298,10 +303,10 @@ static u32_t ulCount = 0;
           * rtos al 'context switch' indication)
          */
          rtosalContextSwitchIndicationClear();
-         ulCount = 0UL;
+         uiCount = 0UL;
 
          demoOutputMsg("Giving Semaphore\n", 17);
-         demoOutputLed(D_LED_GREEN_ON);
+         demoOutputToggelLed();
     }
 }
 
@@ -311,16 +316,18 @@ static u32_t ulCount = 0;
  * void* xTimer - not in use
  *
  */
-static void demoRtosalTimerCallback(void* xTimer)
+static void demoRtosalTimerCallback(void* pTimer)
 {
-#ifdef D_HI_FIVE1
     /* The timer has expired.  Count the number of times this happens.  The
     timer that calls this function is an auto re-load timer, so it will
     execute periodically. */
-    ulCountOfTimerCallbackExecutions++;
+    uiCountOfTimerCallbackExecutions++;
 
-    demoOutputLed(D_LED_BLUE_ON);
+    demoOutputToggelLed();
+#ifdef D_HI_FIVE1
     demoOutputMsg("RTOS Timer Callback\n", 20);
+#elif defined(D_NEXYS_A7)
+    demoOutputMsg("RTOS Timer Callback\n");
 #else
     /* Developer: please add here implementation that fits your environment */
     M_PSP_NOP();
@@ -336,9 +343,9 @@ static void demoRtosalTimerCallback(void* xTimer)
  * void *pvParameters - not in use
  *
  */
-static void demoRtosalSendMsgTask( void *pvParameters )
+static void demoRtosalSendMsgTask( void *pParameters )
 {
-const u32_t ulValueToSend = 100UL;
+    const u32_t uiValueToSend = 100UL;
 
     /* Initialise xNextWakeTime - this only needs to be done once. */
     for( ;; )
@@ -353,7 +360,7 @@ const u32_t ulValueToSend = 100UL;
         increment its counter.  0 is used as the block time so the sending
         operation will not block - it shouldn't need to block as the queue
         should always be empty at this point in the code. */
-        rtosalMsgQueueSend(&stMsgQueue, &ulValueToSend, 0, D_RTOSAL_FALSE);
+        rtosalMsgQueueSend(&stMsgQueue, &uiValueToSend, 0, D_RTOSAL_FALSE);
     }
 }
 
@@ -363,38 +370,32 @@ const u32_t ulValueToSend = 100UL;
  * void *pvParameters - not in use
  *
  */
-static void demoRtosalReceiveMsgTask( void *pvParameters )
+static void demoRtosalReceiveMsgTask( void *pParameters )
 {
-	u32_t ulReceivedValue;
-    #ifdef D_HI_FIVE1
-     char stringValue[10];
-    #endif
+	u32_t uiReceivedValue;
 
     for( ;; )
     {
-        rtosalMsgQueueRecieve(&stMsgQueue, &ulReceivedValue, portMAX_DELAY);
-     #ifdef D_HI_FIVE1
+        rtosalMsgQueueRecieve(&stMsgQueue, &uiReceivedValue, portMAX_DELAY);
         /* Wait until something arrives in the queue - this task will block
         indefinitely provided INCLUDE_vTaskSuspend is set to 1 in
         FreeRTOSConfig.h. */
-        itoa(ulReceivedValue,stringValue, 10);
-        demoOutputMsg("Recieved: ", 10);
-        demoOutputMsg(stringValue, 3);
-		demoOutputMsg("\n",1);
-     #else
-		/* Developer: please add here implementation that fits your environment */
-		M_PSP_NOP();
-		M_PSP_NOP();
-		M_PSP_NOP();
-		M_PSP_NOP();
-     #endif
+#ifdef D_HI_FIVE1
+        char cStringValue[10];
+        itoa(uiReceivedValue,cStringValue, 10);
+        demoOutputMsg("Received: ", 10);
+        demoOutputMsg(cStringValue, 3);
+        demoOutputMsg("\n",1);
+#else
+        demoOutputMsg("Received %d: ",uiReceivedValue);
+#endif
 
         /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */
-        if( ulReceivedValue == 100UL )
+        if( uiReceivedValue == 100UL )
         {
             /* Count the number of items that have been received correctly. */
-            ulCountOfItemsReceivedOnQueue++;
+            uiCountOfItemsReceivedOnQueue++;
         }
     }
 }
@@ -405,9 +406,9 @@ static void demoRtosalReceiveMsgTask( void *pvParameters )
  * void *pvParameters - not in use
  *
  */
-static void demoRtosalSemaphoreTask( void *pvParameters )
+static void demoRtosalSemaphoreTask( void *pParameters )
 {
-   u32_t res;
+   u32_t uiResult;
 
     for( ;; )
     {
@@ -415,11 +416,11 @@ static void demoRtosalSemaphoreTask( void *pvParameters )
         A semaphore is used for example purposes.  In a real application it might
         be preferable to use a direct to task notification, which will be faster
         and use less RAM. */
-        res = rtosalSemaphoreWait(&stEventSemaphore, portMAX_DELAY);
-        if (res == D_RTOSAL_SUCCESS)
+        uiResult = rtosalSemaphoreWait(&stEventSemaphore, portMAX_DELAY);
+        if (uiResult == D_RTOSAL_SUCCESS)
         {
            /* Count the number of times the semaphore is received. */
-           ulCountOfReceivedSemaphores++;
+           uiCountOfReceivedSemaphores++;
         }
 
         demoOutputMsg("Semaphore taken\n", 16);
@@ -427,5 +428,20 @@ static void demoRtosalSemaphoreTask( void *pvParameters )
 }
 
 
+/**
+ * demoRtosalcalculateTimerPeriod - Calculates Timer period
+ *
+ */
+void demoRtosalcalculateTimerPeriod(void)
+{
+	u32_t uiTimerPeriod = 0;
 
+    #if (0 == D_CLOCK_RATE) || (0 == D_TICK_TIME_MS)
+        #error "Core frequency values definitions are missing"
+    #endif
+
+	uiTimerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
+	/* Store calculated timerPeriod for future use */
+	rtosalTimerSetPeriod(uiTimerPeriod);
+}
 

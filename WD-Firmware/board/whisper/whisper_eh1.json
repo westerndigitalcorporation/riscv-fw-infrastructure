@@ -1,6 +1,6 @@
 {
    "reset_vec" : "0x0",
-   "load_error_rollback" : "1",
+   "load_error_rollback" : "0",
    "max_mmode_perf_event" : "50",
    "nmi_vec" : "0x11110000",
    "pic" : {
@@ -20,7 +20,7 @@
       "bits" : 15
    },
    "memmap" : {
-      "cosnoleio" : "0xd0580000"
+      "cosnoleio" : "0x80002000"
    },
    "harts" : 1,
    "num_mmode_perf_regs" : "4",

@@ -55,3 +55,19 @@
         addiw \operand1, \operand2, \operand3
     .endm
 .endif
+
+.macro M_PSP_STORE_BYTE operand1,operand2
+    sb \operand1, \operand2
+.endm
+
+.macro M_PSP_LOAD_BYTE operand1,operand2
+    lb \operand1, \operand2
+.endm
+
+.macro M_PSP_STORE_HALF operand1,operand2
+    sh \operand1, \operand2
+.endm
+
+.macro M_PSP_LOAD_HALF operand1,operand2
+    lh \operand1, \operand2
+.endm

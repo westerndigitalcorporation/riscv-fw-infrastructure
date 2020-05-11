@@ -9,7 +9,6 @@
 *.log
 *.jou
 *.project
-*.cproject
 configure.txt
 WD-Firmware/demo/build/toolchain/llvm
 WD-Firmware/demo/build/toolchain/gcc
