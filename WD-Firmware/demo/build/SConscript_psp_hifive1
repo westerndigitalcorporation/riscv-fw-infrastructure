@@ -25,8 +25,8 @@ utils.fnCreateFolder(strOutDir)
 # (sourcefile.c, outputfile.o)
 listCFiles=[
    (os.path.join('psp', 'psp_interrupts_hifive1.c'), os.path.join(strOutDir, 'psp_interrupts_hifive1.o')),
-   (os.path.join('psp', 'psp_traps.c'), os.path.join(strOutDir, 'psp_traps.o')),
-   (os.path.join('psp', 'psp_timer.c'), os.path.join(strOutDir, 'psp_timer.o')),
+   (os.path.join('psp', 'psp_traps_interrupts.c'), os.path.join(strOutDir, 'psp_traps_interrups.o')),
+   (os.path.join('psp', 'psp_timer_hifive1.c'), os.path.join(strOutDir, 'psp_timer_hifive1.o')),
 ]
 
    
@@ -34,7 +34,7 @@ listCFiles=[
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles=[
-   (os.path.join('psp', 'psp_int_vect.S'), os.path.join(strOutDir, 'psp_int_vect.o')),
+   (os.path.join('psp', 'psp_int_vect_hifive1.S'), os.path.join(strOutDir, 'psp_int_vect_hifive1.o')),
 ]
 
 # compiler directivs
@@ -50,7 +50,9 @@ Env['PUBLIC_INC'] += [
 ]
 
 # privte includes
-listIncPaths = [ ] + Env['PUBLIC_INC']
+listIncPaths = [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'loc_inc'),
+] + Env['PUBLIC_INC']
 
 
 if not Env["Scan"]:
