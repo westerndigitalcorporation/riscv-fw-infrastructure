@@ -35,6 +35,15 @@
 #define D_RTOSAL_NON_INT_CONTEXT              0
 #define D_RTOSAL_INT_CONTEXT                  1
 
+/* define task stack index of regs t3 and mepc */
+#ifdef D_USE_FREERTOS
+   #define D_RTOSAL_MEPC_INDEX_ON_STACK          0
+   #define D_RTOSAL_T3_INDEX_ON_STACK            27
+#elif D_USE_THREADX
+   #error "Add THREADX appropriate definitions"
+#else
+   #error "RTOS is not defined"
+#endif /* D_USE_FREERTOS */
 /**
 * macros
 */
@@ -68,15 +77,5 @@ extern void (*fptrParamErrorNotification)(const void *pParam, u32_t uErrorCode);
 *
 */
 void rtosalTick(void);
-
-/**
-* @brief check if in ISR context
-*
-* @param None
-*
-* @return u32_t            - D_NON_INT_CONTEXT
-*                          - non zero value - interrupt context
-*/
-u32_t rtosalIsInterruptContext(void);
 
 #endif /* __RTOSAL_H__ */
