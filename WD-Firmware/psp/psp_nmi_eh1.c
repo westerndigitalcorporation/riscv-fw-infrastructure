@@ -94,31 +94,31 @@ D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptr
 */
 D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
 {
-	pspNmiHandler_t fptrNmiFunc;
+  pspNmiHandler_t fptrNmiFunc;
 
-	M_PSP_ASSERT((NULL != fptrNmiHandler) && ( (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) || (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
-			      || (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause) ) )
+  M_PSP_ASSERT((NULL != fptrNmiHandler) && ( (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) || (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
+            || (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause) ) )
 
     switch (uiNmiCause)
-	{
-	   case D_PSP_NMI_EXT_PIN_ASSERTION:
-	       fptrNmiFunc = g_fptrNmiExtPinAssrtHandler;
-	       g_fptrNmiExtPinAssrtHandler = fptrNmiHandler;
-	       break;
-	   case D_PSP_NMI_D_BUS_STORE_ERROR:
-	       fptrNmiFunc = g_fptrNmiDbusStoreErrHandler;
-	       g_fptrNmiDbusStoreErrHandler = fptrNmiHandler;
-	       break;
-	   case D_PSP_NMI_D_BUS_LOAD_ERROR:
-	       fptrNmiFunc = g_fptrNmiDbusLoadErrHandler;
-	       g_fptrNmiDbusLoadErrHandler = fptrNmiHandler;
-	       break;
-	   default:
-	       fptrNmiFunc = NULL;
-	       break;
+  {
+     case D_PSP_NMI_EXT_PIN_ASSERTION:
+         fptrNmiFunc = g_fptrNmiExtPinAssrtHandler;
+         g_fptrNmiExtPinAssrtHandler = fptrNmiHandler;
+         break;
+     case D_PSP_NMI_D_BUS_STORE_ERROR:
+         fptrNmiFunc = g_fptrNmiDbusStoreErrHandler;
+         g_fptrNmiDbusStoreErrHandler = fptrNmiHandler;
+         break;
+     case D_PSP_NMI_D_BUS_LOAD_ERROR:
+         fptrNmiFunc = g_fptrNmiDbusLoadErrHandler;
+         g_fptrNmiDbusLoadErrHandler = fptrNmiHandler;
+         break;
+     default:
+         fptrNmiFunc = NULL;
+         break;
     }
 
-	   return fptrNmiFunc;
+     return fptrNmiFunc;
 
 }
 /**
@@ -127,8 +127,8 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
 */
 D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiPinAssertionDefaultHandler(void)
 {
-	M_PSP_EBREAK();
-	while(1);
+  M_PSP_EBREAK();
+  while(1);
 }
 
 /**
@@ -137,8 +137,8 @@ D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiPinAssertionDefaultHandler(void)
 */
 D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusLoadErrorDefaultHandler(void)
 {
-	M_PSP_EBREAK();
-	while(1);
+  M_PSP_EBREAK();
+  while(1);
 }
 
 /**
@@ -147,8 +147,8 @@ D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusLoadErrorDefaultHandler(void)
 */
 D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void)
 {
-	M_PSP_EBREAK();
-	while(1);
+  M_PSP_EBREAK();
+  while(1);
 }
 
 /**
@@ -157,26 +157,26 @@ D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void)
 */
 D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
 {
-	u32_t uiNmiCode;
+  u32_t uiNmiCode;
 
-	/* Select the correct handler according mcause CSR contents */
-	uiNmiCode = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
+  /* Select the correct handler according mcause CSR contents */
+  uiNmiCode = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
 
-	switch (uiNmiCode)
-	{
+  switch (uiNmiCode)
+  {
        case D_PSP_NMI_EXT_PIN_ASSERTION:
-    	   g_fptrNmiExtPinAssrtHandler();
-       	   break;
+         g_fptrNmiExtPinAssrtHandler();
+         break;
        case D_PSP_NMI_D_BUS_LOAD_ERROR:
-    	   g_fptrNmiDbusLoadErrHandler();
-       	   break;
+         g_fptrNmiDbusLoadErrHandler();
+         break;
        case D_PSP_NMI_D_BUS_STORE_ERROR:
-    	   g_fptrNmiDbusStoreErrHandler();
-       	   break;
+         g_fptrNmiDbusStoreErrHandler();
+         break;
        default:
-       	   break;
-	}
-	while(1);
+         break;
+  }
+  while(1);
 }
 
 
