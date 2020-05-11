@@ -42,8 +42,8 @@
     #include "psp_timers_eh1.h"
     #include "psp_interrupts_eh1.h"
     #include "psp_ext_interrupts_eh1.h"
-	#include "psp_pmc_eh1.h"
-	#include "psp_performance_monitor_eh1.h"
+    #include "psp_pmc_eh1.h"
+    #include "psp_performance_monitor_eh1.h"
     #include "psp_nmi_eh1.h"
     #include "psp_cache_control_eh1.h"
 #endif

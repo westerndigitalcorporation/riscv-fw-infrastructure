@@ -62,7 +62,7 @@
 
 
 /***** CSR read *****/
-#define _READ_CSR_(reg) (	{ unsigned long val; \
+#define _READ_CSR_(reg) (  { unsigned long val; \
   asm volatile ("csrr %0, " #reg : "=r"(val)); \
   val; })
 #define _READ_CSR_INTERMEDIATE_(reg) _READ_CSR_(reg)
