@@ -23,6 +23,10 @@
 #ifndef __PSP_MACRO_H__
 #define __PSP_MACRO_H__
 
+/* TODO: this #ifdef is temporarily here. Should replace it with proper definitions of statements in this file (e.g. "asm volatile")
+ *       and wrapping them with this protection */
+ #if defined (__GNUC__) || defined (__clang__)
+
 /**
 * include files
 */
@@ -58,7 +62,7 @@
 
 
 /***** CSR read *****/
-#define _READ_CSR_(reg) (	{ unsigned long val; \
+#define _READ_CSR_(reg) (  { unsigned long val; \
   asm volatile ("csrr %0, " #reg : "=r"(val)); \
   val; })
 #define _READ_CSR_INTERMEDIATE_(reg) _READ_CSR_(reg)
@@ -157,5 +161,9 @@
 #define M_PSP_SET_REGISTER_32(reg, bits)     ((*(volatile u32_t *)(void*)(reg)) |= (bits))  //need to use _Uncached u32_t if we have d$
 #define M_PSP_CLEAR_REGISTER_32(reg, bits)   ((*(volatile u32_t *)(void*)(reg)) &= (~bits)) //need to use _Uncached u32_t if we have d$
 
+
+/* TODO: - this #ifdef is temporarily here. Should replace it with proper definitions of statements in this file (e.g. "asm volatile")
+ *         and wrapping them with this protection */
+#endif /* (__GNUC__) || defined (__clang__)*/
 
 #endif /* __PSP_MACRO_H__ */
