@@ -85,7 +85,7 @@ WD-Firmware
           $ tar -xvf riscv-llvm-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
 - #### Other download
-    - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
+    - From the repo unzip eclipse_mcu_2019_12.7z to your designated directory for the Eclipse MCU
 
           $ 7z x eclipse_mcu_2019_12.7z -o[Eclipse-MCU-root]
 
