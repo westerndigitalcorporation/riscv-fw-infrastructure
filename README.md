@@ -87,7 +87,7 @@ WD-Firmware
 - #### Other download
     - From the repo unzip eclipse_mcu_2019_01.7z to your designated directory for the Eclipse MCU
 
-          $ 7z x eclipse_mcu_2019_01.7z -o[Eclipse-MCU-root]
+          $ 7z x eclipse_mcu_2019_12.7z -o[Eclipse-MCU-root]
 
     - Standard packages that are required can be installed by the following command:
 
