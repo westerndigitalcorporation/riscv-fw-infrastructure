@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 /**
-* @file   psp_timers.h
+* @file   psp_timers_hifive1.h
 * @author Nati Rapaport
 * @date   28.01.2020
-* @brief  The file defines timer-counter api services
+* @brief  The file defines timer-counter api services for HiFive1 core.
 * 
 */
-#ifndef  __PSP_TIMER_COUNTERS_H__
-#define  __PSP_TIMER_COUNTERS_H__
+#ifndef  __PSP_TIMERS_HIFIVE1_H__
+#define  __PSP_TIMERS_HIFIVE1_H__
 
 /**
 * include files
@@ -31,12 +31,15 @@
 /**
 * definitions
 */
-#define D_PSP_CORE_TIMER 0
-
 
 /**
 * types
 */
+typedef enum pspTimers
+{
+   E_MACHINE_TIMER  = 0,
+   E_LAST_TIMER
+} ePspTimers_t;
 
 /**
 * local prototypes
@@ -45,7 +48,6 @@
 /**
 * external prototypes
 */
-extern void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod);
 
 /**
 * global variables
@@ -54,28 +56,38 @@ extern void (*fptrPspTimerCounterActivate)(u32_t uiTimer, u32_t uiPeriod);
 /**
 * macros
 */
-#define M_PSP_TIMER_COUNTER_ACTIVATE(timer, period)   fptrPspTimerCounterActivate(timer, period)
 
 /**
 * APIs
 */
 
 /**
+* @brief Setup and activate core's Timer
 *
-* @brief Get Timer counter value
-*
-* @return u64_t      – Timer counter value
+* @parameter - timer            - indicates which timer to setup and run
+* @parameter - uiPeriodMseconds - defines the timer's period in mSeconds
 *
 ***************************************************************************************************/
-u64_t pspTimerCounterGet(void);
+void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodMseconds);
 
 /**
+* @brief Get Timer counter value
 *
+* @parameter - timer - indicates which timer to setup and run
+*
+* @return u64_t      - Timer counter value
+*
+***************************************************************************************************/
+u64_t pspTimerCounterGet(u32_t uiTimer);
+
+/**
 * @brief Get Time compare counter value
+*
+* @parameter - timer - indicates which timer to setup and run
 *
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-u64_t pspTimeCompareCounterGet(void);
+u64_t pspTimeCompareCounterGet(u32_t uiTimer);
 
-#endif /* __PSP_TIMER_COUNTERS_H__ */
+#endif /* __PSP_TIMERS_HIFIVE1_H__ */

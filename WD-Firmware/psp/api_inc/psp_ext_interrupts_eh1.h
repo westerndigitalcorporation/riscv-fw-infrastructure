@@ -103,27 +103,27 @@
 /* Set the highest priority level in meiplS (External Interrupt Priority Level Register)
  * In case of standard-priority-order the priority is 15, in case of reversed priority order - 0 */
 #define M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
-		                                                                      ? D_PSP_EXT_INT_PRIORITY_15 : D_PSP_EXT_INT_PRIORITY_0
+    (M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+                                                                          ? D_PSP_EXT_INT_PRIORITY_15 : D_PSP_EXT_INT_PRIORITY_0
 
 /* When set this priority level in meiplS (External Interrupt Priority Level Register) the corresponding interrupt will
  * not be served.
  * In case of standard-priority-order the priority is 0, in case of reversed priority order - 15 */
 #define M_PSP_EXT_INT_PRIORITY_SET_TO_MASKED_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
-		                                                                      ? D_PSP_EXT_INT_PRIORITY_0 : D_PSP_EXT_INT_PRIORITY_15
+    (M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+                                                                          ? D_PSP_EXT_INT_PRIORITY_0 : D_PSP_EXT_INT_PRIORITY_15
 
 /* When set this threshold level in meipt (External Interrupt Priority Threshold Register) all interrupts will be masked (not served)
  * In case of standard priority order - 15, in case of reversed priority order - 0 */
 #define M_PSP_EXT_INT_THRESHOLD_MASK_ALL_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
-		                                                                      ? D_PSP_EXT_INT_THRESHOLD_15 : D_PSP_EXT_INT_THRESHOLD_0
+    (M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+                                                                          ? D_PSP_EXT_INT_THRESHOLD_15 : D_PSP_EXT_INT_THRESHOLD_0
 
 /* When set this threshold level in meipt (External Interrupt Priority Threshold Register) no interrupt will be masked (all served)
  * In case of standard priority order - 0, in case of reversed priority order - 15 */
 #define M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE \
-		(M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
-		                                                                      ? D_PSP_EXT_INT_THRESHOLD_0 : D_PSP_EXT_INT_THRESHOLD_15
+    (M_PSP_READ_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR) & D_PSP_MPICCFG_PRIORD_MASK) == D_PSP_EXT_INT_STANDARD_PRIORITY \
+                                                                          ? D_PSP_EXT_INT_THRESHOLD_0 : D_PSP_EXT_INT_THRESHOLD_15
 
 /**
 * global variables

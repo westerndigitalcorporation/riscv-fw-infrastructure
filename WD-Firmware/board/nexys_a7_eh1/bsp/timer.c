@@ -48,7 +48,6 @@
 
 #define D_TIMER_START   1
 #define D_TIMER_STOP    0
-#define SWERVOLF_MHZ    50
 /**
 * types
 */
@@ -65,7 +64,7 @@
 * macros
 */
 /* SweRVolf rate is 50Mhz. Convert duration (in MSec) to number of timer cycles */
-#define M_MSEC_DURATION_TO_CYCLES(duration)   duration*SWERVOLF_MHZ
+#define M_MSEC_DURATION_TO_CYCLES(duration)   (duration * (D_CLOCK_RATE / D_PSP_MSEC))
 
 /**
 * global variables

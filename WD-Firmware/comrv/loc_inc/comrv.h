@@ -39,6 +39,7 @@
 */
 #define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
 #define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
+#define D_COMRV_RODATA_SECTION   __attribute__((section("COMRV_RODATA_SEC")))
 
 #ifdef D_COMRV_ERROR_NOTIFICATIONS
    #define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \
