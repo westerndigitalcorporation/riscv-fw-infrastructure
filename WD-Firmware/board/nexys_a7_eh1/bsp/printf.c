@@ -50,6 +50,8 @@
 
 #define M_UART_RD_REG_LSR()  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (4*0x05) )))              /* Line status reg.               */
 
+
+#define D_BAUD_RATE            (115200)
 #define D_UART_LCR_CS8         (0x03)  /* 8 bits data size */
 #define D_UART_LCR_1_STB       (0x00)  /* 1 stop bit */
 #define D_UART_LCR_PDIS        (0x00)  /* parity disable */
@@ -140,7 +142,7 @@ void uartInit(void)
   M_UART_WR_REG_LCR(D_UART_DLAB_BIT);
 
   /* Set divisor regs  devisor = 27: clock_freq/baud_rate*16 -->> clock = 50MHz, baud=115200*/
-  M_UART_WR_REG_BRDL(27);
+  M_UART_WR_REG_BRDL((D_CLOCK_RATE/D_BAUD_RATE)/16);
 
   /* 8 data bits, 1 stop bit, no parity, clear DLAB */
   M_UART_WR_REG_LCR((D_UART_LCR_CS8  | D_UART_LCR_1_STB | D_UART_LCR_PDIS));
