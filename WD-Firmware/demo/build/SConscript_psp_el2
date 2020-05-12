@@ -17,33 +17,47 @@
 import os
 import utils
 Import('Env')
-listDemoSpecificTargets
-strOutDir = os.path.join(Env['OUT_DIR_PATH'], Env['DEMO_NAME'])+'_demo'
+
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'psp')
 utils.fnCreateFolder(strOutDir)
 
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
-   (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
-   (os.path.join('demo' , 'demo_external_interrupts.c'), os.path.join(strOutDir, 'demo_external_interrupts.o')),
+   (os.path.join('psp', 'psp_interrupts_eh1.c'), os.path.join(strOutDir, 'psp_interrupts_eh1.o')),
+   (os.path.join('psp', 'psp_ext_interrupts_eh1.c'), os.path.join(strOutDir, 'psp_ext_interrupts_eh1.o')),
+   (os.path.join('psp', 'psp_traps_interrupts.c'), os.path.join(strOutDir, 'psp_traps_interrupts.o')),
+   (os.path.join('psp', 'psp_timers_eh1.c'), os.path.join(strOutDir, 'psp_timers_eh1.o')),
+   (os.path.join('psp', 'psp_pmc_eh1.c'), os.path.join(strOutDir, 'psp_pmc_eh1.o')),
+   (os.path.join('psp', 'psp_performance_monitor_eh1.c'), os.path.join(strOutDir, 'psp_performance_monitor.o')),
+   (os.path.join('psp', 'psp_nmi_eh1.c'), os.path.join(strOutDir, 'psp_nmi_eh1.o')),
 ]
+
+   
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
-listAssemblyFiles=[]
+listAssemblyFiles=[
+   (os.path.join('psp', 'psp_int_vect_eh1.S'), os.path.join(strOutDir, 'psp_int_vect_eh1.o')),
+]
 
 # compiler directivs
 listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += []
-listCompilationDefines = [] + Env['PUBLIC_DEF']
+listCompilationDefines = []+Env['PUBLIC_DEF']
 
 # public includes
-Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
-listIncPaths = [ ] + Env['PUBLIC_INC']
+Env['PUBLIC_INC'] += [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),
+]
+
+# privte includes
+listIncPaths = [
+  os.path.join(Env['ROOT_DIR'], 'psp', 'loc_inc'),
+] + Env['PUBLIC_INC']
+
 
 if not Env["Scan"]:
   # for objects
@@ -56,9 +70,7 @@ if not Env["Scan"]:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  objDemoRtosaolLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
+  objPspLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'psp.a'), source=listObjects)
 
-  #print Env.Dump()
-
-  # return the demo lib
-  Return('objDemoRtosaolLib')
+  # return the psp lib
+  Return('objPspLib')
