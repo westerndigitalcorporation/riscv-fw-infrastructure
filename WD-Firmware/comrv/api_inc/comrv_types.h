@@ -169,8 +169,6 @@ typedef struct comrvCB
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
   u16_t             ucMultiGroupOffset;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
-  /* state of 'offset' and 'multigroup' tables loaded or not */
-  u08_t             ucTablesLoaded;
   /* last index of cache entry */
   u08_t             ucLastCacheEntry;
 } comrvCB_t;
