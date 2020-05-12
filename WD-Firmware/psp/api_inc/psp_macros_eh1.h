@@ -38,5 +38,4 @@
 #define M_PSP_ICACHE_DISABLE()     M_PSP_WRITE_CSR(D_PSP_MRAC,0x0)
 
 
-
 #endif /* __PSP_MACRO_EH1_H__ */

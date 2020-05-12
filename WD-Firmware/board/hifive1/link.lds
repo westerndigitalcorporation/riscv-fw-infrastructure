@@ -50,6 +50,7 @@ SECTIONS
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
+    KEEP(*(COMRV_RODATA_SEC))
   } >flash AT>flash :flash
 
   /* this is a placeholder for comrv overlay groups.

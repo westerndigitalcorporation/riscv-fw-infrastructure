@@ -71,6 +71,7 @@ SECTIONS
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
+    KEEP(*(COMRV_RODATA_SEC))
     . = ALIGN(4);
   } > ram : ram_load
 
