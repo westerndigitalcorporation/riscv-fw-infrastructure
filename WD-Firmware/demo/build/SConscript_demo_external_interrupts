@@ -17,7 +17,7 @@
 import os
 import utils
 Import('Env')
-
+listSupportedTargetBoards
 strOutDir = os.path.join(Env['OUT_DIR_PATH'], Env['DEMO_NAME'])+'_demo'
 utils.fnCreateFolder(strOutDir)
 
