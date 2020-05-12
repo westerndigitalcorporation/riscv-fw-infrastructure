@@ -36,6 +36,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #include "comrv_config.h"
 #include "comrv.h"
 #include "comrv_api.h"
+#include "comrv_info.h"
 #ifdef D_COMRV_RTOS_SUPPORT
    #include "rtosal_types.h"
    #include "rtosal_macros.h"
@@ -188,6 +189,20 @@ extern void comrvInvalidateDataCacheHook(const void* pAddress, u32_t uiNumSizeIn
 #ifdef D_COMRV_RTOS_SUPPORT
 extern void comrv_ret_from_callee(void);
 #endif /* D_COMRV_RTOS_SUPPORT */
+
+/* comrv information:
+ * bits 0- 3: multi group field offset
+ * bits 4-31: reserved
+ */
+D_PSP_USED D_COMRV_RODATA_SECTION
+static const u32_t g_uiComrvInfo    = (D_COMRV_MULTIGROUP_OFFSET);
+
+/* comrv information:
+ * bits 0  - 15: minor version
+ * bits 16 - 31: major version
+ */
+D_PSP_USED D_COMRV_RODATA_SECTION
+static const u32_t g_uiComrvVersion = ((D_COMRV_VERSION_MAJOR << 16) | (D_COMRV_VERSION_MINOR));
 
 /**
 * global variables

@@ -61,19 +61,19 @@
 */
 void pspPmcHalt(void)
 {
-	M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_PMC_INITIATE_HALT);
+  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_PMC_INITIATE_HALT);
 }
 
 /**
-* @brief The following function pauses the RISCV core for given number of core clock cycles(ticks)
+* @brief The following function temporarily stop the core from executing instructions for given number of core clock cycles(ticks)
 *
 * @ticks - Number of core clock cycles
 *
 * @return none
 */
-void pspPmcPause(u32_t uiTicks)
+void pspPmcStall(u32_t uiTicks)
 {
-	M_PSP_WRITE_CSR(D_PSP_MCPC_NUM, uiTicks);
+  M_PSP_WRITE_CSR(D_PSP_MCPC_NUM, uiTicks);
 }
 
 
