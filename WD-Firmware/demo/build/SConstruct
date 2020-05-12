@@ -131,11 +131,12 @@ if hasattr(objDemo, 'strLinkFilePrefix'):
 strLinkerScriptFile += '.lds'
 # end of temporary solution
 if Env['TARGET_BOARD'] not in listSupportedTargets:
-  print "Unsupported target [%s]" % (Env['TARGET_BOARD'])
-  print "Currently supporting" % (" | ".join(listSupportedTargets))
+  print "Error:\tUnsupported target [%s]" % (Env['TARGET_BOARD'])
+  print "Error:\tCurrently supporting %s" % (" | ".join(listSupportedTargets))
   exit(1)
-if Env['TARGET_BOARD'] not in  objDemo.listSupportedTargetBoards:
-  print "demo not supported for %s board" % Env['TARGET_BOARD']
+if Env['TARGET_BOARD'] not in  objDemo.listDemoSpecificTargets:
+  print "Error:\tDemo [%s] can not run on target [%s]" % (Env['DEMO_NAME'], Env['TARGET_BOARD'])
+  print "Error:\tDemo supported targets: %s  " % (" | ".join(objDemo.listDemoSpecificTargets))
   exit(1)
 if Env['TARGET_BOARD'] in listNexysA7Targets:
 	strBsp       = strBsp + strNexys
