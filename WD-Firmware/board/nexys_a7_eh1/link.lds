@@ -81,7 +81,7 @@ SECTIONS
   .reserved_ovl : ALIGN(4)
   {
     _OVERLAY_STORAGE_START_ADDRESS_ = .;
-    . = 0xe00;
+    . = 0x1000;
   } > ram : ram_load
 
   
