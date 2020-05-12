@@ -17,9 +17,154 @@
 import gdb
 import re
 
-# Set this to True from within GDB to activate debug output from
-# within this file.
-overlay_debug = False
+# Required to make calls to super () work in python2.
+__metaclass__ = type
+
+#=====================================================================#
+
+# Should debug messages be printed?
+DEFAULT_DEBUG = False
+
+# The default maximum group size.
+DEFAULT_MAX_GROUP_SIZE = 4096
+
+# The default size for the "pages" in the ComRV cache and storage area.
+DEFAULT_MIN_COMRV_CACHE_ENTRY_SIZE_IN_BYTES = 512
+OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES = 512
+
+# Various symbols that are read in order to parse ComRV.
+INIT_SYMBOL = "g_stComrvCB.ucTablesLoaded"
+MULTI_GROUP_OFFSET_SYMBOL = "g_stComrvCB.ucMultiGroupOffset"
+OVERLAY_STORAGE_START_SYMBOL = "OVERLAY_START_OF_OVERLAYS"
+OVERLAY_STORAGE_END_SYMBOL = "OVERLAY_END_OF_OVERLAYS"
+OVERLAY_CACHE_START_SYMBOL = "__OVERLAY_CACHE_START__"
+OVERLAY_CACHE_END_SYMBOL = "__OVERLAY_CACHE_END__"
+COMRV_RETURN_FROM_CALLEE_LABEL = "comrv_ret_from_callee"
+
+# The following symbols are actually used as format strings.  They must
+# include a single '%d' format specified which is replaced with the ComRV
+# cache index.
+OVERLAY_CACHE_AT_INDEX_TO_GROUP_ID \
+    = "g_stComrvCB.stOverlayCache[%d].unToken.stFields.uiOverlayGroupID"
+OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucSizeInMinGroupSizeUnits"
+
+#=====================================================================#
+
+# This counts the number of times the ComRV event breakpoint has been
+# hit, and is used to help us decide if ComRV is likely initialised or
+# not yet.
+global_event_breakpoint_hit_count = 0
+
+# Return True if we believe that ComRV should have been initialised,
+# and it is therefore safe to try and read the ComRV tables from
+# memory.  Otherwise, return False.
+def global_has_comrv_been_initialised_yet ():
+    global global_event_breakpoint_hit_count
+
+    # Yuck! Borrow the symbol reading wrapper from overlay_data class.
+    sym_value = overlay_data._read_symbol_value_as_integer (INIT_SYMBOL)
+    return (global_event_breakpoint_hit_count > 0
+            and sym_value != 0)
+
+#=====================================================================#
+
+# A class for the control variable 'set/show debug comrv on|off'.
+class debug_parameter (gdb.Parameter):
+    '''Controls debugging messages from the Python Overlay Manager.  This
+should only be needed to help track down bugs in the Python code.'''
+    set_doc = "Set whether debugging from the Python Overlay Manager is on."
+    show_doc = "Show whether debugging from the Python Overlay Manager is on."
+    def __init__ (self):
+        gdb.Parameter.__init__ (self, "debug comrv",
+                                gdb.COMMAND_MAINTENANCE,
+                                gdb.PARAM_BOOLEAN)
+        self.value = DEFAULT_DEBUG
+
+    def get_show_string (self, value):
+        return ("Debugging of ComRV Python overlay manager is %s."
+                % (value))
+
+    def __nonzero__ (self):
+        if (self.value):
+            return 1
+        else:
+            return 0
+
+    def __bool__ (self):
+        return self.value
+
+# An instance of the debug parameter.  Due to operator overloading
+# this can be treated as a boolean like:
+#   if (overlay_debug):
+#     ...
+overlay_debug = debug_parameter ()
+
+# Class to create the 'set comrv' prefix command.
+class set_comrv_prefix_command (gdb.Command):
+    def __init__ (self):
+        gdb.Command.__init__ (self, "set comrv", gdb.COMMAND_NONE, gdb.COMPLETE_NONE, True)
+
+# Class to create the 'show comrv' prefix command.
+class show_comrv_prefix_command (gdb.Command):
+    def __init__ (self):
+        gdb.Command.__init__ (self, "show comrv", gdb.COMMAND_NONE, gdb.COMPLETE_NONE, True)
+
+# Now instantiate the above classes, actually creating the 'set comrv' and
+# 'show comrv' prefix commands.
+set_comrv_prefix_command ()
+show_comrv_prefix_command ()
+
+# Class that represents the maximum overlay group size.  This is used when
+# unwinding the ComRV stack.
+class max_group_size_parameter (gdb.Parameter):
+    '''The maximum group size.  This is a hard coded constant within the
+toolchain and ComRV.  The value here must be adjusted to match.  This value
+is required in order to correctly unwind the ComRV stack.
+
+Changing this once GDB has already parsed the ComRV data structures will
+cause undefined behaviour.  This should only be modified once, immediately
+after initially loading the ComRV support Pythong script.'''
+    set_doc = "Set the maximum overlay group size."
+    show_doc = "Show the maximum overlay group size."
+    def __init__ (self):
+        gdb.Parameter.__init__ (self, "comrv max-group-size",
+                                gdb.COMMAND_STACK,
+                                gdb.PARAM_ZUINTEGER)
+        self.value = DEFAULT_MAX_GROUP_SIZE
+
+    def get_show_string (self, value):
+        return ("Maximum ComRV overlay group size is %s." % (value))
+
+# Instance of parameter object.  Use the value field of this object.
+max_group_size = max_group_size_parameter ()
+
+# Class that represents the size of the "pages" in the ComRV cache and
+# storage area.  This is the minimum unit size in which overlays are
+# measured.
+class min_overlay_entry_size_parameter (gdb.Parameter):
+    '''The minimum size for a ComRV overlay.  Many aspects of Comrv are
+measured in multiples of this minimum size.  This value must match the
+value used by the compiler, linker, and ComRV enginee.
+
+Changing this once GDB has already parsed the ComRV data structures will
+cause undefined behaviour.  This should only be modified once, immediately
+after initially loading the ComRV support Pythong script.'''
+    set_doc = "Set the minimum ComRV entry size."
+    show_doc = "Show the minimum ComRV entry size."
+    def __init__ (self):
+        gdb.Parameter.__init__ (self, "comrv min-entry-size",
+                                gdb.COMMAND_STACK,
+                                gdb.PARAM_ZUINTEGER)
+        self.value = DEFAULT_MIN_COMRV_CACHE_ENTRY_SIZE_IN_BYTES
+
+    def get_show_string (self, value):
+        return ("Minimum ComRV entry size, in bytes, is %s." % (value))
+
+# Instance of parameter object.  Use the value field of this object.
+min_entry_size = min_overlay_entry_size_parameter ()
+
+#=====================================================================#
 
 # Print STRING as a debug message if OVERLAY_DEBUG is True.
 def debug (string):
@@ -43,21 +188,17 @@ class temp_debug_on:
         global overlay_debug
         overlay_debug = self._old_overlay_debug
 
-# Required to make calls to super () work in python2.
-__metaclass__ = type
-
-INIT_SYMBOL = "g_stComrvCB.ucTablesLoaded"
-MULTI_GROUP_OFFSET_SYMBOL = "g_stComrvCB.ucMultiGroupOffset"
-OVERLAY_STORAGE_START_SYMBOL = "OVERLAY_START_OF_OVERLAYS"
-OVERLAY_STORAGE_END_SYMBOL = "OVERLAY_END_OF_OVERLAYS"
-OVERLAY_CACHE_START_SYMBOL = "__OVERLAY_CACHE_START__"
-OVERLAY_CACHE_END_SYMBOL = "__OVERLAY_CACHE_END__"
-OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES = 512
+#=====================================================================#
 
 # Thanks to: https://stackoverflow.com/a/32031543/3228495
 def sign_extend (value, bits):
     sign_bit = 1 << (bits - 1)
     return (value & (sign_bit - 1)) - (value & sign_bit)
+
+# Wrapper around access to the global configuration parameter.
+def get_comrv_min_entry_size ():
+    global min_entry_size
+    return min_entry_size.value
 
 # Class to wrap reading memory.  Provides an API for reading unsigned
 # values of various sizes from memory.
@@ -93,8 +234,7 @@ class mem_reader:
 # The Overlay Cache Area is defined by a start and end label, this is
 # the area into which code (and data?) is loaded in order to use it.
 # This area is divided into "pages", each page is (currently) 512
-# bytes (0x200) is size (see OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES)
-# for this constant.
+# bytes (0x200) in size, but this can be modified by the user.
 # The overlay tables are loaded into the last page of this cache
 # area.
 class overlay_data:
@@ -136,12 +276,19 @@ class overlay_data:
 
     # Holds information about a single multi-group.
     class _overlay_multi_group:
-        def __init__ (self, index, tokens):
+        def __init__ (self, number, index, tokens):
+            self._number = number
             self._index = index
             self._tokens = tokens
 
         def tokens (self):
             return self._tokens
+
+        def index (self):
+            return self._index
+
+        def number (self):
+            return self._number
 
     # A class to describe an area of memory.  This serves as a base
     # class for the cache region descriptor, and the storage region
@@ -206,7 +353,7 @@ class overlay_data:
         # Return the size in bytes of a single entry (or page) within the
         # cache.
         def entry_size_in_bytes (self):
-            return OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES
+            return get_comrv_min_entry_size ()
 
     # A class that describes the overlay systems storage area.  This
     # is the area of memory from which the overlays are loaded.  The
@@ -264,7 +411,7 @@ class overlay_data:
             raise RuntimeError ("out of bounds access while reading offset "
                                 + "table for group %d" % (group_number))
         scaled_offset = mem_reader.read_16_bit (base_address)
-        offset = OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES * scaled_offset
+        offset = get_comrv_min_entry_size () * scaled_offset
         return offset
 
     # Read a 32-bit overlay token from the multi-group table.  ADDRESS
@@ -278,7 +425,7 @@ class overlay_data:
     # overlay cache tables, and return an instance of an object holding all of
     # this data.
     @staticmethod
-    def _load_group_data (table_start, table_size, storage_start,
+    def _load_group_data (table_start, table_size, storage_desc,
                           multi_group_offset):
 
         def _load_overlay_groups (table_start, table_end, storage_start):
@@ -322,17 +469,30 @@ class overlay_data:
             multi_groups = list ()
             all_tokens = list ()
 
-            # This is where multi-group tokens should be loaded, but this
-            # is not done yet.
+            # The start and end of the region containing the
+            # multi-group table.
             mg_start = table_start
             mg_end = table_end
+
+            # A number assigned to each multi-group.  Starts at 0, and
+            # increments by one for each multi-group.
+            mg_num = 0
+
+            # An index assigned to each multi-group.  This is the
+            # index of the first member of the multi-group.
             mg_idx = 0
+
+            # Used to track the index into the multi-group table.
+            idx = 0
+
+            # The tokens within the current multi-group.
             mg_tokens = list ()
 
             while (mg_start < mg_end):
                 # Read a 32-bit overlay token from the multi-group table.
                 ovly_token = overlay_data._read_overlay_token (mg_start)
                 all_tokens.append (ovly_token)
+                idx += 1
 
                 # A token of 0 indicates the end of a multi-group.
                 if (ovly_token == 0):
@@ -347,18 +507,20 @@ class overlay_data:
                     # next.
                     else:
                         multi_groups.append (overlay_data.
-                                             _overlay_multi_group (mg_idx,
+                                             _overlay_multi_group (mg_num,
+                                                                   mg_idx,
                                                                    mg_tokens))
                         # Now reset ready to read the next multi-group.
-                        mg_idx += 1
-                        mg_member_idx = 0
+                        mg_num += 1
+                        mg_idx = idx
                         mg_tokens = list ()
                 # Otherwise a non-zero token is a member of the multi-group.
                 else:
                     mg_tokens.append (ovly_token)
-                    mg_start += 4		# The size of one overlay token.
+                mg_start += 4		# The size of one overlay token.
             return multi_groups, all_tokens
 
+        storage_start = storage_desc.start_address ()
         if (multi_group_offset >= 0):
             table_end = table_start + multi_group_offset
         else:
@@ -381,16 +543,24 @@ class overlay_data:
                 _overlay_group_data (groups, multi_groups, all_tokens))
 
     # Read the address of symbol NAME from the inferior, return the
-    # address as an integer.
+    # address as an integer.  If an error is thrown (missing symbol?)
+    # then None is returned.
     @staticmethod
     def _read_symbol_address_as_integer (name):
-        return int (gdb.parse_and_eval ("&%s" % (name)))
+        try:
+            return int (gdb.parse_and_eval ("&%s" % (name)))
+        except:
+            return None
 
     # Read the value of symbol NAME from the inferior, return the
-    # value as an integer.
+    # value as an integer.  If the symbol can't be read (missing
+    # symbol?) then return None.
     @staticmethod
     def _read_symbol_value_as_integer (name):
-        return int (gdb.parse_and_eval ("%s" % (name)))
+        try:
+            return int (gdb.parse_and_eval ("%s" % (name)))
+        except:
+            return None
 
     # Load from target memory information about the overlay cache and the
     # overlay groups.
@@ -407,7 +577,10 @@ class overlay_data:
         cache_end = overlay_data.\
                     _read_symbol_address_as_integer \
 				(OVERLAY_CACHE_END_SYMBOL)
-        cache_desc = overlay_data._cache_descriptor (cache_start, cache_end)
+        if (cache_start and cache_end):
+            cache_desc = overlay_data._cache_descriptor (cache_start, cache_end)
+        else:
+            cache_desc = None
 
         # Similarly, the storage area, where overlays are loaded from, is
         # defined by a start and end symbol.
@@ -417,8 +590,11 @@ class overlay_data:
         storage_end = overlay_data.\
                         _read_symbol_address_as_integer \
 				(OVERLAY_STORAGE_END_SYMBOL)
-        storage_desc \
-            = overlay_data._storage_descriptor (storage_start, storage_end)
+        if (storage_start and storage_end):
+            storage_desc \
+                = overlay_data._storage_descriptor (storage_start, storage_end)
+        else:
+            storage_desc = None
 
         # This is the offset to the start of the multi-group table
         # from the start of the overlay tables.  We set this to -1
@@ -428,8 +604,7 @@ class overlay_data:
 
         # Finally, if ComRV has been initialised then load the current state
         # from memory.
-        init_been_called = overlay_data.\
-                           _read_symbol_value_as_integer (INIT_SYMBOL)
+        init_been_called = global_has_comrv_been_initialised_yet ()
         if (init_been_called):
             try:
                 multi_group_offset = overlay_data.\
@@ -442,7 +617,7 @@ class overlay_data:
             groups_data = overlay_data.\
                           _load_group_data (cache_desc.tables_base_address (),
                                             cache_desc.tables_size_in_bytes (),
-                                            storage_start, multi_group_offset)
+                                            storage_desc, multi_group_offset)
         else:
             groups_data = None
 
@@ -479,7 +654,7 @@ class mapped_overlay_group_walker:
         # Now walk the overlay cache and see which entries are mapped in.
         index = 0
         while (index < ovly_data.cache ().number_of_working_entries ()):
-            group = gdb.parse_and_eval ("g_stComrvCB.stOverlayCache[%d].unToken.stFields.uiOverlayGroupID" % (index))
+            group = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_GROUP_ID % (index))
             group = int (group)
             offset = None
 
@@ -496,7 +671,7 @@ class mapped_overlay_group_walker:
                                                 index, group)):
                     break
 
-                offset = gdb.parse_and_eval ("g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucSizeInMinGroupSizeUnits" % (index))
+                offset = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS % (index))
                 offset = int (offset)
                 if (offset == 0):
                     # Something has gone wrong here.  An overlay
@@ -529,12 +704,14 @@ def print_current_comrv_state ():
     ovly_data = overlay_data.fetch ()
     if (not ovly_data.comrv_initialised ()):
         print ("ComRV not yet initialisd:")
-        print ("      %s: %d"
+        print ("%40s: %d"
                % (INIT_SYMBOL,
                   int (gdb.parse_and_eval ("%s" % (INIT_SYMBOL)))))
-        print ("     &%s: 0x%x"
-               % (INIT_SYMBOL,
+        print ("%40s: 0x%x"
+               % ("&" + INIT_SYMBOL,
                   int (gdb.parse_and_eval ("&%s" % (INIT_SYMBOL)))))
+        print ("%40s: %d" % ("ComRV event breakpoint hits",
+                             global_event_breakpoint_hit_count))
         return
 
     print ("Overlay Regions:")
@@ -572,18 +749,18 @@ def print_current_comrv_state ():
         while (grp_num < ovly_data.multi_group_count ()):
             mg = ovly_data.multi_group (grp_num)
             if (grp_num == 0):
-                print ("  %-7s%-12s%-9s%-8s"
-                       % ("", "", "Overlay", "Function"))
-                print ("  %-7s%-12s%-9s%-8s"
-                       % ("Group", "Token", "Group", "Offset"))
+                print ("  %6s%-7s%-12s%-9s%-8s"
+                       % ("", "", "", "Overlay", "Function"))
+                print ("  %-6s%-7s%-12s%-9s%-8s"
+                       % ("Num", "Index", "Token", "Group", "Offset"))
             else:
-                print ("  %-7s%-12s%-9s%-8s"
-                       % ("---", "---", "---", "---"))
+                print ("  %-6s%-7s%-12s%-9s%-8s"
+                       % ("---", "---", "---", "---", "---"))
             for token in mg.tokens ():
                 g = (token >> 1) & 0xffff
                 offset = ((token >> 17) & 0x3ff) * 4
-                print ("  %-7d0x%08x  %-9d0x%-8x"
-                       % (grp_num, token, g, offset))
+                print ("  %-6d%-7d0x%08x  %-9d0x%-8x"
+                       % (grp_num, mg.index (), token, g, offset))
             grp_num += 1
     else:
         print ("  Not supported in this ComRV build.")
@@ -643,7 +820,7 @@ class comrv_stack_frame:
         return (self._token & 0xffffffff)
 
     def align (self):
-        return ((self._token & 0xffff) * OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES)
+        return ((self._align & 0xffff) * get_comrv_min_entry_size ())
 
     def multi_group_index (self):
         return (self._mg_index & 0xffff)
@@ -787,12 +964,20 @@ class MyOverlayManager (gdb.OverlayManager):
     def __del__ (self):
         print ('Destructor called for MyOverlayManager')
 
+    # Return a string, where GDB should place the overlay event
+    # breakpoint.
     def event_symbol_name (self):
         debug ("In Python code, event_symbol_name")
         return "_ovly_debug_event"
 
+    # Return an integer, the number of multi-groups.  Return the
+    # special value -1 to indicate ComRV is not yet initialised, and
+    # so we don't know how many multi-groups there are, in this case
+    # GDB will ask again later.  Otherwise return a value greater
+    # than, or equal to zero, GDB will cache this answer and not ask
+    # again.
     def get_multi_group_count (self):
-        debug ("In Pythong get_multi_group_count method")
+        debug ("In Python get_multi_group_count method")
         ovly_data = overlay_data.fetch ()
         if (not ovly_data.comrv_initialised ()):
             # If ComRV is not yet initialised then return -1 to
@@ -800,6 +985,8 @@ class MyOverlayManager (gdb.OverlayManager):
             return -1
         return ovly_data.multi_group_count ()
 
+    # For multi-group number ID return a list of all the storage area
+    # addresses of all the functions within this multi-group.
     def get_multi_group (self, id):
         ovly_data = overlay_data.fetch ()
         if (not ovly_data.comrv_initialised ()):
@@ -811,11 +998,12 @@ class MyOverlayManager (gdb.OverlayManager):
         for token in mg.tokens ():
             g = (token >> 1) & 0xffff
             offset = ((token >> 17) & 0x3ff) * 4
-            addr = self.get_group_unmapped_base_address (g)
+            addr = self.get_group_storage_area_address (g)
             addr += offset
             res.append (addr)
         return res
 
+    # Return the overlay token from the multi-group table at INDEX.
     def get_multi_group_table_by_index (self, index):
         ovly_data = overlay_data.fetch ()
         if (not ovly_data.comrv_initialised ()):
@@ -824,8 +1012,19 @@ class MyOverlayManager (gdb.OverlayManager):
             raise RuntimeError ("Multi-group not supported")
         return ovly_data.get_token_from_multi_group_table (index)
 
+    # Called to read the current state of ComRV, which overlays are
+    # mapped in.  Should call the ADD_MAPPING method on ourselves
+    # (implemented inside GDB) to inform GDB about an active overlay
+    # mapping.
     def read_mappings (self):
         debug ("In Python code, read_mappings")
+
+        # This is a proxy for counting the number of times the ComRV
+        # event breakpoint has been hit.  This works as we know that
+        # GDB will only call this when the event it hit and not
+        # before.
+        global global_event_breakpoint_hit_count
+        global_event_breakpoint_hit_count += 1
 
         global overlay_debug
         if (overlay_debug):
@@ -850,6 +1049,90 @@ class MyOverlayManager (gdb.OverlayManager):
         debug ("All mappings added")
         return True
 
+    # Return the address of the label that a function will return too
+    # if it is returning through the ComRV enginee.  If the label
+    # can't be found (maybe ComRV is not in use) then return 0.
+    def get_comrv_return_from_callee_label (self):
+        try:
+            name = COMRV_RETURN_FROM_CALLEE_LABEL
+            return int (gdb.parse_and_eval ("&%s" % (name)))
+        except:
+            return 0
+
+    # Unwind the ComRV stack frame at ADDR.  Return a list of two
+    # elements.  The first element is the return address extracted
+    # from the ComRV stack frame, and the second element is the
+    # address of the previous ComRV stack frame.
+    def unwind_comrv_stack_frame (self, addr):
+        global max_group_size
+
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        is_mg = ovly_data.is_multi_group_enabled ()
+
+        # Create a stack frame object at ADDR to represent the stack
+        # frame we are unwinding.
+        frame = comrv_stack_frame (addr, is_mg)
+
+        comrv_return_addr = self.get_comrv_return_from_callee_label ()
+        if (comrv_return_addr == 0):
+            raise RuntimeError ("ComRV unwinding is disabled")
+        while (frame.return_address () == comrv_return_addr):
+            if (frame.offset () == 0xdead):
+                raise RuntimeError ("hit top of ComRV stack (1)")
+
+            addr += frame.offset ()
+            frame = comrv_stack_frame (addr, is_mg)
+
+        if (frame.return_address () == 0
+            and frame.token () == 0):
+            raise RuntimeError ("hit top of ComRV stack (2)")
+
+        addr += frame.offset ()
+
+        ra = frame.return_address ()
+        cache_start = ovly_data.cache ().start_address ()
+        cache_end = ovly_data.cache ().end_address ()
+        if (ra >= cache_start and ra < cache_end):
+            prev_frame = comrv_stack_frame (addr, is_mg)
+
+            if ((prev_frame.token () & 0x1) != 0x1):
+                raise RuntimeError ("returning to overlay function, "
+                                    + "second stack frame token is "
+                                    + str (prev_frame.token ()))
+
+            token = prev_frame.token ()
+            if (((token >> 31) & 0x1) == 0x1):
+                if (prev_frame.multi_group_index () == -1):
+                    raise RuntimeError ("mutli-group stack token with no valid token index")
+                idx = prev_frame.multi_group_index ()
+                token = self.get_multi_group_table_by_index (idx)
+
+            group_id = (token >> 1) & 0xffff
+            func_offset = (token >> 17) & 0x3ff
+            alignment = prev_frame.align ()
+            group_size = ovly_data.group (group_id).size_in_bytes ()
+            max_grp_size = max_group_size.value
+            group_offset = (func_offset
+                            + ((frame.return_address () - func_offset
+                                - alignment) & (max_grp_size - 1)))
+            base_addr = ovly_data.group (group_id).base_address ()
+            ra = base_addr + group_offset
+
+            debug ("Unwinder:")
+            debug ("  frame.return_addr: " + hex (frame.return_address ()))
+            debug ("  group_id: " + str (group_id))
+            debug ("  func_offset: " + hex (func_offset))
+            debug ("  alignment: " + hex (alignment))
+            debug ("  group_size: " + hex (group_size))
+            debug ("  max_group_size: " + hex (max_grp_size))
+            debug ("  group_offset: " + hex (group_offset))
+            debug ("  base_addr: " + hex (base_addr))
+            debug ("  ra: " + str (ra))
+
+        return ra, addr
+
     # This is a temporary hack needed to support backtracing.
     # Ideally, the whole backtracing stack unwind would move into
     # python, and then this function would not be needed, however, to
@@ -870,24 +1153,21 @@ class MyOverlayManager (gdb.OverlayManager):
         debug ("Size of group %d is %d" % (id, tmp))
         return tmp
 
-    # This is a temporary hack needed to support backtracing.
-    # Ideally, the whole backtracing stack unwind would move into
-    # python, and then this function would not be needed, however, to
-    # do that we will need some serious changes to how GDB's stack
-    # unwinder works.
-    #
-    # For now then we need to expose a mechanism by which we can find
-    # the size of a group given its group ID.
-    def get_group_unmapped_base_address (self, id):
+    # Return the base address, within the storage area, for overlay
+    # group ID.  The base address is the first address of an overlay
+    # group.
+    def get_group_storage_area_address (self, id):
+        debug ("get_group_storage_area_address (%d) = ..." % (id))
         ovly_data = overlay_data.fetch ()
         if (not ovly_data.comrv_initialised ()):
-            # Maybe we should through an error in this case?
-            return 0
+            raise RuntimeError ("ComRV not initialised, overlay "
+                                + "storage area address unknown")
 
         group_desc = ovly_data.group (id)
         tmp = group_desc.base_address ()
 
-        debug ("Base address of group %d is 0x%x" % (id, tmp))
+        debug ("get_group_storage_area_address (%d) = 0x%x"
+               % (id, tmp))
         return tmp
 
     # Return a value indicating if multi-group is compiled into this
