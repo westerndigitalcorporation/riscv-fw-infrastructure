@@ -309,7 +309,9 @@ void pspInterruptsEnable(void)
                   - D_PSP_INTERRUPTS_USER_SW
                   - D_PSP_INTERRUPTS_USER_TIMER
                   - D_PSP_INTERRUPTS_USER_EXT
-                  - other interrupts, specific to the core in use
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER0
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER1
+                  - D_PSP_INTERRUPTS_MACHINE_CORR_ERR_COUNTER
 ******************************************************************
 * input parameter - Interrupt number to disable
 */
@@ -333,7 +335,9 @@ void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
                   - D_PSP_INTERRUPTS_USER_SW
                   - D_PSP_INTERRUPTS_USER_TIMER
                   - D_PSP_INTERRUPTS_USER_EXT
-                  - other interrupts, specific to the core in use
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER0
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER1
+                  - D_PSP_INTERRUPTS_MACHINE_CORR_ERR_COUNTER
 ******************************************************************
 * input parameter - Interrupt number to enable
 */
