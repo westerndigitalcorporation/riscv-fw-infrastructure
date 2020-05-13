@@ -176,22 +176,11 @@ void demoRtosalCreateTasks(void *pParameters)
 {
 	
     u32_t uiResult;
-    ePspExceptionCause_t eCause;
 
     /* Disable the machine external & timer interrupts until setup is done. */
     pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
 	pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-	/* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
-    for (eCause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; eCause < E_EXC_LAST_CAUSE ; eCause++)
-    {
-    	/* Skip ECALL entry as we already registered there a handler */
-    	if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == eCause)
-    	{
-    		continue;
-    	}
-        pspRegisterExceptionHandler(pspTrapUnhandled, eCause);
-    }
     /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
 
 #ifdef D_NEXYS_A7

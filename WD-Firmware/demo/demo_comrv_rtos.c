@@ -125,17 +125,6 @@ void demoRtosalCreateTasks(void *pParam)
    pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
    pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-   /* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
-   for (cause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; cause < E_EXC_LAST_CAUSE ; cause++)
-   {
-      /* Skip ECALL entry as we already registered there a handler */
-      if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == cause)
-      {
-         continue;
-      }
-      pspRegisterExceptionHandler(pspTrapUnhandled, cause);
-   }
-
    /* Enable the Machine-External bit in MIE */
    pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
 
