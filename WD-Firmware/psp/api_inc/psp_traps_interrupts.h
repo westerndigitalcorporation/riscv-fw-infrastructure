@@ -88,11 +88,6 @@ void pspInterruptsSetVectorTableAddress(void* pVectTable);
 void pspDefaultEmptyIntHandler_isr(void);
 
 /**
-* @brief - Function that called upon unregistered Trap handler
-*/
-void pspTrapUnhandled(void);
-
-/**
 * @brief - Disable interrupts and return the current interrupt state in each one of the privileged levels
 *
 * output parameter - Current (== before the 'disable') interrupts state in each one of the privileged levels (read from mstatus CSR)

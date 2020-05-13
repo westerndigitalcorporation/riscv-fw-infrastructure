@@ -201,24 +201,5 @@ void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
   M_PSP_SET_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
 
-/**
-*
-* @brief Function that called upon unregistered Trap handler
-*
-***************************************************************************************************/
-void pspTrapUnhandled(void)
-{
-  volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
-
-  uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
-  uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
-  uiLocalmtval =  M_PSP_READ_CSR(D_PSP_MTVAL_NUM);
-
-  if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
-  {}
-
-  M_PSP_EBREAK();
-}
-
 
 

@@ -217,7 +217,9 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 
 
 /**
-* @brief - default empty interrupt handler
+* @brief - default empty interrupt handler - used when no other handler is registered for the interrupt or exception
+*          - Read mepc, mcause and mtval CSRs
+*          - break
 *
 * @param none
 *
@@ -225,7 +227,16 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 */
 D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 {
-  M_PSP_EBREAK();
+	  volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
+
+	  uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
+	  uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
+	  uiLocalmtval =  M_PSP_READ_CSR(D_PSP_MTVAL_NUM); /* Relevant for exceptions */
+
+	  if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
+	  {}
+
+	  M_PSP_EBREAK();
 }
 
 
