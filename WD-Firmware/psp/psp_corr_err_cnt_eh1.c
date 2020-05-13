@@ -65,28 +65,28 @@
 */
 void pspCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiThreshold)
 {
-	u32_t uiCsrValueToSet = 0 ;
+  u32_t uiCsrValueToSet = 0 ;
 
-	/* Maximum number to set as threshold is 26 */
-	if (D_PSP_CORR_ERR_MAX_THRESHOLD < uiThreshold)
-	{
-		uiThreshold = D_PSP_CORR_ERR_MAX_THRESHOLD;
-	}
-	uiCsrValueToSet = (uiThreshold << D_PSP_CORR_ERR_THRESH_SHIFT);
+  /* Maximum number to set as threshold is 26 */
+  if (D_PSP_CORR_ERR_MAX_THRESHOLD < uiThreshold)
+  {
+    uiThreshold = D_PSP_CORR_ERR_MAX_THRESHOLD;
+  }
+  uiCsrValueToSet = (uiThreshold << D_PSP_CORR_ERR_THRESH_SHIFT);
 
-	/* Set the threshold in the relevant CSR */
-	switch (eCounter)
-	{
-		case E_ICACHE_CORR_ERR_COUNTER:
-			M_PSP_WRITE_CSR(D_PSP_MICECT_NUM, uiCsrValueToSet);
-			break;
-		case E_ICCM_CORR_ERR_COUNTER:
-			M_PSP_SET_CSR(D_PSP_MICCMECT_NUM, uiCsrValueToSet);
-			break;
-		case E_DCCM_CORR_ERR_COUNTER:
-			M_PSP_SET_CSR(D_PSP_MDCCMECT_NUM, uiCsrValueToSet);
-			break;
-		default:
-			break;
-	}
+  /* Set the threshold in the relevant CSR */
+  switch (eCounter)
+  {
+    case E_ICACHE_CORR_ERR_COUNTER:
+      M_PSP_WRITE_CSR(D_PSP_MICECT_NUM, uiCsrValueToSet);
+      break;
+    case E_ICCM_CORR_ERR_COUNTER:
+      M_PSP_SET_CSR(D_PSP_MICCMECT_NUM, uiCsrValueToSet);
+      break;
+    case E_DCCM_CORR_ERR_COUNTER:
+      M_PSP_SET_CSR(D_PSP_MDCCMECT_NUM, uiCsrValueToSet);
+      break;
+    default:
+      break;
+  }
 }
