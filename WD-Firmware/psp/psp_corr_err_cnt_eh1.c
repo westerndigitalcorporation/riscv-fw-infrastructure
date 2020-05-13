@@ -68,10 +68,8 @@ void pspCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiT
   u32_t uiCsrValueToSet = 0 ;
 
   /* Maximum number to set as threshold is 26 */
-  if (D_PSP_CORR_ERR_MAX_THRESHOLD < uiThreshold)
-  {
-    uiThreshold = D_PSP_CORR_ERR_MAX_THRESHOLD;
-  }
+  M_PSP_ASSERT(D_PSP_CORR_ERR_MAX_THRESHOLD >= uiThreshold);
+
   uiCsrValueToSet = (uiThreshold << D_PSP_CORR_ERR_THRESH_SHIFT);
 
   /* Set the threshold in the relevant CSR */
