@@ -25,7 +25,6 @@ utils.fnCreateFolder(strOutDir)
 # (sourcefile.c, outputfile.o)
 listCFiles=[
    (os.path.join('psp', 'psp_interrupts_hifive1.c'), os.path.join(strOutDir, 'psp_interrupts_hifive1.o')),
-   (os.path.join('psp', 'psp_traps_interrupts.c'), os.path.join(strOutDir, 'psp_traps_interrups.o')),
    (os.path.join('psp', 'psp_timer_hifive1.c'), os.path.join(strOutDir, 'psp_timer_hifive1.o')),
    (os.path.join('psp', 'psp_version.c'), os.path.join(strOutDir, 'psp_version.o')),
 ]

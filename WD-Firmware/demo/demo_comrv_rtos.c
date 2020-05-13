@@ -24,7 +24,7 @@
 #include "rtosal_mutex_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
-#include "psp_traps_interrupts.h"
+#include "psp_api.h"
 #include "demo_utils.h"
 
 /**
@@ -119,7 +119,6 @@ void demoRtosalCreateTasks(void *pParam)
 {
 
    u32_t res;
-   ePspExceptionCause_t cause;
 
    /* Disable the machine external & timer interrupts until setup is done. */
    pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
@@ -281,7 +280,7 @@ u32_t comrvEnterCriticalSectionHook(void)
    }
    else
    {
-      M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&uiPrevIntState);
+      pspInterruptsDisable(&uiPrevIntState);
    }
 
    return 0;
@@ -305,7 +304,7 @@ u32_t comrvExitCriticalSectionHook(void)
    }
    else
    {
-      M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(uiPrevIntState);
+	   pspInterruptsRestore(uiPrevIntState);
    }
 
    return 0;

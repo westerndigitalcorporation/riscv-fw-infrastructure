@@ -147,7 +147,7 @@ void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
 	}
 
 	/* Enable all interrupts in mstatus CSR */
-	M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+	pspInterruptsEnable();
 
 	/* Enable external interrupts in mie CSR */
 	M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
