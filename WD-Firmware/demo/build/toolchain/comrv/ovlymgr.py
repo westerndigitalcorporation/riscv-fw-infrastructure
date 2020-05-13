@@ -33,7 +33,6 @@ DEFAULT_MIN_COMRV_CACHE_ENTRY_SIZE_IN_BYTES = 512
 OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES = 512
 
 # Various symbols that are read in order to parse ComRV.
-INIT_SYMBOL = "g_stComrvCB.ucTablesLoaded"
 MULTI_GROUP_OFFSET_SYMBOL = "g_stComrvCB.ucMultiGroupOffset"
 OVERLAY_STORAGE_START_SYMBOL = "OVERLAY_START_OF_OVERLAYS"
 OVERLAY_STORAGE_END_SYMBOL = "OVERLAY_END_OF_OVERLAYS"
@@ -63,9 +62,7 @@ def global_has_comrv_been_initialised_yet ():
     global global_event_breakpoint_hit_count
 
     # Yuck! Borrow the symbol reading wrapper from overlay_data class.
-    sym_value = overlay_data._read_symbol_value_as_integer (INIT_SYMBOL)
-    return (global_event_breakpoint_hit_count > 0
-            and sym_value != 0)
+    return (global_event_breakpoint_hit_count > 0)
 
 #=====================================================================#
 
@@ -704,12 +701,6 @@ def print_current_comrv_state ():
     ovly_data = overlay_data.fetch ()
     if (not ovly_data.comrv_initialised ()):
         print ("ComRV not yet initialisd:")
-        print ("%40s: %d"
-               % (INIT_SYMBOL,
-                  int (gdb.parse_and_eval ("%s" % (INIT_SYMBOL)))))
-        print ("%40s: 0x%x"
-               % ("&" + INIT_SYMBOL,
-                  int (gdb.parse_and_eval ("&%s" % (INIT_SYMBOL)))))
         print ("%40s: %d" % ("ComRV event breakpoint hits",
                              global_event_breakpoint_hit_count))
         return
