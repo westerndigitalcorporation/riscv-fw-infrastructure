@@ -18,8 +18,7 @@
 * @file   psp_interrupts_hifive1.c
 * @author Nati Rapaport
 * @date   04.05.2020
-* @brief  The file supllies interrups services such as  - registration, default handlers and indication
-*         whether we are in interrpu context.
+* @brief  The file supplies registration API for interrupt and exception service routines in Hifive1 core.
 * 
 */
 
