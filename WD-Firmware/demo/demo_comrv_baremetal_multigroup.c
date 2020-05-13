@@ -22,6 +22,7 @@
 #include "psp_macros.h"
 #include "comrv_api.h"
 #include "demo_platform_al.h"
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -38,6 +39,7 @@ void _OVERLAY_ OverlayFunc3(void);
 /**
 * types
 */
+typedef void (*funcPtr)(void);
 
 /**
 * local prototypes
@@ -52,7 +54,7 @@ extern void psp_vect_table(void);
 /**
 * global variables
 */
-
+funcPtr myFunc;
 volatile u32_t globalCount = 0;
 volatile u32_t gOverlayFunc0 = 0;
 volatile u32_t gOverlayFunc1 = 0;
@@ -77,7 +79,7 @@ void _OVERLAY_ OverlayFunc2(void)
 void _OVERLAY_ OverlayFunc1(void)
 {
    gOverlayFunc1+=3;
-   OverlayFunc2();
+   myFunc();
    gOverlayFunc1+=2;
 }
 
@@ -94,10 +96,13 @@ void demoStart(void)
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    /* Register interrupt vector */
-   M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
+   pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);
+
+   /* demonstrate function pointer usage with multigroups */
+   myFunc = OverlayFunc2;
 
    globalCount+=1;
    OverlayFunc0();
@@ -108,7 +113,7 @@ void demoStart(void)
        gOverlayFunc1 != 5 || gOverlayFunc2 != 7)
    {
       /* loop forever */
-      M_ENDLESS_LOOP();
+      M_DEMO_ENDLESS_LOOP();
    }
 }
 

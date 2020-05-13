@@ -32,7 +32,7 @@ strBsp              = 'bsp_'
 strNexys			= 'nexys_a7_'
 strBoard 			= 'board'
 strSconscriptPrefix = 'SConscript_'
-listNexysA7Targets = ['swerv_eh1']
+listNexysA7Targets = ['eh1']
 listSupportedTargets = ['hifive1', 'hifive-un']
 listSupportedTargets += listNexysA7Targets
 listDependencies    = ['libftdi1-2']
@@ -92,7 +92,7 @@ Env['ELF_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
 # get any toolchain specific options/flags
 listSpecificCFlagsOptions, listSpecificLinkerOptions = utils.fnGetToolchainSpecificFlags(objDemo.toolchain, Env);
 
-listCCOptions = ['-mabi=ilp32', '-g3', '-gdwarf-2', '-march=rv32imac', '-mcmodel=medlow'] + listSpecificCFlagsOptions + objDemo.listDemoSpecificCFlags
+listCCOptions = ['-mabi=ilp32', '-g3', '-march=rv32imac', '-mcmodel=medlow'] + listSpecificCFlagsOptions + objDemo.listDemoSpecificCFlags
 Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + listCCOptions
 Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + listCCOptions
 
@@ -116,8 +116,15 @@ Env['LINKFLAGS'] = ['-nostartfiles', '-static', '-nostdlib', '-Wl,--wrap=malloc'
                     '-Wl,--wrap=read', '-Wl,--wrap=write', '-Wl,--wrap=fstat', '-Wl,--wrap=stat', '-Wl,--wrap=close', 
                     '-Wl,--wrap=link', '-Wl,--wrap=unlink', '-Wl,--wrap=execve', '-Wl,--wrap=fork', '-Wl,--wrap=getpid', '-Wl,--wrap=kill', 
                     '-Wl,--wrap=wait', '-Wl,--wrap=isatty',  '-Wl,--wrap=times', '-Wl,--wrap=sbrk', '-Wl,--wrap=_exit', '-L.', 
-                    '-Wl,-gc-sections',  '-Wl,--start-group',
+                    '-Wl,-gc-sections',
                     '-Wl,-Map='+ Env['MAP_FILE']] + listCCOptions + listSpecificLinkerOptions + objDemo.listDemoSpecificLinkerFlags
+
+# library dependency in link time, new ld prefere it wrappin the libraries
+# -Wl, --start-group liba libb libc -Wl, --end-group
+# Due to new linker changes (March/2020) when using "start" we have to use "end". 
+Env['LINKCOM_START_GROUP'] = '-Wl,--start-group'
+Env['LINKCOM_END_GROUP'] = '-Wl,--end-group'
+    
 # temporary solution until we have a unified linker script
 if hasattr(objDemo, 'strLinkFilePrefix'):
     strLinkerScriptFile += objDemo.strLinkFilePrefix
@@ -125,6 +132,9 @@ strLinkerScriptFile += '.lds'
 # end of temporary solution
 if Env['TARGET_BOARD'] not in listSupportedTargets:
   print "missing target=%s" % " | ".join(listSupportedTargets)
+  exit(1)
+if Env['TARGET_BOARD'] not in  objDemo.listSupportedTargetBoards:
+  print "demo not supported for %s board" % Env['TARGET_BOARD']
   exit(1)
 if Env['TARGET_BOARD'] in listNexysA7Targets:
 	strBsp       = strBsp + strNexys
