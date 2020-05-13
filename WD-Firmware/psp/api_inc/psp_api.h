@@ -46,6 +46,7 @@
     #include "psp_performance_monitor_eh1.h"
     #include "psp_nmi_eh1.h"
     #include "psp_cache_control_eh1.h"
+    #include "psp_corr_err_cnt_eh1.h"
 #endif
 #include "psp_traps_interrupts.h"
 
