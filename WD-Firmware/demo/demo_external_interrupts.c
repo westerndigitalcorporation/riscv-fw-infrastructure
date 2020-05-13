@@ -558,32 +558,32 @@ void demoStart(void)
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
-   /* Test #1 - Global disable external interrupts */
+   /* Demo #1 - Global disable external interrupts */
    demoExtIntsTest1GlobalDisabled();
 
-   /* Test #2 - Disable specific external interrupt */
+   /* Demo #2 - Disable specific external interrupt */
    demoExtIntsTest2SpecificDisabled();
 
-   /* Test #3 - Priority & Threshold - standard order */
+   /* Demo #3 - Priority & Threshold - standard order */
    demoExtIntsTest3PriorityStandardOrder();
 
-   /* Test #4 - Priority & Threshold - reversed order*/
+   /* Demo #4 - Priority & Threshold - reversed order*/
    demoExtIntsTest4PriorityReversedOrder();
 
-   /* Test #5 - Polarity - active-high/active-low */
+   /* Demo #5 - Polarity - active-high/active-low */
    demoExtIntsTest5GatweayPolarity();
 
-   /* Test #6 - Gateways Level/Edge setting*/
+   /* Demo #6 - Gateways Level/Edge setting*/
    demoExtIntsTest6GatweayConfiguration();
 
 #if 0
-   /* Test #7 - Nested interrupts - lower priority */
+   /* Demo #7 - Nested interrupts - lower priority */
    demoExtIntsTest7NestedInteeruptLowerPriority();
 
-   /* Test #8 - Nested interrupts - same priority */
+   /* Demo #8 - Nested interrupts - same priority */
    demoExtIntsTest8NestedInteeruptSamePriority();
 
-   /* Test #9 - Nested interrupts - higher priority */
+   /* Demo #9 - Nested interrupts - higher priority */
    demoExtIntsTest9NestedInteeruptHigherPriority();
 #endif
    /* Arriving here means all tests passed successfully */
