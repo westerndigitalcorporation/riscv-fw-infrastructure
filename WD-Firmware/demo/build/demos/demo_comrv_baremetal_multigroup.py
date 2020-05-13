@@ -16,7 +16,7 @@
 #*/
 import os
 
-cacheSize = "1024"
+cacheSize = "1536"
 
 class demo(object):
   def __init__(self):
