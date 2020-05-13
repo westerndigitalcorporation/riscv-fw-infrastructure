@@ -56,7 +56,7 @@ WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
           ├── ihfive-unleashed (not supported yet)
-          ├── nexys_a7_swerv_eh1 (Support for SweRV eh1, also support SweRVolf)
+          ├── nexys_a7_eh1 (Support for SweRV eh1, also support SweRVolf)
           ├── whisper (Support for SweRV eh1)
      ├── common                               <-- common source
      ├── demo                                 <-- demos source 
@@ -151,7 +151,7 @@ We provide several platforms to work with, please follow the instructions for th
     If you wish to know more please use this link: [Cores-SweRVolf](https://github.com/chipsalliance/Cores-SweRVolf)
     
     - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
-    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swervolf_0.bit*** to uSD device (locate it at the uSD root)
+    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***swervolf_0.bit*** to uSD device (locate it at the uSD root)
     	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done
@@ -175,7 +175,7 @@ We provide several platforms to work with, please follow the instructions for th
 
     - ***FPGA image file loading***: 
     for loading the FPGA bit file, do the following steps:
-    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_swerv1/***swerv_eh1_reference_design.bit***
+    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit***
 	   to uSD device (locate it at the uSD root)
     	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
@@ -188,12 +188,12 @@ We provide several platforms to work with, please follow the instructions for th
 &nbsp; 
 - #### Platforms Debug on Eclipse MCU Debug:
     - Select from the ***'Eclipse MCU'*** menu bar ***'Run' -> 'Debug Configurations...'***; 
-    - Choose the platform you wish to runs on, from **'left main windows'** menu
+    - Choose the platform you wish to run on, from **'left main windows'** menu
     - Current support:
         ```javascript
         - hifive1                              <-- HiFive Eval board
-        - nexys_a7_Swerv1_eh1                  <-- Nexys A7 digilent FPGA board running SweRV EH1
-        - nexys_a7_Swerv1_eh1_swerolf          <-- Nexys A7 digilent FPGA board running SweRV EH1 
+        - nexys_a7_eh1                         <-- Nexys A7 digilent FPGA board running SweRV EH1
+        - nexys_a7_eh1_swerolf                 <-- Nexys A7 digilent FPGA board running SweRV EH1 
                                                    with full System on chip. 
                                                    From chipsalliance/Cores-SweRVolf
         - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator 

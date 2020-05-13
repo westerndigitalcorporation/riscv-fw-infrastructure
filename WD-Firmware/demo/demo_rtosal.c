@@ -113,7 +113,9 @@ void demoRtosalTimerTickHandler(void);
 /**
 * external prototypes
 */
-extern void pspExternalIntHandlerIsr(void);
+#ifdef D_NEXYS_A7
+    extern void pspExtInterruptIsr(void);
+#endif
 
 /**
 * global variables
@@ -181,7 +183,7 @@ void demoRtosalCreateTasks(void *pParameters)
 	pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
 	/* register exception handlers - at the beginning, register 'pspTrapUnhandled' to all exceptions */
-    for (eCause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; eCause < E_EXC_LAST_COMMON ; eCause++)
+    for (eCause = E_EXC_INSTRUCTION_ADDRESS_MISALIGNED ; eCause < E_EXC_LAST_CAUSE ; eCause++)
     {
     	/* Skip ECALL entry as we already registered there a handler */
     	if (E_EXC_ENVIRONMENT_CALL_FROM_MMODE == eCause)
@@ -190,12 +192,14 @@ void demoRtosalCreateTasks(void *pParameters)
     	}
         pspRegisterExceptionHandler(pspTrapUnhandled, eCause);
     }
+    /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
 
-    /* register external interrupt handler */
-    pspRegisterInterruptHandler(pspExternalIntHandlerIsr, E_MACHINE_EXTERNAL_CAUSE);
+#ifdef D_NEXYS_A7
+    pspRegisterInterruptHandler(pspExtInterruptIsr, E_MACHINE_EXTERNAL_CAUSE);
 
     /* Enable the Machine-External interrupt */
     pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+#endif
 
     /* Create the queue used by the send-msg and receive-msg tasks. */
     uiResult = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
@@ -441,11 +445,3 @@ void demoRtosalcalculateTimerPeriod(void)
 	rtosalTimerSetPeriod(uiTimerPeriod);
 }
 
-#ifdef D_HI_FIVE1
-void pspExternalIntHandlerIsr(void)
-{
-	/*TODO: External interrupt handler for HI FIVE1 board is empty for now.
-	 * In the future create "psp_ext_interrupts_hi_five1.c" file and implement it there
-	 * */
-}
-#endif
