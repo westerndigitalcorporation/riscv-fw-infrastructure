@@ -38,9 +38,9 @@
 /* Options for timer routing - i.e. upon timer expiration, NMI-pin/IRQ3/IRQ4 will be asserted */
 typedef enum timerRouting
 {
-	E_TIMER_TO_NMI        = 0,
-	E_TIMER_TO_IRQ3       = 1,
-	E_TIMER_TO_IRQ4       = 2,
+  E_TIMER_TO_NMI        = 0,
+  E_TIMER_TO_IRQ3       = 1,
+  E_TIMER_TO_IRQ4       = 2,
 }eTimerRouting_t;
 
 /**
