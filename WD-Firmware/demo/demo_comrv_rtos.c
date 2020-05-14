@@ -304,7 +304,7 @@ u32_t comrvExitCriticalSectionHook(void)
    }
    else
    {
-	   pspInterruptsRestore(uiPrevIntState);
+     pspInterruptsRestore(uiPrevIntState);
    }
 
    return 0;
