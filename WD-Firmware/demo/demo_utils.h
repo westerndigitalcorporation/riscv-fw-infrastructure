@@ -40,6 +40,10 @@
                                 asm volatile ("nop"); \
                              }
 
+
+#define M_DEMO_START_PRINT()    demoOutputMsg("->> '%s' .... start", __FILE__);
+#define M_DEMO_END_PRINT()      demoOutputMsg("->> '%s' .... ends", __FILE__);
+#define M_DEMO_ERR_BRK_PRINT()  demoOutputMsg("->> %s  ..error -> line %", __LINE__);
 /**
 * types
 */
