@@ -30,7 +30,6 @@
    #include "printf.h"
    #include "mem_map.h"
    #include "version.h"
-   #include "psp_macros.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif
@@ -107,9 +106,13 @@ void demoUartInit(void)
   /* init uart */
   uartInit();
 
+
   printfNexys("------------------------------------------");
-  printfNexys("Hello from SweRV_EH1 core running on NexysA7  ");
-  printfNexys("Following: Demo RTOSAL on FreeRTOS kernel" );
+  printfNexys("Hello from SweRV core running on NexysA7  ");
+  printfNexys("Core list:");
+  printfNexys("\t EH1 = 11 ");
+  printfNexys("\t EL2 = 16 ");
+  printfNexys("Running demo on core %d...", M_PSP_READ_CSR(D_PSP_MARCHID_NUM));
   printfNexys("------------------------------------------");
   printfNexys("SweRVolf version %d.%d%d (SHA %08x) (dirty %d)",
                    stSwervolfVersion.ucMajor,
