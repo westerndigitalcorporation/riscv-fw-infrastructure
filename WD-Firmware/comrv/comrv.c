@@ -298,11 +298,6 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
    {
       comrvLoadTables();
    }
-   else
-   {
-      /* mark that the 'offset' and 'multigroup' tables are not loaded yet */
-      g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_NOT_LOADED;
-   }
 }
 
 /**
@@ -948,8 +943,6 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
-   /* mark that the 'offset' and 'multigroup' tables are loaded */
-   g_stComrvCB.ucTablesLoaded = D_COMRV_TABBLES_LOADED;
    /* set the address of COMRV entry point in register t6 -
       from this point end user can call overlay functions/load overlay data */
    M_COMRV_SET_ENTRY_ADDR(comrvEntry);
