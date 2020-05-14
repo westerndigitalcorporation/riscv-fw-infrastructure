@@ -34,16 +34,17 @@
 /**
 * macros
 */
-#define M_DEMO_ENDLESS_LOOP()   while(1) \
-                             { \
-                                asm volatile ("nop"); \
-                                asm volatile ("nop"); \
-                             }
-
-
 #define M_DEMO_START_PRINT()    demoOutputMsg("->> '%s' .... start", __FILE__);
 #define M_DEMO_END_PRINT()      demoOutputMsg("->> '%s' .... ends", __FILE__);
-#define M_DEMO_ERR_BRK_PRINT()  demoOutputMsg("->> %s  ..error -> line %", __LINE__);
+#define M_DEMO_ERR_PRINT()      demoOutputMsg("->> %s  ..error -> line %", __LINE__);
+
+#define M_DEMO_ENDLESS_LOOP() M_DEMO_ERR_PRINT()       \
+                              while(1)                 \
+                              {                        \
+                                 asm volatile ("nop"); \
+                                 asm volatile ("nop"); \
+                              }
+
 /**
 * types
 */

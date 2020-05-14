@@ -9,7 +9,7 @@
    "num_mmode_perf_regs" : "4",
    "reset_vec" : "0x80000000",
    "harts" : 1,
-   "nmi_vec" : "0x11110000",
+   "nmi_vec" : "0x8000100C",
    "triggers" : [
       {
          "poke_mask" : [
