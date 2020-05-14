@@ -315,6 +315,8 @@ void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
+   M_DEMO_START_PRINT();
+
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
@@ -348,5 +350,7 @@ void demoStart(void)
 
    /* check that the overlay group > 512B works */
    M_OVL_FUNCTIONS_CALL;
+
+   M_DEMO_END_PRINT();
 }
 

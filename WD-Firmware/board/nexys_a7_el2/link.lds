@@ -28,7 +28,7 @@ MEMORY
   ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
   dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
-  ovl           : ORIGIN = 0xE0000000, LENGTH = 4k
+  ovl           : ORIGIN = 0xE0000000, LENGTH = 8k
 }
 
 PHDRS
@@ -71,6 +71,7 @@ SECTIONS
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
+    KEEP(*(COMRV_RODATA_SEC))
     . = ALIGN(4);
   } > ram : ram_load
 
@@ -80,7 +81,7 @@ SECTIONS
   .reserved_ovl : ALIGN(4)
   {
     _OVERLAY_STORAGE_START_ADDRESS_ = .;
-    . = 0xe00;
+    . = 0x2000;
   } > ram : ram_load
 
   

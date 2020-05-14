@@ -555,6 +555,7 @@ void demoExtIntsTest9NestedInteeruptHigherPriority(void)
  */
 void demoStart(void)
 {
+   M_DEMO_START_PRINT();
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
@@ -588,5 +589,7 @@ void demoStart(void)
 #endif
    /* Arriving here means all tests passed successfully */
    demoOutputMsg("External Interrupts tests passed successfully\n");
+
+   M_DEMO_END_PRINT();
 }
 
