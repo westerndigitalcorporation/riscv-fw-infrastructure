@@ -18,9 +18,9 @@
 /**
 * include files
 */
-#include "psp_api.h"
 #include "psp_macros.h"
-#include "printf.h"
+#include "psp_api.h"
+#include "demo_platform_al.h"
 #include "demo_utils.h"
 
 
@@ -63,7 +63,7 @@ void printToTerminal(void)
   u32_t i = 0;
   while(i <= 86)
   {
-    printfNexys("Don't mind me just wasting your time! %d", i);
+    demoOutputMsg("Don't mind me just wasting your time! %d", i);
     i++;
   }
   /* making sure the print has been sent out before continuing with the program */
@@ -80,6 +80,8 @@ void demoStart(void)
   u32_t volatile  uiCycle0,    uiCycle1;
   u32_t volatile  uiInstRet0,  uiInstRet1;
   u32_t volatile  uiBranch0,   uiBranch1;
+
+  M_DEMO_START_PRINT();
 
   /* register trap handler */
   M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
@@ -125,9 +127,11 @@ void demoStart(void)
     M_DEMO_ENDLESS_LOOP();
   }
 
-   printfNexys("Total cycles %d\nTotal Instructions %d\nInstructions per cycle %d\nBranches per loop %d", \
+  demoOutputMsg("Total cycles %d\nTotal Instructions %d\nInstructions per cycle %d\nBranches per loop %d", \
                (uiCycle1 - uiCycle0),     \
                (uiInstRet1 - uiInstRet0), \
                uiIPC,                     \
                uiTotalBranches);
+
+  M_DEMO_END_PRINT();
 }
