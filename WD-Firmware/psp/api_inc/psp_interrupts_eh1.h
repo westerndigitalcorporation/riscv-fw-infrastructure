@@ -139,18 +139,28 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 
 /**
 * @brief - Set vector-table address at mtvec CSR
+*
+* @param - pointer to the vector-table
+*
+* @return - none
 */
 void pspInterruptsSetVectorTableAddress(void* pVectTable);
 
 /**
 * @brief - default empty interrupt handler
+*
+* @param - none
+*
+* @return - none
 */
 void pspDefaultEmptyIntHandler_isr(void);
 
 /**
 * @brief - Disable interrupts and return the current interrupt state in each one of the privileged levels
 *
-* output parameter - Current (== before the 'disable') interrupts state in each one of the privileged levels (read from mstatus CSR)
+* @output parameter - Current (== before the 'disable') interrupts state in each one of the privileged levels (read from mstatus CSR)
+*
+* @return - none
 */
 void pspInterruptsDisable(u32_t  *pOutPrevIntState);
 
@@ -158,7 +168,9 @@ void pspInterruptsDisable(u32_t  *pOutPrevIntState);
 * @brief - Restore the interrupts state in each one of the privileged levels.
 *          i.e. if they were already disabled - they will stay disabled. If they were enabled - they will become enabled now.
 *
-* input parameter - Previous interrupts state in each one of the privileged levels
+* @input parameter - Previous interrupts state in each one of the privileged levels
+*
+* @return - none
 */
 void pspInterruptsRestore(u32_t uiPrevIntState);
 
@@ -168,7 +180,7 @@ void pspInterruptsRestore(u32_t uiPrevIntState);
 void pspInterruptsEnable(void);
 
 
-/******************************************************************
+/**
 * @brief - Disable specified interrupt when called in MACHINE-LEVEL
 *                                                     *************
 * IMPORTANT NOTE: When you call this function, you can use either one of the following defined values:
@@ -181,13 +193,18 @@ void pspInterruptsEnable(void);
                   - D_PSP_INTERRUPTS_USER_SW
                   - D_PSP_INTERRUPTS_USER_TIMER
                   - D_PSP_INTERRUPTS_USER_EXT
-******************************************************************
-* input parameter - Interrupt number to disable
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER0
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER1
+                  - D_PSP_INTERRUPTS_MACHINE_CORR_ERR_COUNTER
+*
+* @input parameter - Interrupt number to disable
+*
+* @return - none
 */
 void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
 
-/*****************************************************************
-* @brief - Enable specified interrupt when called in MACHINE-LEVEL
+/**
+*  @brief - Enable specified interrupt when called in MACHINE-LEVEL
 *                                                    *************
 * IMPORTANT NOTE: When you call this function, you can use either one of the following defined values:
   *************** - D_PSP_INTERRUPTS_MACHINE_SW
@@ -199,34 +216,41 @@ void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
                   - D_PSP_INTERRUPTS_USER_SW
                   - D_PSP_INTERRUPTS_USER_TIMER
                   - D_PSP_INTERRUPTS_USER_EXT
-******************************************************************
-* input parameter - Interrupt number to enable
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER0
+                  - D_PSP_INTERRUPTS_MACHINE_TIMER1
+                  - D_PSP_INTERRUPTS_MACHINE_CORR_ERR_COUNTER
+*
+* @input parameter - Interrupt number to enable
+*
+* @return - none
 */
 void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
 
-/***************************************************************
+/**
 * @brief - Disable specified interrupt when called in USER-LEVEL
 *                                                     **********
 * IMPORTANT NOTE: When you call this function, use ONLY one of the following defined values:
   **************  - D_PSP_INTERRUPTS_USER_SW
                   - D_PSP_INTERRUPTS_USER_TIMER
                   - D_PSP_INTERRUPTS_USER_EXT
-******************************************************************
 *
-* input parameter - Interrupt number to disable
+* @input parameter - Interrupt number to disable
+*
+* @return - none
 */
 void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber);
 
-/***************************************************************
+/**
 * @brief - Enable specified interrupt when called in USER-LEVEL
 *                                                     **********
 * IMPORTANT NOTE: When you call this function, use ONLY one of the following defined values:
   **************  - D_PSP_INTERRUPTS_USER_SW
                   - D_PSP_INTERRUPTS_USER_TIMER
                   - D_PSP_INTERRUPTS_USER_EXT
-******************************************************************
 *
-* input parameter - Interrupt number to enable
+* @input parameter - Interrupt number to enable
+*
+* @return - none
 */
 void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber);
 
