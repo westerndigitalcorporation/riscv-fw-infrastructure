@@ -35,7 +35,7 @@ typedef enum pspCorrectableErrorCounters
   E_ICACHE_CORR_ERR_COUNTER = 0,
   E_ICCM_CORR_ERR_COUNTER   = 1,
   E_DCCM_CORR_ERR_COUNTER   = 2,
-  E_LAST_COUNTER            = E_DCCM_CORR_ERR_COUNTER + 1,
+  E_LAST_COUNTER
 } ePspCorrectableErrorCounters_t;
 
 /**
