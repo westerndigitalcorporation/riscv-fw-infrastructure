@@ -30,8 +30,8 @@
 #include "psp_api.h"
 #include "demo_platform_al.h"
 #include "demo_utils.h"
-#include "external_interrupts.h"
-#include "timer.h"
+#include "bsp_external_interrupts.h"
+#include "bsp_timer.h"
 
 /**
 * definitions
@@ -164,7 +164,7 @@ void demoSleepAndWakeupByExternalInterrupt(void)
     demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
-  M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+  pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
@@ -233,7 +233,7 @@ void demoSleepAndWakeupByMtimer(void)
   pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
 
   /* Enable all Machine level interrupts */
-  M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+  pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
@@ -325,7 +325,7 @@ void demoStallAndResumeByMtimeInterrupt(void)
   pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
 
   /* Enable all Machine level interrupts */
-  M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+  pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
@@ -385,7 +385,7 @@ void demoStallAndResumeByExternalInterrupt(void)
     demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
-  M_PSP_INTERRUPTS_ENABLE_IN_MACHINE_LEVEL();
+  pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
@@ -441,8 +441,8 @@ void demoStart(void)
   demoSleepAndWakeupByMtimer();
   /* Set core to Sleep (pmu/fw-halt) mode and wake it up with external interrupt */
   demoSleepAndWakeupByExternalInterrupt();
-    /* Disable interrupts at the end of part 1*/
-  M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&uiPrevIntState);
+  /* Disable interrupts at the end of part 1*/
+  pspInterruptsDisable(&uiPrevIntState);
 
   /************************/
   /* Part2 - Stall tests  */

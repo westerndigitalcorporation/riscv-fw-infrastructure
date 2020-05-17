@@ -1161,19 +1161,6 @@ class MyOverlayManager (gdb.OverlayManager):
                % (id, tmp))
         return tmp
 
-    # Return a value indicating if multi-group is compiled into this
-    # ComRV.  Return -1 for we don't know (yet), 1 for multi-group is
-    # compiled in, or 0 for multi-group is not compiled in.
-    def is_multi_group_enabled (self):
-        ovly_data = overlay_data.fetch ()
-        if (not ovly_data.comrv_initialised ()):
-            return -1;
-
-        if (ovly_data.is_multi_group_enabled ()):
-            return 1;
-
-        return 0
-
 # Create an instance of the command class.
 ParseComRV ()
 

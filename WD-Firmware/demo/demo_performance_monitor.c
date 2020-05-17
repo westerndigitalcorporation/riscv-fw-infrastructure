@@ -18,7 +18,6 @@
 /**
 * include files
 */
-#include "psp_macros.h"
 #include "psp_api.h"
 #include "demo_platform_al.h"
 #include "demo_utils.h"
