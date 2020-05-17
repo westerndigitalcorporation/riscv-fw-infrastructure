@@ -26,7 +26,7 @@
 */
 #include "common_types.h"
 #include "demo_platform_al.h"
-#include "mem_map.h"
+#include "bsp_mem_map.h"
 #include "psp_api.h"
 
 /**

@@ -13,8 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __PRINTF_H
-#define __PRINTF_H
+#ifndef __PRINTF_H__
+#define __PRINTF_H__
+
 #include "psp_types.h"
 
 u32_t  printfNexys(const char * cFormat, ... );
@@ -22,4 +23,4 @@ void   uartInit(void);
 void   printfSetUartStatus(u08_t ucStatus);
 u08_t  printfGetUartStatus(void);
 
-#endif //__PRINTF_H
+#endif //__PRINTF_H__

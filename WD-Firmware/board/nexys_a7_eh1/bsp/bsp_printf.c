@@ -21,22 +21,22 @@
 
 #include <stdarg.h>
 #include "psp_types.h"
-#include "mem_map.h"
-#include "printf.h"
+#include "bsp_mem_map.h"
+#include "bsp_printf.h"
 
 
 /*---------------------------------------------------*/
-/* Define											 */ 
+/* Define                       */
 /*---------------------------------------------------*/
 #if 0
 
-#define UART_RX_DATA	(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x0)))
-#define UART_TX_DATA	(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x4)))
-#define UART_STAT		(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x8)))
-#define UART_CTRL 		(*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0xC)))
+#define UART_RX_DATA  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x0)))
+#define UART_TX_DATA  (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x4)))
+#define UART_STAT    (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0x8)))
+#define UART_CTRL     (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + 0xC)))
 
-#define UART_TX_BUSY	(1<<3)
-#define UART_RX_AVAIL	(1<<0)
+#define UART_TX_BUSY  (1<<3)
+#define UART_RX_AVAIL  (1<<0)
 
 #endif
 
@@ -70,22 +70,22 @@
 /*---------------------------------------------------*/
 
 /*---------------------------------------------------*/
-/* strlen											 */
+/* strlen                       */
 /*---------------------------------------------------*/
 int strlen(const char *s)
 {
     const char *it = s;
 
-	while(*it)
-	{
-		++it;
-	}
+  while(*it)
+  {
+    ++it;
+  }
     return it - s;
 }
 
 
 /*---------------------------------------------------*/
-/* printUartPutchar: Write character to UART			 */
+/* printUartPutchar: Write character to UART       */
 /*---------------------------------------------------*/
 #if 0 /* this works for WD SweRV EH1*/
 int printUartPutchar(char ch)
@@ -162,30 +162,30 @@ typedef struct params_s
     char pad_character;
     int do_padding;
     int left_flag;
-	int upper_hex_digit_flag; //added hexdigit uppercase [A-F]
-	int maxium_length; // max_length
+  int upper_hex_digit_flag; //added hexdigit uppercase [A-F]
+  int maxium_length; // max_length
 } params_t;
 
 
 /*----------------------------------------------------*/
-/* puts: print string								  */	
+/* puts: print string                  */
 /*----------------------------------------------------*/
 
 int puts( const char * str )
 {
-	while (*str)
-		printUartPutchar(*str++);
+  while (*str)
+    printUartPutchar(*str++);
 
-	return printUartPutchar('\n');
+  return printUartPutchar('\n');
 }
 
 /*----------------------------------------------------*/
-/* putchar: print character							  */
+/* putchar: print character                */
 /*----------------------------------------------------*/
 int putchar( int c )
 {
-	printUartPutchar((char)c);
-	return c;
+  printUartPutchar((char)c);
+  return c;
 }
 
 
@@ -237,11 +237,11 @@ static void outnum( const int n, const long base, params_t *par)
     char* cp;
     int negative;
     char outbuf[32];
-	const char uphexdigits[] = "0123456789ABCDEF";
-	const char lohexdigits[] = "0123456789abcdef";
-	const char *digits;
+  const char uphexdigits[] = "0123456789ABCDEF";
+  const char lohexdigits[] = "0123456789abcdef";
+  const char *digits;
     unsigned long num;
-	int i;
+  int i;
 
     /* Check if number is negative                   */
     if (base == 10 && n < 0L) {
@@ -253,27 +253,27 @@ static void outnum( const int n, const long base, params_t *par)
         negative = 0;
     }
 
-	if (par->upper_hex_digit_flag)
-		digits = uphexdigits;
-	else
-		digits = lohexdigits;
+  if (par->upper_hex_digit_flag)
+    digits = uphexdigits;
+  else
+    digits = lohexdigits;
    
     /* Build number (backwards) in outbuf            */
-	cp = outbuf;
-	// only for 10 and 16 
-	// avoid complex divide
-	if (base == 10)
-	{    
-		do {
-			*cp++ = digits[(int)(num % 10)];
-		} while ((num /= 10) > 0);
-	}
-	else
-	{
-		do {
-			*cp++ = digits[(int)(num % 16)];
-		} while ((num /= 16) > 0);
-	}
+  cp = outbuf;
+  // only for 10 and 16
+  // avoid complex divide
+  if (base == 10)
+  {
+    do {
+      *cp++ = digits[(int)(num % 10)];
+    } while ((num /= 10) > 0);
+  }
+  else
+  {
+    do {
+      *cp++ = digits[(int)(num % 16)];
+    } while ((num /= 16) > 0);
+  }
 
     if (negative)
         *cp++ = '-';
@@ -283,7 +283,7 @@ static void outnum( const int n, const long base, params_t *par)
     /* add in the padding where needed.              */
     par->len = strlen(outbuf);
     padding( !(par->left_flag), par);
-	i = 0;
+  i = 0;
     while (cp >= outbuf && i++ < par->maxium_length)
         printUartPutchar( *cp--);
     padding( par->left_flag, par);
@@ -326,19 +326,19 @@ int uart_printf(const char* ctrl1, va_list argp)
 {
     int long_flag;
     int dot_flag;
-	int res = 0;
+  int res = 0;
 
     params_t par;
 
     char ch;
     char* ctrl = (char*)ctrl1;
     for ( ; *ctrl; ctrl++) 
-	{
+  {
         /* move format string chars to buffer until a  */
         /* format control is found.                    */
         if ( *ctrl != '%') 
-		{
-			printUartPutchar( *ctrl);
+    {
+      printUartPutchar( *ctrl);
             continue;
         }
 
@@ -346,12 +346,12 @@ int uart_printf(const char* ctrl1, va_list argp)
         dot_flag  = long_flag = par.left_flag = par.do_padding = 0;
         par.pad_character = ' ';
         par.num2=32767;
-		par.maxium_length = 10;
+    par.maxium_length = 10;
 
  try_next:
         ch = *(++ctrl);
         if ((ch >= '0' && ch <= '9')) 
-		{
+    {
             if (dot_flag)
                 par.num2 = getnum(&ctrl);
             else {
@@ -365,12 +365,12 @@ int uart_printf(const char* ctrl1, va_list argp)
             goto try_next;
         }
 
-		par.upper_hex_digit_flag = (ch >= 'A' && ch <= 'Z') ? 1 : 0;
+    par.upper_hex_digit_flag = (ch >= 'A' && ch <= 'Z') ? 1 : 0;
 
         switch ((par.upper_hex_digit_flag ? ch + 32: ch)) 
-		{
+    {
             case '%':
-				printUartPutchar( '%');
+        printUartPutchar( '%');
                 continue;
 
             case '-':
@@ -386,9 +386,9 @@ int uart_printf(const char* ctrl1, va_list argp)
                 break;
 
             case 'd':
-			case 'u':
+      case 'u':
                 if (long_flag || ch == 'D') 
-				{
+        {
                     outnum( va_arg(argp, long), 10L, &par);
                     continue;
                 }
@@ -397,24 +397,24 @@ int uart_printf(const char* ctrl1, va_list argp)
                     continue;
                 }
             
-			case 'x':
-			case 'p':
-				if (long_flag || ch == 'D') 
-				{
-					par.maxium_length = sizeof(long) * 2;
-					outnum( (long)va_arg(argp, long), 16L, &par);
-				}
-				else
-				{
-					par.maxium_length = sizeof(int) * 2;
-					outnum( (long)va_arg(argp, int), 16L, &par);
-				}
+      case 'x':
+      case 'p':
+        if (long_flag || ch == 'D')
+        {
+          par.maxium_length = sizeof(long) * 2;
+          outnum( (long)va_arg(argp, long), 16L, &par);
+        }
+        else
+        {
+          par.maxium_length = sizeof(int) * 2;
+          outnum( (long)va_arg(argp, int), 16L, &par);
+        }
                 continue;
             case 's':
                 outs( va_arg( argp, char*), &par);
                 continue;
             case 'c':
-			printUartPutchar( va_arg( argp, int));
+      printUartPutchar( va_arg( argp, int));
                 continue;
             case '\\':
                 switch (*ctrl) {
@@ -442,12 +442,12 @@ int uart_printf(const char* ctrl1, va_list argp)
         }
         goto try_next;
     }
-	return res;
+  return res;
 }
 
 
 /*---------------------------------------------------*/
-/* printf: Console based printf 					 */
+/* printf: Console based printf            */
 /*---------------------------------------------------*/
 u32_t printfNexys( const char * cFormat, ... )
 {
