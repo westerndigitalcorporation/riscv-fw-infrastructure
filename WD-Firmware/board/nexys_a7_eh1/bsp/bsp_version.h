@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __VERSION_H
-#define __VERSION_H
+#ifndef __VERSION_H__
+#define __VERSION_H__
 
 /* version sturct */
 typedef struct swervolfVersion
@@ -35,5 +35,5 @@ typedef struct swervolfVersion
 */
 void versionGetSwervolfVer(swervolfVersion_t *pSwervolfVersion);
 
-#endif //__PRINTF_H
+#endif //__VERSION_H__
 
