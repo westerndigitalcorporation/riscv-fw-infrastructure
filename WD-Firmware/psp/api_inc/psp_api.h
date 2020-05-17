@@ -34,6 +34,7 @@
 #include "psp_macros.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
+#include "psp_version.h"
 #ifdef D_HI_FIVE1
     #include "psp_timers_hifive1.h"
     #include "psp_interrupts_hifive1.h"
@@ -47,7 +48,6 @@
     #include "psp_nmi_eh1.h"
     #include "psp_cache_control_eh1.h"
 #endif
-#include "psp_traps_interrupts.h"
 
 /**
 * definitions
