@@ -123,14 +123,14 @@ void demoStart(void)
  */
 void demoNmiPinAssertionHandler()
 {
+  /* Arriving here means the test passed successfully */
+
+  /* do the print before restoring ra since compiler will optimize the return (leaf)*/
+  M_DEMO_END_PRINT();
+
   /* Restore RA from the global parameter here */
   asm volatile ("mv ra, %0" : : "r" (g_uiReturnAddress) );
 
-  /* stop getting interrupts */
-  bspRoutTimer(E_TIMER_TO_IRQ3);
-
-  /* Arriving here means the test passed successfully */
-  M_DEMO_END_PRINT();
   /* From here we return directly back to 'main', as we restored the RA register here */
   return;
 }
