@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   timer.h
+* @file   bsp_timer.h
 * @author Nati Rapaport
 * @date   20.04.2020
 * @brief  Timer in Nexys_A7 SweRVolf FPGA (used for tests purpose to generate NMI or External interrupt)
