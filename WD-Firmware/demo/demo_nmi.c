@@ -26,8 +26,9 @@
 * include files
 */
 #include "psp_api.h"
-#include "demo_platform_al.h"
 #include "bsp_timer.h"
+#include "demo_platform_al.h"
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -80,6 +81,8 @@ void demoStart(void)
 {
   u32_t uiIterationCounter;
 
+  M_DEMO_START_PRINT();
+
   /* ** Store RA register contents in a global parameter here **
    * This is required because the general NMI handler might do stack 'push' operations, hence changes the SP,
    * but it does not do equivalent 'pop' operations because it is not returned anywhere.
@@ -109,6 +112,7 @@ void demoStart(void)
     M_PSP_NOP();
   }
   /* Arriving here means test failed, as the NMI should have been occurred already */
+  M_DEMO_ERR_PRINT();
   M_PSP_EBREAK();
 }
 
@@ -122,9 +126,11 @@ void demoNmiPinAssertionHandler()
   /* Restore RA from the global parameter here */
   asm volatile ("mv ra, %0" : : "r" (g_uiReturnAddress) );
 
-  /* Arriving here means the test passed successfully */
-  demoOutputMsg("** NMI test passed successfully **\n");
+  /* stop getting interrupts */
+  bspRoutTimer(E_TIMER_TO_IRQ3);
 
+  /* Arriving here means the test passed successfully */
+  M_DEMO_END_PRINT();
   /* From here we return directly back to 'main', as we restored the RA register here */
   return;
 }
