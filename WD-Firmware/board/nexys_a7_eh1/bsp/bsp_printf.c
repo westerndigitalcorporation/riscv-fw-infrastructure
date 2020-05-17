@@ -21,8 +21,8 @@
 
 #include <stdarg.h>
 #include "psp_types.h"
-#include "mem_map.h"
-#include "printf.h"
+#include "bsp_mem_map.h"
+#include "bsp_printf.h"
 
 
 /*---------------------------------------------------*/

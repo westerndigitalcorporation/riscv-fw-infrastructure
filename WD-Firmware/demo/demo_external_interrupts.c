@@ -27,7 +27,7 @@
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
-#include "external_interrupts.h"  /* BSP file - for generation of external interrupt upon demo test call */
+#include "bsp_external_interrupts.h"  /* BSP file - for generation of external interrupt upon demo test call */
 #include "demo_utils.h"
 
 /**

@@ -27,10 +27,9 @@
 #if defined(D_HI_FIVE1)
    #include <unistd.h>
 #elif defined(D_NEXYS_A7)
-   #include "printf.h"
-   #include "mem_map.h"
-   #include "version.h"
-   #include "psp_macros.h"
+   #include "bsp_printf.h"
+   #include "bsp_mem_map.h"
+   #include "bsp_version.h"
 #else
    PRE_COMPILED_MSG("no platform was defined")
 #endif

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   version.c
+* @file   bsp_version.c
 * @author Ofer Shinaar
 * @date   24.02.2020
 * @brief  Supplies SweRVolf version information
@@ -27,8 +27,8 @@
 */
 #include "psp_types.h"
 #include "psp_api.h"
-#include "mem_map.h"
-#include "version.h"
+#include "bsp_mem_map.h"
+#include "bsp_version.h"
 
 /**
 * definitions

@@ -20,7 +20,7 @@
 */
 #include "psp_api.h"
 #include "psp_macros.h"
-#include "printf.h"
+#include "bsp_printf.h"
 #include "demo_utils.h"
 
 

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   external_interrupts.h
+* @file   bsp_external_interrupts.h
 * @author Nati Rapaport
 * @date   29.03.2020
 * @brief  External_interrupts creation in Nexys_A7 SweRVolf FPGA 

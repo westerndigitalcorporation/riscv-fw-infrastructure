@@ -16,7 +16,7 @@
 */
 
 /**
-* @file   timer.c
+* @file   bsp_timer.c
 * @author Nati Rapaport
 * @date   20.04.2020
 * @brief  Timer in Nexys_A7 SweRVolf FPGA (used for tests purpose to generate NMI or External interrupt)
@@ -26,8 +26,8 @@
 * include files
 */
 #include "psp_api.h"
-#include "external_interrupts.h"
-#include "timer.h"
+#include "bsp_external_interrupts.h"
+#include "bsp_timer.h"
 
 /**
 * definitions
