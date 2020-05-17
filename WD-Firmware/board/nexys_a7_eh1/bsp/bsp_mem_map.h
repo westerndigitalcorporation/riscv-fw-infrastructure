@@ -14,8 +14,8 @@
 // limitations under the License.
 
 
-#ifndef __MEM_MAP_H
-#define __MEM_MAP_H
+#ifndef __BSP_MEM_MAP_H__
+#define __BSP_MEM_MAP_H__
 
 //[OS]: this is currently obsolete
 //Memory map SweRV EH1 (Arup)
@@ -34,4 +34,4 @@
 #define D_VERSION_SHA           0x80001004
 
 
-#endif //__MEM_MAP_H
+#endif //__BSP_MEM_MAP_H__
