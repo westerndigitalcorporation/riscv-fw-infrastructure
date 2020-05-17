@@ -201,7 +201,7 @@ void demoRtosalCreateTasks(void *pParameters)
   /* Create the queue-receive task */
   uiResult = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_29,
                               demoRtosalReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE,
-							  uiRxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
+                              uiRxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
   if (uiResult != D_RTOSAL_SUCCESS)
   {
     demoOutputMsg("Rx-Task creation failed\n", 24);
