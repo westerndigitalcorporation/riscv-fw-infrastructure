@@ -27,8 +27,7 @@
 /**
 * include files
 */
-#include "psp_macros.h"
-#include "psp_traps_interrupts.h"
+#include "psp_api.h"
 
 /**
 * definitions

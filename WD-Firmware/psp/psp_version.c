@@ -15,27 +15,23 @@
 * limitations under the License.
 */
 /**
-* @file   version.c
-* @author Ofer Shinaar
-* @date   24.02.2020
-* @brief  Supplies SweRVolf version information
-*
+* @file   psp_version.c
+* @author Nati Rapaport
+* @date   13.05.2020
+* @brief  The file maintains PSP version and suply it upon demand
 */
+
 
 /**
 * include files
 */
-#include "psp_types.h"
 #include "psp_api.h"
-#include "mem_map.h"
-#include "version.h"
 
 /**
 * definitions
 */
-
-/* The stack used by interrupt service routines */
-
+#define PSP_VERSION_MAJOR  1
+#define PSP_VERSION_MINOR  0
 
 /**
 * macros
@@ -58,18 +54,16 @@
 */
 
 /**
- *
-* The function return version num
+* functions
+*/
+/**
+* @brief - The function return PSP version 
 *
-* @param inputs: ucRev, minor, major, sha, dirty
+* @param input: pointer to PSP version structure
 *
 */
-void versionGetSwervolfVer(swervolfVersion_t *pSwervolfVersion)
+void pspGetVersion(pspVersion_t *pPspVersion)
 {
-  pSwervolfVersion->ucRev   = M_PSP_READ_REGISTER_32(D_VERSION_REV);
-  pSwervolfVersion->ucMinor = M_PSP_READ_REGISTER_32(D_VERSION_MINOR);
-  pSwervolfVersion->ucMajor = M_PSP_READ_REGISTER_32(D_VERSION_MAJOR);
-  pSwervolfVersion->ucSha   = M_PSP_READ_REGISTER_32(D_VERSION_SHA);
-  pSwervolfVersion->ucDirty = M_PSP_READ_REGISTER_32(D_VERSION_DIRTY);
+  pPspVersion->usMajor = (u16_t)PSP_VERSION_MAJOR;
+  pPspVersion->usMinor = (u16_t)PSP_VERSION_MINOR;
 }
-
