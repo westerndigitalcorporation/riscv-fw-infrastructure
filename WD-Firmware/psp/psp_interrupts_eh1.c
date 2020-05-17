@@ -97,6 +97,7 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDef
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer0IntHandler     = pspDefaultEmptyIntHandler_isr;
 D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer1IntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrCorrErrCntIntHandler     = pspDefaultEmptyIntHandler_isr;
 
 /**
 * APIs
@@ -175,6 +176,10 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
         fptrFunc = g_fptrIntMTimer1IntHandler;
         g_fptrIntMTimer1IntHandler = fptrInterruptHandler;
         break;
+      case E_MACHINE_CORRECTABLE_ERROR_CAUSE:
+          fptrFunc = g_fptrCorrErrCntIntHandler;
+          g_fptrCorrErrCntIntHandler = fptrInterruptHandler;
+          break;
       default:
         fptrFunc = NULL;
         break;
