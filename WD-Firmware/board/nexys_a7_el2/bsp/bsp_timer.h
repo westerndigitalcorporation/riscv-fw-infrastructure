@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   timer.h
+* @file   bsp_timer.h
 * @author Nati Rapaport
 * @date   20.04.2020
 * @brief  Timer in Nexys_A7 SweRVolf FPGA (used for tests purpose to generate NMI or External interrupt)
@@ -38,9 +38,9 @@
 /* Options for timer routing - i.e. upon timer expiration, NMI-pin/IRQ3/IRQ4 will be asserted */
 typedef enum timerRouting
 {
-	E_TIMER_TO_NMI        = 0,
-	E_TIMER_TO_IRQ3       = 1,
-	E_TIMER_TO_IRQ4       = 2,
+  E_TIMER_TO_NMI        = 0,
+  E_TIMER_TO_IRQ3       = 1,
+  E_TIMER_TO_IRQ4       = 2,
 }eTimerRouting_t;
 
 /**
