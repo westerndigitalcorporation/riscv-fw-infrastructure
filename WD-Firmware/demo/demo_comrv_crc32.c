@@ -46,19 +46,19 @@
 
      for (i = 0; i < 256; i++)
        {
-	 for (c = i << 24, j = 8; j > 0; --j)
-	   c = c & 0x80000000 ? (c << 1) ^ 0x04c11db7 : (c << 1);
-	 table[i] = c;
+   for (c = i << 24, j = 8; j > 0; --j)
+     c = c & 0x80000000 ? (c << 1) ^ 0x04c11db7 : (c << 1);
+   table[i] = c;
        }
 
      printf ("static const unsigned int crc32_table[] =\n{\n");
      for (i = 0; i < 256; i += 4)
        {
-	 printf ("  0x%08x, 0x%08x, 0x%08x, 0x%08x",
-		 table[i + 0], table[i + 1], table[i + 2], table[i + 3]);
-	 if (i + 4 < 256)
-	   putchar (',');
-	 putchar ('\n');
+   printf ("  0x%08x, 0x%08x, 0x%08x, 0x%08x",
+     table[i + 0], table[i + 1], table[i + 2], table[i + 3]);
+   if (i + 4 < 256)
+     putchar (',');
+   putchar ('\n');
        }
      printf ("};\n");
      return 0;

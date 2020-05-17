@@ -27,7 +27,7 @@
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
-#include "timer.h"
+#include "bsp_timer.h"
 
 /**
 * definitions
@@ -78,38 +78,38 @@ volatile u32_t g_uiReturnAddress;    /* Store the RA register contents */
  */
 void demoStart(void)
 {
-	u32_t uiIterationCounter;
+  u32_t uiIterationCounter;
 
-	/* ** Store RA register contents in a global parameter here **
-	 * This is required because the general NMI handler might do stack 'push' operations, hence changes the SP,
-	 * but it does not do equivalent 'pop' operations because it is not returned anywhere.
-	 * So, in order to be able to return from here to 'main', the RA register is stored here in a global parameter
-	 * and it is restored in the Pin-Asserted-NMI handler */
-	asm volatile ("mv %0, ra" : "=r" (g_uiReturnAddress)  : );
+  /* ** Store RA register contents in a global parameter here **
+   * This is required because the general NMI handler might do stack 'push' operations, hence changes the SP,
+   * but it does not do equivalent 'pop' operations because it is not returned anywhere.
+   * So, in order to be able to return from here to 'main', the RA register is stored here in a global parameter
+   * and it is restored in the Pin-Asserted-NMI handler */
+  asm volatile ("mv %0, ra" : "=r" (g_uiReturnAddress)  : );
 
-	/* Register the initial NMI handler in nmi_vec register */
-	pspNmiSetVec(D_NMI_VEC_ADDRESSS, pspNmiHandlerSelector);
+  /* Register the initial NMI handler in nmi_vec register */
+  pspNmiSetVec(D_NMI_VEC_ADDRESSS, pspNmiHandlerSelector);
 
-	/* Register External-Pin-Asserted NMI handler function */
-	pspNmiRegisterHandler(demoNmiPinAssertionHandler, D_PSP_NMI_EXT_PIN_ASSERTION);
+  /* Register External-Pin-Asserted NMI handler function */
+  pspNmiRegisterHandler(demoNmiPinAssertionHandler, D_PSP_NMI_EXT_PIN_ASSERTION);
 
-	/* Rout timer to NMI pin assertion - i.e. when the timer expires, an NMI will be asserted */
-	bspRoutTimer(E_TIMER_TO_NMI);
-	
-	/* Initialize Timer (at its expiration, it will create an NMI) */
-	bspSetTimerDurationMsec(D_DEMO_DURATION_MSEC);
+  /* Rout timer to NMI pin assertion - i.e. when the timer expires, an NMI will be asserted */
+  bspRoutTimer(E_TIMER_TO_NMI);
+  
+  /* Initialize Timer (at its expiration, it will create an NMI) */
+  bspSetTimerDurationMsec(D_DEMO_DURATION_MSEC);
 
-	/* Enable the timer to start running */
-	bspStartTimer();
+  /* Enable the timer to start running */
+  bspStartTimer();
 
-	/* Delay here in a loop */
-	for(uiIterationCounter=0; uiIterationCounter<D_NUM_OF_ITERATIONS_IN_DELAY_LOOP; uiIterationCounter++)
-	{
-		M_PSP_NOP();
-		M_PSP_NOP();
-	}
-	/* Arriving here means test failed, as the NMI should have been occurred already */
-	M_PSP_EBREAK();
+  /* Delay here in a loop */
+  for(uiIterationCounter=0; uiIterationCounter<D_NUM_OF_ITERATIONS_IN_DELAY_LOOP; uiIterationCounter++)
+  {
+    M_PSP_NOP();
+    M_PSP_NOP();
+  }
+  /* Arriving here means test failed, as the NMI should have been occurred already */
+  M_PSP_EBREAK();
 }
 
 
@@ -119,14 +119,14 @@ void demoStart(void)
  */
 void demoNmiPinAssertionHandler()
 {
-	/* Restore RA from the global parameter here */
-	asm volatile ("mv ra, %0" : : "r" (g_uiReturnAddress) );
+  /* Restore RA from the global parameter here */
+  asm volatile ("mv ra, %0" : : "r" (g_uiReturnAddress) );
 
-	/* Arriving here means the test passed successfully */
-	demoOutputMsg("** NMI test passed successfully **\n");
+  /* Arriving here means the test passed successfully */
+  demoOutputMsg("** NMI test passed successfully **\n");
 
-	/* From here we return directly back to 'main', as we restored the RA register here */
-	return;
+  /* From here we return directly back to 'main', as we restored the RA register here */
+  return;
 }
 
 

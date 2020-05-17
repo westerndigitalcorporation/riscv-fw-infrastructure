@@ -48,18 +48,18 @@ extern "C" {
  */
 /* Type definitions. */
 #if __riscv_xlen == 64
-	#define portSTACK_TYPE			uint64_t
-	#define portBASE_TYPE			int64_t
-	#define portUBASE_TYPE			uint64_t
-	#define portMAX_DELAY 			( TickType_t ) 0xffffffffffffffffUL
-	#define portPOINTER_SIZE_TYPE 	uint64_t
+  #define portSTACK_TYPE      uint64_t
+  #define portBASE_TYPE      int64_t
+  #define portUBASE_TYPE      uint64_t
+  #define portMAX_DELAY       ( TickType_t ) 0xffffffffffffffffUL
+  #define portPOINTER_SIZE_TYPE   uint64_t
 #elif __riscv_xlen == 32
-	#define portSTACK_TYPE	uint32_t
-	#define portBASE_TYPE	int32_t
-	#define portUBASE_TYPE	uint32_t
-	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
+  #define portSTACK_TYPE  uint32_t
+  #define portBASE_TYPE  int32_t
+  #define portUBASE_TYPE  uint32_t
+  #define portMAX_DELAY ( TickType_t ) 0xffffffffUL
 #else
-	#error Assembler did not define __riscv_xlen
+  #error Assembler did not define __riscv_xlen
 #endif
 
 
@@ -74,13 +74,13 @@ not need to be guarded with a critical section. */
 /*-----------------------------------------------------------*/
 
 /* Architecture specifics. */
-#define portSTACK_GROWTH			( -1 )
-#define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
+#define portSTACK_GROWTH      ( -1 )
+#define portTICK_PERIOD_MS      ( ( TickType_t ) 1000 / configTICK_RATE_HZ )
 #ifdef __riscv64
-	#error This is the RV32 port that has not yet been adapted for 64.
-	#define portBYTE_ALIGNMENT			16
+  #error This is the RV32 port that has not yet been adapted for 64.
+  #define portBYTE_ALIGNMENT      16
 #else
-	#define portBYTE_ALIGNMENT 8
+  #define portBYTE_ALIGNMENT 8
 #endif
 /*-----------------------------------------------------------*/
 
@@ -93,7 +93,7 @@ not need to be guarded with a critical section. */
 
 
 /* Critical section management. */
-#define portCRITICAL_NESTING_IN_TCB					1
+#define portCRITICAL_NESTING_IN_TCB          1
 extern void vTaskEnterCritical( void );
 extern void vTaskExitCritical( void );
 
@@ -104,33 +104,33 @@ extern void vTaskExitCritical( void );
 /* Note: There are vTaskEnterCritical that calls portDISABLE_INTERRUPTS and portEXIT_CRITICAL that calls portENABLE_INTERRUPTS.
  * So we have to use a global parameter to preserve interrupts status over disable & enable of interrupts */
 extern unsigned int g_uInterruptsPreserveMask;
-#define portDISABLE_INTERRUPTS()	                            M_PSP_INTERRUPTS_DISABLE_IN_MACHINE_LEVEL(&g_uInterruptsPreserveMask);
-#define portENABLE_INTERRUPTS()		                        M_PSP_INTERRUPTS_RESTORE_IN_MACHINE_LEVEL(g_uInterruptsPreserveMask);
+#define portDISABLE_INTERRUPTS()                          pspInterruptsDisable(&g_uInterruptsPreserveMask);
+#define portENABLE_INTERRUPTS()                           pspInterruptsRestore(g_uInterruptsPreserveMask);
 
-#define portENTER_CRITICAL()	                                vTaskEnterCritical()
-#define portEXIT_CRITICAL()		                                vTaskExitCritical()
+#define portENTER_CRITICAL()                              vTaskEnterCritical()
+#define portEXIT_CRITICAL()                               vTaskExitCritical()
 
 /*-----------------------------------------------------------*/
 
 /* Architecture specific optimisations. */
 #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
-	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+  #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #endif
 
 #if( configUSE_PORT_OPTIMISED_TASK_SELECTION == 1 )
 
-	/* Check the configuration. */
-	#if( configMAX_PRIORITIES > 32 )
-		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
-	#endif
+  /* Check the configuration. */
+  #if( configMAX_PRIORITIES > 32 )
+    #error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is less than or equal to 32.  It is very rare that a system requires more than 10 to 15 difference priorities as tasks that share a priority will time slice.
+  #endif
 
-	/* Store/clear the ready priorities in a bit map. */
-	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
-	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
+  /* Store/clear the ready priorities in a bit map. */
+  #define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
+  #define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
 
-	/*-----------------------------------------------------------*/
+  /*-----------------------------------------------------------*/
 
-	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - __builtin_clz( uxReadyPriorities ) )
+  #define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - __builtin_clz( uxReadyPriorities ) )
 
 #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
 
@@ -146,9 +146,9 @@ not necessary for to use this port.  They are defined so the common demo files
 /*-----------------------------------------------------------*/
 
 #define portNOP()              M_PSP_NOP()
-#define portINLINE	           D_PSP_INLINE
+#define portINLINE             D_PSP_INLINE
 #ifndef portFORCE_INLINE
-	#define portFORCE_INLINE   D_PSP_ALWAYS_INLINE
+  #define portFORCE_INLINE   D_PSP_ALWAYS_INLINE
 #endif
 
 #define portMEMORY_BARRIER()   M_PSP_MEMORY_BARRIER()
