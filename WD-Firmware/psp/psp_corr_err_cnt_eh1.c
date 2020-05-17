@@ -60,7 +60,10 @@
 *
 * @param -  eCorrectableerrorCounter - one of E_ICACHE_CORR_ERR_COUNTER or E_ICCM_CORR_ERR_COUNTER or E_DCCM_CORR_ERR_COUNTER
 * @param -  uiThreshold - When set,  an interrupt is raised when 2**uiThreshold errors occur
+*
 *           ***Note*** 26 is the largest acceptable value. If a larger value is set, it is treated as 26.
+*
+*           ***Note*** Pay attention to register your ISR for E_MACHINE_CORRECTABLE_ERROR_CAUSE interrupt
 *
 */
 void pspCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiThreshold)
