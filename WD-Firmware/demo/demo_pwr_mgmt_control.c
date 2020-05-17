@@ -30,8 +30,8 @@
 #include "psp_api.h"
 #include "demo_platform_al.h"
 #include "demo_utils.h"
-#include "external_interrupts.h"
-#include "timer.h"
+#include "bsp_external_interrupts.h"
+#include "bsp_timer.h"
 
 /**
 * definitions

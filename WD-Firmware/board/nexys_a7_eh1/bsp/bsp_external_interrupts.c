@@ -19,7 +19,7 @@
 * include files
 */
 #include "psp_api.h"
-#include "external_interrupts.h"
+#include "bsp_external_interrupts.h"
 
 /**
 * definitions

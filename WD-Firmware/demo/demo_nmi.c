@@ -27,7 +27,7 @@
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
-#include "timer.h"
+#include "bsp_timer.h"
 
 /**
 * definitions
