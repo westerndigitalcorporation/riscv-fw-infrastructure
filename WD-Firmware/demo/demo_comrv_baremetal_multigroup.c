@@ -31,6 +31,14 @@ void _OVERLAY_ OverlayFunc0(void);
 void _OVERLAY_ OverlayFunc1(void);
 void _OVERLAY_ OverlayFunc2(void);
 void _OVERLAY_ OverlayFunc3(void);
+void _OVERLAY_ OvlTestFunc0(void);
+void _OVERLAY_ OvlTestFunc1(void);
+void _OVERLAY_ OvlTestFunc2(void);
+void _OVERLAY_ OvlTestFunc3(void);
+void _OVERLAY_ OvlTestFunc4(void);
+void _OVERLAY_ OvlTestFunc5(void);
+void _OVERLAY_ OvlTestFunc6(void);
+void _OVERLAY_ OvlTestFunc7(void);
 
 /**
 * macros
@@ -115,5 +123,111 @@ void demoStart(void)
       /* loop forever */
       M_DEMO_ENDLESS_LOOP();
    }
+
+   /* GDB test1 */
+   OvlTestFunc1();
+   OvlTestFunc0();
+   OvlTestFunc2();
+   OvlTestFunc3();
+   OvlTestFunc0();
+   OvlTestFunc0();
+
+   /* GDB test2 */
+   OvlTestFunc0();
+   OvlTestFunc1();
+   OvlTestFunc2();
+   OvlTestFunc0();
+   OvlTestFunc4();
+   OvlTestFunc5();
+   OvlTestFunc6();
+   OvlTestFunc7();
+   OvlTestFunc4();
+   OvlTestFunc5();
+   OvlTestFunc6();
+   OvlTestFunc7();
+
+   /* GDB test4 */
+   OvlTestFunc2();
+   OvlTestFunc3();
+   OvlTestFunc4();
+   OvlTestFunc7();
+   OvlTestFunc5();
+   OvlTestFunc2();
+   OvlTestFunc3();
+   OvlTestFunc1();
+   OvlTestFunc7();
+   OvlTestFunc4();
+   OvlTestFunc5();
 }
 
+void _OVERLAY_ OvlTestFunc0(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc1(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc2(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc3(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc4(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc5(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc6(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
+
+void _OVERLAY_ OvlTestFunc7(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}

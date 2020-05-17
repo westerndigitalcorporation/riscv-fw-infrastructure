@@ -201,11 +201,13 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #define OVL_OverlayFunc1 _OVERLAY_
 #define OVL_OverlayFunc2 _OVERLAY_
 #define OVL_OverlayFunc3 _OVERLAY_
+#define OVL_OverlayFunc4 _OVERLAY_
 
 D_PSP_NO_INLINE void NonOverlayFunc(void);
 void OVL_OverlayFunc0 OverlayFunc0(void);
 void OVL_OverlayFunc1 OverlayFunc1(void);
 void OVL_OverlayFunc2 OverlayFunc2(void);
+void OVL_OverlayFunc4 OverlayFunc4(void);
 u32_t OVL_OverlayFunc3 OverlayFunc3(u32_t uiVal1, u32_t uiVal2, u32_t uiVal3, u32_t uiVal4,
                                     u32_t uiVal5, u32_t uiVal6, u32_t uiVal7, u32_t uiVal8,
                                     u32_t uiVal9);
@@ -243,6 +245,15 @@ volatile u32_t gOverlayFunc2 = 0;
 /**
 * functions
 */
+/* overlay function 4 */
+void OVL_OverlayFunc4 OverlayFunc4(void)
+{
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+   asm volatile ("nop");
+}
 
 /* non overlay function */
 D_PSP_NO_INLINE void NonOverlayFunc(void)
@@ -284,6 +295,7 @@ void OVL_OverlayFunc1 OverlayFunc1(void)
 /* overlay function 0 */
 void OVL_OverlayFunc0 OverlayFunc0(void)
 {
+   OverlayFunc4();
    gOverlayFunc0+=1;
    myFunc();
    gOverlayFunc0+=2;
@@ -324,6 +336,7 @@ void demoStart(void)
    globalCount+=1;
    OverlayFunc0();
    globalCount+=2;
+   OverlayFunc4();
 
    /* verify function calls where completed successfully */
    if (globalCount != 9 || gOverlayFunc0 != 48 ||
