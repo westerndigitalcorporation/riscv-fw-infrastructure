@@ -16,6 +16,7 @@
 */
 #ifdef D_HI_FIVE1
     #include <stdlib.h>
+    #include <string.h>
 #endif
 #include "common_types.h"
 #include "comrv_api.h"
@@ -95,6 +96,8 @@ static u32_t uiPrevIntState;
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
+
+   M_DEMO_START_PRINT();
 
    /* init comrv */
    comrvInit(&stComrvInitArgs);
@@ -258,7 +261,7 @@ void demoRtosalReceiveMsgTask( void *pvParameters )
     char cStringValue[10];
     itoa(uiReceivedValue,cStringValue, 10);
     demoOutputMsg("Received: ", 10);
-    demoOutputMsg(cStringValue, 3);
+    demoOutputMsg(cStringValue, strlen(cStringValue));
     demoOutputMsg("\n",1);
 #else
     demoOutputMsg("Received %d: ",uiReceivedValue);
