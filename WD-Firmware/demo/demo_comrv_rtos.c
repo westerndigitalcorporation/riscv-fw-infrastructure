@@ -96,8 +96,6 @@ void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
-   M_DEMO_START_PRINT();
-
    /* init comrv */
    comrvInit(&stComrvInitArgs);
 
@@ -254,21 +252,23 @@ void demoRtosalReceiveMsgTask( void *pvParameters )
 
    for( ;; )
    {
-      OvlFuncRx(&uiReceivedValue);
+    OvlFuncRx(&uiReceivedValue);
+
 #ifdef D_HI_FIVE1
-      char cStringValue[10];
-      itoa(uiReceivedValue,cStringValue, 10);
-      demoOutputMsg("Received: ", 10);
-      demoOutputMsg(stringValue, 3);
-      demoOutputMsg("\n",1);
+    char cStringValue[10];
+    itoa(uiReceivedValue,cStringValue, 10);
+    demoOutputMsg("Received: ", 10);
+    demoOutputMsg(cStringValue, 3);
+    demoOutputMsg("\n",1);
 #else
-      demoOutputMsg("Received %d: ",uiReceivedValue);
+    demoOutputMsg("Received %d: ",uiReceivedValue);
 #endif
-      /* for automation demo, after 100 "received" the demo is done*/
-      if (uiReceivedValue >= 100)
-      {
-        M_DEMO_END_PRINT();
-      }
+    /* for automation demo, after 50 "received" the demo is done*/
+    if (uiReceivedValue >= 50)
+    {
+      M_DEMO_END_PRINT();
+    }
+
    }
 }
 
