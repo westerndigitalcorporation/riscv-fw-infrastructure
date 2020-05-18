@@ -72,9 +72,9 @@
 /*---------------------------------------------------*/
 
 /*---------------------------------------------------*/
-/* strlen                       */
+/* bsp_strlen                       */
 /*---------------------------------------------------*/
-int strlen(const char *s)
+int bsp_strlen(const char *s)
 {
     const char *it = s;
 
@@ -215,7 +215,7 @@ static void padding( const int l_flag, params_t *par)
 static void outs(  char* lp, params_t *par)
 {
     /* pad on left if needed                         */
-    par->len = strlen( lp);
+    par->len = bsp_strlen( lp);
     padding( !(par->left_flag), par);
 
     /* Move string to the buffer                     */
@@ -223,7 +223,7 @@ static void outs(  char* lp, params_t *par)
         printUartPutchar( *lp++);
 
     /* Pad on right if needed                        */
-    par->len = strlen( lp);                      
+    par->len = bsp_strlen( lp);
     padding( par->left_flag, par);
 }
 
@@ -283,7 +283,7 @@ static void outnum( const int n, const long base, params_t *par)
 
     /* Move the converted number to the buffer and   */
     /* add in the padding where needed.              */
-    par->len = strlen(outbuf);
+    par->len = bsp_strlen(outbuf);
     padding( !(par->left_flag), par);
   i = 0;
     while (cp >= outbuf && i++ < par->maxium_length)
