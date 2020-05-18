@@ -377,6 +377,7 @@ static void demoRtosalReceiveMsgTask( void *pParameters )
     demoOutputMsg("Received %d: ",uiReceivedValue);
 #endif
 
+
     /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */
     if( uiReceivedValue == 100UL )
