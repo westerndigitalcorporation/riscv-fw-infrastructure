@@ -35,7 +35,6 @@
 * macros
 */
 #ifdef D_HI_FIVE1
-  #include <string.h>
 
   #define M_DEMO_START_PRINT()    demoOutputMsg("->> ",4);                  \
                                   demoOutputMsg(__FILE__,strlen(__FILE__)); \
