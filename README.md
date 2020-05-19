@@ -85,9 +85,9 @@ WD-Firmware
           $ tar -xvf riscv-llvm-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
 - #### Other download
-    - From the repo unzip eclipse_mcu_2019_12.7z to your designated directory for the Eclipse MCU
+    - From the repo unzip eclipse_mcu_2019_12.tar.gz to your designated directory for the Eclipse MCU
 
-          $ 7z x eclipse_mcu_2019_12.7z -o[Eclipse-MCU-root]
+          $ tar -xvf eclipse_mcu_2019_12.tar.gz -C [Eclipse-MCU-root]
 
     - Standard packages that are required can be installed by the following command:
 
@@ -104,7 +104,7 @@ WD-Firmware
 
 ### Building for source
 - #### Preparations 
-    - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse
+    - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse/eclipse
     - Import WD firmware code:
     	- From 'Eclipse MCU' menu bar select *File* -> *Import*
     	- In the Import window select *General* -> *Existing Projects into Workspace* -> *Next*
