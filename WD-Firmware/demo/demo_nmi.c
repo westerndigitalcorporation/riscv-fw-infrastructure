@@ -33,8 +33,8 @@
 /**
 * definitions
 */
-#define D_DEMO_DURATION_MSEC    500                            /* Create a delay of 0.5 second */
-#define D_NUM_OF_ITERATIONS_IN_DELAY_LOOP    D_CLOCK_RATE * 10 /* 10 seconds of 50M cycles per second (SweRVolf FGPA rate is 50Mhz) */
+#define D_DEMO_DURATION_MSEC    500                            /* Create a delay of 0.5 second  */
+#define D_NUM_OF_ITERATIONS_IN_DELAY_LOOP    D_CLOCK_RATE * 3 /* ~(3*Const) seconds of any Freq */
 /**
 * macros
 */
