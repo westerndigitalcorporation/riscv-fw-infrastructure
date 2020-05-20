@@ -39,7 +39,7 @@
 #define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF (3000000)
 #define D_DEMO_OLOF_SWERV                        (0xC1)
 
-#define D_REF_PERCENTAG_WEIGHT_KEY               (2) /*value equal to hundreds of %. 2=200%, 4=400% etc...*/
+#define D_REF_PERCENTAGE_WEIGHT_KEY              (2) /*value equal to hundreds of %. 2=200%, 4=400% etc...*/
 
 
 /**
@@ -136,8 +136,8 @@ void demoStart(void)
       ulCounterCacheON = ulCounterCache_t2 - ulCounterCacheOFF;   /*OFF was the reference t1 */
 
       /* we assumed that when cache is ON the result for "busy loops"
-         will be at least D_REF_PERCENTAG_WEIGHT_KEY better */
-      if(ulCounterCacheOFF/ulCounterCacheON >= D_REF_PERCENTAG_WEIGHT_KEY)
+         will be at least D_REF_PERCENTAGE_WEIGHT_KEY better */
+      if(ulCounterCacheOFF/ulCounterCacheON >= D_REF_PERCENTAGE_WEIGHT_KEY)
 
       {
     	  M_DEMO_ERR_PRINT();
