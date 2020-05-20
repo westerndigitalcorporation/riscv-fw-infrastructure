@@ -63,7 +63,7 @@
 /**
 * macros
 */
-/* SweRVolf rate is 50Mhz. Convert duration (in MSec) to number of timer cycles */
+/* SweRVolf EH1 rate is 50Mhz, EL2 = 25Mhz. Convert duration (in MSec) to number of timer cycles */
 #define M_MSEC_DURATION_TO_CYCLES(duration)   (duration * (D_CLOCK_RATE / D_PSP_MSEC))
 
 /**
