@@ -71,3 +71,4 @@ if not Env["Scan"]:
 
   # return the freertos lib
   Return('objFreertosLib')
+

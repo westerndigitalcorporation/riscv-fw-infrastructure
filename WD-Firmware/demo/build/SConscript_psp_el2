@@ -74,3 +74,4 @@ if not Env["Scan"]:
 
   # return the psp lib
   Return('objPspLib')
+

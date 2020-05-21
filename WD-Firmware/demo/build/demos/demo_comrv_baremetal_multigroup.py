@@ -64,4 +64,4 @@ class demo(object):
     self.listDemoSpecificTargets = [
       'eh1', 'el2', 'hifive1', 'hifive-un'
     ]
-    
+
