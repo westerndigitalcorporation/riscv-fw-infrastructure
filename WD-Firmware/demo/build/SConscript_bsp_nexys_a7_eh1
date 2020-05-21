@@ -80,3 +80,4 @@ if not Env["Scan"]:
 
   # return the bsp lib
   Return('objBspLib')
+
