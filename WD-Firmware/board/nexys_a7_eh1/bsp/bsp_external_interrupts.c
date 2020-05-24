@@ -16,6 +16,11 @@
 */
 
 /**
+* @author Ofer Shinaar
+* @date   24.02.2020
+* @brief  header file for external interrupts
+*/
+/**
 * include files
 */
 #include "psp_api.h"

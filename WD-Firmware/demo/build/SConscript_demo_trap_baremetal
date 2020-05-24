@@ -57,11 +57,11 @@ if not Env["Scan"]:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  objDemoRtosaolLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
+  objDemoTrapBaermetal = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
 
   #print Env.Dump()
 
   # return the demo lib
-  Return('objDemoRtosaolLib')
+  Return('objDemoTrapBaermetal')
 
  
