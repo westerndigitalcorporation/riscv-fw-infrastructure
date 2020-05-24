@@ -140,7 +140,7 @@ void demoStart(void)
       if(ulCounterCacheOFF/ulCounterCacheON >= D_REF_PERCENTAGE_WEIGHT_KEY)
 
       {
-    	  M_DEMO_ERR_PRINT();
+         M_DEMO_ERR_PRINT();
          asm volatile ("ebreak");
       }
    }

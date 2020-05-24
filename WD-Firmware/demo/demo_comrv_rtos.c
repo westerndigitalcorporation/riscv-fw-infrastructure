@@ -255,22 +255,22 @@ void demoRtosalReceiveMsgTask( void *pvParameters )
 
    for( ;; )
    {
-    OvlFuncRx(&uiReceivedValue);
+     OvlFuncRx(&uiReceivedValue);
 
 #ifdef D_HI_FIVE1
-    char cStringValue[10];
-    itoa(uiReceivedValue,cStringValue, 10);
-    demoOutputMsg("Received: ", 10);
-    demoOutputMsg(cStringValue, strlen(cStringValue));
-    demoOutputMsg("\n",1);
+     char cStringValue[10];
+     itoa(uiReceivedValue,cStringValue, 10);
+     demoOutputMsg("Received: ", 10);
+     demoOutputMsg(cStringValue, strlen(cStringValue));
+     demoOutputMsg("\n",1);
 #else
-    demoOutputMsg("Received %d: ",uiReceivedValue);
+     demoOutputMsg("Received %d: ",uiReceivedValue);
 #endif
-    /* for automation demo, after 50 "received" the demo is done*/
-    if (uiReceivedValue >= 50)
-    {
-      M_DEMO_END_PRINT();
-    }
+     /* for automation demo, after 50 "received" the demo is done*/
+     if (uiReceivedValue >= 50)
+     {
+       M_DEMO_END_PRINT();
+     }
 
    }
 }
