@@ -71,6 +71,7 @@ int main(void)
    /* Now is the time to activate the relevant demonstration function */
    demoStart();
 
+
    /* For OS based demo: if all is well, the scheduler will now be running, and the
    following line will never be reached.  If the following line does execute,
    then there was insufficient FreeRTOS heap memory available for the idle and/or

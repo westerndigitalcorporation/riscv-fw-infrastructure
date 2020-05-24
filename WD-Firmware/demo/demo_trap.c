@@ -20,6 +20,7 @@
 */
 #include "psp_api.h"
 #include "demo_platform_al.h"
+#include "demo_utils.h"
 
 
 /**
@@ -91,6 +92,7 @@ void demoIllegalInstructionExceptionHandlingTest(void)
   if(g_uiTestWayPoints != D_TRAPS_TEST_RESULT)
   {
     /* Test failed */
+    M_DEMO_ERR_PRINT();
     M_PSP_EBREAK();
   }
 }
@@ -101,10 +103,10 @@ void demoIllegalInstructionExceptionHandlingTest(void)
  */
 void demoStart(void)
 {
+  M_DEMO_START_PRINT();
   /* verify proper exception handling */
   demoIllegalInstructionExceptionHandlingTest();
 
-  /* Arriving here means all tests passed successfully */
-  demoOutputMsg("Traps tests passed successfully\n",34);
+  M_DEMO_END_PRINT();
 
 }
