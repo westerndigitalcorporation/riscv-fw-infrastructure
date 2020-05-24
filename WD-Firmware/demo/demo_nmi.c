@@ -26,14 +26,15 @@
 * include files
 */
 #include "psp_api.h"
-#include "demo_platform_al.h"
 #include "bsp_timer.h"
+#include "demo_platform_al.h"
+#include "demo_utils.h"
 
 /**
 * definitions
 */
-#define D_DEMO_DURATION_MSEC    500                            /* Create a delay of 0.5 second */
-#define D_NUM_OF_ITERATIONS_IN_DELAY_LOOP    D_CLOCK_RATE * 10 /* 10 seconds of 50M cycles per second (SweRVolf FGPA rate is 50Mhz) */
+#define D_DEMO_DURATION_MSEC    500                            /* Create a delay of 0.5 second  */
+#define D_NUM_OF_ITERATIONS_IN_DELAY_LOOP    D_CLOCK_RATE * 3 /* ~(3*Const) seconds of any Freq */
 /**
 * macros
 */
@@ -80,6 +81,8 @@ void demoStart(void)
 {
   u32_t uiIterationCounter;
 
+  M_DEMO_START_PRINT();
+
   /* ** Store RA register contents in a global parameter here **
    * This is required because the general NMI handler might do stack 'push' operations, hence changes the SP,
    * but it does not do equivalent 'pop' operations because it is not returned anywhere.
@@ -109,6 +112,7 @@ void demoStart(void)
     M_PSP_NOP();
   }
   /* Arriving here means test failed, as the NMI should have been occurred already */
+  M_DEMO_ERR_PRINT();
   M_PSP_EBREAK();
 }
 
@@ -119,11 +123,13 @@ void demoStart(void)
  */
 void demoNmiPinAssertionHandler()
 {
+  /* Arriving here means the test passed successfully */
+
+  /* do the print before restoring ra since compiler will optimize the return (leaf)*/
+  M_DEMO_END_PRINT();
+
   /* Restore RA from the global parameter here */
   asm volatile ("mv ra, %0" : : "r" (g_uiReturnAddress) );
-
-  /* Arriving here means the test passed successfully */
-  demoOutputMsg("** NMI test passed successfully **\n");
 
   /* From here we return directly back to 'main', as we restored the RA register here */
   return;

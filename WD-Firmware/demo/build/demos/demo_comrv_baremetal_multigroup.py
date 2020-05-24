@@ -61,7 +61,7 @@ class demo(object):
       '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
     ]
     
-    self.listSupportedTargetBoards = [
-      'eh1', 'hifive1', 'hifive-un'
+    self.listDemoSpecificTargets = [
+      'eh1', 'el2', 'hifive1', 'hifive-un'
     ]
-    
+

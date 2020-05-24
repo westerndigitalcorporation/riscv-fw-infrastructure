@@ -61,12 +61,13 @@
     #include <stdlib.h>  
 #endif
 #include "common_types.h"
-#include "demo_platform_al.h"
 #include "rtosal_task_api.h"
 #include "rtosal_semaphore_api.h"
 #include "rtosal_task_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
+#include "demo_platform_al.h"
+#include "demo_utils.h"
 
 
 /**
@@ -155,6 +156,8 @@ static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
  */
 void demoStart(void)
 {
+  M_DEMO_START_PRINT();
+
   rtosalStart(demoRtosalCreateTasks);
 }
 
@@ -332,11 +335,14 @@ static void demoRtosalTimerCallback(void* pTimer)
  */
 static void demoRtosalSendMsgTask( void *pParameters )
 {
-  const u32_t uiValueToSend = 100UL;
+  u32_t uiValueToSend = 0UL;
 
   /* Initialise xNextWakeTime - this only needs to be done once. */
   for( ;; )
   {
+    /* value to send to the queue */
+    uiValueToSend++;
+
     /* Place this task in the blocked state until it is time to run again.
        The block time is specified in ticks.
        The task will not consume any CPU time while it is in the Blocked state. */
@@ -377,6 +383,11 @@ static void demoRtosalReceiveMsgTask( void *pParameters )
     demoOutputMsg("Received %d: ",uiReceivedValue);
 #endif
 
+    /* for automation demo, after 50 "received" the demo is done*/
+    if (uiReceivedValue >= 50)
+    {
+      M_DEMO_END_PRINT();
+    }
     /*  To get here something must have been received from the queue, but
         is it the expected value?  If it is, increment the counter. */
     if( uiReceivedValue == 100UL )

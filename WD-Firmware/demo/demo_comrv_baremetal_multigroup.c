@@ -103,6 +103,8 @@ void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
+   M_DEMO_START_PRINT();
+
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
@@ -158,6 +160,8 @@ void demoStart(void)
    OvlTestFunc7();
    OvlTestFunc4();
    OvlTestFunc5();
+
+   M_DEMO_END_PRINT();
 }
 
 void _OVERLAY_ OvlTestFunc0(void)

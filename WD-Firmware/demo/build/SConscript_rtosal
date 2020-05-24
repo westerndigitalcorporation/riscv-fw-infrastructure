@@ -81,3 +81,4 @@ if not Env["Scan"]:
 
   # return the rtosal lib
   Return('objRtosalLib')
+

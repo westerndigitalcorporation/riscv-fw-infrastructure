@@ -164,7 +164,7 @@ void demoSleepAndWakeupByExternalInterrupt(void)
     demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
-    pspInterruptsEnable();
+  pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
@@ -385,7 +385,7 @@ void demoStallAndResumeByExternalInterrupt(void)
     demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
-    pspInterruptsEnable();
+  pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
@@ -430,6 +430,7 @@ void demoStart(void)
 {
   u32_t uiPrevIntState;
 
+  M_DEMO_START_PRINT();
   /* Register interrupt vector */
   pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
@@ -440,7 +441,7 @@ void demoStart(void)
   demoSleepAndWakeupByMtimer();
   /* Set core to Sleep (pmu/fw-halt) mode and wake it up with external interrupt */
   demoSleepAndWakeupByExternalInterrupt();
-    /* Disable interrupts at the end of part 1*/
+  /* Disable interrupts at the end of part 1*/
   pspInterruptsDisable(&uiPrevIntState);
 
   /************************/
@@ -453,7 +454,6 @@ void demoStart(void)
   /* Stall the core ('pause', per EH1 PRM) and resume it with  external interrupt */
   demoStallAndResumeByExternalInterrupt();
 
-  /* Arriving here means all tests passed successfully */
-  demoOutputMsg("Power Management Control tests passed successfully\n",52);
+  M_DEMO_END_PRINT();
 
 }
