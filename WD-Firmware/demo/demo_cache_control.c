@@ -26,22 +26,26 @@
 */
 #include "common_types.h"
 #include "demo_platform_al.h"
+#include "demo_utils.h"
 #include "bsp_mem_map.h"
 #include "psp_api.h"
 
 /**
 * definitions
 */
-#define D_MAIN_MEM_INDEX                         0
-#define D_DEMO_MAX_LOOP_COUNT                    65536
-#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON  200000
-#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF 3000000
-#define D_DEMO_OLOF_SWERV                        0xC1
+#define D_MAIN_MEM_INDEX                         (0)
+#define D_DEMO_MAX_LOOP_COUNT                    (65536)
+#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON  (200000)
+#define D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF (3000000)
+#define D_DEMO_OLOF_SWERV                        (0xC1)
+
+#define D_REF_PERCENTAGE_WEIGHT_KEY              (2) /*value equal to hundreds of %. 2=200%, 4=400% etc...*/
+
 
 /**
 * macros
 */
-#define M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE() for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++) \
+#define M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE() for (uiIndex = 0 ; uiIndex < D_DEMO_MAX_LOOP_COUNT ; uiIndex++) \
                                                { \
                                                   asm volatile ("nop"); \
                                                }
@@ -73,7 +77,12 @@ void demoStart(void)
    u32_t uiIndex;
    volatile u32_t* pUartState;
 
-   volatile u64_t ulCounter1, ulCounter2, ulCounter3;
+   volatile u64_t ulCounterCacheOFF;
+   volatile u64_t ulCounterCacheON;
+   volatile u64_t ulCounterCache_t1;
+   volatile u64_t ulCounterCache_t2;
+
+   M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
    M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
@@ -98,35 +107,40 @@ void demoStart(void)
       pspTimerCounterSetupAndRun(E_MACHINE_TIMER,  0xFFFFFFFF);
 
       /* sample the timer value */
-      ulCounter1 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t1 = pspTimerCounterGet(E_MACHINE_TIMER);
 
       /* we disable (again) the cache just to have the same amount
          of measured instructions */
       M_PSP_DISABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
 
       /* execute some code */
-      M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
+      M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounter2 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t2 = pspTimerCounterGet(E_MACHINE_TIMER);
+
+      /* sum the result for the "busy loop example " */
+      ulCounterCacheOFF = ulCounterCache_t2 - ulCounterCache_t1;
 
       /* enable cache for the main memory so we can measure how much
          time execution takes */
       M_PSP_ENABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
 
       /* execute some code */
-      M_DEMO_CACHE_CONTROL_CODE_TO_MEASURE();
+      M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounter3 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t2 = pspTimerCounterGet(E_MACHINE_TIMER);
 
-      /* verify we are within execution time limits when cache
-         is enabled/disabled */
-      ulCounter3 -= ulCounter2;
-      ulCounter2 -= ulCounter1;
-      if ((ulCounter3 > D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_ON) ||
-          (ulCounter2 < D_DEMO_EXPECTED_TIMER_VAL_WHEN_CACHE_OFF))
+      /* sum the result for the "busy loop example " */
+      ulCounterCacheON = ulCounterCache_t2 - ulCounterCacheOFF;   /*OFF was the reference t1 */
+
+      /* we assumed that when cache is ON the result for "busy loops"
+         will be at least D_REF_PERCENTAGE_WEIGHT_KEY better */
+      if(ulCounterCacheOFF/ulCounterCacheON >= D_REF_PERCENTAGE_WEIGHT_KEY)
+
       {
+         M_DEMO_ERR_PRINT();
          asm volatile ("ebreak");
       }
    }
@@ -135,5 +149,6 @@ void demoStart(void)
    {
       printfNexys("This demo can't run under whisper");
    }
+   M_DEMO_END_PRINT();
 }
 

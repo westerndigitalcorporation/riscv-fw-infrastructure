@@ -7,7 +7,7 @@
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_ON_FORK" value="false"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEV" value="/dev/ttyS0"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEV_SPEED" value="115200"/>
-<stringAttribute key="org.eclipse.cdt.dsf.gdb.GDB_INIT" value=""/>
+<stringAttribute key="org.eclipse.cdt.dsf.gdb.GDB_INIT" value="${workspace_loc:/WD-Firmware/demo/build/toolchain/comrv/ovlymgr.py}"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.HOST" value="localhost"/>
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.NON_STOP" value="false"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.PORT" value="7000"/>
@@ -17,7 +17,7 @@
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.REVERSE" value="false"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.REVERSE_MODE" value="UseHardTrace"/>
 <listAttribute key="org.eclipse.cdt.dsf.gdb.SOLIB_PATH"/>
-<stringAttribute key="org.eclipse.cdt.dsf.gdb.TRACEPOINT_MODE" value="TP_NORMAL_ONLY"/>
+<stringAttribute key="org.eclipse.cdt.dsf.gdb.TRACEPOINT_MODE" value="TP_FAST_THEN_NORMAL"/>
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.UPDATE_THREADLIST_ON_SUSPEND" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.internal.ui.launching.RemoteApplicationCDebuggerTab.DEFAULTS_SET" value="true"/>
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="0"/>

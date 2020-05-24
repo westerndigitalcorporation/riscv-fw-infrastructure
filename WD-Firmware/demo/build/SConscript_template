@@ -69,3 +69,4 @@ if not Env["Scan"]:
 
   # return the module_name lib
   Return('objModuleNameLib')
+

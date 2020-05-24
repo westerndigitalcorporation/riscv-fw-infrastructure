@@ -16,15 +16,16 @@
 */
 #ifdef D_HI_FIVE1
     #include <stdlib.h>
+    #include <string.h>
 #endif
 #include "common_types.h"
 #include "comrv_api.h"
-#include "demo_platform_al.h"
 #include "rtosal_task_api.h"
 #include "rtosal_mutex_api.h"
 #include "rtosal_queue_api.h"
 #include "rtosal_time_api.h"
 #include "psp_api.h"
+#include "demo_platform_al.h"
 #include "demo_utils.h"
 
 /**
@@ -95,6 +96,8 @@ static u32_t uiPrevIntState;
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs = { 1 };
+
+   M_DEMO_START_PRINT();
 
    /* init comrv */
    comrvInit(&stComrvInitArgs);
@@ -248,17 +251,27 @@ void _OVERLAY_ OvlFuncRx(u32_t* pReceivedValue)
  */
 void demoRtosalReceiveMsgTask( void *pvParameters )
 {
-   char stringValue[10];
-   u32_t ulReceivedValue;
+   u32_t uiReceivedValue;
 
    for( ;; )
    {
-      OvlFuncRx(&ulReceivedValue);
+     OvlFuncRx(&uiReceivedValue);
 
-      itoa(ulReceivedValue,stringValue, 10);
-      demoOutputMsg("Received: ", 10);
-      demoOutputMsg(stringValue, 3);
-      demoOutputMsg("\n",1);
+#ifdef D_HI_FIVE1
+     char cStringValue[10];
+     itoa(uiReceivedValue,cStringValue, 10);
+     demoOutputMsg("Received: ", 10);
+     demoOutputMsg(cStringValue, strlen(cStringValue));
+     demoOutputMsg("\n",1);
+#else
+     demoOutputMsg("Received %d: ",uiReceivedValue);
+#endif
+     /* for automation demo, after 50 "received" the demo is done*/
+     if (uiReceivedValue >= 50)
+     {
+       M_DEMO_END_PRINT();
+     }
+
    }
 }
 
