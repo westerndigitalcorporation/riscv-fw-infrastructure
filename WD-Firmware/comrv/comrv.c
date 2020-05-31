@@ -111,7 +111,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* overlay group offset in bytes */
 #define M_COMRV_GET_GROUP_OFFSET_IN_BYTES(unToken)   ((pOverlayOffsetTable[unToken.stFields.uiOverlayGroupID]) << 9)
 /* convert a given entry size in to an entry properties value */
-#define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)  (D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT << (val))
+#define M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(val)  ((val) << D_COMRV_PROPERTIES_SIZE_FLD_SHIFT_AMNT)
 /* */
 #define M_COMRV_GROUP_SIZE_TO_BYTES(groupSize)       ((groupSize) << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)
 /* macro for verifying overlay group CRC */
@@ -487,7 +487,17 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
                   ucNeighbourIndex = ucIndex + g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits;
                   /* end of loop -> do while  ... */
                } while (ucNeighbourIndex != ucEvictCandidateList[ucEntryIndex]);
+            }
+            else
+            {
+#ifdef D_COMRV_EVICTION_LRU
+               /* update previous lru index */
+               g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex;
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
             } /* if (ucNeighbourIndex != ucEvictCandidateList[ucEntryIndex]) */
+
             /* update the next eviction candidate with the updated entry */
             ucEvictCandidateList[ucEntryIndex] = ucIndex;
             /* set the new size */
@@ -499,38 +509,38 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       } /* if (ucNumOfEvictionCandidates == 0) */
       /* at this point we will have only one entry left (w/ or w/o fragmentation) */
       ucIndex = ucEvictCandidateList[ucEntryIndex];
-      /* update the entry access */
-      comrvUpdateCacheEvectionParams(ucIndex);
       /* update the cache entry with the new token */
       g_stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = unToken.uiValue;
       /* update the cache entry properties with the group size */
-      //g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits = usOverlayGroupSize;
+      g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits = usOverlayGroupSize;
       /* if evicted size is larger than requested size we need to update the CB remaining space */
       ucSizeOfEvictionCandidates = ucEvictCandidateList[ucNumOfEvictionCandidates] - usOverlayGroupSize;
       /* check if the evicted size was bigger than the requested size */
       if (ucSizeOfEvictionCandidates != 0)
       {
+#ifdef D_COMRV_EVICTION_LRU
+         /* update the global lru index */
+         g_stComrvCB.ucLruIndex = ucIndex + usOverlayGroupSize;
          /* point to the CB cache entry to be updated */
-         pEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex + usOverlayGroupSize];
+         pEntry = &g_stComrvCB.stOverlayCache[g_stComrvCB.ucLruIndex];
          /* mark the group ID so that it won't pop in the next search */
          pEntry->unToken.uiValue      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
          /* update the cache entry new size - this will also clear remaining properties */
          pEntry->unProperties.ucValue = M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(ucSizeOfEvictionCandidates);
-#ifdef D_COMRV_EVICTION_LRU
-         /* update the cache entry 'next lru' field of the previous lru */
-         g_stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex =
-               pEntry->unLru.stFields.typNextLruIndex;
+         /* update the cache entry 'prev lru' field of the previous lru */
+         g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex =
+               g_stComrvCB.ucLruIndex;
          /* update the cache entry 'next lru' field */
          pEntry->unLru.stFields.typNextLruIndex = ucIndex;
          /* update the cache entry 'previous lru' field - now it is the first lru as
             it is now considered 'evicted/empty' */
          pEntry->unLru.stFields.typPrevLruIndex = D_COMRV_LRU_ITEM;
-         /* update the global lru index */
-         g_stComrvCB.ucLruIndex = ucIndex;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
-      } /* if (ucSizeOfEvictionCandidates != 0) */
+      } /* if (M_COMRV_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0)) */
+      /* update the entry access */
+      comrvUpdateCacheEvectionParams(ucIndex);
       // TODO: protect the soon loaded ram
       /* it is safe now to get new requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
@@ -574,7 +584,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
      /* get the loaded address */
      pAddress           = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(usSearchResultIndex);
      /* the group size in bytes */
-	  usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
+     usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
 
    /* invalidate data cache */
@@ -799,7 +809,17 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
       /* update the new MRU */
       g_stComrvCB.ucMruIndex = ucEntryIndex;
    }
-
+   // TODO: need a more robust #if
+#if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES)
+/* this code is for a corner case where the cache size is smaller then
+   the maximum group size; this mean we may reach to a point that the
+   entire cache is occupied with a single overlay group */
+   /* is one group loaded and occupies the entire cache */
+   else if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits == g_stComrvCB.ucLastCacheEntry)
+   {
+      g_stComrvCB.ucLruIndex = ucEntryIndex;
+   }
+#endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
