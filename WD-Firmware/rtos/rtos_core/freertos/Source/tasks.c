@@ -2944,7 +2944,7 @@ BaseType_t xSwitchRequired = pdFALSE;
 #endif /* configUSE_APPLICATION_TASK_TAG */
 /*-----------------------------------------------------------*/
 #if ( configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH == 1 )
-extern void vPortUpdateStackPriorContextSwitch(volatile StackType_t* pxTopOfStack);
+extern void vPortUpdateStackPriorContextSwitch(volatile StackType_t** pxTopOfStack);
 #endif /* configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH */
 
 void vTaskSwitchContext( void )
@@ -2998,7 +2998,7 @@ void vTaskSwitchContext( void )
 		#endif
 
 #if ( configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH == 1 )
-		vPortUpdateStackPriorContextSwitch(pxCurrentTCB->pxTopOfStack);
+		vPortUpdateStackPriorContextSwitch(&pxCurrentTCB->pxTopOfStack);
 #endif /* configUSE_UPDATE_STACK_PRIOR_CONTEXT_SWITCH */
 
 		/* Select a new task to run using either the generic C or port

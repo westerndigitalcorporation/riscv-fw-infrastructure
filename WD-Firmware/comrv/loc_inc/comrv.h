@@ -63,9 +63,9 @@
 #endif /* D_COMRV_ASSERT_ENABLED */
 
 #ifdef D_COMRV_RTOS_SUPPORT
-   // TODO: replace M_PSP_ with new interface
-   #define M_COMRV_DISABLE_INTS(uiOutPrevIntState) pspInterruptsDisable(&uiOutPrevIntState)
-   #define M_COMRV_ENABLE_INTS(uiOutPrevIntState)  pspInterruptsRestore(uiOutPrevIntState)
+
+   #define M_COMRV_DISABLE_INTS(pOutPrevIntState) M_PSP_CLEAR_AND_READ_CSR(pOutPrevIntState, D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
+   #define M_COMRV_ENABLE_INTS(uiOutPrevIntState)  M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, uiOutPrevIntState)
    #define M_COMRV_ENTER_CRITICAL_SECTION()  ret = comrvEnterCriticalSectionHook(); \
                                              M_COMRV_ASSERT(ret, D_COMRV_SUCCESS, D_COMRV_ENTER_CRITICAL_SECTION_ERR, unToken.uiValue);
    #define M_COMRV_EXIT_CRITICAL_SECTION()   ret = comrvExitCriticalSectionHook(); \

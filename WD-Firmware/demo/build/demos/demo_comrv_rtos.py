@@ -16,13 +16,15 @@
 #*/
 import os
 
+cacheSize = "1536"
+
 class demo(object):
   def __init__(self):
     self.strDemoName = "comrv_rtos"
     self.rtos_core   = ""
     self.toolchain   = ""
     self.strGrpFile = os.path.join("..", "comrv-rtos.csv")
-    self.strComrvCacheSize = "1024"
+    self.strComrvCacheSize = cacheSize
     self.strLinkFilePrefix = ''
     self.strComrvCacheAlinmentSize = '512'
 
@@ -36,7 +38,7 @@ class demo(object):
         'D_COMRV_MIN_GROUP_SIZE_IN_BYTES=512',
         'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
         'D_COMRV_MAX_CALL_STACK_DEPTH=10',
-        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES=1024',
+        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES=' + self.strComrvCacheSize,
     ]
 
     self.listSconscripts = [

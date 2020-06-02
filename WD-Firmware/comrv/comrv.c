@@ -41,6 +41,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #include "rtosal_types.h"
    #include "rtosal_macros.h"
    #include "rtosal_interrupt_api.h"
+   #include "rtosal_defines.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
 
 /**
@@ -52,6 +53,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_MAX_GROUP_NUM                         0xFFFF
 #define D_COMRV_DWORD_IN_BITS                         32
 #define D_COMRV_ENTRY_LOCKED                          1
+#define D_COMRV_ENTRY_UNLOCKED                        0
 #define D_COMRV_CANDIDATE_LIST_SIZE                   (1+(D_COMRV_OVL_GROUP_SIZE_MAX/D_COMRV_OVL_GROUP_SIZE_MIN))
 #define D_COMRV_ENTRY_TOKEN_INIT_VALUE                0x0001FFFE
 #define D_COMRV_ENTRY_PROPERTIES_INIT_VALUE           0x04
@@ -77,10 +79,41 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_ADDI_TOKEN_12_BITS_MASK               0xFFF00000
 #define D_COMRV_ADDI_TOKEN_SHMT                       20
 #define D_COMRV_TABLES_TOKEN                          0x00000001
+#define D_COMRV_STATE_ENTRY                           1
+#define D_COMRV_STATE_EXIT                            2
+#define D_COMRV_POST_SEARCH_LOAD                      4
+#define D_COMRV_POST_SEARCH_LOAD_INTERRUPTED          8
+#define D_COMRV_S0_REG_STACK_OFFSET_TMP               0
+#define D_COMRV_S1_REG_STACK_OFFSET_TMP               1
+#define D_COMRV_A0_REG_STACK_OFFSET_TMP               2
+#define D_COMRV_A1_REG_STACK_OFFSET_TMP               3
+#define D_COMRV_A2_REG_STACK_OFFSET_TMP               4
+#define D_COMRV_A3_REG_STACK_OFFSET_TMP               5
+#define D_COMRV_A4_REG_STACK_OFFSET_TMP               6
+#define D_COMRV_A5_REG_STACK_OFFSET_TMP               7
+#define D_COMRV_A6_REG_STACK_OFFSET_TMP               8
+#define D_COMRV_A7_REG_STACK_OFFSET_TMP               9
+#define D_COMRV_S2_REG_STACK_OFFSET_TMP               10
+#define D_COMRV_S3_REG_STACK_OFFSET_TMP               11
+#define D_COMRV_S4_REG_STACK_OFFSET_TMP               12
+#define D_COMRV_S5_REG_STACK_OFFSET_TMP               13
+#define D_COMRV_S6_REG_STACK_OFFSET_TMP               14
+#define D_COMRV_S7_REG_STACK_OFFSET_TMP               15
+#define D_COMRV_S8_REG_STACK_OFFSET_TMP               16
+#define D_COMRV_S9_REG_STACK_OFFSET_TMP               17
+#define D_COMRV_S10_REG_STACK_OFFSET_TMP              18
+#define D_COMRV_S11_REG_STACK_OFFSET_TMP              19
+#define D_COMRV_RA_REG_STACK_OFFSET_TMP               20
+#define D_COMRV_T5_REG_STACK_OFFSET_TMP               21
+#define D_COMRV_SP_REG_STACK_OFFSET_TMP               22
+#define D_COMRV_STATE_STACK_OFFSET_TMP                23
+#define D_COMRV_ANY_LOCK_MASK                         0x41
 
 /**
 * macros
 */
+/* read comrv task stack register (tp) */
+#define M_COMRV_TASK_STACK_REG(x)        asm volatile ("mv %0, tp" : "=r" (x)  : );
 /* read token register (t5) */
 #define M_COMRV_READ_TOKEN_REG(x)        asm volatile ("mv %0, t5" : "=r" (x)  : );
 /* write stack pool register (t4) */
@@ -170,6 +203,7 @@ static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
    through this function (the address of comrvEntry() is set in reg t6) */
 extern void  comrvEntry               (void);
 extern void  comrvEntryDisable        (void);
+extern void  comrv_pre_ret_to_asm_engine(u32_t uiPrevIntStatus, void *pComrvAsmEntryAddress);
 
 /* user hook functions - user application must implement the following functions */
 extern void  comrvErrorHook           (const comrvErrorArgs_t* pErrorArgs);
@@ -188,25 +222,25 @@ extern void  comrvInstrumentationHook (const comrvInstrumentationArgs_t* pInstAr
 extern void comrvInvalidateDataCacheHook(const void* pAddress, u32_t uiNumSizeInBytes);
 #ifdef D_COMRV_RTOS_SUPPORT
 extern void comrv_ret_from_callee(void);
+extern void comrvEntry_context_switch(void);
+extern void comrv_ret_from_callee_context_switch(void);
 #endif /* D_COMRV_RTOS_SUPPORT */
 
+/**
+* global variables
+*/
 /* comrv information:
  * bits 0- 3: multi group field offset
  * bits 4-31: reserved
  */
 D_PSP_USED D_COMRV_RODATA_SECTION
 static const u32_t g_uiComrvInfo    = (D_COMRV_MULTIGROUP_OFFSET);
-
 /* comrv information:
  * bits 0  - 15: minor version
  * bits 16 - 31: major version
  */
 D_PSP_USED D_COMRV_RODATA_SECTION
 static const u32_t g_uiComrvVersion = ((D_COMRV_VERSION_MAJOR << 16) | (D_COMRV_VERSION_MINOR));
-
-/**
-* global variables
-*/
 /* global comrv control block */
 D_COMRV_DATA_SECTION static comrvCB_t         g_stComrvCB;
 /* global comrv stack pool */
@@ -222,6 +256,8 @@ extern void *__OVERLAY_MULTIGROUP_TABLE_START;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 /* symbol defining the end of the overlay table */
 extern void *__OVERLAY_MULTIGROUP_TABLE_END;
+/* symbol defining comrv text section start address */
+extern void *COMRV_TEXT_SEC;
 
 /**
 * COM-RV initialization function
@@ -336,7 +372,14 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    comrvOverlayToken_t*   pMultigroup = (comrvOverlayToken_t*)pOverlayMultiGroupTokensTable;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 #ifdef D_COMRV_RTOS_SUPPORT
-   u32_t                ret;
+#ifndef D_COMRV_MULTI_GROUP_SUPPORT
+   u32_t                  uiTemp;
+#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+   u32_t                  ret;
+   u32_t                  uiPrevIntState;
+   /* pPrevIntState is passed to a 'volatile asm' statment which can't get
+     &uiPrevIntState as an output due to the '&' */
+   u32_t                 *pPrevIntState = &uiPrevIntState;
 #endif /* D_COMRV_RTOS_SUPPORT */
 
    /* read the requested token value (t5) */
@@ -366,6 +409,11 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       uiProfilingIndication = D_COMRV_NO_LOAD_AND_RETURN_IND;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
    }
+
+   /* we need to make sure that from this point
+      we won't have new overlay requests - we alow context swiches */
+   M_COMRV_ENTER_CRITICAL_SECTION();
+
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
    if (unToken.stFields.uiMultiGroup == 0)
@@ -419,10 +467,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* get the group size */
       usOverlayGroupSize = M_COMRV_GET_OVL_GROUP_SIZE(unToken);
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
-
-      /* we need to make sure that from this point
-         we won't have new overlay requests */
-      M_COMRV_ENTER_CRITICAL_SECTION();
 
       /* get eviction candidates according to the requested pOverlayGroupSize */
       ucNumOfEvictionCandidates = comrvGetEvictionCandidates(usOverlayGroupSize, ucEvictCandidateList);
@@ -541,8 +585,12 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       } /* if (M_COMRV_BUILTIN_EXPECT(ucNumOfEvictionCandidates == 0, 0)) */
       /* update the entry access */
       comrvUpdateCacheEvectionParams(ucIndex);
-      // TODO: protect the soon loaded ram
-      /* it is safe now to get new requests */
+#ifdef D_COMRV_RTOS_SUPPORT
+      comrvUpdateCacheEvectionParams(ucIndex);
+      /* mark the entry as locked - protect the soon loaded ram */
+      g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucEntryLock = D_COMRV_ENTRY_LOCKED;
+#endif /* D_COMRV_RTOS_SUPPORT */
+      /* it is safe now to get new overlay requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
       /* the group size in bytes */
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
@@ -563,6 +611,28 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* at this point we are sure comrv data is valid - debugger can now collect it */
       M_COMRV_DEBUGGER_HOOK_SYMBOL();
 
+#ifdef D_COMRV_RTOS_SUPPORT
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+      /* if overlay data - no need to unlock */
+      if (pEntry->unProperties.ucData == 0)
+      {
+         /* TODO: do we need the if over all disable/enable */
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+         /* read comrv status from task stack register */
+         M_COMRV_TASK_STACK_REG(uiTemp);
+         /* we want to safely clear the lock indication so disable interrupts */
+         M_COMRV_DISABLE_INTS(pPrevIntState);
+         /* mark the entry as unlocked - can now be evicted/moved */
+         g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucEntryLock = D_COMRV_ENTRY_UNLOCKED;
+         /* mark comrv state - 'post search and load' */
+         ((u32_t*)uiTemp)[D_COMRV_STATE_STACK_OFFSET_TMP] |= D_COMRV_POST_SEARCH_LOAD;
+         /* re enable interrupts */
+         M_COMRV_ENABLE_INTS(uiPrevIntState);
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+      }
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+#endif /* D_COMRV_RTOS_SUPPORT */
+
 #ifdef D_COMRV_FW_INSTRUMENTATION
       /* update for FW profiling loaded the function */
       uiProfilingIndication |= D_COMRV_PROFILING_LOAD_BIT;
@@ -581,6 +651,14 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
      /* update the entry access */
      comrvUpdateCacheEvectionParams(usSearchResultIndex);
+#ifdef D_COMRV_RTOS_SUPPORT
+     /* read comrv status */
+     M_COMRV_TASK_STACK_REG(uiTemp);
+     /* mark comrv state - 'post search and load' */
+     ((u32_t*)uiTemp)[D_COMRV_STATE_STACK_OFFSET_TMP] |= D_COMRV_POST_SEARCH_LOAD;
+#endif /* D_COMRV_RTOS_SUPPORT */
+     /* it is safe now to get new overlay requests */
+     M_COMRV_EXIT_CRITICAL_SECTION();
      /* get the loaded address */
      pAddress           = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(usSearchResultIndex);
      /* the group size in bytes */
@@ -636,12 +714,53 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 #ifdef D_COMRV_FW_INSTRUMENTATION
    stInstArgs.uiInstNum  = uiProfilingIndication;
    stInstArgs.uiToken    = unToken.uiValue;
+#ifndef D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC
+   /* disable the interrupts */
+   M_COMRV_DISABLE_INTS(pPrevIntState);
+#endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC */
+   // TODO: what if we have context switch after instrumentation - it will effect
+   // the correctness of instrumentation ??? do we need to protect it?
    comrvInstrumentationHook(&stInstArgs);
+#ifndef D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC
+   /* enable the interrupts */
+   M_COMRV_ENABLE_INTS(uiPrevIntState);
+#endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC */
 #endif /* D_COMRV_FW_INSTRUMENTATION */
 
    /* save the alignment value - we need to update it also when returning to the caller as it may
       have been evicted and the load address has changed */
    pComrvStackFrame->ucAlignmentToMaxGroupSize = ((u32_t)pAddress & (D_COMRV_OVL_GROUP_SIZE_MAX-1)) >> D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT;
+
+/* if we allow calls to non comrv engin functions (e.g. instrumentation) in rtos support,
+   we need to be ready for cases we context switch during such calls */
+#if defined(D_COMRV_RTOS_SUPPORT) && defined(D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD)
+   /*disable the interrupts while we read comrv status */
+   M_COMRV_DISABLE_INTS(pPrevIntState);
+   /* read comrv task stack register */
+   M_COMRV_TASK_STACK_REG(uiTemp);
+   /* check if state is - 'interrupted' */
+   if (((u32_t*)uiTemp)[D_COMRV_STATE_STACK_OFFSET_TMP] & D_COMRV_POST_SEARCH_LOAD_INTERRUPTED)
+   {
+      /* clear the D_COMRV_POST_SEARCH_LOAD, D_COMRV_POST_SEARCH_LOAD_INTERRUPTED indications */
+      ((u32_t*)uiTemp)[D_COMRV_STATE_STACK_OFFSET_TMP] ^= (D_COMRV_POST_SEARCH_LOAD | D_COMRV_POST_SEARCH_LOAD_INTERRUPTED);
+      /* determine the engines return point */
+      if (((u32_t*)uiTemp)[D_COMRV_STATE_STACK_OFFSET_TMP] == D_COMRV_STATE_ENTRY)
+      {
+         pAddress = &comrvEntry_context_switch;
+      }
+      /* interrupted after exit */
+      else
+      {
+         pAddress = &comrv_ret_from_callee_context_switch;
+      }
+      /* prepare returning to the comrv asm engine */
+      comrv_pre_ret_to_asm_engine(uiPrevIntState, pAddress);
+      /* comrv_pre_ret_to_asm_engine will never return to this point
+         and will enable the interrupts */
+   }
+   /* re enable interrupts */
+   M_COMRV_ENABLE_INTS(uiPrevIntState);
+#endif /* D_COMRV_RTOS_SUPPORT && D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD*/
 
    /* group is now loaded to memory so we can return the address of the data/function */
    return ((u08_t*)pAddress + usOffset);
@@ -680,7 +799,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
       /* point to the cache entry CB */
       pCacheEntry = &g_stComrvCB.stOverlayCache[ucEntryIndex];
       /* verify the entry isn't locked */
-      if (pCacheEntry->unProperties.stFields.ucLocked != D_COMRV_ENTRY_LOCKED)
+      if ((pCacheEntry->unProperties.ucValue & D_COMRV_ANY_LOCK_MASK) == 0)
       {
          /* count the number of uiCandidates */
          ucNumberOfCandidates++;
@@ -952,7 +1071,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 
    /* set cache entry token and properties */
    g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unToken.uiValue = D_COMRV_TABLES_TOKEN;
-   g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unProperties.stFields.ucLocked = D_COMRV_ENTRY_LOCKED;
+   g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unProperties.stFields.ucEntryLock = D_COMRV_ENTRY_LOCKED;
    /* we set the size 0 so that debugger will not continue scanning the cache entries */
    g_stComrvCB.stOverlayCache[g_stComrvCB.ucLastCacheEntry].unProperties.stFields.ucSizeInMinGroupSizeUnits = 0;
 #ifdef D_COMRV_EVICTION_LRU
@@ -1012,7 +1131,7 @@ u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockStat
    }
 
    /* group is loaded so lets lock/unlock it */
-   g_stComrvCB.stOverlayCache[usSearchResultIndex].unProperties.stFields.ucLocked = eLockState;
+   g_stComrvCB.stOverlayCache[usSearchResultIndex].unProperties.stFields.ucEvictLock = eLockState;
 
    /* exit critical section */
    M_COMRV_EXIT_CRITICAL_SECTION();
@@ -1077,8 +1196,12 @@ D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
 *
 * @return None
 */
-void comrvSaveContextSwitch(volatile u32_t* pMepc, volatile u32_t* pRegisterT3)
+/* TODO: Is it a good idea to have comrvSaveContextSwitch in D_COMRV_TEXT_SECTION */
+D_COMRV_TEXT_SECTION u32_t* comrvSaveContextSwitch(volatile u32_t* pMepc, volatile u32_t* pRegisterT3,
+                                                   comrvTaskStackRegsVal_t** pComrvTaskStackRegsVal)
 {
+   u32_t             *pSpAddr = NULL;
+   u32_t             *pComrvTaskStack, *pComrvStatus;
    comrvStackFrame_t *pStackPool, *pStackFrame, *pAppStack;
 #ifdef M_COMRV_ERROR_NOTIFICATIONS
    comrvErrorArgs_t   stErrArgs;
@@ -1111,6 +1234,64 @@ void comrvSaveContextSwitch(volatile u32_t* pMepc, volatile u32_t* pRegisterT3)
          so when 'context switch' back to this task, we will first make sure
          the overlay is loaded */
       *pMepc = (u32_t)&comrv_ret_from_callee;
+      // TODO: not sure the following 2 lines are needed
+      /* read comrv task stack register */
+      M_COMRV_TASK_STACK_REG(pComrvTaskStack);
+      /* clear the D_COMRV_POST_SEARCH_LOAD indication */
+      pComrvTaskStack[D_COMRV_STATE_STACK_OFFSET_TMP] = 0;
    }
+   /* check if mepc is in range of the overlay engine code - means that interruption
+      occurred during execution of overlay engine */
+   else if ((*pMepc - (u32_t)&COMRV_TEXT_SEC) < ((u32_t)comrvEntryDisable - (u32_t)&COMRV_TEXT_SEC))
+   {
+      /* verify we are not exactly in the engine entry/exit */
+      // TODO: how can this be optimized
+      if ((*pMepc != (u32_t)comrvEntry) && (*pMepc != (u32_t)comrv_ret_from_callee))
+      {
+         /* read comrv task stack register */
+         M_COMRV_TASK_STACK_REG(pComrvTaskStack);
+         /* point to comrv status */
+         pComrvStatus = &pComrvTaskStack[D_COMRV_STATE_STACK_OFFSET_TMP];
+         /* check if state is - 'post search and load'  */
+         if (*pComrvStatus & D_COMRV_POST_SEARCH_LOAD)
+         {
+            // TODO: instead of the if we can have an array of the 2 entries
+            /* save mepc according to interruption location - interrupted after entry */
+            if (*pComrvStatus & D_COMRV_STATE_ENTRY)
+            {
+               *pMepc = (u32_t)&comrvEntry_context_switch;
+            }
+            /* interrupted after exit */
+            else
+            {
+               *pMepc = (u32_t)&comrv_ret_from_callee_context_switch;
+            }
+            /* clear the D_COMRV_POST_SEARCH_LOAD indication */
+            *pComrvStatus ^= D_COMRV_POST_SEARCH_LOAD;
+            /* new SP address to return to caller */
+            pSpAddr = (u32_t*)pComrvTaskStack[D_COMRV_SP_REG_STACK_OFFSET_TMP];
+            /* set the address of registers value to be updated by caller */
+            *pComrvTaskStackRegsVal = (comrvTaskStackRegsVal_t*)pComrvTaskStack;
+         } /* if (*pComrvStatus & D_COMRV_POST_SEARCH_LOAD) */
+      } /* if ((*pMepc != (u32_t)comrvEntry) && (*pMepc != (u32_t)comrv_ret_from_callee)) */
+   } /* else if ((*pMepc - (u32_t)&COMRV_TEXT_SEC) < ((u32_t)comrvEntryDisable - (u32_t)&COMRV_TEXT_SEC)) */
+#if defined(D_COMRV_RTOS_SUPPORT) && defined(D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD)
+   else
+   /* at this point we didn't interrupt the engine but maybe we interrupted a function 
+      called by the engine (after the point of D_COMRV_POST_SEARCH_LOAD) */
+   {
+      /* read comrv task stack register */
+      M_COMRV_TASK_STACK_REG(pComrvTaskStack);
+      /* check if state is - 'post search and load'  */
+      if (pComrvTaskStack[D_COMRV_STATE_STACK_OFFSET_TMP] & D_COMRV_POST_SEARCH_LOAD)
+      {
+         /* add the D_COMRV_POST_SEARCH_LOAD_INTERRUPTED indication */
+         pComrvTaskStack[D_COMRV_STATE_STACK_OFFSET_TMP] |= D_COMRV_POST_SEARCH_LOAD_INTERRUPTED;
+      }
+   }
+#endif /* D_COMRV_RTOS_SUPPORT && D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD*/
+
+   return pSpAddr;
 }
 #endif /* D_COMRV_RTOS_SUPPORT */
+

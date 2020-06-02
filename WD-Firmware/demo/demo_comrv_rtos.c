@@ -58,10 +58,9 @@ meaning the send task should always find the queue empty. */
 /**
 * local prototypes
 */
-void demoRtosalCreateTasks(void *pParam);
-void demoRtosalReceiveMsgTask( void *pvParameters );
-void demoRtosalTxMsgTask( void *pvParameters );
-void demoRtosalcalculateTimerPeriod(void);
+void demoComrvRtosCreateTasks(void *pParam);
+void demoComrvRtosReceiveMsgTask(void *pvParameters);
+void demoComrvRtosTxMsgTask(void *pvParameters);
 
 /**
 * external prototypes
@@ -102,11 +101,11 @@ void demoStart(void)
    /* init comrv */
    comrvInit(&stComrvInitArgs);
 
-   rtosalStart(demoRtosalCreateTasks);
+   rtosalStart(demoComrvRtosCreateTasks);
 }
 
 /**
- * demoRtosalCreateTasks
+ * demoComrvRtosCreateTasks
  *
  * Initialize the application:
  * - Register unhandled exceptions, Ecall exception and Timer ISR
@@ -118,7 +117,7 @@ void demoStart(void)
  * completion, the scheduler is kicked on and the tasks are start to be active
  *
  */
-void demoRtosalCreateTasks(void *pParam)
+void demoComrvRtosCreateTasks(void *pParam)
 {
 
    u32_t res;
@@ -140,8 +139,8 @@ void demoRtosalCreateTasks(void *pParam)
    }
 
    /* Create the rx task */
-   res = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_29,
-            demoRtosalReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE,
+   res = rtosalTaskCreate(&stRxTask, (s08_t*)"RX", E_RTOSAL_PRIO_30,
+            demoComrvRtosReceiveMsgTask, (u32_t)NULL, D_RX_TASK_STACK_SIZE,
             uRxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
    if (res != D_RTOSAL_SUCCESS)
    {
@@ -151,7 +150,7 @@ void demoRtosalCreateTasks(void *pParam)
 
    /* Create the tx task in exactly the same way */
    res = rtosalTaskCreate(&stTxTask, (s08_t*)"TX", E_RTOSAL_PRIO_29,
-            demoRtosalTxMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
+            demoComrvRtosTxMsgTask, (u32_t)NULL, D_TX_TASK_STACK_SIZE,
            uTxTaskStackBuffer, 0, D_RTOSAL_AUTO_START, 0);
    if (res != D_RTOSAL_SUCCESS)
    {
@@ -167,8 +166,8 @@ void demoRtosalCreateTasks(void *pParam)
       M_DEMO_ENDLESS_LOOP();
    }
 
-   /* Calculates timer period */
-   demoRtosalcalculateTimerPeriod();
+   /* set timer tick period */
+   rtosalTimerSetPeriod(D_TICK_TIME_MS * (D_CLOCK_RATE / D_PSP_MSEC));
 }
 
 /**
@@ -220,7 +219,7 @@ void _OVERLAY_ OvlFuncTx(u32_t* pValueToSend)
  *
  * pvParameters - not in use
  */
-void demoRtosalTxMsgTask( void *pvParameters )
+void demoComrvRtosTxMsgTask( void *pvParameters )
 {
    u32_t ulValueToSend = 0UL;
 
@@ -245,11 +244,11 @@ void _OVERLAY_ OvlFuncRx(u32_t* pReceivedValue)
 }
 
 /**
- * demoRtosalReceiveMsgTask - Rx task function
+ * demoComrvRtosReceiveMsgTask - Rx task function
  *
  * void *pvParameters - not in use
  */
-void demoRtosalReceiveMsgTask( void *pvParameters )
+void demoComrvRtosReceiveMsgTask( void *pvParameters )
 {
    u32_t uiReceivedValue;
 
@@ -293,6 +292,10 @@ u32_t comrvEnterCriticalSectionHook(void)
    }
    else
    {
+      /* TODO: talk to ofer - I don't think we need it
+         if no task is active no additional overlay load can be done
+         since we don't load overlay from interrupts
+       */
       pspInterruptsDisable(&uiPrevIntState);
    }
 
@@ -317,25 +320,10 @@ u32_t comrvExitCriticalSectionHook(void)
    }
    else
    {
+      /* TODO: talk to ofer - I don't think we need it */
      pspInterruptsRestore(uiPrevIntState);
    }
 
    return 0;
 }
 
-/**
- * demoRtosalcalculateTimerPeriod - Calculates Timer period
- *
- */
-void demoRtosalcalculateTimerPeriod(void)
-{
-   u32_t uiTimerPeriod = 0;
-
-    #if (0 == D_CLOCK_RATE) || (0 == D_TICK_TIME_MS)
-        #error "Core frequency values definitions are missing"
-    #endif
-
-   uiTimerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
-   /* Store calculated timerPeriod for future use */
-   rtosalTimerSetPeriod(uiTimerPeriod);
-}

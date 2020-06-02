@@ -40,26 +40,50 @@
 .equ D_COMRV_TOKEN_INDICATION,              1
 .equ D_COMRV_INVOKE_CALLEE_BIT_0,           1
 .equ D_COMRV_THUNK_SHMT,                    4
+.equ D_COMRV_STATE_ENTRY,                   1
+.equ D_COMRV_STATE_EXIT,                    2
 
 /*
  local stack frame layout:
- offset 0 - a0
- offset 1 - a1
- offset 2 - a2
- offset 3 - a3
- offset 4 - a4
- offset 5 - a5
- offset 6 - a6
- offset 7 - a7
+ offset 0  - a0
+ offset 1  - a1
+ offset 2  - a2
+ offset 3  - a3
+ offset 4  - a4
+ offset 5  - a5
+ offset 6  - a6
+ offset 7  - a7
+ --- start 'RTOS support' specific layout
+ offset 8  - sp
+ offset 9  - ra
+ offset 10 - t5
+ offset 11 - comrv state indications - enter/exit, 'post search and load'
+ --- end  'RTOS support' specific layout
 */
-.equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 0
-.equ D_COMRV_A1_REG_STACK_OFFSET_TMP,       REGBYTES * 1
-.equ D_COMRV_A2_REG_STACK_OFFSET_TMP,       REGBYTES * 2
-.equ D_COMRV_A3_REG_STACK_OFFSET_TMP,       REGBYTES * 3
-.equ D_COMRV_A4_REG_STACK_OFFSET_TMP,       REGBYTES * 4
-.equ D_COMRV_A5_REG_STACK_OFFSET_TMP,       REGBYTES * 5
-.equ D_COMRV_A6_REG_STACK_OFFSET_TMP,       REGBYTES * 6
-.equ D_COMRV_A7_REG_STACK_OFFSET_TMP,       REGBYTES * 7
+.equ D_COMRV_S0_REG_STACK_OFFSET_TMP,       REGBYTES * 0
+.equ D_COMRV_S1_REG_STACK_OFFSET_TMP,       REGBYTES * 1
+.equ D_COMRV_A0_REG_STACK_OFFSET_TMP,       REGBYTES * 2
+.equ D_COMRV_A1_REG_STACK_OFFSET_TMP,       REGBYTES * 3
+.equ D_COMRV_A2_REG_STACK_OFFSET_TMP,       REGBYTES * 4
+.equ D_COMRV_A3_REG_STACK_OFFSET_TMP,       REGBYTES * 5
+.equ D_COMRV_A4_REG_STACK_OFFSET_TMP,       REGBYTES * 6
+.equ D_COMRV_A5_REG_STACK_OFFSET_TMP,       REGBYTES * 7
+.equ D_COMRV_A6_REG_STACK_OFFSET_TMP,       REGBYTES * 8
+.equ D_COMRV_A7_REG_STACK_OFFSET_TMP,       REGBYTES * 9
+.equ D_COMRV_S2_REG_STACK_OFFSET_TMP,       REGBYTES * 10
+.equ D_COMRV_S3_REG_STACK_OFFSET_TMP,       REGBYTES * 11
+.equ D_COMRV_S4_REG_STACK_OFFSET_TMP,       REGBYTES * 12
+.equ D_COMRV_S5_REG_STACK_OFFSET_TMP,       REGBYTES * 13
+.equ D_COMRV_S6_REG_STACK_OFFSET_TMP,       REGBYTES * 14
+.equ D_COMRV_S7_REG_STACK_OFFSET_TMP,       REGBYTES * 15
+.equ D_COMRV_S8_REG_STACK_OFFSET_TMP,       REGBYTES * 16
+.equ D_COMRV_S9_REG_STACK_OFFSET_TMP,       REGBYTES * 17
+.equ D_COMRV_S10_REG_STACK_OFFSET_TMP,      REGBYTES * 18
+.equ D_COMRV_S11_REG_STACK_OFFSET_TMP,      REGBYTES * 19
+.equ D_COMRV_RA_REG_STACK_OFFSET_TMP,       REGBYTES * 20
+.equ D_COMRV_T5_REG_STACK_OFFSET_TMP,       REGBYTES * 21
+.equ D_COMRV_SP_REG_STACK_OFFSET_TMP,       REGBYTES * 22
+.equ D_COMRV_STATE_STACK_OFFSET_TMP ,       REGBYTES * 23
 
 /*
  COM-RV stack frame layout - see comrvStackFrame_t:
@@ -92,6 +116,9 @@
 .global comrvEntryDisable
 .global comrv_ret_from_callee
 .global comrvNotifyDisabledError
+.global comrvEntry_context_switch
+.global comrv_ret_from_callee_context_switch
+.global comrv_pre_ret_to_asm_engine
 
 /*
    COMRV_TEXT_SEC section flags:
@@ -116,7 +143,9 @@ comrvEntry:
        free frame from the stack frame pool (t4) and assign its address to t2.
        t4 is updated with the next free stack frame */
     /* disable interrupts - save current status in t1*/
-    m_COMRV_DISABLE_INTS t1
+    M_COMRV_DISABLE_INTS t1
+    /* RTOS support: make sure existing state is cleared */
+    M_COMRV_CLEAR_STATE
     /* save the address of the next free stack frame in t2 - new stack frame
        for this engine call */
     mv          t2, t4
@@ -126,7 +155,7 @@ comrvEntry:
         the next engine call */
     add         t4, t2, t4
     /* restore interrupts from t1 register */
-    m_COMRV_RESTORE_INTS t1
+    M_COMRV_RESTORE_INTS t1
     /* at this point t4 points to the next free frame, t3 points to the top
        of the com-rv stack and t2 holds the allocated stack frame. */
     /* link the allocated frame to its stack - we link the allocated frame
@@ -150,19 +179,24 @@ comrvEntry:
        this indication is required to calculate the correct offset
        when returning to an overlay function */
     ori         t3, t3, D_COMRV_INVOKE_CALLEE_BIT_0
-    /* save a0-a7 on stack */
-    M_COMRV_SAVE_ARGS_REGS
+    /* save a0-a7 on stack, in rtos support also: s0-s11 on stack + comrv state */
+    M_COMRV_SAVE_STATE D_COMRV_STATE_ENTRY
+comrvEntry_context_switch:
     /* search if the token (t5) is already loaded */
     jal         comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
     mv          t5, a0
     /* restore a0-a7 from stack */
-    M_COMRV_RESTORE_ARGS_REGS
+    M_COMRV_RESTORE_STATE
 
 comrv_invoke_callee:
     /* call the function */
     jalr        t5
 comrv_ret_from_callee:
+    /* disable interrupts - save current status in t1*/
+    M_COMRV_DISABLE_INTS t1
+    /* RTOS support: make sure existing state is cleared */
+    M_COMRV_CLEAR_STATE
     /* load the return address */
     M_PSP_LOAD  ra, D_COMRV_CALLER_RA_STACK_OFFSET(t3)
     /* we need to load the caller token to detrmine if the RA is to an overlay
@@ -176,8 +210,6 @@ comrv_ret_from_callee:
     add         t5, t5, t3
 
 comrv_igonr_caller_thunk_stack_frame:
-    /* disable interrupts - save current status in t1*/
-    m_COMRV_DISABLE_INTS t1
     /* link the freed stack frame back to the stack frames pool;
        t2 will hold the offset to the previous free stack frame */
     sub         t4, t4, t3
@@ -185,10 +217,10 @@ comrv_igonr_caller_thunk_stack_frame:
     sh          t4, D_COMRV_PREV_STACK_FRAME(t3)
     /* link the free stack frame back to the pool */
     mv          t4, t3
-    /* restore interrupts from t1 register */
-    m_COMRV_RESTORE_INTS t1
     /* save the top of the stack to the stack register */
     mv          t3, t5
+    /* restore interrupts from t1 register */
+    M_COMRV_RESTORE_INTS t1
     /* read caller token (will be in the callee field now as we look at
        the previous stack frame) */
     M_PSP_LOAD  t5, D_COMRV_CALLEE_TOKEN_STACK_OFFSET(t3)
@@ -201,8 +233,9 @@ comrv_igonr_caller_thunk_stack_frame:
     slli        t2, t5, D_COMRV_THUNK_SHMT
     /* if thunk bit set (t2 negative) we skip current comrv stack frame */
     bltz        t2, comrv_handle_thunk_token
-    /* save a0-a7 on stack */
-    M_COMRV_SAVE_ARGS_REGS
+    /* save a0-a7 on stack, in rtos support also: s0-s11 on stack + comrv state */
+    M_COMRV_SAVE_STATE D_COMRV_STATE_EXIT
+comrv_ret_from_callee_context_switch:
     /* pass the ra as the function parameter -
        used for calculating the return offset */
     mv          a0, ra
@@ -212,7 +245,7 @@ comrv_igonr_caller_thunk_stack_frame:
        address we can keep it in ra */
     mv          ra, a0
     /* restore a0-a7 from stack */
-    M_COMRV_RESTORE_ARGS_REGS
+    M_COMRV_RESTORE_STATE
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */
@@ -244,8 +277,30 @@ comrv_handle_thunk_token:
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
     /* optimization to save 'lh' instruction above 'comrv_igonr_caller_thunk_stack_frame:'*/
     mv                 t5, t2
+    /* disable interrupts - save current status in t1*/
+    M_COMRV_DISABLE_INTS t1
     /* now we can skip to the previous stack frame */
     j                  comrv_igonr_caller_thunk_stack_frame
+
+#if defined(D_COMRV_RTOS_SUPPORT) && defined(D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD)
+comrv_pre_ret_to_asm_engine:
+    /* restore s0 - s11 regs */
+    M_COMRV_RESTORE_SAVED_REGS tp
+    /* restore original ra */
+    M_PSP_LOAD  ra, D_COMRV_RA_REG_STACK_OFFSET_TMP(tp)
+    /* restore original t5 */
+    M_PSP_LOAD  t5, D_COMRV_T5_REG_STACK_OFFSET_TMP(tp)
+    /* restore original sp */
+    M_PSP_LOAD  sp, D_COMRV_SP_REG_STACK_OFFSET_TMP(tp)
+    /* enable interrupts */
+    M_COMRV_RESTORE_INTS a0
+    /* return back to the engine */
+    jr                   a1
+#endif /* D_COMRV_RTOS_SUPPORT && D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD */
+
+/* TODO: how to make sure this file is always compiled after comrv.c */
+/* NOTE: no additional lable shall be placed below this line
+   as it may break the COMRV RTOS support */
 
 /* for testing purpose, we use the .weak so we won't get stuck
    this also allows the end user to reimplement comrvEntryDisable

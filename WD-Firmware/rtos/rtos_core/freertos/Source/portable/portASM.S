@@ -108,6 +108,25 @@ vPortEndScheduler:
 
 .align 8
 pxPortInitialiseStack:
+#ifdef D_COMRV
+   M_PSP_ADDI  sp, sp, -16
+   M_PSP_STORE ra, 0(sp)                  /* save ra */
+   M_PSP_STORE a0, 4(sp)                  /* save a0 */
+   M_PSP_STORE a1, 8(sp)                  /* save a1 */
+   jal comrvInitApplicationStack          /* we need to initialize t3 register (comrv stack) per task */
+   M_PSP_LOAD  ra, 0(sp)                  /* restore ra */
+   M_PSP_LOAD  a0, 4(sp)                  /* restore a0 */
+   M_PSP_LOAD  a1, 8(sp)                  /* restore a1 */
+   M_PSP_ADDI  sp, sp, 16
+   mv          tp, a0                     /* tp holds the stack used by COMRV per task to
+                                             store/restore callee args + comrv status */
+   M_PSP_STORE zero, 0(tp)                /* clear the comrv status */
+   M_PSP_ADDI  tp, tp, -(22 * REGBYTES)   /* 24 * REGBYTES - stack reserved per task for COMRV */
+   M_PSP_ADDI  a0, a0, -(23 * REGBYTES)   /* sp address */
+   M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
+   M_PSP_STORE tp, -(4 * REGBYTES)(a0)    /* save tp */
+#endif /* D_COMRV */
+
    csrr       t0, mstatus                 /* Obtain current mstatus value. */
    M_PSP_ADDI t1, x0, 0x188               /* Generate the value 0x1880, which are -   */
    slli       t1, t1, 4                   /* the MPIE and MPP bits to set in mstatus. */
@@ -126,19 +145,6 @@ pxPortInitialiseStack:
 //    M_PSP_ADDI t0, t0, -1               /* Decrement the count of chip specific registers remaining. */
 //    j chip_specific_stack_frame         /* Until no more chip specific registers. */
 //1:
-
-#ifdef D_COMRV
-   M_PSP_ADDI  sp, sp, -16
-   M_PSP_STORE ra, 0(sp)                  /* save ra */
-   M_PSP_STORE a0, 4(sp)                  /* save a0 */
-   M_PSP_STORE a1, 8(sp)                  /* save a1 */
-   jal comrvInitApplicationStack          /* we need to initialize t3 register (comrv stack) per task */
-   M_PSP_LOAD  ra, 0(sp)                  /* restore ra */
-   M_PSP_LOAD  a0, 4(sp)                  /* restore a0 */
-   M_PSP_LOAD  a1, 8(sp)                  /* restore a1 */
-   M_PSP_ADDI  sp, sp, 16
-   M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
-#endif /* D_COMRV */
 
    M_PSP_ADDI  a0, a0, -(32 * REGBYTES)    /* a0 to be returned to caller */
    M_PSP_STORE a1, 0(a0)                  /* mret value (pxCode parameter) onto the stack. */
