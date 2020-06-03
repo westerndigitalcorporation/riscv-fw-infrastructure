@@ -82,8 +82,7 @@ static rtosalStackType_t uRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
 static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
 static rtosalMsgQueue_t stMsgQueue;
-static rtosalMutex_t stComrvMutex;
-static u32_t uiPrevIntState;
+extern rtosalMutex_t stComrvMutex;
 
 /**
 * functions
@@ -273,69 +272,4 @@ void demoRtosalReceiveMsgTask( void *pvParameters )
      }
 
    }
-}
-
-/**
-* enter critical section
-*
-* @param None
-*
-* @return 0 - success, non-zero - failure
-*/
-u32_t comrvEnterCriticalSectionHook(void)
-{
-   if (rtosalGetSchedulerState() != D_RTOSAL_SCHEDULER_NOT_STARTED)
-   {
-      if (rtosalMutexWait(&stComrvMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS)
-      {
-         return 1;
-      }
-   }
-   else
-   {
-      pspInterruptsDisable(&uiPrevIntState);
-   }
-
-   return 0;
-}
-
-/**
-* exit critical section
-*
-* @param None
-*
-* @return 0 - success, non-zero - failure
-*/
-u32_t comrvExitCriticalSectionHook(void)
-{
-   if (rtosalGetSchedulerState() != D_RTOSAL_SCHEDULER_NOT_STARTED)
-   {
-      if (rtosalMutexRelease(&stComrvMutex) != D_RTOSAL_SUCCESS)
-      {
-         return 1;
-      }
-   }
-   else
-   {
-     pspInterruptsRestore(uiPrevIntState);
-   }
-
-   return 0;
-}
-
-/**
- * demoRtosalcalculateTimerPeriod - Calculates Timer period
- *
- */
-void demoRtosalcalculateTimerPeriod(void)
-{
-   u32_t uiTimerPeriod = 0;
-
-    #if (0 == D_CLOCK_RATE) || (0 == D_TICK_TIME_MS)
-        #error "Core frequency values definitions are missing"
-    #endif
-
-   uiTimerPeriod = (D_CLOCK_RATE * D_TICK_TIME_MS / D_PSP_MSEC);
-   /* Store calculated timerPeriod for future use */
-   rtosalTimerSetPeriod(uiTimerPeriod);
 }

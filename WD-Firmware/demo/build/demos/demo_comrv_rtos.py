@@ -25,6 +25,7 @@ class demo(object):
     self.strComrvCacheSize = "1024"
     self.strLinkFilePrefix = ''
     self.strComrvCacheAlinmentSize = '512'
+    self.strOverlayStorageSize = "1536"
 
     self.public_defs = [
         'D_USE_RTOSAL',
@@ -58,6 +59,8 @@ class demo(object):
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize,
       # __comrv_cache_alignment_size defines the alinment size of the cache area 
       '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
+      # size of the overlay storage 
+      '-Wl,--defsym=__comrv_overlay_storage_size=' + self.strOverlayStorageSize,
     ]
     
     self.listDemoSpecificTargets = [

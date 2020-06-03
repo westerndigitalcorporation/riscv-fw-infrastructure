@@ -23,12 +23,14 @@ OUTPUT_ARCH( "riscv" )
 
 ENTRY( _start )
 
+__comrv_overlay_groups_size = __comrv_overlay_storage_size != 0 ? __comrv_overlay_storage_size : 0;
+
 MEMORY
 {
   ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
   dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
-  ovl           : ORIGIN = 0xE0000000, LENGTH = 8k
+  ovl           : ORIGIN = 0xE0000000, LENGTH = 32K
 }
 
 PHDRS
@@ -81,7 +83,7 @@ SECTIONS
   .reserved_ovl : ALIGN(4)
   {
     _OVERLAY_STORAGE_START_ADDRESS_ = .;
-    . = 0x2000;
+    . = __comrv_overlay_groups_size;
   } > ram : ram_load
 
   
