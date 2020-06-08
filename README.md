@@ -151,11 +151,17 @@ We provide several platforms to work with, please follow the instructions for th
     If you wish to know more please use this link: [Cores-SweRVolf](https://github.com/chipsalliance/Cores-SweRVolf)
     
     - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
-    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***swervolf_0.bit*** to uSD device (locate it at the uSD root)
+    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit*** to uSD device (locate it at the uSD root)
     	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
 		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done
-		- Wait for ORANGE led to be off, once off the board is ready to be used 
+		- Wait for ORANGE led to be off, once off the board is ready to be used
+
+    - ***FPGA image file loading***: using eclipse MCU:
+    	- From eclipse IDE menu bar open the External Tools Configurations: *'Run'* -> *'External Tools'* -> *'External Tools Configurations...'*
+    	- Under the *Program* list, select nexys_a7_eh1_flush and press the *Run* button
+    	- The Console will display *shutdown command invoked* upon completion
+
 &nbsp;
 - #### Setting up Nexys-A7 for SweRV
 
