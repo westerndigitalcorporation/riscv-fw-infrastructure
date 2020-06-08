@@ -160,7 +160,7 @@ We provide several platforms to work with, please follow the instructions for th
     - ***FPGA image file loading***: using eclipse MCU:
     	- From eclipse IDE menu bar open the External Tools Configurations: *'Run'* -> *'External Tools'* -> *'External Tools Configurations...'*
     	- Under the *Program* list, select nexys_a7_eh1_flush and press the *Run* button
-    	- The Console will display *shutdown command invoked* upon completion
+    	- The eclipse IDE Console will display *shutdown command invoked* upon completion
 
 &nbsp;
 - #### Setting up Nexys-A7 for SweRV
