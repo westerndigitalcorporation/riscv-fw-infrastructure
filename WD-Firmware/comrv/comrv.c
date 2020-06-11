@@ -591,6 +591,17 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* mark the entry as locked - protect the soon loaded ram */
       g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucEntryLock = D_COMRV_ENTRY_LOCKED;
 #endif /* D_COMRV_RTOS_SUPPORT */
+#ifdef D_COMRV_FW_INSTRUMENTATION
+      /* update for FW profiling loaded the function */
+      stInstArgs.uiInstNum = uiProfilingIndication | D_COMRV_INSTRUMENTATION_LOAD_BIT;
+      stInstArgs.uiToken   = unToken.uiValue;
+      /* disable the interrupts */
+      M_COMRV_DISABLE_INTS(pPrevIntState);
+      /* instrumentation hook function */
+      comrvInstrumentationHook(&stInstArgs);
+      /* enable the interrupts */
+      M_COMRV_ENABLE_INTS(uiPrevIntState);
+#endif /* D_COMRV_FW_INSTRUMENTATION */
       /* it is safe now to get new overlay requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
       /* the group size in bytes */
@@ -633,11 +644,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
 #endif /* D_COMRV_RTOS_SUPPORT */
-
-#ifdef D_COMRV_FW_INSTRUMENTATION
-      /* update for FW profiling loaded the function */
-      uiProfilingIndication |= D_COMRV_INSTRUMENTATION_LOAD_BIT;
-#endif /* D_COMRV_FW_INSTRUMENTATION */
    } /* overlay group is already loaded */
    else
    {
@@ -658,6 +664,16 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
      /* mark comrv state - 'post search and load' */
      ((u32_t*)uiTemp)[D_COMRV_STATE_STACK_OFFSET_TMP] |= D_COMRV_POST_SEARCH_LOAD;
 #endif /* D_COMRV_RTOS_SUPPORT */
+#ifdef D_COMRV_FW_INSTRUMENTATION
+     stInstArgs.uiInstNum  = uiProfilingIndication;
+     stInstArgs.uiToken    = unToken.uiValue;
+     /* disable the interrupts */
+     M_COMRV_DISABLE_INTS(pPrevIntState);
+     /* instrumentation hook function */
+     comrvInstrumentationHook(&stInstArgs);
+     /* enable the interrupts */
+     M_COMRV_ENABLE_INTS(uiPrevIntState);
+#endif /* D_COMRV_FW_INSTRUMENTATION */
      /* it is safe now to get new overlay requests */
      M_COMRV_EXIT_CRITICAL_SECTION();
      /* get the loaded address */
@@ -711,22 +727,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       pComrvStackFrame->tCalleeMultiGroupTableEntry = tSelectedMultiGroupEntry;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    }
-
-#ifdef D_COMRV_FW_INSTRUMENTATION
-   stInstArgs.uiInstNum  = uiProfilingIndication;
-   stInstArgs.uiToken    = unToken.uiValue;
-#ifndef D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC
-   /* disable the interrupts */
-   M_COMRV_DISABLE_INTS(pPrevIntState);
-#endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC */
-   // TODO: what if we have context switch after instrumentation - it will effect
-   // the correctness of instrumentation ??? do we need to protect it?
-   comrvInstrumentationHook(&stInstArgs);
-#ifndef D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC
-   /* enable the interrupts */
-   M_COMRV_ENABLE_INTS(uiPrevIntState);
-#endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC */
-#endif /* D_COMRV_FW_INSTRUMENTATION */
 
    /* save the alignment value - we need to update it also when returning to the caller as it may
       have been evicted and the load address has changed */

@@ -46,15 +46,14 @@
 /* enable instrumentation */
 #ifdef D_COMRV_ENABLE_FW_INSTRUMENTATION_SUPPORT
    #define D_COMRV_FW_INSTRUMENTATION
-   #ifdef D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC_SUPPORT
-      /* end user requested instrumentation to be non atomic  - default is atomic */
-      #define D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC
-      /* due to instrumentation, mark we allow non comrv function calls after
-         search and load indication - applies only for rtos support to handle
-         cases where we get a context switch during calls to such functions */
-      #define D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD
-   #endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC_SUPPORT */
 #endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_SUPPORT */
+
+#ifdef D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD_SUPPORT
+   /* Mark we allow non comrv function calls after search and load
+      indication - applies only for rtos support to handle
+      cases where we get a context switch during calls to such functions */
+   #define D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD
+#endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC_SUPPORT */
 
 /* enable init vars run time validation */
 #ifdef D_COMRV_ENABLE_VERIFY_INIT_ARGS_SUPPORT
