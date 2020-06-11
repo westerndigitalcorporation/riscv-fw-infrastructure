@@ -35,6 +35,10 @@ DEFAULT_MAX_GROUP_SIZE = 4096
 # The default size for the "pages" in the ComRV cache and storage area.
 DEFAULT_MIN_COMRV_CACHE_ENTRY_SIZE_IN_BYTES = 512
 OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES = 512
+COMRV_INFO_EVICTION_FIELD = 0x30
+COMRV_INFO_EVICT_POLICY_LRU = 0x10
+COMRV_INFO_EVICT_POLICY_LFU = 0x20
+COMRV_INFO_EVICT_POLICY_MIX = 0x30
 
 # Various symbols that are read in order to parse ComRV.
 MULTI_GROUP_OFFSET_SYMBOL = "g_stComrvCB.ucMultiGroupOffset"
@@ -57,6 +61,16 @@ OVERLAY_CACHE_AT_INDEX_TO_GROUP_ID \
     = "g_stComrvCB.stOverlayCache[%d].unToken.stFields.uiOverlayGroupID"
 OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS \
     = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucSizeInMinGroupSizeUnits"
+OVERLAY_TABLE_ENTRY_EVICT_LOCK_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucEvictLock"
+OVERLAY_TABLE_ENTRY_GROUP_LOCK_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucEntryLock"
+OVERLAY_TABLE_ENTRY_DATA_OVL_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucData"
+OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unLru.stFields.typNextLruIndex"
+OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL \
+    = "g_stComrvCB.ucLruIndex"
 
 #=====================================================================#
 
@@ -459,11 +473,12 @@ class overlay_data:
     # method.
     class _overlay_data_inner:
         def __init__ (self, cache_descriptor, storage_descriptor, groups_data,
-                      mg_index_offset):
+                      mg_index_offset, info_sym):
             self._cache_descriptor = cache_descriptor
             self._groups_data = groups_data
             self._storage_descriptor = storage_descriptor
             self._multi_group_index_offset = mg_index_offset
+            self._info_sym = info_sym
 
         def cache (self):
             return self._cache_descriptor
@@ -498,6 +513,9 @@ class overlay_data:
         def labels (self):
             # TODO: Maybe we could do some caching here?
             return overlay_data._comrv_labels ()
+
+        def comrv_info (self):
+            return self._info_sym
 
     # Read the group offset for overlay group GROUP_NUMBER.  The
     # overlay data starts at address BASE_ADDRESS in memory.
@@ -682,10 +700,10 @@ class overlay_data:
         # defined by a start and end symbol.
         storage_start = overlay_data.\
                         _read_symbol_address_as_integer \
-				(OVERLAY_STORAGE_START_SYMBOL)
+                (OVERLAY_STORAGE_START_SYMBOL)
         storage_end = overlay_data.\
                         _read_symbol_address_as_integer \
-				(OVERLAY_STORAGE_END_SYMBOL)
+                (OVERLAY_STORAGE_END_SYMBOL)
         if (storage_start and storage_end):
             storage_desc \
                 = overlay_data._storage_descriptor (storage_start, storage_end)
@@ -698,13 +716,20 @@ class overlay_data:
         # this is left as -1.
         multi_group_offset = -1
 
+        # read the overlay info value
+        info_sym = overlay_data.\
+                   _read_symbol_value_as_integer (COMRV_INFO_SYMBOL)
+        if (info_sym == None):
+            raise RuntimeError ("Couldn't read info symbol `%s'"
+                                % COMRV_INFO_SYMBOL)
+
         # Finally, if ComRV has been initialised then load the current state
         # from memory.
         init_been_called = global_has_comrv_been_initialised_yet ()
         if (init_been_called):
             try:
                 multi_group_offset = overlay_data.\
-			_read_symbol_value_as_integer (MULTI_GROUP_OFFSET_SYMBOL)
+            _read_symbol_value_as_integer (MULTI_GROUP_OFFSET_SYMBOL)
                 # The multi-group offset is held in the number of
                 # 2-byte chunks, so convert this into a byte offset.
                 multi_group_offset *= 2
@@ -720,11 +745,6 @@ class overlay_data:
         # Work out the size in bits of the multi-group index on the comrv stack.
         # A size of zero means this ComRV does not have multi-group support.
         if multi_group_offset > 0:
-          info_sym = overlay_data.\
-                     _read_symbol_value_as_integer (COMRV_INFO_SYMBOL)
-          if (info_sym == None):
-              raise RuntimeError ("Couldn't read info symbol `%s'"
-                                  % COMRV_INFO_SYMBOL)
           multi_group_index_offset = info_sym & 0xF
           if (multi_group_index_offset not in [11, 14]):
               raise RuntimeError ("Invalid multi-group index offset (expected "
@@ -738,7 +758,8 @@ class overlay_data:
         # with a cached, not initialised object.
         obj = overlay_data._overlay_data_inner (cache_desc, storage_desc,
                                                 groups_data,
-                                                multi_group_index_offset)
+                                                multi_group_index_offset,
+                                                info_sym)
         if (init_been_called):
             overlay_data._instance = obj
         return obj
@@ -752,6 +773,43 @@ class overlay_data:
 # Class for walking the overlay data structures and calling the
 # visit_mapped_overlay method for every mapped overlay group.
 class mapped_overlay_group_walker:
+
+    class eviction_lru(object):
+
+        def __init__(self):
+            self.eviction_values = []
+
+        def read_values(self):
+            # get the lru value
+            lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL)
+            lru = int(lru)
+            # walk trouogh lru list and save eviction index 
+            while (lru != 255):
+                self.eviction_values.append(lru)
+                lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL % (lru))
+                lru = int(lru)
+
+        def get_eviction_value(self, index):
+            return self.eviction_values.index(index)
+
+
+    class eviction_factory(object):
+
+        def __init__(self, eviction_type):
+            if eviction_type == COMRV_INFO_EVICT_POLICY_LRU:
+                self.evict_obj = mapped_overlay_group_walker.eviction_lru()
+            else:
+                raise RuntimeError ("Unknown eviction type")
+            if not getattr(self.evict_obj, "read_values", None):
+                raise RuntimeError ("missing read_values implementation")
+            if not getattr(self.evict_obj, "get_eviction_value", None):
+                raise RuntimeError ("missing get_eviction_value implementation")
+            self.evict_obj.read_values()
+
+        def get_eviction_value(self, index):
+            return self.evict_obj.get_eviction_value(index)
+
+
     # Call this to walk the overlay manager data structures in memory and
     # call the visit_mapped_overlay method for each mapped overlay group.
     def walk_mapped_overlays (self):
@@ -763,6 +821,9 @@ class mapped_overlay_group_walker:
 
         # Now walk the overlay cache and see which entries are mapped in.
         index = 0
+        # read eviction values list
+        evict_obj = self.eviction_factory(ovly_data.comrv_info() & COMRV_INFO_EVICTION_FIELD)
+        
         while (index < ovly_data.cache ().number_of_working_entries ()):
             group = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_GROUP_ID % (index))
             group = int (group)
@@ -777,8 +838,18 @@ class mapped_overlay_group_walker:
                             + (index
                                * ovly_data.cache ().entry_size_in_bytes ()))
 
+                # get cache entry evict lock property
+                evict_lock = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_EVICT_LOCK_VAL % (index))
+                evict_lock = int (evict_lock)
+                # get cache entry lock property
+                entry_lock = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_GROUP_LOCK_VAL % (index))
+                entry_lock = int (entry_lock)
+                # get cache data property
+                data = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_DATA_OVL_VAL % (index))
+                data = int (data)
                 if (not self.visit_mapped_overlay (src_addr, dst_addr, length,
-                                                index, group)):
+                                                index, group, evict_lock, entry_lock,
+                                                evict_obj.get_eviction_value(index), data)):
                     break
 
                 offset = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS % (index))
@@ -801,7 +872,8 @@ class mapped_overlay_group_walker:
     # override this method.  Return true to continue walking the list of
     # mapped overlays, or return false to stop.
     def visit_mapped_overlay (self, src_addr, dst_addr, length,
-                              cache_index, group_number):
+                              cache_index, group_number, evict_lock = 0,
+                              entry_lock = 0, evict_value = 0, data = 0):
         return True
 
     # Default implementation of comrv_not_initialised, sub-classes
@@ -879,16 +951,18 @@ def print_current_comrv_state ():
                 self.nothing_is_mapped ()
 
         def visit_mapped_overlay (self, src_addr, dst_addr, length,
-                                  cache_index, group_number):
+                                  cache_index, group_number, evict_lock,
+                                  entry_lock, evict_value, data):
             if (not self._shown_header):
                 self._shown_header = True
-                print ("  %-7s%-9s%-12s%-12s%-8s"
-                       % ("Cache", "Overlay", "Storage", "Cache", ""))
-                print ("  %-7s%-9s%-12s%-12s%-8s"
-                       % ("Index", "Group", "Addr", "Addr", "Size"))
+                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s"
+                       % ("Cache", "Overlay", "Storage", "Cache", "Group", "Evict", "Entry", "Evict", "Data"))
+                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s"
+                       % ("Index", "Group",   "Addr",    "Addr",  "Size",  "Lock",  "Lock", "Value", "Overlay"))
 
-            print ("  %-7d%-9d0x%-10x0x%-10x0x%-8x"
-                   % (cache_index, group_number, src_addr, dst_addr, length))
+            print ("  %-7d%-9d0x%-10x0x%-10x0x%-7x%-7d%-7d0x%-10x%-9d"
+                   % (cache_index, group_number, src_addr, dst_addr, length, 
+                      evict_lock, entry_lock, evict_value, data))
             return True
 
         def nothing_is_mapped (self):
@@ -1134,7 +1208,8 @@ class MyOverlayManager (gdb.OverlayManager):
                 self.walk_mapped_overlays ()
 
             def visit_mapped_overlay (self, src_addr, dst_addr, length,
-                                      cache_index, group_number):
+                                      cache_index, group_number, evict_lock = 0,
+                                      entry_lock = 0, evict_value = 0, data = 0):
                 self._manager.add_mapping (src_addr, dst_addr, length)
                 return True
 

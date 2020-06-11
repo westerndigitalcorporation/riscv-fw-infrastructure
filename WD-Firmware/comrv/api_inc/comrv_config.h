@@ -135,6 +135,11 @@
 
 /* eviction algorithm definition */
 #if (D_COMRV_EVICTION_POLICY == 0)
+   #ifndef D_COMRV_EVICTION_POLICY
+      /* can be that D_COMRV_EVICTION_POLICY wasn't defined - same as if it was
+         set to 0 so set it to 1 - 0 and 1 are the same - lru */
+      #define D_COMRV_EVICTION_POLICY 1
+   #endif /* D_COMRV_EVICTION_POLICY */
    #define D_COMRV_EVICTION_LRU
 #elif (D_COMRV_EVICTION_POLICY == 1)
    #define D_COMRV_EVICTION_LRU

@@ -231,10 +231,11 @@ extern void comrv_ret_from_callee_context_switch(void);
 */
 /* comrv information:
  * bits 0- 3: multi group field offset
- * bits 4-31: reserved
+ * bits 4- 5: eviction policy
+ * bits 6-31: reserved
  */
 D_PSP_USED D_COMRV_RODATA_SECTION
-static const u32_t g_uiComrvInfo    = (D_COMRV_MULTIGROUP_OFFSET);
+static const u32_t g_uiComrvInfo    = (D_COMRV_MULTIGROUP_OFFSET | (D_COMRV_EVICTION_POLICY << 4));
 /* comrv information:
  * bits 0  - 15: minor version
  * bits 16 - 31: major version
@@ -635,7 +636,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 
 #ifdef D_COMRV_FW_INSTRUMENTATION
       /* update for FW profiling loaded the function */
-      uiProfilingIndication |= D_COMRV_PROFILING_LOAD_BIT;
+      uiProfilingIndication |= D_COMRV_INSTRUMENTATION_LOAD_BIT;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
    } /* overlay group is already loaded */
    else
