@@ -484,9 +484,8 @@ void rtosalUpdateStackPriorContextSwitch(volatile rtosalStack_t** pxTopOfStack)
    if (pUiNewSP != NULL)
    {
       /* adjust sp to a new context switch frame */
-      pUiNewSP -= D_PSP_REG32_BYTE_WIDTH;
-      // TODO: do we want this in a for loop/memcpy?
-      /* save a0-a7, s0-s11 on to the task stack so that when */
+      pUiNewSP -= (D_PSP_REG32_BYTE_WIDTH * D_RTOSAL_NUM_OF_STACK_ENTRIES);
+      /* save a0-a7, s0-s11 on to the task stack */
       pUiNewSP[D_RTOSAL_S0_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS0;
       pUiNewSP[D_RTOSAL_S1_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS1;
       pUiNewSP[D_RTOSAL_A0_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA0;

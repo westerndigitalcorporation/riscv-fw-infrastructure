@@ -37,6 +37,7 @@
 
 /* define task stack registers offset */
 #ifdef D_USE_FREERTOS
+   #define D_RTOSAL_NUM_OF_STACK_ENTRIES              32
    #define D_RTOSAL_MEPC_INDEX_ON_TASK_STACK          0
    #define D_RTOSAL_SP_INDEX_ON_TASK_STACK            2
    #define D_RTOSAL_RA_INDEX_ON_TASK_STACK            3
