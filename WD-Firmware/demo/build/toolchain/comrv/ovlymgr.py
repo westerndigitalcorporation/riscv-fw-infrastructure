@@ -729,11 +729,11 @@ class overlay_data:
                 multi_group_offset *= 2
             except:
                 pass
-           # read the overlay info value
-           info_sym = overlay_data.\
+            # read the overlay info value
+            info_sym = overlay_data.\
                       _read_symbol_value_as_integer (COMRV_INFO_SYMBOL)
-           if (info_sym == None):
-               raise RuntimeError ("Couldn't read info symbol `%s'"
+            if (info_sym == None):
+                raise RuntimeError ("Couldn't read info symbol `%s'"
                                    % COMRV_INFO_SYMBOL)
             groups_data = overlay_data.\
                           _load_group_data (cache_desc.tables_base_address (),
