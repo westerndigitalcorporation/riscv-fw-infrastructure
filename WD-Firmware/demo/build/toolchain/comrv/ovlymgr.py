@@ -716,12 +716,6 @@ class overlay_data:
         # this is left as -1.
         multi_group_offset = -1
 
-        # read the overlay info value
-        info_sym = overlay_data.\
-                   _read_symbol_value_as_integer (COMRV_INFO_SYMBOL)
-        if (info_sym == None):
-            raise RuntimeError ("Couldn't read info symbol `%s'"
-                                % COMRV_INFO_SYMBOL)
 
         # Finally, if ComRV has been initialised then load the current state
         # from memory.
@@ -735,12 +729,19 @@ class overlay_data:
                 multi_group_offset *= 2
             except:
                 pass
+           # read the overlay info value
+           info_sym = overlay_data.\
+                      _read_symbol_value_as_integer (COMRV_INFO_SYMBOL)
+           if (info_sym == None):
+               raise RuntimeError ("Couldn't read info symbol `%s'"
+                                   % COMRV_INFO_SYMBOL)
             groups_data = overlay_data.\
                           _load_group_data (cache_desc.tables_base_address (),
                                             cache_desc.tables_size_in_bytes (),
                                             storage_desc, multi_group_offset)
         else:
             groups_data = None
+            info_sym = None
 
         # Work out the size in bits of the multi-group index on the comrv stack.
         # A size of zero means this ComRV does not have multi-group support.
