@@ -100,7 +100,15 @@ xPortStartScheduler:
     jal rtosalTimerSetup
     M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
     M_PSP_POP_REGFILE
-    mret
+    /* TODO: replace trap handler to rtosal handler + change csrrsi
+       to be disable ints and restore ints */
+    /* this is the first task being executed
+       so take the task entry address from mepc */
+    csrr   ra, mepc
+    /* set MIE to enable interrupts - must be the last
+       instruction before the ret */
+    csrrsi zero, mstatus, 8
+    ret
 
 vPortEndScheduler:
 1:
@@ -121,18 +129,12 @@ pxPortInitialiseStack:
    mv          tp, a0                     /* tp holds the stack used by COMRV per task to
                                              store/restore callee args + comrv status */
    M_PSP_STORE zero, 0(tp)                /* clear the comrv status */
-   M_PSP_ADDI  tp, tp, -(22 * REGBYTES)   /* 24 * REGBYTES - stack reserved per task for COMRV */
-   M_PSP_ADDI  a0, a0, -(23 * REGBYTES)   /* sp address */
+   M_PSP_ADDI  tp, tp, -(27 * REGBYTES)   /* 24 * REGBYTES - stack reserved per task for COMRV */
+   M_PSP_ADDI  a0, a0, -(28 * REGBYTES)   /* sp address */
    M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
    M_PSP_STORE tp, -(4 * REGBYTES)(a0)    /* save tp */
 #endif /* D_COMRV */
 
-   csrr       t0, mstatus                 /* Obtain current mstatus value. */
-   M_PSP_ADDI t1, x0, 0x188               /* Generate the value 0x1880, which are -   */
-   slli       t1, t1, 4                   /* the MPIE and MPP bits to set in mstatus. */
-   or         t0, t0, t1                  /* Set MPIE and MPP bits in mstatus value. */
-
-   M_PSP_STORE t0, -( 1 * REGBYTES)(a0)   /* mstatus onto the stack. */
    M_PSP_STORE a2, -(23 * REGBYTES)(a0)   /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
    M_PSP_STORE x0, -(29 * REGBYTES)(a0)   /* Return address onto the stack */
 // The following is relevant only when there are "aditional registers" in the core to handle. For now irrelevant hence commented out */

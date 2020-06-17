@@ -378,9 +378,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    u32_t                  ret;
    u32_t                  uiPrevIntState;
-   /* pPrevIntState is passed to a 'volatile asm' statment which can't get
-     &uiPrevIntState as an output due to the '&' */
-   u32_t                 *pPrevIntState = &uiPrevIntState;
 #endif /* D_COMRV_RTOS_SUPPORT */
 
    /* read the requested token value (t5) */
@@ -596,7 +593,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       stInstArgs.uiInstNum = uiProfilingIndication | D_COMRV_INSTRUMENTATION_LOAD_BIT;
       stInstArgs.uiToken   = unToken.uiValue;
       /* disable the interrupts */
-      M_COMRV_DISABLE_INTS(pPrevIntState);
+      M_COMRV_DISABLE_INTS(uiPrevIntState);
       /* instrumentation hook function */
       comrvInstrumentationHook(&stInstArgs);
       /* enable the interrupts */
@@ -633,7 +630,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
          /* read comrv status from task stack register */
          M_COMRV_TASK_STACK_REG(uiTemp);
          /* we want to safely clear the lock indication so disable interrupts */
-         M_COMRV_DISABLE_INTS(pPrevIntState);
+         M_COMRV_DISABLE_INTS(uiPrevIntState);
          /* mark the entry as unlocked - can now be evicted/moved */
          g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucEntryLock = D_COMRV_ENTRY_UNLOCKED;
          /* mark comrv state - 'post search and load' */
@@ -668,7 +665,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
      stInstArgs.uiInstNum  = uiProfilingIndication;
      stInstArgs.uiToken    = unToken.uiValue;
      /* disable the interrupts */
-     M_COMRV_DISABLE_INTS(pPrevIntState);
+     M_COMRV_DISABLE_INTS(uiPrevIntState);
      /* instrumentation hook function */
      comrvInstrumentationHook(&stInstArgs);
      /* enable the interrupts */
@@ -736,7 +733,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    we need to be ready for cases we context switch during such calls */
 #if defined(D_COMRV_RTOS_SUPPORT) && defined(D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD)
    /*disable the interrupts while we read comrv status */
-   M_COMRV_DISABLE_INTS(pPrevIntState);
+   M_COMRV_DISABLE_INTS(uiPrevIntState);
    /* read comrv task stack register */
    M_COMRV_TASK_STACK_REG(uiTemp);
    /* check if state is - 'interrupted' */

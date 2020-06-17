@@ -395,8 +395,7 @@ RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
     fptrInit(NULL);
     vTaskStartScheduler();
 #elif D_USE_THREADX
-   fptrAppInit = fptrInit;
-   tx_kernel_enter();
+   #error "Add THREADX appropriate definitions"
 #else
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */

@@ -103,9 +103,16 @@ extern void vTaskExitCritical( void );
 
 /* Note: There are vTaskEnterCritical that calls portDISABLE_INTERRUPTS and portEXIT_CRITICAL that calls portENABLE_INTERRUPTS.
  * So we have to use a global parameter to preserve interrupts status over disable & enable of interrupts */
-extern unsigned int g_uInterruptsPreserveMask;
-#define portDISABLE_INTERRUPTS()                          pspInterruptsDisable(&g_uInterruptsPreserveMask);
-#define portENABLE_INTERRUPTS()                           pspInterruptsRestore(g_uInterruptsPreserveMask);
+extern unsigned int g_uInterruptsPreserveMask, g_uInterruptsDisableCounter;
+#define portDISABLE_INTERRUPTS()                         if (g_uInterruptsDisableCounter == 0) \
+                                                         { \
+                                                            M_PSP_CLEAR_AND_READ_CSR(g_uInterruptsPreserveMask, D_PSP_MSTATUS_NUM, D_PSP_MSTATUS_MIE_MASK); \
+                                                            g_uInterruptsPreserveMask &= D_PSP_MSTATUS_MIE_MASK; \
+                                                         } \
+                                                         g_uInterruptsDisableCounter++;
+
+#define portENABLE_INTERRUPTS()                          g_uInterruptsDisableCounter = 0; \
+                                                         M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, g_uInterruptsPreserveMask); \
 
 #define portENTER_CRITICAL()                              vTaskEnterCritical()
 #define portEXIT_CRITICAL()                               vTaskExitCritical()
