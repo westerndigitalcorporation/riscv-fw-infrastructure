@@ -180,14 +180,14 @@ comrvEntry:
        when returning to an overlay function */
     ori         t3, t3, D_COMRV_INVOKE_CALLEE_BIT_0
     /* save a0-a7 on stack, in rtos support also: s0-s11 on stack + comrv state */
-    M_COMRV_SAVE_STATE D_COMRV_STATE_ENTRY
+    M_COMRV_SAVE_REGS_AND_STATE D_COMRV_STATE_ENTRY
 comrvEntry_context_switch:
     /* search if the token (t5) is already loaded */
     jal         comrvGetAddressFromToken
     /* save the loaded function address in t5 (instead of the token) */
     mv          t5, a0
     /* restore a0-a7 from stack */
-    M_COMRV_RESTORE_STATE
+    M_COMRV_RESTORE_A_REGS
 
 comrv_invoke_callee:
     /* call the function */
@@ -233,7 +233,7 @@ comrv_igonr_caller_thunk_stack_frame:
     slli        t2, t5, D_COMRV_THUNK_SHMT
     /* if thunk bit set (t2 negative) we skip current comrv stack frame */
     bltz        t2, comrv_handle_thunk_token
-    /* save a0-a7 on stack, in rtos support also: s0-s11 on stack + comrv state */
+    /* in rtos support save comrv state */
     M_COMRV_SAVE_STATE D_COMRV_STATE_EXIT
 comrv_ret_from_callee_context_switch:
     /* pass the ra as the function parameter -
@@ -245,7 +245,7 @@ comrv_ret_from_callee_context_switch:
        address we can keep it in ra */
     mv          ra, a0
     /* restore a0-a7 from stack */
-    M_COMRV_RESTORE_STATE
+    M_COMRV_RESTORE_A_REGS
 
 comrv_exit_ret_to_caller:
     /* return back to the actual caller - ra hold the actual address */

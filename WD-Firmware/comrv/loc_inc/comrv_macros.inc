@@ -44,6 +44,10 @@
    M_PSP_STORE a7, D_COMRV_A7_REG_STACK_OFFSET_TMP(\reg)
 .endm
 
+.macro M_COMRV_SAVE_ARG0_REG reg
+   M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(\reg)
+   .endm
+
 .macro M_COMRV_RESTORE_ARGS_REGS reg
    M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(\reg)
    M_PSP_LOAD  a1, D_COMRV_A1_REG_STACK_OFFSET_TMP(\reg)
@@ -94,14 +98,20 @@
    M_PSP_STORE t5, D_COMRV_T5_REG_STACK_OFFSET_TMP(\reg)
 .endm
 
-.macro M_COMRV_SAVE_STATE state
+.macro M_COMRV_SAVE_REGS_AND_STATE state
    M_COMRV_DISABLE_INTS         t1
    M_COMRV_SAVE_ARGS_REGS       tp
    M_COMRV_SAVE_SAVED_REGS      tp
    M_COMRV_SAVE_RTOS_STATE_REGS tp, \state
    M_COMRV_RESTORE_INTS         t1
 .endm
-.macro M_COMRV_RESTORE_STATE
+.macro M_COMRV_SAVE_STATE state
+   M_COMRV_DISABLE_INTS         t1
+   M_COMRV_SAVE_RTOS_STATE_REGS tp, \state
+   M_COMRV_SAVE_ARG0_REG        tp
+   M_COMRV_RESTORE_INTS         t1
+.endm
+.macro M_COMRV_RESTORE_A_REGS
    M_COMRV_DISABLE_INTS         t1
    M_COMRV_RESTORE_ARGS_REGS    tp
    M_COMRV_RESTORE_INTS         t1
@@ -109,33 +119,29 @@
 .macro M_COMRV_CLEAR_STATE
    M_PSP_STORE zero, D_COMRV_STATE_STACK_OFFSET_TMP(tp)
 .endm
+.macro M_COMRV_RESTORE_INTS restoreStatusFromReg
+   M_PSP_RESTORE_MINTERRUPTS \restoreStatusFromReg
+.endm
+.macro M_COMRV_DISABLE_INTS saveStatusInReg
+   M_PSP_DISABLE_MINTERRUPTS \saveStatusInReg
+.endm
 #else
-.macro M_COMRV_SAVE_STATE state
+.macro M_COMRV_SAVE_REGS_AND_STATE state
    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
    M_COMRV_SAVE_ARGS_REGS    sp
 .endm
-.macro M_COMRV_RESTORE_STATE
+.macro M_COMRV_SAVE_STATE state
+   M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
+   M_COMRV_SAVE_ARG0_REG     sp
+.endm
+.macro M_COMRV_RESTORE_A_REGS
    M_COMRV_RESTORE_ARGS_REGS sp
    M_PSP_ADDI  sp, sp, D_COMRV_STACK_FRAME_SIZE
 .endm
 .macro M_COMRV_CLEAR_STATE
 .endm
-#endif /* D_COMRV_RTOS_SUPPORT */
-
-#ifdef D_COMRV_RTOS_SUPPORT
-.macro M_COMRV_RESTORE_INTS restoreStatusFromReg
-   M_PSP_RESTORE_MINTERRUPTS \restoreStatusFromReg
-.endm
-#else
 .macro M_COMRV_RESTORE_INTS restoreStatusFromReg
 .endm
-#endif /* D_COMRV_RTOS_SUPPORT */
-
-#ifdef D_COMRV_RTOS_SUPPORT
-.macro M_COMRV_DISABLE_INTS saveStatusInReg
-   M_PSP_DISABLE_MINTERRUPTS \saveStatusInReg
-.endm
-#else
 .macro M_COMRV_DISABLE_INTS saveStatusInReg
 .endm
 #endif /* D_COMRV_RTOS_SUPPORT */
