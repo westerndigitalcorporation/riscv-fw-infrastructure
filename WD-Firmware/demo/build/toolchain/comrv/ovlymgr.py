@@ -71,6 +71,8 @@ OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL \
     = "g_stComrvCB.stOverlayCache[%d].unLru.stFields.typNextLruIndex"
 OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL \
     = "g_stComrvCB.ucLruIndex"
+OVERLAY_TABLE_ENTRY_TOKEN_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unToken.uiValue"
 
 #=====================================================================#
 
@@ -839,6 +841,10 @@ class mapped_overlay_group_walker:
                             + (index
                                * ovly_data.cache ().entry_size_in_bytes ()))
 
+
+                # get entry token
+                token_val = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_TOKEN_VAL % (index))
+                token_val = int (token_val)
                 # get cache entry evict lock property
                 evict_lock = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_EVICT_LOCK_VAL % (index))
                 evict_lock = int (evict_lock)
@@ -850,7 +856,7 @@ class mapped_overlay_group_walker:
                 data = int (data)
                 if (not self.visit_mapped_overlay (src_addr, dst_addr, length,
                                                 index, group, evict_lock, entry_lock,
-                                                evict_obj.get_eviction_value(index), data)):
+                                                evict_obj.get_eviction_value(index), data, token_val)):
                     break
 
                 offset = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS % (index))
@@ -874,7 +880,8 @@ class mapped_overlay_group_walker:
     # mapped overlays, or return false to stop.
     def visit_mapped_overlay (self, src_addr, dst_addr, length,
                               cache_index, group_number, evict_lock = 0,
-                              entry_lock = 0, evict_value = 0, data = 0):
+                              entry_lock = 0, evict_value = 0, data = 0, 
+                              token_val = 0):
         return True
 
     # Default implementation of comrv_not_initialised, sub-classes
@@ -914,7 +921,7 @@ def print_current_comrv_state ():
             break
         if (grp_num == 0):
             print ("  %-7s%-12s%-12s%-8s" % ("Group", "Start", "End", "Size"))
-        print ("  %-7d0x%-10x0x%-10x0x%-6x"
+        print ("  %-7d0x%-10X0x%-10X0x%-6X"
                % (grp_num, grp.base_address (),
                   (grp.base_address () + grp.size_in_bytes ()),
                   grp.size_in_bytes ()))
@@ -953,17 +960,17 @@ def print_current_comrv_state ():
 
         def visit_mapped_overlay (self, src_addr, dst_addr, length,
                                   cache_index, group_number, evict_lock,
-                                  entry_lock, evict_value, data):
+                                  entry_lock, evict_value, data, token_val):
             if (not self._shown_header):
                 self._shown_header = True
-                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s"
-                       % ("Cache", "Overlay", "Storage", "Cache", "Group", "Evict", "Entry", "Evict", "Data"))
-                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s"
-                       % ("Index", "Group",   "Addr",    "Addr",  "Size",  "Lock",  "Lock", "Value", "Overlay"))
+                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s%-12s"
+                       % ("Cache", "Overlay", "Storage", "Cache", "Group", "Evict", "Entry", "Evict", "Data", "Token"))
+                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s%-12s"
+                       % ("Index", "Group",   "Addr",    "Addr",  "Size",  "Lock",  "Lock", "Value", "Overlay", "Addr"))
 
-            print ("  %-7d%-9d0x%-10x0x%-10x0x%-7x%-7d%-7d0x%-10x%-9d"
+            print ("  %-7d%-9d0x%-10X0x%-10X0x%-7X%-7d%-7d0x%-10X%-9d0x%-10X"
                    % (cache_index, group_number, src_addr, dst_addr, length, 
-                      evict_lock, entry_lock, evict_value, data))
+                      evict_lock, entry_lock, evict_value, data, token_val))
             return True
 
         def nothing_is_mapped (self):
@@ -1210,7 +1217,8 @@ class MyOverlayManager (gdb.OverlayManager):
 
             def visit_mapped_overlay (self, src_addr, dst_addr, length,
                                       cache_index, group_number, evict_lock = 0,
-                                      entry_lock = 0, evict_value = 0, data = 0):
+                                      entry_lock = 0, evict_value = 0, data = 0,
+                                      token_val = 0):
                 self._manager.add_mapping (src_addr, dst_addr, length)
                 return True
 
