@@ -121,11 +121,11 @@
 .global comrv_pre_ret_to_asm_engine
 
 /*
-   COMRV_TEXT_SEC section flags:
+   COMRV_TEXT_ASM section flags:
    a - ignored. (For compatibility with the ELF version)
    x - executable section
 */
-.section  COMRV_TEXT_SEC, "ax"
+.section  COMRV_TEXT_ASM, "ax"
 
 .align 4
 /* This is the function responsible for invoking the overlay function
@@ -298,14 +298,15 @@ comrv_pre_ret_to_asm_engine:
     jr                   a1
 #endif /* D_COMRV_RTOS_SUPPORT && D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD */
 
-/* TODO: how to make sure this file is always compiled after comrv.c */
 /* NOTE: no additional lable shall be placed below this line
    as it may break the COMRV RTOS support */
 
+#ifdef D_COMRV_CONTROL_SUPPORT
 /* for testing purpose, we use the .weak so we won't get stuck
    this also allows the end user to reimplement comrvEntryDisable
    diffrently */
 .weak comrvEntryDisable
+#endif /* D_COMRV_CONTROL_SUPPORT */
 /* we get here if the end user disabled comrv and tried
    calling/loading overlay function/data */
 comrvEntryDisable:
