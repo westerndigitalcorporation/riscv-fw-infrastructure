@@ -16,7 +16,7 @@
 #*/
 import os
 
-cacheSize = "1536"
+strCacheSize = "1536"
 
 class demo(object):
   def __init__(self):
@@ -24,7 +24,7 @@ class demo(object):
     self.rtos_core   = ""
     self.toolchain   = ""
     self.strGrpFile = os.path.join("..", "comrv-rtos.csv")
-    self.strComrvCacheSize = cacheSize
+    self.strComrvCacheSize = strCacheSize
     self.strLinkFilePrefix = ''
     self.strComrvCacheAlinmentSize = '512'
 

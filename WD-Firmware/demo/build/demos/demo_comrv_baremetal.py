@@ -16,6 +16,8 @@
 #*/
 import os
 
+strCacheSize = "1536"
+
 class demo(object):
   def __init__(self):
     self.strDemoName   = "comrv_baremetal"
@@ -23,7 +25,7 @@ class demo(object):
     self.toolchain     = ""
     self.toolchainPath = ""
     self.strGrpFile    = os.path.join("..", "comrv-baremetal.csv")
-    self.strComrvCacheSize = "1536"
+    self.strComrvCacheSize = strCacheSize
     self.strLinkFilePrefix = ''
     self.strComrvCacheAlinmentSize = '1024'
 
