@@ -38,6 +38,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #include "comrv_api.h"
 #include "comrv_info.h"
 #ifdef D_COMRV_RTOS_SUPPORT
+   /* rtosal is the only module that we thread with ComRV
+      TODO: make it generic so that comrv is ported w/o rtosal */
    #include "rtosal_types.h"
    #include "rtosal_macros.h"
    #include "rtosal_interrupt_api.h"
@@ -107,6 +109,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_T5_REG_STACK_OFFSET_TMP               21
 #define D_COMRV_SP_REG_STACK_OFFSET_TMP               22
 #define D_COMRV_STATE_STACK_OFFSET_TMP                23
+/* mask value for cache entry properties -
+   bit 0 - ucEvictLock and bit 6 ucEntryLock */
 #define D_COMRV_ANY_LOCK_MASK                         0x41
 
 /**
