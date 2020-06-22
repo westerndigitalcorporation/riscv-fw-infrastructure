@@ -33,6 +33,7 @@
 /**
 * macros
 */
+/* save the 'args' regs */
 .macro M_COMRV_SAVE_ARGS_REGS reg
    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(\reg)
    M_PSP_STORE a1, D_COMRV_A1_REG_STACK_OFFSET_TMP(\reg)
@@ -44,10 +45,12 @@
    M_PSP_STORE a7, D_COMRV_A7_REG_STACK_OFFSET_TMP(\reg)
 .endm
 
+/* save the a0 reg */
 .macro M_COMRV_SAVE_ARG0_REG reg
    M_PSP_STORE a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(\reg)
-   .endm
+.endm
 
+/* restore 'args' regs */
 .macro M_COMRV_RESTORE_ARGS_REGS reg
    M_PSP_LOAD  a0, D_COMRV_A0_REG_STACK_OFFSET_TMP(\reg)
    M_PSP_LOAD  a1, D_COMRV_A1_REG_STACK_OFFSET_TMP(\reg)
@@ -60,6 +63,7 @@
 .endm
 
 #ifdef D_COMRV_RTOS_SUPPORT
+/* save the 'saved' regs */
 .macro M_COMRV_SAVE_SAVED_REGS reg
    M_PSP_STORE s0, D_COMRV_S0_REG_STACK_OFFSET_TMP(\reg)
    M_PSP_STORE s1, D_COMRV_S1_REG_STACK_OFFSET_TMP(\reg)
@@ -75,6 +79,7 @@
    M_PSP_STORE s11, D_COMRV_S11_REG_STACK_OFFSET_TMP(\reg)
 .endm
 
+/* restore the 'saved' regs */
 .macro M_COMRV_RESTORE_SAVED_REGS reg
    M_PSP_LOAD  s0, D_COMRV_S0_REG_STACK_OFFSET_TMP(\reg)
    M_PSP_LOAD  s1, D_COMRV_S1_REG_STACK_OFFSET_TMP(\reg)
@@ -90,6 +95,7 @@
    M_PSP_LOAD  s11, D_COMRV_S11_REG_STACK_OFFSET_TMP(\reg)
 .endm
 
+/* save comrv state */
 .macro M_COMRV_SAVE_RTOS_STATE_REGS reg, state
    li          t2, \state
    M_PSP_STORE t2, D_COMRV_STATE_STACK_OFFSET_TMP(\reg)
@@ -98,17 +104,33 @@
    M_PSP_STORE t5, D_COMRV_T5_REG_STACK_OFFSET_TMP(\reg)
 .endm
 
+   /* save 'args', 'saved' regs and comrv 'state' -
+      this is needed since comrv is about to 'search and
+      load' and these regs are use for that purpose;
+      if a context switch occures, comrv will use
+      the saved values for restoring comrv state */
 .macro M_COMRV_SAVE_REGS_AND_STATE state
+   /* disable ints before saving */
    M_COMRV_DISABLE_INTS         t1
+   /* save 'args' regs */
    M_COMRV_SAVE_ARGS_REGS       tp
+   /* save 'saved' regs */
    M_COMRV_SAVE_SAVED_REGS      tp
+   /* save comrv state */
    M_COMRV_SAVE_RTOS_STATE_REGS tp, \state
+   /* re-enable ints */
    M_COMRV_RESTORE_INTS         t1
 .endm
-.macro M_COMRV_SAVE_STATE state
+   /* this macro is the same as M_COMRV_SAVE_REGS_AND_STATE
+      but w/o saving the 'saved' and regs */
+  .macro M_COMRV_SAVE_STATE state
+   /* disable ints before saving */
    M_COMRV_DISABLE_INTS         t1
+   /* save comrv state */
    M_COMRV_SAVE_RTOS_STATE_REGS tp, \state
+   /* save a0 reg */
    M_COMRV_SAVE_ARG0_REG        tp
+   /* re-enable ints */
    M_COMRV_RESTORE_INTS         t1
 .endm
 .macro M_COMRV_RESTORE_A_REGS
