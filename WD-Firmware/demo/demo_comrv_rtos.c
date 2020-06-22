@@ -82,7 +82,6 @@ static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
 static rtosalMsgQueue_t stMsgQueue;
 static rtosalMutex_t stComrvMutex;
-static u32_t uiPrevIntState;
 
 /**
 * functions
@@ -290,14 +289,6 @@ u32_t comrvEnterCriticalSectionHook(void)
          return 1;
       }
    }
-   else
-   {
-      /* TODO: talk to ofer - I don't think we need it
-         if no task is active no additional overlay load can be done
-         since we don't load overlay from interrupts
-       */
-      pspInterruptsDisable(&uiPrevIntState);
-   }
 
    return 0;
 }
@@ -317,11 +308,6 @@ u32_t comrvExitCriticalSectionHook(void)
       {
          return 1;
       }
-   }
-   else
-   {
-      /* TODO: talk to ofer - I don't think we need it */
-     pspInterruptsRestore(uiPrevIntState);
    }
 
    return 0;
