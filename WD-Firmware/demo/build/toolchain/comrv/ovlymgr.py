@@ -1308,6 +1308,9 @@ class comrv_unwinder (Unwinder):
 
     def __init__ (self):
         Unwinder.__init__ (self, "comrv stack unwinder")
+        # If no executable is set, void pointer length will default to 8 bytes.
+        # Setting a new executable may change this, so void_ptr_t is now updated
+        # in __call__.
         self.void_ptr_t = gdb.lookup_type("void").pointer()
 
     def _get_multi_group_table_by_index (self, index):
@@ -1475,6 +1478,10 @@ class comrv_unwinder (Unwinder):
         # Check if we are inside the core ComRV function that runs
         # from the comrv entry label to the comrv exit label.
         labels = overlay_data.fetch ().labels ()
+        # Lookup void pointer type again in case setting an executable changed
+        # it.  If void_ptr_t has the wrong length, it will cause an invalid cast
+        # error.
+        self.void_ptr_t = gdb.lookup_type("void").pointer()
         pc = pending_frame.read_register ("pc").cast (self.void_ptr_t)
         if (not labels.enabled
             or pc < labels.comrv_entry or pc > labels.comrv_exit):
