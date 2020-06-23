@@ -25,6 +25,8 @@
 /**
 * include files
 */
+#include "psp_core_base.inc"
+.include "psp_macros.inc"
 
 /**
 * definitions
@@ -168,3 +170,26 @@
 .endm
 #endif /* D_COMRV_RTOS_SUPPORT */
 
+.macro M_COMRV_STORE operand1,operand2
+   M_PSP_STORE \operand1, \operand2
+.endm
+
+.macro M_COMRV_LOAD operand1,operand2
+   M_PSP_LOAD \operand1, \operand2
+.endm
+
+.macro M_COMRV_STORE_BYTE operand1,operand2
+   M_PSP_STORE_BYTE \operand1, \operand2
+.endm
+
+.macro M_COMRV_LOAD_BYTE operand1,operand2
+   M_PSP_LOAD_BYTE \operand1, \operand2
+.endm
+
+.macro M_COMRV_STORE_HALF operand1,operand2
+   M_PSP_STORE_HALF \operand1, \operand2
+.endm
+
+.macro M_COMRV_LOAD_HALF operand1,operand2
+   M_PSP_LOAD_HALF \operand1, \operand2
+.endm
