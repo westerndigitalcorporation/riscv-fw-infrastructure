@@ -984,7 +984,11 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION u32_t comrvInitApplicationStack(void)
 #ifdef D_COMRV_RTOS_SUPPORT
    /* read comrv entry address */
    M_COMRV_READ_ENTRY_ADDR(uiT6reg);
-   /* check if comrv has been initialized */
+   /* in comrvInit() t6 can be set to point to comrvEntryDisable() or comrvEntry() depending if the
+      end user requested to load comrv tables when comrvInit() was invoked:
+      if end user requested to load the tables, t6 will point to comrvEntryDisable()
+      if end user didn't request to load the tables, t6 will point to comrvEntry()
+      So this is why I need to check ```if```` the address in t6 isn't set to one of these functions */
    if (uiT6reg != (u32_t)comrvEntry && uiT6reg != (u32_t)comrvEntryDisable)
    {
       /* t6 to point to comrvEntryNotInitialized */
