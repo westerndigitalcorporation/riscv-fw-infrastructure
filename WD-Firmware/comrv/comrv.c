@@ -130,6 +130,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define M_COMRV_WRITE_STACK_REG(x)       asm volatile ("mv t3, %0" : : "r" (x) );
 /* set comrv entry engine address */
 #define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la t6, "#address : : : );
+/* get comrv entry engine address */
+#define M_COMRV_READ_ENTRY_ADDR(x)       asm volatile ("mv %0, t6" : "=r" (x)  : );
 /* set the comrv stack pool and comrv stack registers */
 #if __riscv_xlen == 64
  #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
@@ -207,6 +209,7 @@ static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayToken_t unToken);
    through this function (the address of comrvEntry() is set in reg t6) */
 extern void  comrvEntry               (void);
 extern void  comrvEntryDisable        (void);
+extern void  comrvEntryNotInitialized (void);
 extern void  comrv_pre_ret_to_asm_engine(u32_t uiPrevIntStatus, void *pComrvAsmEntryAddress);
 
 /* user hook functions - user application must implement the following functions */
@@ -967,12 +970,28 @@ D_COMRV_TEXT_SECTION void comrvGetStatus(comrvStatus_t* pComrvStatus)
 *f
 * @param none
 *
-* @return none
+* @return D_COMRV_NOT_INITIALIZED_ERR comrv engine not initialized (in rtos support)
+*         D_COMRV_SUCCESS - comrv stack initialized
 */
-D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
+D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION u32_t comrvInitApplicationStack(void)
 {
+#ifdef D_COMRV_RTOS_SUPPORT
+   u32_t uiT6reg;
+#endif /* D_COMRV_RTOS_SUPPORT */
    u32_t uiOutPrevIntState;
    comrvStackFrame_t *pStackPool, *pStackFrame;
+
+#ifdef D_COMRV_RTOS_SUPPORT
+   /* read comrv entry address */
+   M_COMRV_READ_ENTRY_ADDR(uiT6reg);
+   /* check if comrv has been initialized */
+   if (uiT6reg != (u32_t)comrvEntry && uiT6reg != (u32_t)comrvEntryDisable)
+   {
+      /* t6 to point to comrvEntryNotInitialized */
+      M_COMRV_SET_ENTRY_ADDR(comrvEntryNotInitialized);
+      return D_COMRV_NOT_INITIALIZED_ERR;
+   }
+#endif /* D_COMRV_RTOS_SUPPORT */
 
    /* disable ints */
    M_COMRV_DISABLE_INTS(uiOutPrevIntState);
@@ -993,6 +1012,8 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION void comrvInitApplicationStack(void)
    /* clear token field - bit 0 must be 0 to indicate we came
       from non overlay function */
    pStackFrame->uiCalleeToken = 0;
+
+   return D_COMRV_SUCCESS;
 }
 
 /**
@@ -1294,6 +1315,22 @@ D_COMRV_TEXT_SECTION u32_t* comrvSaveContextSwitch(volatile u32_t* pMepc, volati
 #endif /* D_COMRV_RTOS_SUPPORT && D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD*/
 
    return pSpAddr;
+}
+
+/**
+* This function is invoked by the comev engine in case an overlay function
+* was invoked and comrv is not initialized
+*
+* @param None
+*
+* @return None
+*/
+D_COMRV_TEXT_SECTION void comrvNotifyNotInitialized(void)
+{
+#ifdef D_COMRV_ERROR_NOTIFICATIONS
+   comrvErrorArgs_t stErrArgs;
+#endif /* D_COMRV_ERROR_NOTIFICATIONS */
+   M_COMRV_ERROR(stErrArgs, D_COMRV_NOT_INITIALIZED_ERR, D_COMRV_INVALID_TOKEN);
 }
 #endif /* D_COMRV_RTOS_SUPPORT */
 

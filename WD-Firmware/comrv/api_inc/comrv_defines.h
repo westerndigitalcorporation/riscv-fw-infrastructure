@@ -92,6 +92,7 @@
 #define D_COMRV_ENTER_CRITICAL_SECTION_ERR   9
 #define D_COMRV_EXIT_CRITICAL_SECTION_ERR    10
 #define D_COMRV_INTERNAL_ERR                 11
+#define D_COMRV_NOT_INITIALIZED_ERR          12
 
 
 /* comrv defines */

@@ -122,10 +122,13 @@ pxPortInitialiseStack:
    M_PSP_STORE a0, 4(sp)                  /* save a0 */
    M_PSP_STORE a1, 8(sp)                  /* save a1 */
    jal comrvInitApplicationStack          /* we need to initialize t3 register (comrv stack) per task */
+   mv          t0, a0                     /* save the return value */
    M_PSP_LOAD  ra, 0(sp)                  /* restore ra */
    M_PSP_LOAD  a0, 4(sp)                  /* restore a0 */
    M_PSP_LOAD  a1, 8(sp)                  /* restore a1 */
    M_PSP_ADDI  sp, sp, 16
+   bnez        t0, skipComrvStackInit     /* t0: 0 - comrv engine initialized; otherwise non zero,
+                                             this means that the created task shall not use overlays */
    mv          tp, a0                     /* tp holds the stack used by COMRV per task to
                                              store/restore callee args + comrv status */
    M_PSP_STORE zero, 0(tp)                /* clear the comrv status */
@@ -133,6 +136,7 @@ pxPortInitialiseStack:
    M_PSP_ADDI  a0, a0, -(28 * REGBYTES)   /* sp address */
    M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
    M_PSP_STORE tp, -(4 * REGBYTES)(a0)    /* save tp */
+skipComrvStackInit:
 #endif /* D_COMRV */
 
    M_PSP_STORE a2, -(23 * REGBYTES)(a0)   /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */

@@ -93,12 +93,8 @@ static rtosalMutex_t stComrvMutex;
  */
 void demoStart(void)
 {
-   comrvInitArgs_t stComrvInitArgs = { 1 };
 
    M_DEMO_START_PRINT();
-
-   /* init comrv */
-   comrvInit(&stComrvInitArgs);
 
    rtosalStart(demoComrvRtosCreateTasks);
 }
@@ -120,6 +116,10 @@ void demoComrvRtosCreateTasks(void *pParam)
 {
 
    u32_t res;
+   comrvInitArgs_t stComrvInitArgs = { 1 };
+
+   /* init comrv */
+   comrvInit(&stComrvInitArgs);
 
    /* Disable the machine external & timer interrupts until setup is done. */
    pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
@@ -233,7 +233,7 @@ void demoComrvRtosTxMsgTask( void *pvParameters )
 }
 
 /**
- * Recieve an item from the rtos queue
+ * Receive an item from the rtos queue
  *
  * pvParameters - holds the received queue item value
  */

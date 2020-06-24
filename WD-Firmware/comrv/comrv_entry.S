@@ -117,6 +117,8 @@
 .global comrvEntry_context_switch
 .global comrv_ret_from_callee_context_switch
 .global comrv_pre_ret_to_asm_engine
+.global comrvEntryNotInitialized
+.global comrvNotifyNotInitialized
 
 /*
    COMRV_TEXT_ASM section flags:
@@ -308,7 +310,16 @@ comrv_pre_ret_to_asm_engine:
 /* we get here if the end user disabled comrv and tried
    calling/loading overlay function/data */
 comrvEntryDisable:
-1:
     la          t0, comrvNotifyDisabledError
     jr          t0
+
+#ifdef D_COMRV_RTOS_SUPPORT
+/* this function is being used to make sure that
+   if an overlay function has been invoked while
+   comrv hasn't been initialize and at least one task
+   has been created, the end user won't get exception */
+comrvEntryNotInitialized:
+    la         t0, comrvNotifyNotInitialized
+    jr         t0
+#endif /* D_COMRV_RTOS_SUPPORT */
 
