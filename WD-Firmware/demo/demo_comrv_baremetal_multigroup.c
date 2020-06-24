@@ -101,14 +101,17 @@ void _OVERLAY_ OverlayFunc0(void)
 
 void demoStart(void)
 {
-   comrvInitArgs_t stComrvInitArgs = { 1 };
+   comrvInitArgs_t stComrvInitArgs;
 
    M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&psp_vect_table);
 
-   /* Init ComRV engine */
+   /* mark that comrv init shall load comrv tables */
+   stComrvInitArgs.ucCanLoadComrvTables = 1;
+
+   /* init comrv */
    comrvInit(&stComrvInitArgs);
 
    /* demonstrate function pointer usage with multigroups */

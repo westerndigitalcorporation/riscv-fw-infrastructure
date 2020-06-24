@@ -116,7 +116,10 @@ void demoComrvRtosCreateTasks(void *pParam)
 {
 
    u32_t res;
-   comrvInitArgs_t stComrvInitArgs = { 1 };
+   comrvInitArgs_t stComrvInitArgs;
+
+   /* mark that comrv init shall load comrv tables */
+   stComrvInitArgs.ucCanLoadComrvTables = 1;
 
    /* init comrv */
    comrvInit(&stComrvInitArgs);
