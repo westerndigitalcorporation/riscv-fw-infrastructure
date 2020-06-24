@@ -16,6 +16,10 @@
 #*/
 import gdb
 import re
+import sys
+
+from gdb.unwinder import Unwinder
+from gdb.FrameDecorator import FrameDecorator
 
 # Required to make calls to super () work in python2.
 __metaclass__ = type
@@ -31,14 +35,24 @@ DEFAULT_MAX_GROUP_SIZE = 4096
 # The default size for the "pages" in the ComRV cache and storage area.
 DEFAULT_MIN_COMRV_CACHE_ENTRY_SIZE_IN_BYTES = 512
 OVERLAY_MIN_CACHE_ENTRY_SIZE_IN_BYTES = 512
+COMRV_INFO_EVICTION_FIELD = 0x30
+COMRV_INFO_EVICT_POLICY_LRU = 0x10
+COMRV_INFO_EVICT_POLICY_LFU = 0x20
+COMRV_INFO_EVICT_POLICY_MIX = 0x30
 
 # Various symbols that are read in order to parse ComRV.
 MULTI_GROUP_OFFSET_SYMBOL = "g_stComrvCB.ucMultiGroupOffset"
+COMRV_INFO_SYMBOL = "g_uiComrvInfo"
 OVERLAY_STORAGE_START_SYMBOL = "OVERLAY_START_OF_OVERLAYS"
 OVERLAY_STORAGE_END_SYMBOL = "OVERLAY_END_OF_OVERLAYS"
 OVERLAY_CACHE_START_SYMBOL = "__OVERLAY_CACHE_START__"
 OVERLAY_CACHE_END_SYMBOL = "__OVERLAY_CACHE_END__"
 COMRV_RETURN_FROM_CALLEE_LABEL = "comrv_ret_from_callee"
+COMRV_RETURN_FROM_CALLEE_CONTEXT_SWITCH_LABEL = "comrv_ret_from_callee_context_switch"
+COMRV_INVOKE_CALLEE_LABEL = "comrv_invoke_callee"
+COMRV_ENTRY_LABEL = "comrvEntry"
+COMRV_ENTRY_CONTEXT_SWITCH_LABEL = "comrvEntry_context_switch"
+COMRV_EXIT_LABEL = "comrv_exit_ret_to_caller"
 
 # The following symbols are actually used as format strings.  They must
 # include a single '%d' format specified which is replaced with the ComRV
@@ -47,6 +61,18 @@ OVERLAY_CACHE_AT_INDEX_TO_GROUP_ID \
     = "g_stComrvCB.stOverlayCache[%d].unToken.stFields.uiOverlayGroupID"
 OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS \
     = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucSizeInMinGroupSizeUnits"
+OVERLAY_TABLE_ENTRY_EVICT_LOCK_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucEvictLock"
+OVERLAY_TABLE_ENTRY_GROUP_LOCK_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucEntryLock"
+OVERLAY_TABLE_ENTRY_DATA_OVL_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unProperties.stFields.ucData"
+OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unLru.stFields.typNextLruIndex"
+OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL \
+    = "g_stComrvCB.ucLruIndex"
+OVERLAY_TABLE_ENTRY_TOKEN_VAL \
+    = "g_stComrvCB.stOverlayCache[%d].unToken.uiValue"
 
 #=====================================================================#
 
@@ -161,6 +187,64 @@ after initially loading the ComRV support Pythong script.'''
 # Instance of parameter object.  Use the value field of this object.
 min_entry_size = min_overlay_entry_size_parameter ()
 
+# A class for the control variable 'set/show comrv show-frames'.
+class show_comrv_frames_parameter (gdb.Parameter):
+    '''Controls whether to show the comrv frames in the backtrace.  When
+    this is off 'comrv' frames will be hidden unless they are the
+    currently selected frame.'''
+    set_doc = "Set whether ComRV frames are shown in the backtrace."
+    show_doc = "Show whether ComRV frames are shown in the backtrace."
+    def __init__ (self):
+        gdb.Parameter.__init__ (self, "comrv show-frames",
+                                gdb.COMMAND_STACK,
+                                gdb.PARAM_BOOLEAN)
+        self.value = True
+
+    def get_show_string (self, value):
+        return ("Display of ComRV frames in the backtrace is %s."
+                % (value))
+
+    def __nonzero__ (self):
+        if (self.value):
+            return 1
+        else:
+            return 0
+
+    def __bool__ (self):
+        return self.value
+
+show_comrv_frames = show_comrv_frames_parameter ()
+
+# A class for the control variable 'set/show comrv show-token'.
+class show_comrv_tokens_parameter (gdb.Parameter):
+    '''Controls whether to show the comrv token in the backtrace.  When
+    this is on GDB will display the ComRV token passed to each 'comrv'
+    frame.
+
+    The tokens can only be displayed when 'comrv show-frames' is on.'''
+    set_doc = "Set whether ComRV tokens are shown in the backtrace."
+    show_doc = "Show whether ComRV tokens are shown in the backtrace."
+    def __init__ (self):
+        gdb.Parameter.__init__ (self, "comrv show-tokens",
+                                gdb.COMMAND_STACK,
+                                gdb.PARAM_BOOLEAN)
+        self.value = True
+
+    def get_show_string (self, value):
+        return ("Display of ComRV tokens in the backtrace is %s."
+                % (value))
+
+    def __nonzero__ (self):
+        if (self.value):
+            return 1
+        else:
+            return 0
+
+    def __bool__ (self):
+        return self.value
+
+show_comrv_tokens = show_comrv_tokens_parameter ()
+
 #=====================================================================#
 
 # Print STRING as a debug message if OVERLAY_DEBUG is True.
@@ -171,6 +255,7 @@ def debug (string):
         return
 
     print (string)
+    sys.stdout.flush()
 
 # Helper class, create an instance of this to temporarily turn on
 # debug for the enclosing scope, and turn debug off when we leave the
@@ -196,6 +281,14 @@ def sign_extend (value, bits):
 def get_comrv_min_entry_size ():
     global min_entry_size
     return min_entry_size.value
+
+# Get the address of LABEL which is a string.  If the address of LABEL
+# can't be found then return None.
+def get_symbol_address (label):
+    try:
+        return int (gdb.parse_and_eval ("&%s" % (label)))
+    except:
+        return None
 
 # Class to wrap reading memory.  Provides an API for reading unsigned
 # values of various sizes from memory.
@@ -359,16 +452,35 @@ class overlay_data:
         def __init__ (self, start, end):
             super (overlay_data._storage_descriptor, self).__init__ (start, end)
 
+    class _comrv_labels ():
+        def __init__ (self):
+            self.comrv_invoke_callee \
+                = get_symbol_address (COMRV_INVOKE_CALLEE_LABEL)
+            self.ret_from_callee \
+                = get_symbol_address (COMRV_RETURN_FROM_CALLEE_LABEL)
+            self.comrv_ret_from_callee_context_switch \
+                = get_symbol_address (COMRV_RETURN_FROM_CALLEE_CONTEXT_SWITCH_LABEL)
+            self.comrv_entry \
+                = get_symbol_address (COMRV_ENTRY_LABEL)
+            self.comrv_entry_context_switch \
+                = get_symbol_address (COMRV_ENTRY_CONTEXT_SWITCH_LABEL)
+            self.comrv_exit \
+                = get_symbol_address (COMRV_EXIT_LABEL)
+            self.enabled = (self.comrv_invoke_callee
+                            and  self.ret_from_callee
+                            and self.comrv_entry and self.comrv_exit)
+
     # A wrapper class to hold all the different information we loaded from
     # target memory.  An instance of this is what we return from the fetch
     # method.
     class _overlay_data_inner:
         def __init__ (self, cache_descriptor, storage_descriptor, groups_data,
-                      is_multi_group):
+                      mg_index_offset, info_sym):
             self._cache_descriptor = cache_descriptor
             self._groups_data = groups_data
             self._storage_descriptor = storage_descriptor
-            self._is_multi_group = is_multi_group
+            self._multi_group_index_offset = mg_index_offset
+            self._info_sym = info_sym
 
         def cache (self):
             return self._cache_descriptor
@@ -389,13 +501,23 @@ class overlay_data:
             return self._groups_data.get_multi_group_count ()
 
         def is_multi_group_enabled (self):
-            return self._is_multi_group
+            return self._multi_group_index_offset > 0
+
+        def multi_group_index_offset (self):
+            return self._multi_group_index_offset
 
         def get_token_from_multi_group_table (self, index):
             return self._groups_data.get_token_from_multi_group_table (index)
 
         def comrv_initialised (self):
             return (not self._groups_data == None)
+
+        def labels (self):
+            # TODO: Maybe we could do some caching here?
+            return overlay_data._comrv_labels ()
+
+        def comrv_info (self):
+            return self._info_sym
 
     # Read the group offset for overlay group GROUP_NUMBER.  The
     # overlay data starts at address BASE_ADDRESS in memory.
@@ -544,10 +666,7 @@ class overlay_data:
     # then None is returned.
     @staticmethod
     def _read_symbol_address_as_integer (name):
-        try:
-            return int (gdb.parse_and_eval ("&%s" % (name)))
-        except:
-            return None
+        return get_symbol_address (name)
 
     # Read the value of symbol NAME from the inferior, return the
     # value as an integer.  If the symbol can't be read (missing
@@ -583,10 +702,10 @@ class overlay_data:
         # defined by a start and end symbol.
         storage_start = overlay_data.\
                         _read_symbol_address_as_integer \
-				(OVERLAY_STORAGE_START_SYMBOL)
+                (OVERLAY_STORAGE_START_SYMBOL)
         storage_end = overlay_data.\
                         _read_symbol_address_as_integer \
-				(OVERLAY_STORAGE_END_SYMBOL)
+                (OVERLAY_STORAGE_END_SYMBOL)
         if (storage_start and storage_end):
             storage_desc \
                 = overlay_data._storage_descriptor (storage_start, storage_end)
@@ -599,33 +718,51 @@ class overlay_data:
         # this is left as -1.
         multi_group_offset = -1
 
+
         # Finally, if ComRV has been initialised then load the current state
         # from memory.
         init_been_called = global_has_comrv_been_initialised_yet ()
         if (init_been_called):
             try:
                 multi_group_offset = overlay_data.\
-			_read_symbol_value_as_integer (MULTI_GROUP_OFFSET_SYMBOL)
+            _read_symbol_value_as_integer (MULTI_GROUP_OFFSET_SYMBOL)
                 # The multi-group offset is held in the number of
                 # 2-byte chunks, so convert this into a byte offset.
                 multi_group_offset *= 2
             except:
                 pass
+            # read the overlay info value
+            info_sym = overlay_data.\
+                      _read_symbol_value_as_integer (COMRV_INFO_SYMBOL)
+            if (info_sym == None):
+                raise RuntimeError ("Couldn't read info symbol `%s'"
+                                   % COMRV_INFO_SYMBOL)
             groups_data = overlay_data.\
                           _load_group_data (cache_desc.tables_base_address (),
                                             cache_desc.tables_size_in_bytes (),
                                             storage_desc, multi_group_offset)
         else:
             groups_data = None
+            info_sym = None
 
-        is_multi_group = multi_group_offset > 0
+        # Work out the size in bits of the multi-group index on the comrv stack.
+        # A size of zero means this ComRV does not have multi-group support.
+        if multi_group_offset > 0:
+          multi_group_index_offset = info_sym & 0xF
+          if (multi_group_index_offset not in [11, 14]):
+              raise RuntimeError ("Invalid multi-group index offset (expected "
+                  + " 11 or 14, but got " + str(multi_group_index_offset) + ")")
+        else:
+          multi_group_index_offset = 0
 
         # Now package all of the components into a single class
         # instance that we return.  We only cache the object if ComRV
         # has been initialised, in this way we shouldn't get stuck
         # with a cached, not initialised object.
         obj = overlay_data._overlay_data_inner (cache_desc, storage_desc,
-                                                groups_data, is_multi_group)
+                                                groups_data,
+                                                multi_group_index_offset,
+                                                info_sym)
         if (init_been_called):
             overlay_data._instance = obj
         return obj
@@ -639,6 +776,43 @@ class overlay_data:
 # Class for walking the overlay data structures and calling the
 # visit_mapped_overlay method for every mapped overlay group.
 class mapped_overlay_group_walker:
+
+    class eviction_lru(object):
+
+        def __init__(self):
+            self.eviction_values = []
+
+        def read_values(self):
+            # get the lru value
+            lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL)
+            lru = int(lru)
+            # walk trouogh lru list and save eviction index 
+            while (lru != 255):
+                self.eviction_values.append(lru)
+                lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL % (lru))
+                lru = int(lru)
+
+        def get_eviction_value(self, index):
+            return self.eviction_values.index(index)
+
+
+    class eviction_factory(object):
+
+        def __init__(self, eviction_type):
+            if eviction_type == COMRV_INFO_EVICT_POLICY_LRU:
+                self.evict_obj = mapped_overlay_group_walker.eviction_lru()
+            else:
+                raise RuntimeError ("Unknown eviction type")
+            if not getattr(self.evict_obj, "read_values", None):
+                raise RuntimeError ("missing read_values implementation")
+            if not getattr(self.evict_obj, "get_eviction_value", None):
+                raise RuntimeError ("missing get_eviction_value implementation")
+            self.evict_obj.read_values()
+
+        def get_eviction_value(self, index):
+            return self.evict_obj.get_eviction_value(index)
+
+
     # Call this to walk the overlay manager data structures in memory and
     # call the visit_mapped_overlay method for each mapped overlay group.
     def walk_mapped_overlays (self):
@@ -650,6 +824,9 @@ class mapped_overlay_group_walker:
 
         # Now walk the overlay cache and see which entries are mapped in.
         index = 0
+        # read eviction values list
+        evict_obj = self.eviction_factory(ovly_data.comrv_info() & COMRV_INFO_EVICTION_FIELD)
+        
         while (index < ovly_data.cache ().number_of_working_entries ()):
             group = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_GROUP_ID % (index))
             group = int (group)
@@ -664,8 +841,22 @@ class mapped_overlay_group_walker:
                             + (index
                                * ovly_data.cache ().entry_size_in_bytes ()))
 
+
+                # get entry token
+                token_val = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_TOKEN_VAL % (index))
+                token_val = int (token_val)
+                # get cache entry evict lock property
+                evict_lock = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_EVICT_LOCK_VAL % (index))
+                evict_lock = int (evict_lock)
+                # get cache entry lock property
+                entry_lock = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_GROUP_LOCK_VAL % (index))
+                entry_lock = int (entry_lock)
+                # get cache data property
+                data = gdb.parse_and_eval (OVERLAY_TABLE_ENTRY_DATA_OVL_VAL % (index))
+                data = int (data)
                 if (not self.visit_mapped_overlay (src_addr, dst_addr, length,
-                                                index, group)):
+                                                index, group, evict_lock, entry_lock,
+                                                evict_obj.get_eviction_value(index), data, token_val)):
                     break
 
                 offset = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS % (index))
@@ -688,7 +879,9 @@ class mapped_overlay_group_walker:
     # override this method.  Return true to continue walking the list of
     # mapped overlays, or return false to stop.
     def visit_mapped_overlay (self, src_addr, dst_addr, length,
-                              cache_index, group_number):
+                              cache_index, group_number, evict_lock = 0,
+                              entry_lock = 0, evict_value = 0, data = 0, 
+                              token_val = 0):
         return True
 
     # Default implementation of comrv_not_initialised, sub-classes
@@ -728,7 +921,7 @@ def print_current_comrv_state ():
             break
         if (grp_num == 0):
             print ("  %-7s%-12s%-12s%-8s" % ("Group", "Start", "End", "Size"))
-        print ("  %-7d0x%-10x0x%-10x0x%-6x"
+        print ("  %-7d0x%-10X0x%-10X0x%-6X"
                % (grp_num, grp.base_address (),
                   (grp.base_address () + grp.size_in_bytes ()),
                   grp.size_in_bytes ()))
@@ -766,16 +959,18 @@ def print_current_comrv_state ():
                 self.nothing_is_mapped ()
 
         def visit_mapped_overlay (self, src_addr, dst_addr, length,
-                                  cache_index, group_number):
+                                  cache_index, group_number, evict_lock,
+                                  entry_lock, evict_value, data, token_val):
             if (not self._shown_header):
                 self._shown_header = True
-                print ("  %-7s%-9s%-12s%-12s%-8s"
-                       % ("Cache", "Overlay", "Storage", "Cache", ""))
-                print ("  %-7s%-9s%-12s%-12s%-8s"
-                       % ("Index", "Group", "Addr", "Addr", "Size"))
+                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s%-12s"
+                       % ("Cache", "Overlay", "Storage", "Cache", "Group", "Evict", "Entry", "Evict", "Data", "Token"))
+                print ("  %-7s%-9s%-12s%-12s%-9s%-7s%-7s%-12s%-9s%-12s"
+                       % ("Index", "Group",   "Addr",    "Addr",  "Size",  "Lock",  "Lock", "Value", "Overlay", "Addr"))
 
-            print ("  %-7d%-9d0x%-10x0x%-10x0x%-8x"
-                   % (cache_index, group_number, src_addr, dst_addr, length))
+            print ("  %-7d%-9d0x%-10X0x%-10X0x%-7X%-7d%-7d0x%-10X%-9d0x%-10X"
+                   % (cache_index, group_number, src_addr, dst_addr, length, 
+                      evict_lock, entry_lock, evict_value, data, token_val))
             return True
 
         def nothing_is_mapped (self):
@@ -785,14 +980,14 @@ def print_current_comrv_state ():
 
 # Model a single frame on the ComRV stack.
 class comrv_stack_frame:
-    def __init__ (self, addr, is_mg):
+    def __init__ (self, addr, mg_index_offset):
         self._frame_addr = addr
         self._return_addr = mem_reader.read_32_bit (addr)
         self._token = mem_reader.read_32_bit (addr + 4)
         self._offset = mem_reader.read_16_bit (addr + 8)
         self._align = mem_reader.read_8_bit (addr + 10)
-        if (is_mg):
-            if (self._offset == 12):
+        if (mg_index_offset > 0):
+            if (mg_index_offset == 11):
                 index = mem_reader.read_8_bit (addr + 11)
                 self._mg_index = sign_extend (index, 8)
             else:
@@ -877,6 +1072,7 @@ Alignment - The alignment field from the ComRV stack, alignment to size of
         ovly_data = overlay_data.fetch ()
         is_initialised = ovly_data.comrv_initialised ()
         is_mg = ovly_data.is_multi_group_enabled ()
+        mg_index_offset = ovly_data.multi_group_index_offset ()
         overlay_data.clear ()
 
         if (not is_initialised):
@@ -892,7 +1088,7 @@ Alignment - The alignment field from the ComRV stack, alignment to size of
             print ("%5s %10s %10s %10s %10s %6s"
                    % ("Frame", "Address", "R/A", "Token", "Alignment", "Size"))
         while (True):
-            frame = comrv_stack_frame (t3_addr, is_mg)
+            frame = comrv_stack_frame (t3_addr, mg_index_offset)
             if (is_mg):
                 print ("%5s %10s %10s %10s %10s %6s %6s"
                        % (("#%d" % (depth)),
@@ -969,12 +1165,12 @@ class MyOverlayManager (gdb.OverlayManager):
     # again.
     def get_multi_group_count (self):
         debug ("In Python get_multi_group_count method")
+        mg_count = -1
         ovly_data = overlay_data.fetch ()
-        if (not ovly_data.comrv_initialised ()):
-            # If ComRV is not yet initialised then return -1 to
-            # indicate that GDB should ask again later.
-            return -1
-        return ovly_data.multi_group_count ()
+        if (ovly_data.comrv_initialised ()):
+            mg_count = ovly_data.multi_group_count ()
+        debug ("In Python get_multi_group_count method = %d" % (mg_count))
+        return mg_count
 
     # For multi-group number ID return a list of all the storage area
     # addresses of all the functions within this multi-group.
@@ -993,15 +1189,6 @@ class MyOverlayManager (gdb.OverlayManager):
             addr += offset
             res.append (addr)
         return res
-
-    # Return the overlay token from the multi-group table at INDEX.
-    def get_multi_group_table_by_index (self, index):
-        ovly_data = overlay_data.fetch ()
-        if (not ovly_data.comrv_initialised ()):
-            raise RuntimeError ("ComRV not yet initialised")
-        if (not ovly_data.is_multi_group_enabled ()):
-            raise RuntimeError ("Multi-group not supported")
-        return ovly_data.get_token_from_multi_group_table (index)
 
     # Called to read the current state of ComRV, which overlays are
     # mapped in.  Should call the ADD_MAPPING method on ourselves
@@ -1029,7 +1216,9 @@ class MyOverlayManager (gdb.OverlayManager):
                 self.walk_mapped_overlays ()
 
             def visit_mapped_overlay (self, src_addr, dst_addr, length,
-                                      cache_index, group_number):
+                                      cache_index, group_number, evict_lock = 0,
+                                      entry_lock = 0, evict_value = 0, data = 0,
+                                      token_val = 0):
                 self._manager.add_mapping (src_addr, dst_addr, length)
                 return True
 
@@ -1039,110 +1228,6 @@ class MyOverlayManager (gdb.OverlayManager):
 
         debug ("All mappings added")
         return True
-
-    # Return the address of the label that a function will return too
-    # if it is returning through the ComRV enginee.  If the label
-    # can't be found (maybe ComRV is not in use) then return 0.
-    def get_comrv_return_from_callee_label (self):
-        try:
-            name = COMRV_RETURN_FROM_CALLEE_LABEL
-            return int (gdb.parse_and_eval ("&%s" % (name)))
-        except:
-            return 0
-
-    # Unwind the ComRV stack frame at ADDR.  Return a list of two
-    # elements.  The first element is the return address extracted
-    # from the ComRV stack frame, and the second element is the
-    # address of the previous ComRV stack frame.
-    def unwind_comrv_stack_frame (self, addr):
-        global max_group_size
-
-        ovly_data = overlay_data.fetch ()
-        if (not ovly_data.comrv_initialised ()):
-            raise RuntimeError ("ComRV is not initialised")
-        is_mg = ovly_data.is_multi_group_enabled ()
-
-        # Create a stack frame object at ADDR to represent the stack
-        # frame we are unwinding.
-        frame = comrv_stack_frame (addr, is_mg)
-
-        comrv_return_addr = self.get_comrv_return_from_callee_label ()
-        if (comrv_return_addr == 0):
-            raise RuntimeError ("ComRV unwinding is disabled")
-        while (frame.return_address () == comrv_return_addr):
-            if (frame.offset () == 0xdead):
-                raise RuntimeError ("hit top of ComRV stack (1)")
-
-            addr += frame.offset ()
-            frame = comrv_stack_frame (addr, is_mg)
-
-        if (frame.return_address () == 0
-            and frame.token () == 0):
-            raise RuntimeError ("hit top of ComRV stack (2)")
-
-        addr += frame.offset ()
-
-        ra = frame.return_address ()
-        cache_start = ovly_data.cache ().start_address ()
-        cache_end = ovly_data.cache ().end_address ()
-        if (ra >= cache_start and ra < cache_end):
-            prev_frame = comrv_stack_frame (addr, is_mg)
-
-            if ((prev_frame.token () & 0x1) != 0x1):
-                raise RuntimeError ("returning to overlay function, "
-                                    + "second stack frame token is "
-                                    + str (prev_frame.token ()))
-
-            token = prev_frame.token ()
-            if (((token >> 31) & 0x1) == 0x1):
-                if (prev_frame.multi_group_index () == -1):
-                    raise RuntimeError ("mutli-group stack token with no valid token index")
-                idx = prev_frame.multi_group_index ()
-                token = self.get_multi_group_table_by_index (idx)
-
-            group_id = (token >> 1) & 0xffff
-            func_offset = (token >> 17) & 0x3ff
-            alignment = prev_frame.align ()
-            group_size = ovly_data.group (group_id).size_in_bytes ()
-            max_grp_size = max_group_size.value
-            group_offset = (func_offset
-                            + ((frame.return_address () - func_offset
-                                - alignment) & (max_grp_size - 1)))
-            base_addr = ovly_data.group (group_id).base_address ()
-            ra = base_addr + group_offset
-
-            debug ("Unwinder:")
-            debug ("  frame.return_addr: " + hex (frame.return_address ()))
-            debug ("  group_id: " + str (group_id))
-            debug ("  func_offset: " + hex (func_offset))
-            debug ("  alignment: " + hex (alignment))
-            debug ("  group_size: " + hex (group_size))
-            debug ("  max_group_size: " + hex (max_grp_size))
-            debug ("  group_offset: " + hex (group_offset))
-            debug ("  base_addr: " + hex (base_addr))
-            debug ("  ra: " + str (ra))
-
-        return ra, addr
-
-    # This is a temporary hack needed to support backtracing.
-    # Ideally, the whole backtracing stack unwind would move into
-    # python, and then this function would not be needed, however, to
-    # do that we will need some serious changes to how GDB's stack
-    # unwinder works.
-    #
-    # For now then we need to expose a mechanism by which we can find
-    # the size of a group given its group ID.
-    def get_group_size (self, id):
-        ovly_data = overlay_data.fetch ()
-        if (not ovly_data.comrv_initialised ()):
-            # Maybe we should through an error in this case?
-            return 0
-
-        group_desc = ovly_data.group (id)
-        tmp = group_desc.size_in_bytes ()
-
-        debug ("Size of group %d is %d" % (id, tmp))
-        return tmp
 
     # Return the base address, within the storage area, for overlay
     # group ID.  The base address is the first address of an overlay
@@ -1160,6 +1245,399 @@ class MyOverlayManager (gdb.OverlayManager):
         debug ("get_group_storage_area_address (%d) = 0x%x"
                % (id, tmp))
         return tmp
+
+    # Get the callee that the overlay manager is calling.  This method should
+    # only be called when the pc is at one of the comrv entry points for a call.
+    def get_callee_primary_storage_area_address (self):
+        # HACK: Increment global_event_breakpoint_hit_count so
+        # overlay_data.fetch can assume comrv has been initialised.
+        global global_event_breakpoint_hit_count
+        global_event_breakpoint_hit_count += 1
+
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+
+        # Assert pc is at one of the comrv entry points for a call.
+        labels = ovly_data.labels()
+        pc = int (gdb.parse_and_eval ("$pc"))
+        assert (pc in [labels.comrv_entry,
+                       labels.comrv_entry_context_switch])
+
+        token = int (gdb.parse_and_eval ("$t5"))
+
+        if (token & 0x1) == 0:
+          # The callee is a non-overlay function and token is destination
+          # address.
+          return token;
+
+        if ((token >> 31) & 0x1) == 1:
+            multi_group_id = (token >> 1) & 0xffff
+            token = ovly_data.get_token_from_multi_group_table (multi_group_id)
+
+        group_id = (token >> 1) & 0xffff
+        func_offset = ((token >> 17) & 0x3ff) * 4;
+
+        ba = self.get_group_storage_area_address (group_id);
+        addr = ba + func_offset;
+
+        return addr
+
+class comrv_unwinder (Unwinder):
+    """
+    A class to aid in unwinding through the ComRV engine.
+
+    Implements GDB's Unwinder API in order to add support for
+    unwinding through the ComRV engine.
+    """
+
+    class frame_id (object):
+        """
+        Holds information about a ComRV stack frame.
+
+        An instance of this class is created for each identified ComRV
+        stack frame.  The attributes of this class are as needed to
+        satisfy GDB's frame unwinder API.
+        """
+
+        def __init__ (self, sp, pc):
+            """Create an instance of this class, SP and PC are
+            gdb.Value objects."""
+            self.sp = sp
+            self.pc = pc
+
+    def __init__ (self):
+        Unwinder.__init__ (self, "comrv stack unwinder")
+        # If no executable is set, void pointer length will default to 8 bytes.
+        # Setting a new executable may change this, so void_ptr_t is now updated
+        # in __call__.
+        self.void_ptr_t = gdb.lookup_type("void").pointer()
+
+    def _get_multi_group_table_by_index (self, index):
+        """Return the overlay token at position INDEX in the
+        multi-group table."""
+
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV not yet initialised")
+        if (not ovly_data.is_multi_group_enabled ()):
+            raise RuntimeError ("Multi-group not supported")
+        return ovly_data.get_token_from_multi_group_table (index)
+
+    # If ra is a cache address return the corresponding primary storage address,
+    # otherwise return ra unchanged.
+
+    def _get_primary_storage_area_ra (self, ra, addr):
+        global max_group_size
+        orig_ra = ra
+
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        mg_index_offset = ovly_data.multi_group_index_offset ()
+
+        cache_start = ovly_data.cache ().start_address ()
+        cache_end = ovly_data.cache ().end_address ()
+        if (ra >= cache_start and ra < cache_end):
+            prev_frame = comrv_stack_frame (addr, mg_index_offset)
+
+            if ((prev_frame.token () & 0x1) != 0x1):
+                raise RuntimeError ("returning to overlay function, "
+                                    + "second stack frame token is "
+                                    + str (prev_frame.token ()))
+
+            token = prev_frame.token ()
+            if (((token >> 31) & 0x1) == 0x1):
+                if (prev_frame.multi_group_index () == -1):
+                    raise RuntimeError ("mutli-group stack token with no valid token index")
+                idx = prev_frame.multi_group_index ()
+                token = self._get_multi_group_table_by_index (idx)
+
+            group_id = (token >> 1) & 0xffff
+            func_offset = (token >> 17) & 0x3ff
+            alignment = prev_frame.align ()
+            group_size = ovly_data.group (group_id).size_in_bytes ()
+            max_grp_size = max_group_size.value
+            group_offset = (func_offset
+                            + ((orig_ra - func_offset
+                                - alignment) & (max_grp_size - 1)))
+            base_addr = ovly_data.group (group_id).base_address ()
+            ra = base_addr + group_offset
+
+            debug ("Unwinder:")
+            debug ("  frame.return_addr: " + hex (orig_ra))
+            debug ("  group_id: " + str (group_id))
+            debug ("  func_offset: " + hex (func_offset))
+            debug ("  alignment: " + hex (alignment))
+            debug ("  group_size: " + hex (group_size))
+            debug ("  max_group_size: " + hex (max_grp_size))
+            debug ("  group_offset: " + hex (group_offset))
+            debug ("  base_addr: " + hex (base_addr))
+            debug ("  ra: " + str (ra))
+        return ra
+
+    def _unwind (self, addr):
+        """Perform an unwind of one ComRV stack frame.  ADDR is the
+        address of a frame on the ComRV stack.  This function returns
+        a tuple of the address to return to and the previous ComRV
+        stack frame pointer.
+
+         If the stack can't be unwound then an error is thrown."""
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        mg_index_offset = ovly_data.multi_group_index_offset ()
+
+        # Create a stack frame object at ADDR to represent the stack
+        # frame we are unwinding.
+        labels = ovly_data.labels ()
+        frame = comrv_stack_frame (addr, mg_index_offset)
+        assert (labels.ret_from_callee != None)
+        while (frame.return_address () == labels.ret_from_callee
+               and frame.return_address () != 0
+               and frame.offset () != 0xdead):
+            addr += frame.offset ()
+            frame = comrv_stack_frame (addr, mg_index_offset)
+
+        # Check to see if we have hit the top of the ComRV Stack.
+        if ((frame.return_address () == 0
+             and frame.token () == 0)
+            or frame.offset () == 0xdead):
+            raise RuntimeError ("hit top of ComRV stack (2)")
+
+        # Adjust the ComRV stack pointer; ADDR is now the ComRV stack
+        # pointer as it was in the previous frame.
+        addr += frame.offset ()
+
+        # Grab the return address from the ComRV stack.  This can be
+        # the address of an overlay, or non-overlay function.
+        ra = frame.return_address ()
+
+        return self._get_primary_storage_area_ra (ra, addr), addr
+
+    def _unwind_at_ret_from_callee_context_switch (self, pending_frame, labels):
+        # Create UnwindInfo.  Usually the frame is identified by the stack
+        # pointer and the program counter.
+        sp = pending_frame.read_register ("sp")
+        pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, pc))
+
+        # Find the values of the registers in the caller's frame and
+        # save them in the result:
+        t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
+        ra = int (pending_frame.read_register ("ra"))
+        ra = self._get_primary_storage_area_ra (ra, t3)
+        unwind_info.add_saved_register("pc", gdb.Value (ra).cast (self.void_ptr_t))
+        unwind_info.add_saved_register("t3", gdb.Value (t3).cast (self.void_ptr_t))
+        unwind_info.add_saved_register("sp", pending_frame.read_register ("sp"))
+        # TODO: We should pass through all of the other registers that
+        # are not corrupted by passing through ComRV.
+
+        # Return the result:
+        return unwind_info
+
+    def _unwind_through_comrv_stack (self, pending_frame, labels):
+        # Create UnwindInfo.  Usually the frame is identified by the stack
+        # pointer and the program counter.
+        sp = pending_frame.read_register ("sp")
+        pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, pc))
+
+        # Find the values of the registers in the caller's frame and
+        # save them in the result:
+        t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
+        ra, t3 = self._unwind (t3)
+        unwind_info.add_saved_register("pc", gdb.Value (ra).cast (self.void_ptr_t))
+        unwind_info.add_saved_register("t3", gdb.Value (t3).cast (self.void_ptr_t))
+        unwind_info.add_saved_register("sp", pending_frame.read_register ("sp"))
+        # TODO: We should pass through all of the other registers that
+        # are not corrupted by passing through ComRV.
+
+        # Return the result:
+        return unwind_info
+
+    def _unwind_direct (self, pending_frame, labels):
+        # Create UnwindInfo.  Usually the frame is identified by the stack
+        # pointer and the program counter.
+        sp = pending_frame.read_register ("sp")
+        pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, pc))
+
+        # Find the values of the registers in the caller's frame and
+        # save them in the result:
+        unwind_info.add_saved_register("pc", pending_frame.read_register ("ra"))
+        unwind_info.add_saved_register("t3", pending_frame.read_register ("t3"))
+        unwind_info.add_saved_register("sp", pending_frame.read_register ("sp"))
+        # TODO: We should pass through all of the other registers that
+        # are not corrupted by passing through ComRV.
+
+        # Return the result:
+        return unwind_info
+
+    def __call__ (self, pending_frame):
+        # Check if we are inside the core ComRV function that runs
+        # from the comrv entry label to the comrv exit label.
+        labels = overlay_data.fetch ().labels ()
+        # Lookup void pointer type again in case setting an executable changed
+        # it.  If void_ptr_t has the wrong length, it will cause an invalid cast
+        # error.
+        self.void_ptr_t = gdb.lookup_type("void").pointer()
+        pc = pending_frame.read_register ("pc").cast (self.void_ptr_t)
+        if (not labels.enabled
+            or pc < labels.comrv_entry or pc > labels.comrv_exit):
+            return None
+
+        # Inside the core of ComRV there are 3 states I think we could
+        # be in, these are:
+        #
+        # 1. Near the entry point, the ComRV stack is not yet updated,
+        # and to unwind we just look in the return address register.
+        #
+        # 2. Immediately after coming back from the callee, at this
+        # point we unwind by popping one or more frames from the ComRV
+        # stack.
+        #
+        # 3. Not the previous two states.  These are the areas of code
+        # where we're in the process of adjusting the ComRV stack, and
+        # setting up the new return address register value.  To unwind
+        # at these addresses would require an instruction by
+        # instruction analysis I think.
+        #
+        # Here I just blindly carve the comrv core into two, before we
+        # invoke the callee and afterwards.  This will work for the
+        # easy cases 1 and 2 above.  Case 3 wouldn't work before, and
+        # still doesn't work with this mechanism.
+        #
+        # Update: a new specific case is now handled - re-entering comrv at
+        # comrv_ret_from_callee_context_switch after a context switch whilst
+        # returning from a callee.  At this point, the comrv stack relating to
+        # the callee has already been popped.
+        if (pc <= labels.comrv_invoke_callee):
+            return self._unwind_direct (pending_frame, labels)
+        if (pc == labels.comrv_ret_from_callee_context_switch):
+            return self._unwind_at_ret_from_callee_context_switch (pending_frame, labels)
+        else:
+            return self._unwind_through_comrv_stack (pending_frame, labels)
+
+class comrv_frame_filter ():
+    """
+    A class for filtering ComRV stack frame entries.
+
+    This class does one of two jobs based on the current value of
+    SHOW_COMRV_FRAMES.  When SHOW_COMRV_FRAMES is true then this class
+    identifies ComRV stack frames and applies the DECORATOR sub-class
+    to those frames.  When SHOW_COMRV_FRAMES is false this class
+    causes the ComRV stack frames to be skipped so they will not be
+    printed in the backtrace.
+    """
+
+    class decorator (FrameDecorator):
+        """
+        A FrameDecorator to change the name of the ComRV stack frames.
+
+        This class is applied to ComRV stack frames when
+        SHOW_COMRV_FRAMES is true, and changes the name of the frame
+        to be simply "comrv".
+        """
+
+        def __init__(self, frame):
+            FrameDecorator.__init__ (self, frame)
+            self.uint_t = gdb.lookup_type ("unsigned int")
+            self._frame = frame
+
+        def function (self):
+            return "comrv"
+
+        def frame_args (self):
+            '''Add pseudo-parameters to comrv frames.  When SHOW_COMRV_TOKENS is
+            true this function returns a description of the 'token'
+            parameter for the comrv frame.'''
+            class _sym_value ():
+                def __init__ (self, name, value):
+                    self._name = name
+                    self._value = value
+
+                def symbol (self):
+                    return self._name
+
+                def value (self):
+                    return self._value
+
+            if (not show_comrv_tokens):
+                return None
+
+            addr = self._frame.address ()
+            labels = overlay_data.fetch ().labels ()
+            if (addr <= labels.comrv_invoke_callee):
+                token = self._frame.inferior_frame ().read_register ("t5")
+            else:
+                # Find the token on the ComRV stack.
+                t3 = self._frame.inferior_frame ().\
+                          read_register ("t3").cast (self.uint_t)
+                ovly_data = overlay_data.fetch ()
+                mg_index_offset = ovly_data.multi_group_index_offset ()
+                comrv_frame = comrv_stack_frame (t3, mg_index_offset)
+                labels = ovly_data.labels ()
+                assert (labels.ret_from_callee != None)
+                while (comrv_frame.return_address () == labels.ret_from_callee
+                       and comrv_frame.return_address () != 0
+                       and comrv_frame.offset () != 0xdead):
+                    t3 += comrv_frame.offset ()
+                    comrv_frame = comrv_stack_frame (t3, mg_index_offset)
+                token = comrv_frame.token ()
+            return [_sym_value ("token", gdb.Value (token).cast (self.uint_t))]
+
+    class iterator ():
+        """
+        An iterator to wrap the default iterator and filter frames.
+
+        An instance of this iterator is created around GDB's default
+        FrameDecorator iterator.  As frames are extracted from this
+        iterator, if the frame looks like a ComRV frame then we apply
+        an extra decorator to it.
+        """
+
+        def __init__ (self, iter):
+            self.iter = iter
+
+        def __iter__(self):
+            return self
+
+        def next (self):
+            """Called each time GDB needs the next frame.  If the frame
+            looks like a ComRV frame (based on its $pc value) then we
+            either apply the comrv frame decorator, or we skip the
+            frame (based on the value of SHOW_COMRV_FRAMES)."""
+            frame = next (self.iter)
+            addr = frame.address ()
+            labels = overlay_data.fetch ().labels ()
+            if (addr >= labels.comrv_entry
+                and addr <= labels.comrv_exit):
+                if (not show_comrv_frames
+                    and (frame.inferior_frame ()
+                         != gdb.selected_frame ())):
+                    return next (self.iter)
+                else:
+                    return comrv_frame_filter.decorator (frame)
+            return frame
+
+        def __next__ (self):
+            return self.next ()
+
+    def __init__ (self):
+        self.name = "comrv filter"
+        self.priority = 100
+        self.enabled = True
+        gdb.frame_filters [self.name] = self
+
+    def filter (self, frame_iter):
+        return self.iterator (frame_iter)
+
+# Register the ComRV stack unwinder.
+gdb.unwinder.register_unwinder (None, comrv_unwinder (), True)
+
+# Register the frame filter.
+comrv_frame_filter ()
 
 # Create an instance of the command class.
 ParseComRV ()

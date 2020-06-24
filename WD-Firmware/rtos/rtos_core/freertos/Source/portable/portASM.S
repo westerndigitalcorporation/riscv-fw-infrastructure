@@ -100,7 +100,15 @@ xPortStartScheduler:
     jal rtosalTimerSetup
     M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0
     M_PSP_POP_REGFILE
-    mret
+    /* TODO: replace trap handler to rtosal handler + change csrrsi
+       to be disable ints and restore ints */
+    /* this is the first task being executed
+       so take the task entry address from mepc */
+    csrr   ra, mepc
+    /* set MIE to enable interrupts - must be the last
+       instruction before the ret */
+    csrrsi zero, mstatus, 8
+    ret
 
 vPortEndScheduler:
 1:
@@ -108,12 +116,29 @@ vPortEndScheduler:
 
 .align 8
 pxPortInitialiseStack:
-   csrr       t0, mstatus                 /* Obtain current mstatus value. */
-   M_PSP_ADDI t1, x0, 0x188               /* Generate the value 0x1880, which are -   */
-   slli       t1, t1, 4                   /* the MPIE and MPP bits to set in mstatus. */
-   or         t0, t0, t1                  /* Set MPIE and MPP bits in mstatus value. */
+#ifdef D_COMRV
+   M_PSP_ADDI  sp, sp, -16
+   M_PSP_STORE ra, 0(sp)                  /* save ra */
+   M_PSP_STORE a0, 4(sp)                  /* save a0 */
+   M_PSP_STORE a1, 8(sp)                  /* save a1 */
+   jal comrvInitApplicationStack          /* we need to initialize t3 register (comrv stack) per task */
+   mv          t0, a0                     /* save the return value */
+   M_PSP_LOAD  ra, 0(sp)                  /* restore ra */
+   M_PSP_LOAD  a0, 4(sp)                  /* restore a0 */
+   M_PSP_LOAD  a1, 8(sp)                  /* restore a1 */
+   M_PSP_ADDI  sp, sp, 16
+   bnez        t0, skipComrvStackInit     /* t0: 0 - comrv engine initialized; otherwise non zero,
+                                             this means that the created task shall not use overlays */
+   mv          tp, a0                     /* tp holds the stack used by COMRV per task to
+                                             store/restore callee args + comrv status */
+   M_PSP_STORE zero, 0(tp)                /* clear the comrv status */
+   M_PSP_ADDI  tp, tp, -(27 * REGBYTES)   /* 24 * REGBYTES - stack reserved per task for COMRV */
+   M_PSP_ADDI  a0, a0, -(28 * REGBYTES)   /* sp address */
+   M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
+   M_PSP_STORE tp, -(4 * REGBYTES)(a0)    /* save tp */
+skipComrvStackInit:
+#endif /* D_COMRV */
 
-   M_PSP_STORE t0, -( 1 * REGBYTES)(a0)   /* mstatus onto the stack. */
    M_PSP_STORE a2, -(23 * REGBYTES)(a0)   /* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
    M_PSP_STORE x0, -(29 * REGBYTES)(a0)   /* Return address onto the stack */
 // The following is relevant only when there are "aditional registers" in the core to handle. For now irrelevant hence commented out */
@@ -126,19 +151,6 @@ pxPortInitialiseStack:
 //    M_PSP_ADDI t0, t0, -1               /* Decrement the count of chip specific registers remaining. */
 //    j chip_specific_stack_frame         /* Until no more chip specific registers. */
 //1:
-
-#ifdef D_COMRV
-   M_PSP_ADDI  sp, sp, -16
-   M_PSP_STORE ra, 0(sp)                  /* save ra */
-   M_PSP_STORE a0, 4(sp)                  /* save a0 */
-   M_PSP_STORE a1, 8(sp)                  /* save a1 */
-   jal comrvInitApplicationStack          /* we need to initialize t3 register (comrv stack) per task */
-   M_PSP_LOAD  ra, 0(sp)                  /* restore ra */
-   M_PSP_LOAD  a0, 4(sp)                  /* restore a0 */
-   M_PSP_LOAD  a1, 8(sp)                  /* restore a1 */
-   M_PSP_ADDI  sp, sp, 16
-   M_PSP_STORE t3, -(5 * REGBYTES)(a0)    /* save t3 - comrv stack per task */
-#endif /* D_COMRV */
 
    M_PSP_ADDI  a0, a0, -(32 * REGBYTES)    /* a0 to be returned to caller */
    M_PSP_STORE a1, 0(a0)                  /* mret value (pxCode parameter) onto the stack. */

@@ -68,7 +68,7 @@ extern rtosalTimerTickHandler_t fptrTimerTickHandler ;
 u32_t g_rtosalContextSwitch = 0;
 u32_t g_rtosalIsInterruptContext = D_RTOSAL_NON_INT_CONTEXT;
 u32_t g_uInterruptsPreserveMask  = 0; /* Used for restoring interrupts status */
-
+u32_t g_uInterruptsDisableCounter  = 0;
 
 #ifdef D_USE_FREERTOS
 /* Idle-task and Timer-task are created by FreeRtos and not by this application */

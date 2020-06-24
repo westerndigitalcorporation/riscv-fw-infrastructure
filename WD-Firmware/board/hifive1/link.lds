@@ -33,6 +33,8 @@ SECTIONS
     *(.text.unlikely .text.unlikely.*)
     *(.text.startup .text.startup.*)
     *(.text .text.*)
+    *(COMRV_TEXT_SEC)
+    *(COMRV_TEXT_ASM)
     *(.gnu.linkonce.t.*)
   } >flash AT>flash :flash
 

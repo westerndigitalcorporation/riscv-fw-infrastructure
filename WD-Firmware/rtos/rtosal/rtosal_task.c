@@ -395,8 +395,7 @@ RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
     fptrInit(NULL);
     vTaskStartScheduler();
 #elif D_USE_THREADX
-   fptrAppInit = fptrInit;
-   tx_kernel_enter();
+   #error "Add THREADX appropriate definitions"
 #else
    #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
@@ -469,13 +468,48 @@ u32_t rtosalGetSchedulerState(void)
 * @param pxTopOfStack - pointer to current task stack
 *
 */
-void rtosalUpdateStackPriorContextSwitch(volatile rtosalStack_t* pxTopOfStack)
+void rtosalUpdateStackPriorContextSwitch(volatile rtosalStack_t** pxTopOfStack)
 {
 #ifdef D_COMRV
 #ifdef D_USE_FREERTOS
+   u32_t*                pUiNewSP = NULL;
+   comrvTaskStackRegsVal_t* pComrvTaskStackRegsVal;
+
    /* save comrv context in case context switch is done while in an overlay function */
-   comrvSaveContextSwitch(&pxTopOfStack[D_RTOSAL_MEPC_INDEX_ON_STACK],
-                          &pxTopOfStack[D_RTOSAL_T3_INDEX_ON_STACK]);
+   pUiNewSP = comrvSaveContextSwitch(&((*pxTopOfStack)[D_RTOSAL_MEPC_INDEX_ON_TASK_STACK]),
+                                     &((*pxTopOfStack)[D_RTOSAL_T3_INDEX_ON_TASK_STACK]),
+                                     &pComrvTaskStackRegsVal);
+   /* check if we need to change task sp address */
+   if (pUiNewSP != NULL)
+   {
+      /* adjust sp to a new context switch frame */
+      pUiNewSP -= (D_PSP_REG32_BYTE_WIDTH * D_RTOSAL_NUM_OF_STACK_ENTRIES);
+      /* save a0-a7, s0-s11 on to the task stack */
+      pUiNewSP[D_RTOSAL_S0_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS0;
+      pUiNewSP[D_RTOSAL_S1_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS1;
+      pUiNewSP[D_RTOSAL_A0_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA0;
+      pUiNewSP[D_RTOSAL_A1_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA1;
+      pUiNewSP[D_RTOSAL_A2_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA2;
+      pUiNewSP[D_RTOSAL_A3_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA3;
+      pUiNewSP[D_RTOSAL_A4_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA4;
+      pUiNewSP[D_RTOSAL_A5_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA5;
+      pUiNewSP[D_RTOSAL_A6_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA6;
+      pUiNewSP[D_RTOSAL_A7_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegA7;
+      pUiNewSP[D_RTOSAL_S2_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS2;
+      pUiNewSP[D_RTOSAL_S3_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS3;
+      pUiNewSP[D_RTOSAL_S4_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS4;
+      pUiNewSP[D_RTOSAL_S5_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS5;
+      pUiNewSP[D_RTOSAL_S6_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS6;
+      pUiNewSP[D_RTOSAL_S7_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS7;
+      pUiNewSP[D_RTOSAL_S8_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS8;
+      pUiNewSP[D_RTOSAL_S9_INDEX_ON_TASK_STACK]  = pComrvTaskStackRegsVal->uiRegS9;
+      pUiNewSP[D_RTOSAL_S10_INDEX_ON_TASK_STACK] = pComrvTaskStackRegsVal->uiRegS10;
+      pUiNewSP[D_RTOSAL_S11_INDEX_ON_TASK_STACK] = pComrvTaskStackRegsVal->uiRegS11;
+      pUiNewSP[D_RTOSAL_RA_INDEX_ON_TASK_STACK] = pComrvTaskStackRegsVal->uiRegRa;
+      pUiNewSP[D_RTOSAL_T5_INDEX_ON_TASK_STACK] = pComrvTaskStackRegsVal->uiRegT5;
+      /* save new task sp */
+      *pxTopOfStack = pUiNewSP;
+   }
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"
 #else
