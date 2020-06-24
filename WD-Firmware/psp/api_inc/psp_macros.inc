@@ -63,6 +63,8 @@
 #ifndef D_COMRV
     M_PSP_STORE    x29, 28  * REGBYTES(sp)
     M_PSP_STORE    x31, 30  * REGBYTES(sp)
+#else
+    M_PSP_STORE    x4,  28  * REGBYTES(sp)
 #endif /* D_COMRV */
 .endm
 
@@ -99,6 +101,8 @@
 #ifndef D_COMRV
     M_PSP_LOAD    x29, 28 * REGBYTES(sp)
     M_PSP_LOAD    x31, 30 * REGBYTES(sp)
+#else
+   M_PSP_LOAD     x4,  28  * REGBYTES(sp)
 #endif /* D_COMRV */
     /* Make sure SP is aligned to 16 */
     M_PSP_ADDI    sp, sp, REGBYTES * 32

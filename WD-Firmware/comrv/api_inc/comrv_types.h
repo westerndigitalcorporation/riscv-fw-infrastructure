@@ -105,13 +105,16 @@ typedef union comrvOverlayToken
 /* cache entry properties */
 typedef struct comrvPropertiesFields
 {
-  /* entry is ucData or locked by the end user - can't be evicted */
-  u08_t ucLocked:1;
+  /* entry is locked by the end user - can't be evicted */
+  u08_t ucEvictLock:1;
   /* entry is overlay data */
   u08_t ucData:1;
   /* loaded group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
   u08_t ucSizeInMinGroupSizeUnits:4;
-  u08_t ucReserved:2;
+  /* entry lock - memory can't be moved until overlay is loaded & CRC'ed
+     or entry is overlay data so can't be moved until user released it */
+  u08_t ucEntryLock:1;
+  u08_t ucReserved:1;
 } comrvPropertiesFields_t;
 
 /* cache entry */
@@ -223,5 +226,31 @@ typedef struct comrvInstrumentationArgs
    u32_t uiInstNum;
 }comrvInstrumentationArgs_t;
 
+/* comrv task stack registers value */
+typedef struct comrvTaskStackRegsVal
+{
+   u32_t uiRegS0;
+   u32_t uiRegS1;
+   u32_t uiRegA0;
+   u32_t uiRegA1;
+   u32_t uiRegA2;
+   u32_t uiRegA3;
+   u32_t uiRegA4;
+   u32_t uiRegA5;
+   u32_t uiRegA6;
+   u32_t uiRegA7;
+   u32_t uiRegS2;
+   u32_t uiRegS3;
+   u32_t uiRegS4;
+   u32_t uiRegS5;
+   u32_t uiRegS6;
+   u32_t uiRegS7;
+   u32_t uiRegS8;
+   u32_t uiRegS9;
+   u32_t uiRegS10;
+   u32_t uiRegS11;
+   u32_t uiRegRa;
+   u32_t uiRegT5;
+}comrvTaskStackRegsVal_t;
 
 #endif /* __COMRV_TYPES_H__ */

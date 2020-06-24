@@ -62,9 +62,6 @@
 
 /* this macro save mstatus and mepc CSRs on stack then store sp in the Application control block */
 .macro M_RTOSAL_SAVE_CONTEXT  pAppCB, spLocationInAppCB
-    /* Store mstatus */
-    csrr          t0, mstatus
-    M_PSP_STORE   t0, D_RTOSAL_MSTATUS_LOC_IN_STK * REGBYTES(sp)
     /* Store current stackpointer in task control block (TCB) */
     M_PSP_LOAD    t0, \pAppCB
     M_PSP_STORE   sp, \spLocationInAppCB(t0)
@@ -81,9 +78,6 @@
     /* Load task program counter */
     M_PSP_LOAD    t0, D_RTOSAL_MEPC_LOC_IN_STK * REGBYTES(sp)
     csrw          mepc, t0
-    /* Load saved mstatus */
-    M_PSP_LOAD    t0, D_RTOSAL_MSTATUS_LOC_IN_STK * REGBYTES(sp)
-    csrw      mstatus, t0
 .endm
 
 /* This macro is activated at the end of ISR handling. It does the following:

@@ -48,6 +48,13 @@
    #define D_COMRV_FW_INSTRUMENTATION
 #endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_SUPPORT */
 
+#ifdef D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD_SUPPORT
+   /* Mark we allow non comrv function calls after search and load
+      indication - applies only for rtos support to handle
+      cases where we get a context switch during calls to such functions */
+   #define D_COMRV_ALLOW_CALLS_AFTER_SEARCH_LOAD
+#endif /* D_COMRV_ENABLE_FW_INSTRUMENTATION_NON_ATOMIC_SUPPORT */
+
 /* enable init vars run time validation */
 #ifdef D_COMRV_ENABLE_VERIFY_INIT_ARGS_SUPPORT
    #define D_COMRV_VERIFY_INIT_ARGS
@@ -127,6 +134,11 @@
 
 /* eviction algorithm definition */
 #if (D_COMRV_EVICTION_POLICY == 0)
+   #ifndef D_COMRV_EVICTION_POLICY
+      /* can be that D_COMRV_EVICTION_POLICY wasn't defined - same as if it was
+         set to 0 so set it to 1 - 0 and 1 are the same - lru */
+      #define D_COMRV_EVICTION_POLICY 1
+   #endif /* D_COMRV_EVICTION_POLICY */
    #define D_COMRV_EVICTION_LRU
 #elif (D_COMRV_EVICTION_POLICY == 1)
    #define D_COMRV_EVICTION_LRU
