@@ -77,19 +77,19 @@ RTOSAL_SECTION u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb
                             s32_t iSemaphoreInitialCount, u32_t uiSemaphoreMaxCount)
 {
    u32_t uiRes;
-
+   void* pSemCb;
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalSemaphoreCb, pRtosalSemaphoreCb == NULL, D_RTOSAL_SEMAPHORE_ERROR);
 
 #ifdef D_USE_FREERTOS
    /* create the semaphore */
-   pRtosalSemaphoreCb->semaphoreHandle = xSemaphoreCreateCountingStatic(uiSemaphoreMaxCount,
-                                               iSemaphoreInitialCount,
-                                               (StaticSemaphore_t*)pRtosalSemaphoreCb->cSemaphoreCB);
-   /* semaphore created successfuly */
-   if (pRtosalSemaphoreCb->semaphoreHandle != NULL)
+   pSemCb = xSemaphoreCreateCountingStatic(uiSemaphoreMaxCount,
+                                           iSemaphoreInitialCount,
+                                           (StaticSemaphore_t*)pRtosalSemaphoreCb->cSemaphoreCB);
+   /* semaphore created successfully */
+   if (pSemCb == (void*)pRtosalSemaphoreCb->cSemaphoreCB)
    {
       /* assign a name to the created semaphore */
-      vQueueAddToRegistry((QueueHandle_t)pRtosalSemaphoreCb->semaphoreHandle, (const char*)pRtosalSemaphoreName);
+      vQueueAddToRegistry((QueueHandle_t)pSemCb, (const char*)pRtosalSemaphoreName);
       uiRes = D_RTOSAL_SUCCESS;
    }
    else
@@ -121,7 +121,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreDestroy(rtosalSemaphore_t* pRtosalSemaphoreC
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalSemaphoreCb, pRtosalSemaphoreCb == NULL, D_RTOSAL_SEMAPHORE_ERROR);
 
 #ifdef D_USE_FREERTOS
-   vSemaphoreDelete(pRtosalSemaphoreCb->semaphoreHandle);
+   vSemaphoreDelete(pRtosalSemaphoreCb->cSemaphoreCB);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"
@@ -166,13 +166,13 @@ RTOSAL_SECTION u32_t rtosalSemaphoreWait(rtosalSemaphore_t* pRtosalSemaphoreCb, 
    /* rtosalSemaphoreWait invoked from an ISR context */
    if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
-      uiRes = xSemaphoreTakeFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
+      uiRes = xSemaphoreTakeFromISR(pRtosalSemaphoreCb->cSemaphoreCB, &xHigherPriorityTaskWoken);
    }
    else
    {
-      uiRes = xSemaphoreTake(pRtosalSemaphoreCb->semaphoreHandle, uiWaitTimeoutTicks);
+      uiRes = xSemaphoreTake((void*)pRtosalSemaphoreCb->cSemaphoreCB, uiWaitTimeoutTicks);
    }
-   /* successfuly obtained the semaphore */
+   /* successfully obtained the semaphore */
    if (uiRes == pdPASS)
    {
       uiRes = D_RTOSAL_SUCCESS;
@@ -222,11 +222,11 @@ RTOSAL_SECTION u32_t rtosalSemaphoreRelease(rtosalSemaphore_t* pRtosalSemaphoreC
    /* rtosalSemaphoreRelease invoked from an ISR context */
    if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
-      uiRes = xSemaphoreGiveFromISR(pRtosalSemaphoreCb->semaphoreHandle, &xHigherPriorityTaskWoken);
+      uiRes = xSemaphoreGiveFromISR(pRtosalSemaphoreCb->cSemaphoreCB, &xHigherPriorityTaskWoken);
    }
    else
    {
-      uiRes = xSemaphoreGive(pRtosalSemaphoreCb->semaphoreHandle);
+      uiRes = xSemaphoreGive(pRtosalSemaphoreCb->cSemaphoreCB);
    }
    /* give eas successful */
    if (uiRes == pdPASS)
