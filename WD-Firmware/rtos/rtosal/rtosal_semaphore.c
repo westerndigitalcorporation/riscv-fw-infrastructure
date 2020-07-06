@@ -89,7 +89,7 @@ RTOSAL_SECTION u32_t rtosalSemaphoreCreate(rtosalSemaphore_t* pRtosalSemaphoreCb
    if (pSemCb == (void*)pRtosalSemaphoreCb->cSemaphoreCB)
    {
       /* assign a name to the created semaphore */
-      vQueueAddToRegistry((QueueHandle_t)pSemCb, (const char*)pRtosalSemaphoreName);
+      vQueueAddToRegistry((void*)pRtosalSemaphoreCb->cSemaphoreCB, (const char*)pRtosalSemaphoreName);
       uiRes = D_RTOSAL_SUCCESS;
    }
    else

@@ -86,7 +86,7 @@ RTOSAL_SECTION u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRt
    {
       uiRes = D_RTOSAL_SUCCESS;
       /* assign a name to the created mutex */
-      vQueueAddToRegistry((QueueHandle_t)pRtosalMutexCb->cMutexCB, (const char*)pRtosalMutexName);
+      vQueueAddToRegistry((void*)pRtosalMutexCb->cMutexCB, (const char*)pRtosalMutexName);
    }
    else
    {
