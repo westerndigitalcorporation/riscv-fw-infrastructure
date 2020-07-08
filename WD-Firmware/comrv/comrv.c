@@ -192,6 +192,17 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* extract the return offset for a given return address */
 #define M_COMRV_EXTRACT_RETURN_OFFSET(pReturnAddress, uiFuncOffset) \
       ((((u32_t)(pReturnAddress)) - uiFuncOffset - ( pComrvStackFrame->ucAlignmentToMaxGroupSize << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)) & (D_COMRV_OVL_GROUP_SIZE_MAX-1))
+
+/* Get the index of the rightmost set bit */
+#ifndef D_BITMANIP_EXT
+   /* with the absence of RISC-V bitmanip extension we use a faster method to find the
+      location of the first set bit - http://supertech.csail.mit.edu/papers/debruijn.pdf */
+   #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)   ucArrDeBruijnBitPos[((u32_t)(uiFindFirstSet * D_COMRV_DEBRUIJN32)) >> D_COMRV_DEBRUIJN32_SHFT_AMNT]
+#else
+   /* TODO: update this macro if bitmnip support */
+   #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)
+#endif /* D_BITMANIP_EXT */
+
 /**
 * types
 */
@@ -268,6 +279,15 @@ extern void *__OVERLAY_MULTIGROUP_TABLE_START;
 extern void *__OVERLAY_MULTIGROUP_TABLE_END;
 /* symbol defining comrv text section start address */
 extern void *COMRV_TEXT_SEC;
+
+#ifndef D_BITMANIP_EXT
+/* used for calculating the first set bit index */
+static const unsigned ucArrDeBruijnBitPos[32] =
+{
+  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+};
+#endif /* D_BITMANIP_EXT */
 
 /**
 * COM-RV initialization function
@@ -773,11 +793,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    return ((u08_t*)pAddress + usOffset);
 }
 
-static const unsigned ucArrDeBruijnBitPos[32] =
-{
-  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-};
 /**
 * Get comrv cache eviction candidates according to a given size
 *
@@ -844,21 +859,12 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
       /* convert each candidate to an actual value in pEvictCandidatesList */
       while (uiCandidates)
       {
-#if 0
-         /* get the lsb that is set */
-         pEvictCandidatesList[ucIndex] = uiCandidates & (-uiCandidates);
-         /* subtract the lsb that is set */
-         uiCandidates -= pEvictCandidatesList[ucIndex];
-         /* decrement by 1 to get the actual zero based value */
-         pEvictCandidatesList[ucIndex]--;
-#else
          /* get the lsb that is set */
          uiFindFirstSet = uiCandidates & (-uiCandidates);
          /* subtract the lsb that is set */
          uiCandidates -= uiFindFirstSet;
          /* get the bit position */
-         pEvictCandidatesList[ucIndex] = ucArrDeBruijnBitPos[((u32_t)(uiFindFirstSet * D_COMRV_DEBRUIJN32)) >> D_COMRV_DEBRUIJN32_SHFT_AMNT];
-#endif
+         pEvictCandidatesList[ucIndex] = M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet);
          /* add the location of the bit - pEvictCandidatesList[ucIndex] will hold the group number */
          pEvictCandidatesList[ucIndex] += ucEntryIndex*D_COMRV_DWORD_IN_BITS;
          /* move to the next entry in pEvictCandidatesList */
