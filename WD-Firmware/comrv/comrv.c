@@ -194,13 +194,16 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
       ((((u32_t)(pReturnAddress)) - uiFuncOffset - ( pComrvStackFrame->ucAlignmentToMaxGroupSize << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)) & (D_COMRV_OVL_GROUP_SIZE_MAX-1))
 
 /* Get the index of the rightmost set bit */
+// TODO: Nati - when EH2 define is set we also need to set D_BITMANIP_EXT
 #ifndef D_BITMANIP_EXT
    /* with the absence of RISC-V bitmanip extension we use a faster method to find the
       location of the first set bit - http://supertech.csail.mit.edu/papers/debruijn.pdf */
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)   ucArrDeBruijnBitPos[((u32_t)(uiFindFirstSet * D_COMRV_DEBRUIJN32)) >> D_COMRV_DEBRUIJN32_SHFT_AMNT]
 #else
-   /* TODO: update this macro if bitmnip support */
+   // TODO: update this macro to use bitmnip instructions */
+   // TODO: Nati - also add macros for clz, ctz.
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)
+   #error "M_COMRV_GET_SET_BIT_INDEX missing implementation"
 #endif /* D_BITMANIP_EXT */
 
 /**
@@ -279,15 +282,6 @@ extern void *__OVERLAY_MULTIGROUP_TABLE_START;
 extern void *__OVERLAY_MULTIGROUP_TABLE_END;
 /* symbol defining comrv text section start address */
 extern void *COMRV_TEXT_SEC;
-
-#ifndef D_BITMANIP_EXT
-/* used for calculating the first set bit index */
-static const unsigned ucArrDeBruijnBitPos[32] =
-{
-  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-};
-#endif /* D_BITMANIP_EXT */
 
 /**
 * COM-RV initialization function
@@ -812,6 +806,14 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 #if defined(D_COMRV_ASSERT_ENABLED) && defined(M_COMRV_ERROR_NOTIFICATIONS)
    comrvErrorArgs_t   stErrArgs;
 #endif /* D_COMRV_ASSERT_ENABLED && M_COMRV_ERROR_NOTIFICATIONS */
+#ifndef D_BITMANIP_EXT
+   /* used for calculating the first set bit index */
+   unsigned char ucArrDeBruijnBitPos[32] =
+   {
+     0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+     31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+   };
+#endif /* D_BITMANIP_EXT */
 
    /* first lets clear the uiCandidates list */
    comrvMemset(uiEvictCandidateMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
