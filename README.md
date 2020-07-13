@@ -7,7 +7,7 @@ This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
   - GCC 9.2.0 Toolchain for RISC-V
-  - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.51.20190122]***
+  - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.5sdgsdgsdghdfg.20190122]***
   - Eclipse MCU
 
 
