@@ -62,8 +62,6 @@
 * external prototypes
 */
 
-extern void psp_vect_table(void);
-
 /**
 * global variables
 */
@@ -85,7 +83,7 @@ void demoStart(void)
    M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
-   M_PSP_WRITE_CSR(mtvec, &psp_vect_table);
+   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
    /* give us an indication if under whisper or not */
    pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
@@ -95,8 +93,8 @@ void demoStart(void)
       /* clear all mrac bits - disable cache and sideeffect bits */
       for (uiIndex = 0 ; uiIndex < D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS ; uiIndex++)
       {
-         M_PSP_DISABLE_MEM_REGION_ICACHE(uiIndex);
-         M_PSP_DISABLE_MEM_REGION_SIDEEFFECT(uiIndex);
+        pspCacheControlDisableIcache(uiIndex);
+        pspCacheControlDisableSideEfect(uiIndex);
       }
 
       /* Disable Machine-Timer interrupt so we won't get interrupted
@@ -111,7 +109,7 @@ void demoStart(void)
 
       /* we disable (again) the cache just to have the same amount
          of measured instructions */
-      M_PSP_DISABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
+      pspCacheControlDisableIcache(D_MAIN_MEM_INDEX);
 
       /* execute some code */
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
@@ -124,7 +122,7 @@ void demoStart(void)
 
       /* enable cache for the main memory so we can measure how much
          time execution takes */
-      M_PSP_ENABLE_MEM_REGION_ICACHE(D_MAIN_MEM_INDEX);
+      pspCacheControlEnableIcache(D_MAIN_MEM_INDEX);
 
       /* execute some code */
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();

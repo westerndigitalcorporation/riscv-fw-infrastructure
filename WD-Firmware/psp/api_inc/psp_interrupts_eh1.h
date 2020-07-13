@@ -48,10 +48,13 @@ typedef enum pspInterruptCause
    E_SUPERVISOR_EXTERNAL_CAUSE       = 9,
    E_RESERVED_EXTERNAL_CAUSE         = 10,
    E_MACHINE_EXTERNAL_CAUSE          = 11,
+   E_LAST_COMMON_CAUSE               = 12,
+   /* EH1 specific interrupt causes */
+   E_FIRST_EH1_CAUSE                 = 27,
    E_MACHINE_INTERNAL_TIMER1_CAUSE   = 28,
    E_MACHINE_INTERNAL_TIMER0_CAUSE   = 29,
    E_MACHINE_CORRECTABLE_ERROR_CAUSE = 30,
-   E_LAST_CAUSE
+   E_LAST_EH1_CAUSE
 } ePspInterruptCause_t;
 
 /* Exceptions */

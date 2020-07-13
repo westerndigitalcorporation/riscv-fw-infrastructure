@@ -55,7 +55,7 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 */
 /* The stack used by interrupt service routines */
 #if (0 == D_ISR_STACK_SIZE)
-  #error "ISR Stack size is not defined"
+  #error "D_ISR_STACK_SIZE is not defined"
 #else
   static /*D_PSP_DATA_SECTION*/ D_PSP_ALIGNED(16) pspStack_t udISRStack[ D_ISR_STACK_SIZE ] ;
   const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
@@ -63,6 +63,7 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 
 /* Exception handlers */
 D_PSP_DATA_SECTION pspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
+                       pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
@@ -114,9 +115,13 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrCorrErrCntIntHandler     = pspDef
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
    pspInterruptHandler_t fptrFunc;
+   u32_t uiInterruptsState;
 
    M_PSP_ASSERT((NULL != fptrInterruptHandler) && (E_LAST_COMMON_CAUSE > uiInterruptCause) &&
-            (D_PSP_FIRST_EH1_INT_CAUSE <= uiInterruptCause) && (E_LAST_EH1_CAUSE > uiInterruptCause));
+            (E_FIRST_EH1_CAUSE < uiInterruptCause) && (E_LAST_EH1_CAUSE > uiInterruptCause));
+
+   /* Disable interrupts */
+   pspInterruptsDisable(&uiInterruptsState);
 
    switch (uiInterruptCause)
    {
@@ -185,6 +190,9 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
         break;
    }
 
+   /* Restore interrupts */
+   pspInterruptsRestore(uiInterruptsState);
+
    return fptrFunc;
 }
 
@@ -200,7 +208,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterrup
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_COMMON);
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_CAUSE);
 
    fptrFunc = g_fptrExceptions_ints[uiExceptionCause];
 
@@ -262,6 +270,9 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 void pspInterruptsSetVectorTableAddress(void* pVectTable)
 {
   u32_t uiInterruptsState;
+
+  /* Assert if vector-table address is NULL */
+  M_PSP_ASSERT(NULL != pVectTable)
 
   /* Disable interrupts */
   pspInterruptsDisable(&uiInterruptsState);

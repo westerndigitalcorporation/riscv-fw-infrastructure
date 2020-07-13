@@ -65,7 +65,7 @@
 void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 {
   #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
-  #error "MTIME/MTIMECMP address definition is missing"
+    #error "D_MTIME_ADDRESS or D_MTIMECMP_ADDRESS is not defined"
   #endif
 
   /* Set the mtime and mtimecmp (memory-mapped registers) per privileged spec */

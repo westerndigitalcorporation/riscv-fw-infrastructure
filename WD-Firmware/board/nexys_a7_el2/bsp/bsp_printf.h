@@ -20,8 +20,8 @@
 * @brief  header file for printf
 */
 
-#ifndef __PRINTF_H__
-#define __PRINTF_H__
+#ifndef __BSP_PRINTF_H__
+#define __BSP_PRINTF_H__
 
 #include "psp_types.h"
 
@@ -30,4 +30,4 @@ void   uartInit(void);
 void   printfSetUartStatus(u08_t ucStatus);
 u08_t  printfGetUartStatus(void);
 
-#endif //__PRINTF_H__
+#endif //__BSP_PRINTF_H__

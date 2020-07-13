@@ -30,7 +30,6 @@
 * definitions
 */
 
-
 /**
 * macros
 */
@@ -66,7 +65,8 @@
                                  asm volatile ("nop"); \
                               }
 
-
+/* Convert mSec duration to number of clock cycles */
+#define M_DEMO_MSEC_TO_CYCLES(duration)   (duration * (D_CLOCK_RATE / D_PSP_MSEC))
 
 /**
 * types

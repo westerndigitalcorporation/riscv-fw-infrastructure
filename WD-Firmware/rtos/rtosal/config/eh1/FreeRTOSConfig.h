@@ -95,34 +95,34 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configCLINT_BASE_ADDRESS                CLINT_CTRL_ADDR
-#define configUSE_PREEMPTION                    1
-#define configCPU_CLOCK_HZ                      265000000
+#define configCLINT_BASE_ADDRESS            CLINT_CTRL_ADDR
+#define configUSE_PREEMPTION              1
+#define configCPU_CLOCK_HZ                265000000
 #ifdef D_CLOCK_RATE
    #define configRTC_CLOCK_HZ D_CLOCK_RATE      /* If the clock rate is already defined, take it here */
 #else
    #define configRTC_CLOCK_HZ 32768
 #endif
 #ifdef D_TICK_TIME_MS                           /* If D_TICK_TIME_MS is already defined, use it to calculate configTICK_RATE_HZ */
-   #define configTICK_RATE_HZ                   1000/D_TICK_TIME_MS
+   #define configTICK_RATE_HZ                1000/D_TICK_TIME_MS
 #else
-   #define configTICK_RATE_HZ                   250
+   #define configTICK_RATE_HZ                250
 #endif
-#define configMAX_PRIORITIES                    3
-#define configMINIMAL_STACK_SIZE                450 /* [NR] To-do check why in new config it is set to 2*70 */
-#define configMAX_TASK_NAME_LEN                 16
-#define configUSE_16_BIT_TICKS                  0
-#define configIDLE_SHOULD_YIELD                 1
-#define configUSE_TASK_NOTIFICATIONS            1
-#define configUSE_MUTEXES                       1
-#define configQUEUE_REGISTRY_SIZE               10
-#define configUSE_QUEUE_SETS                    0
-#define configUSE_TIME_SLICING                  1
-#define configUSE_NEWLIB_REENTRANT              0
-#define configENABLE_BACKWARD_COMPATIBILITY     0
-#define configUSE_RECURSIVE_MUTEXES             0
-#define configUSE_APPLICATION_TASK_TAG          0
-#define configUSE_COUNTING_SEMAPHORES           1
+#define configMAX_PRIORITIES                3
+#define configMINIMAL_STACK_SIZE            450 /* [NR] To-do check why in new config it is set to 2*70 */
+#define configMAX_TASK_NAME_LEN             16
+#define configUSE_16_BIT_TICKS              0
+#define configIDLE_SHOULD_YIELD             1
+#define configUSE_TASK_NOTIFICATIONS        1
+#define configUSE_MUTEXES                   1
+#define configQUEUE_REGISTRY_SIZE           10
+#define configUSE_QUEUE_SETS                0
+#define configUSE_TIME_SLICING              1
+#define configUSE_NEWLIB_REENTRANT          0
+#define configENABLE_BACKWARD_COMPATIBILITY 0
+#define configUSE_RECURSIVE_MUTEXES         0
+#define configUSE_APPLICATION_TASK_TAG      0
+#define configUSE_COUNTING_SEMAPHORES       1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 5
 
@@ -156,10 +156,10 @@
 #define configMAX_CO_ROUTINE_PRIORITIES 1
 
 /* Software timer definitions. */
-#define configUSE_TIMERS            1
-#define configTIMER_TASK_PRIORITY   3
-#define configTIMER_QUEUE_LENGTH    5
-#define configTIMER_TASK_STACK_DEPTH  configMINIMAL_STACK_SIZE
+#define configUSE_TIMERS             1
+#define configTIMER_TASK_PRIORITY    3
+#define configTIMER_QUEUE_LENGTH     5
+#define configTIMER_TASK_STACK_DEPTH configMINIMAL_STACK_SIZE
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */

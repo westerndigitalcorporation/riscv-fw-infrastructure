@@ -89,9 +89,9 @@ u32_t g_uTimerPeriod = 0;
 *                          - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 RTOSAL_SECTION u32_t rtosTimerCreate(rtosalTimer_t* pRtosalTimerCb, s08_t *pRtosTimerName,
-                     rtosalTimerHandler_t fptrRtosTimerCallcabk,
-							u32_t uiTimeCallbackParam, u32_t uiAutoActivate,
-							u32_t uiTicks, u32_t uiRescheduleTicks)
+                                     rtosalTimerHandler_t fptrRtosTimerCallcabk,
+                                     u32_t uiTimeCallbackParam, u32_t uiAutoActivate,
+                                     u32_t uiTicks, u32_t uiRescheduleTicks)
 {
    u32_t uiRes;
 #ifdef D_USE_FREERTOS
@@ -366,12 +366,12 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
       }
    }
 #elif D_USE_THREADX
-   #error "Add THREADX appropriate definitions"
+  #error "Add THREADX appropriate definitions"
 #else
-   #error "Add appropriate RTOS definitions"
+  #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 
-   return uiRes;
+  return uiRes;
 }
 
 
@@ -385,7 +385,7 @@ RTOSAL_SECTION u32_t rtosTimerModifyPeriod(rtosalTimer_t* pRtosalTimerCb, u32_t 
 */
 void rtosalTimerSetPeriod(u32_t timerPeriod)
 {
-	g_uTimerPeriod = timerPeriod;
+  g_uTimerPeriod = timerPeriod;
 }
 
 /**
@@ -396,14 +396,14 @@ void rtosalTimerSetPeriod(u32_t timerPeriod)
 */
 void rtosalTimerSetup(void)
 {
-	/* In case g_uTimerPeriod = 0 then there is no point to activate the timer */
-	M_PSP_ASSERT(0 == g_uTimerPeriod);
+  /* In case g_uTimerPeriod = 0 then there is no point to activate the timer */
+  M_PSP_ASSERT(0 == g_uTimerPeriod);
 
-	/* Enable timer interrupt */
-	pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  /* Enable timer interrupt */
+  pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-	/* Activates Core's timer with the calculated period */
-	pspTimerCounterSetupAndRun(E_MACHINE_TIMER, g_uTimerPeriod);
+  /* Activates Core's timer with the calculated period */
+  pspTimerCounterSetupAndRun(E_MACHINE_TIMER, g_uTimerPeriod);
 }
 
 /**
@@ -414,13 +414,13 @@ void rtosalTimerSetup(void)
 */
 void rtosalTimerIntHandler(void)
 {
-	/* Disable Machine-Timer interrupt */
-	pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  /* Disable Machine-Timer interrupt */
+  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-    /* Increment the RTOS tick. */
-    rtosalTick();
+  /* Increment the RTOS tick. */
+  rtosalTick();
 
-    /* Setup the Timer for next round */
-    rtosalTimerSetup();
+  /* Setup the Timer for next round */
+  rtosalTimerSetup();
 }
 

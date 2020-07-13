@@ -39,8 +39,7 @@
 #ifdef D_HI_FIVE1
     #define D_LED_GREEN_ON 0
     #define D_LED_BLUE_ON  1
-
-#elif D_NEXYS_A7
+#elif defined(D_SWERV_EH1) || defined(D_SWERV_EH2) || defined(D_SWERV_EL2)
     #define D_LED_GREEN_ON 'X' //unknown
     #define D_LED_BLUE_ON  'X' //unknown
 #else
@@ -99,7 +98,7 @@ void demoPlatformInit(void);
 * */
 #ifdef D_HI_FIVE1
    void demoOutputMsg(const void *pStr, u32_t uiSize);
-#elif defined(D_NEXYS_A7)
+#elif defined(D_SWERV_EH1) || defined(D_SWERV_EH2) || defined(D_SWERV_EL2)
    #include "bsp_printf.h"
    #define demoOutputMsg(f_,...)  printfNexys((f_), ##__VA_ARGS__)
 #else

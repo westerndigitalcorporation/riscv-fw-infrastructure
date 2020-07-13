@@ -63,7 +63,7 @@
 void pspTimerSetupMachineTimer(u32_t uiPeriodCycles)
 {
   #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
-    #error "MTIME/MTIMECMP address definition is missing"
+    #error "D_MTIME_ADDRESS or D_MTIMECMP_ADDRESS is not defined"
   #endif
 
   volatile u64_t *pMtime    = (u64_t*)D_MTIME_ADDRESS;
@@ -107,6 +107,7 @@ void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
       M_PSP_WRITE_CSR(D_PSP_MITBND0_NUM, uiThen);
       /* Enable Timer0 counting */
       M_PSP_SET_CSR(D_PSP_MITCTL0_NUM, D_PSP_MITCTL_EN_MASK);
+      break;
     case E_INTERNAL_TIMER1:
       /* Read Timer1 counter */
       uiNow = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
@@ -115,6 +116,7 @@ void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
       M_PSP_WRITE_CSR(D_PSP_MITBND1_NUM, uiThen);
       /* Enable Timer1 counting */
       M_PSP_SET_CSR(D_PSP_MITCTL1_NUM, D_PSP_MITCTL_EN_MASK);
+      break;
     default:
       break;
   }
