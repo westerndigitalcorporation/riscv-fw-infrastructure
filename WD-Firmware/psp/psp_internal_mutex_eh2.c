@@ -60,7 +60,7 @@
 * @brief - Initialize (zero) the internal PSP mutexs. Used by PSP for multi-harts safe functionality
 *
 */
-void pspInternalMutexInit(void)
+D_PSP_TEXT_SECTION void pspInternalMutexInit(void)
 {
   /* Set all mutexs used internally by PSP to "Unlocked" state */
   pspMemsetBytes((void*)D_PSP_DCCM_SECTION_ADDRESS, D_PSP_MUTEX_UNLOCKED, D_PSP_NUM_OF_INTERNAL_MUTEXS);

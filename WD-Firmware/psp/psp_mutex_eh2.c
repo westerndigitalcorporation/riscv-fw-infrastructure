@@ -88,7 +88,7 @@ u32_t g_uiAppNumberOfMutexs;
 * @brief - Initialize (zero) mutexs that PSP is using internally for multi-harts safe activities
 *
 */
-void pspMutexInitPspMutexs(void)
+D_PSP_TEXT_SECTION void pspMutexInitPspMutexs(void)
 {
   /* Call Internal-Mutexs module to do its initializations */
   pspInternalMutexInit();
@@ -101,7 +101,7 @@ void pspMutexInitPspMutexs(void)
 *
 * @return - TRUE / FALSE
 */
-u32_t pspIsMutexAddressValid(u32_t* uiMutexAddress)
+D_PSP_TEXT_SECTION u32_t pspIsMutexAddressValid(u32_t* uiMutexAddress)
 {
   u32_t uiValid = D_PSP_FALSE;
 
@@ -122,7 +122,7 @@ u32_t pspIsMutexAddressValid(u32_t* uiMutexAddress)
 * @parameter - Number of mutexs in the heap
 *
 */
-void pspMutexHeapInit(pspMutex_t* pMutexHeapAddress, u32_t uiNumOfmutexs)
+D_PSP_TEXT_SECTION void pspMutexHeapInit(pspMutex_t* pMutexHeapAddress, u32_t uiNumOfmutexs)
 {
   /* Assert if address is NULL or number of mutexs is 0 */
   M_PSP_ASSERT((NULL != pMutexHeapAddress) && (0 != uiNumOfmutexs)) ;
@@ -148,7 +148,7 @@ void pspMutexHeapInit(pspMutex_t* pMutexHeapAddress, u32_t uiNumOfmutexs)
 *
 * @return - Address of the created mutex. In case of failure return NULL.
 */
-pspMutex_t* pspMutexCreate(void)
+D_PSP_TEXT_SECTION pspMutex_t* pspMutexCreate(void)
 {
   u08_t             ucMutexIndex;               /* Index used for scanning */
   pspMutexMngmnt_t* pMutexMnmgmnt;              /* Pointer to a mutex management information structure */
@@ -199,7 +199,7 @@ pspMutex_t* pspMutexCreate(void)
 *
 * @return    - In case of success - return NULL. In case of failure - return the given mutex address.
 */
-pspMutex_t* pspMutexDestroy(pspMutex_t* pMutex)
+D_PSP_TEXT_SECTION pspMutex_t* pspMutexDestroy(pspMutex_t* pMutex)
 {
   u08_t             ucMutexIndex;
   u32_t             uiMutexHeapMngmntAddress;   /* Start address of 'management' section in the mutexs heap */
@@ -246,7 +246,7 @@ pspMutex_t* pspMutexDestroy(pspMutex_t* pMutex)
 * @parameter - pointer to the mutex to lock
 *
 */
-void pspMutexAtomicLock(pspMutex_t* pMutex)
+D_PSP_TEXT_SECTION void pspMutexAtomicLock(pspMutex_t* pMutex)
 {
   /* Verify mutex address validity*/
   M_PSP_ASSERT(D_PSP_TRUE == pspIsMutexAddressValid(pMutex));
@@ -261,7 +261,7 @@ void pspMutexAtomicLock(pspMutex_t* pMutex)
 * @parameter - pointer to the mutex to free
 *
 */
-void pspMutexAtomicUnlock(pspMutex_t* pMutex)
+D_PSP_TEXT_SECTION void pspMutexAtomicUnlock(pspMutex_t* pMutex)
 {
   /* Verify mutex address validity*/
   M_PSP_ASSERT(D_PSP_TRUE == pspIsMutexAddressValid(pMutex));

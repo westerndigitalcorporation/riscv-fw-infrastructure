@@ -67,7 +67,7 @@
 *           ***Note*** Pay attention to register your ISR for E_MACHINE_CORRECTABLE_ERROR_CAUSE interrupt
 *
 */
-void pspCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiThreshold)
+D_PSP_TEXT_SECTION void pspCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiThreshold)
 {
   u32_t uiCsrValueToSet = 0 ;
 

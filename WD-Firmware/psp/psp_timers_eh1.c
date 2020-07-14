@@ -60,7 +60,7 @@
 * @parameter - uiPeriodCycles - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-void pspTimerSetupMachineTimer(u32_t uiPeriodCycles)
+D_PSP_TEXT_SECTION void pspTimerSetupMachineTimer(u32_t uiPeriodCycles)
 {
   #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
     #error "D_MTIME_ADDRESS or D_MTIMECMP_ADDRESS is not defined"
@@ -88,7 +88,7 @@ void pspTimerSetupMachineTimer(u32_t uiPeriodCycles)
 * @parameter - uiPeriodCycles - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
+D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 {
   u32_t uiNow, uiThen;
 
@@ -130,7 +130,7 @@ void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
 * @return u64_t      - Timer counter value
 *
 ***************************************************************************************************/
-u64_t pspTimerCounterGet(u32_t uiTimer)
+D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
 {
   u64_t udCounter = 0;
 
@@ -162,7 +162,7 @@ u64_t pspTimerCounterGet(u32_t uiTimer)
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-u64_t pspTimeCompareCounterGet(u32_t uiTimer)
+D_PSP_TEXT_SECTION u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 {
   u64_t udCounterCompare = 0;
 
@@ -192,7 +192,7 @@ u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-void pspTimerEnableCountInSleepMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
@@ -215,7 +215,7 @@ void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-void pspTimerDisableCountInSleepMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
@@ -238,7 +238,7 @@ void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-void pspTimerEnableCountInStallMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspTimerEnableCountInStallMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 
@@ -261,7 +261,7 @@ void pspTimerEnableCountInStallMode(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-void pspTimerDisableCountInStallMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspTimerDisableCountInStallMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((E_INTERNAL_TIMER0 == uiTimer) || (E_INTERNAL_TIMER1 == uiTimer));
 

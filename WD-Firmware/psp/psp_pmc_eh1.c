@@ -59,7 +59,7 @@
 *
 * @return none
 */
-void pspPmcHalt(void)
+D_PSP_TEXT_SECTION void pspPmcHalt(void)
 {
   M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_PMC_INITIATE_HALT);
 }
@@ -71,7 +71,7 @@ void pspPmcHalt(void)
 *
 * @return none
 */
-void pspPmcStall(u32_t uiTicks)
+D_PSP_TEXT_SECTION void pspPmcStall(u32_t uiTicks)
 {
   M_PSP_WRITE_CSR(D_PSP_MCPC_NUM, uiTicks);
 }

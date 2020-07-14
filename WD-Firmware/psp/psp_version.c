@@ -62,7 +62,7 @@
 * @param input: pointer to PSP version structure
 *
 */
-void pspGetVersion(pspVersion_t *pPspVersion)
+D_PSP_TEXT_SECTION void pspGetVersion(pspVersion_t *pPspVersion)
 {
   pPspVersion->usMajor = (u16_t)PSP_VERSION_MAJOR;
   pPspVersion->usMinor = (u16_t)PSP_VERSION_MINOR;

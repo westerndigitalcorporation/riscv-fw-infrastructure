@@ -197,7 +197,7 @@ D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
  *
  * @parameter - Hart number to delegate the NMI to
  */
-void pspNmiSetDelegation(u32_t uiHartNumber)
+D_PSP_TEXT_SECTION void pspNmiSetDelegation(u32_t uiHartNumber)
 {
   /* Assert on Hart number */
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
@@ -218,7 +218,7 @@ void pspNmiSetDelegation(u32_t uiHartNumber)
  *
  * @parameter - Hart number to clear NMI delegation from
  */
-void pspNmiClearDelegation(u32_t uiHartNumber)
+D_PSP_TEXT_SECTION void pspNmiClearDelegation(u32_t uiHartNumber)
 {
   /* Assert on Hart number */
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
@@ -239,7 +239,7 @@ void pspNmiClearDelegation(u32_t uiHartNumber)
  * @parameter - Hart number
  * @return    - 0/1 to indicate whether the NMI handling is delegated to the given hart-number or not
  */
-u32_t pspIsNmiDelegatedToHart(u32_t uiHartNumber)
+D_PSP_TEXT_SECTION u32_t pspIsNmiDelegatedToHart(u32_t uiHartNumber)
 {
   u32_t uiIsDelegated = 0;
 

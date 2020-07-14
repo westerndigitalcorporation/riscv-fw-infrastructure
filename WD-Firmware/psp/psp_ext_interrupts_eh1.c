@@ -84,7 +84,7 @@ D_PSP_DATA_SECTION D_PSP_ALIGNED(1024) pspInterruptHandler_t G_Ext_Interrupt_Han
 /**
 * @brief - Set external interrupts vector-table address at MEIVT CSR
 */
-void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
+D_PSP_TEXT_SECTION void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
 {
   u32_t uiInterruptsState;
 
@@ -225,7 +225,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 * @param threshold = nesting priority threshold to be programmed to PIC
 * @return None
 */
-void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold)
+D_PSP_TEXT_SECTION void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold)
 {
   u32_t uiInterruptsState;
 

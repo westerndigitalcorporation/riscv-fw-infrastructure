@@ -61,7 +61,7 @@
 *
 * @return - address in the DCCM area, free for usage
 */
-u32_t pspAtomicsGetAddressForAtomicOperations(void)
+D_PSP_TEXT_SECTION u32_t pspAtomicsGetAddressForAtomicOperations(void)
 {
   u32_t uiDccmAddress = M_PSP_END_OF_PSP_AREA_IN_DCCM();
 

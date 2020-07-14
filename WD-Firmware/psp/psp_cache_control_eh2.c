@@ -62,7 +62,7 @@
 *
 * @parameter - memory Id
 */
-void pspCacheControlEnableIcache(u32_t uiMemoryRegionId)
+D_PSP_TEXT_SECTION void pspCacheControlEnableIcache(u32_t uiMemoryRegionId)
 {
   M_PSP_ASSERT(D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS > uiMemoryRegionId);
 
@@ -80,7 +80,7 @@ void pspCacheControlEnableIcache(u32_t uiMemoryRegionId)
 *
 * @parameter - memory Id
 */
-void pspCacheControlEnableSideEfect(u32_t uiMemoryRegionId)
+D_PSP_TEXT_SECTION void pspCacheControlEnableSideEfect(u32_t uiMemoryRegionId)
 {
   M_PSP_ASSERT(D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS > uiMemoryRegionId);
 
@@ -97,7 +97,7 @@ void pspCacheControlEnableSideEfect(u32_t uiMemoryRegionId)
 *
 * @parameter - memory Id
 */
-void pspCacheControlDisableIcache(u32_t uiMemoryRegionId)
+D_PSP_TEXT_SECTION void pspCacheControlDisableIcache(u32_t uiMemoryRegionId)
 {
   M_PSP_ASSERT(D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS > uiMemoryRegionId);
 
@@ -115,7 +115,7 @@ void pspCacheControlDisableIcache(u32_t uiMemoryRegionId)
 *
 * @parameter - memory Id
 */
-void pspCacheControlDisableSideEfect(u32_t uiMemoryRegionId)
+D_PSP_TEXT_SECTION void pspCacheControlDisableSideEfect(u32_t uiMemoryRegionId)
 {
   M_PSP_ASSERT(D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS > uiMemoryRegionId);
 
