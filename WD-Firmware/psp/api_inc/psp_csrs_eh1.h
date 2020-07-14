@@ -33,7 +33,7 @@
 */
 /* PIC base address - for memory-mapped CSRs */
 #if (0 == D_PIC_BASE_ADDRESS)
-    #error "Definition of PIC base-address is missing"
+    #error "D_PIC_BASE_ADDRESS is not defined"
 #else
     #define PSP_PIC_BASE_ADDRESS D_PIC_BASE_ADDRESS
 #endif
@@ -77,6 +77,7 @@
 
 /* meicpct CSR */
 #define D_PSP_MEICPCT_NUM            0xBCA      /* External interrupts claim ID / priority level capture trigger  */
+#define D_PSP_MEICPCT_CAPTURE_MASK   0x1        /* Write '1' to capture currently highest-priority interrupt and its corresponding priority level */
 
 /* meicidpl CSR*/
 #define D_PSP_MEICIDPL_NUM           0xBCB      /* External interrupts claim IDs priority level  */

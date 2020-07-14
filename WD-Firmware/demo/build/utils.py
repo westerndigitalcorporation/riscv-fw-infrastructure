@@ -245,3 +245,9 @@ def fnExecuteCommand(strCmd, strErr = ""):
       print ("Error: %s" % strErr)
     exit(1)
 
+def fnGetDefine(strDefine, listDefines):
+  for strdef in listDefines:
+    if strDefine in strdef:
+      return strdef.split("=")[0]
+  return None
+  

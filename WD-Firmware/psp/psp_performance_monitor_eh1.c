@@ -64,7 +64,7 @@
 *
 * @return No return value
 */
-void pspEnableAllPerformanceMonitor(u32_t uiMonitorEnBit)
+D_PSP_TEXT_SECTION void pspEnableAllPerformanceMonitor(u32_t uiMonitorEnBit)
 {
   M_PSP_SET_CSR(D_PSP_MGPMC_NUM, uiMonitorEnBit & D_PSP_MGMPC_MASK);
 }
@@ -83,7 +83,7 @@ void pspEnableAllPerformanceMonitor(u32_t uiMonitorEnBit)
 *
 * @return No return value
 */
-void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEvent)
+D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEvent)
 {
   switch (eCounter)
   {
@@ -119,7 +119,7 @@ void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEv
 *
 * @return u32_t      – Counter value
 */
-u32_t pspPerformanceCounterGet(u32_t eCounter)
+D_PSP_TEXT_SECTION u32_t pspPerformanceCounterGet(u32_t eCounter)
 {
   u32_t uiCounterVal = 0;
   switch (eCounter)

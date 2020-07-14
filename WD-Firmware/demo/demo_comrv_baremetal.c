@@ -230,8 +230,6 @@ typedef void (*funcPtr)(void);
 * external prototypes
 */
 
-extern void psp_vect_table(void);
-
 /**
 * global variables
 */
@@ -318,7 +316,7 @@ void demoStart(void)
    M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&psp_vect_table);
+   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
    /* mark that comrv init shall load comrv tables */
    stComrvInitArgs.ucCanLoadComrvTables = 1;

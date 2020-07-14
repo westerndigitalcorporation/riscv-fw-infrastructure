@@ -147,7 +147,7 @@
 /*******************************************************/
 
 /* order device I/O and memory accesses */
-#define M_PSP_INST_FENCE()          asm volatile( "fence" )
+#define M_PSP_INST_FENCE()          asm volatile( "fence rw,rw" )
 /* synchronize the instruction and data streams */
 #define M_PSP_INST_FENCEI()         asm volatile( "fence.i" )
 
@@ -161,6 +161,8 @@
 #define M_PSP_SET_REGISTER_32(reg, bits)     ((*(volatile u32_t *)(void*)(reg)) |= (bits))  //need to use _Uncached u32_t if we have d$
 #define M_PSP_CLEAR_REGISTER_32(reg, bits)   ((*(volatile u32_t *)(void*)(reg)) &= (~bits)) //need to use _Uncached u32_t if we have d$
 
+/* Get Core-Id */
+#define M_PSP_GET_CORE_ID()    M_PSP_READ_CSR(D_PSP_MHARTID_NUM)
 
 /* TODO: - this #ifdef is temporarily here. Should replace it with proper definitions of statements in this file (e.g. "asm volatile")
  *         and wrapping them with this protection */

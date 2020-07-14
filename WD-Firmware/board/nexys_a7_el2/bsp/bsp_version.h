@@ -19,8 +19,8 @@
 * @date   24.02.2020
 * @brief  Supplies SweRVolf version information
 */
-#ifndef __VERSION_H__
-#define __VERSION_H__
+#ifndef __BSP_VERSION_H__
+#define __BSP_VERSION_H__
 
 /* version sturct */
 typedef struct swervolfVersion
@@ -41,5 +41,5 @@ typedef struct swervolfVersion
 */
 void versionGetSwervolfVer(swervolfVersion_t *pSwervolfVersion);
 
-#endif //__VERSION_H__
+#endif //__BSP_VERSION_H__
 

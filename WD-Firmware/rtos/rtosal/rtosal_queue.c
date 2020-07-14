@@ -88,20 +88,21 @@ RTOSAL_SECTION u32_t rtosalMsgQueueCreate(rtosalMsgQueue_t* pRtosalMsgQueueCb, v
                            s08_t* pRtosalMsgQueueName)
 {
    u32_t uiRes;
+   void* pQueueCB;
    // Todo: we can only allow message size of min 4bytes . we need to reutrn error otherwise 
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueCb, pRtosalMsgQueueCb == NULL, D_RTOSAL_QUEUE_ERROR);
 
 #ifdef D_USE_FREERTOS
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosMsgQueueBuffer, pRtosMsgQueueBuffer == NULL, D_RTOSAL_PTR_ERROR);
    /* create the queue */
-   pRtosalMsgQueueCb->msgQueueHandle = xQueueCreateStatic(uiRtosMsgQueueSize, uiRtosMsgQueueItemSize,
-                                           (uint8_t*)pRtosMsgQueueBuffer,
-                                           (StaticQueue_t*)pRtosalMsgQueueCb->cMsgQueueCB);
+   pQueueCB = xQueueCreateStatic(uiRtosMsgQueueSize, uiRtosMsgQueueItemSize,
+                                 (uint8_t*)pRtosMsgQueueBuffer,
+                                 (StaticQueue_t*)pRtosalMsgQueueCb->cMsgQueueCB);
    /* queue created successfully */
-   if (pRtosalMsgQueueCb->msgQueueHandle != NULL)
+   if (pRtosalMsgQueueCb->cMsgQueueCB == pQueueCB)
    {
       /* assign a name to the created queue */
-      vQueueAddToRegistry(pRtosalMsgQueueCb->msgQueueHandle, (const char*)pRtosalMsgQueueName);
+      vQueueAddToRegistry((void*)pRtosalMsgQueueCb->cMsgQueueCB, (const char*)pRtosalMsgQueueName);
       uiRes = D_RTOSAL_SUCCESS;
    }
    else
@@ -136,7 +137,7 @@ RTOSAL_SECTION u32_t rtosalMsgQueueDestroy(rtosalMsgQueue_t* pRtosalMsgQueueCb)
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMsgQueueCb, pRtosalMsgQueueCb == NULL, D_RTOSAL_QUEUE_ERROR);
 
 #ifdef D_USE_FREERTOS
-   vQueueDelete(pRtosalMsgQueueCb->msgQueueHandle);
+   vQueueDelete((void*)pRtosalMsgQueueCb->cMsgQueueCB);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"
@@ -192,11 +193,11 @@ u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQu
       if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
       {
          /* send the queue message */
-         uiRes = xQueueSendToFrontFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
+         uiRes = xQueueSendToFrontFromISR((void*)pRtosalMsgQueueCb->cMsgQueueCB, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
       }
       else
       {
-         uiRes = xQueueSendToFront(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, uiWaitTimeoutTicks);
+         uiRes = xQueueSendToFront((void*)pRtosalMsgQueueCb->cMsgQueueCB, pRtosalMsgQueueItem, uiWaitTimeoutTicks);
       }
    }
    /* send message to the queue back */
@@ -205,11 +206,11 @@ u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb, const void* pRtosalMsgQu
       /* msgQueueSend invoked from an ISR context */
       if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
       {
-         uiRes = xQueueSendToBackFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
+         uiRes = xQueueSendToBackFromISR((void*)pRtosalMsgQueueCb->cMsgQueueCB, pRtosalMsgQueueItem, &xHigherPriorityTaskWoken);
       }
       else
       {
-         uiRes = xQueueSendToBack(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueItem, uiWaitTimeoutTicks);
+         uiRes = xQueueSendToBack((void*)pRtosalMsgQueueCb->cMsgQueueCB, pRtosalMsgQueueItem, uiWaitTimeoutTicks);
       }
    } /* if (uiSendToFront == D_RTOSAL_TRUE) */
 
@@ -294,14 +295,14 @@ u32_t rtosalMsgQueueRecieve(rtosalMsgQueue_t* pRtosalMsgQueueCb, void* pRtosalMs
    /* rtosalMsgQueueRecieve invoked from an ISR context */
    if (rtosalIsInterruptContext() == D_RTOSAL_INT_CONTEXT)
    {
-      uiRes = xQueueReceiveFromISR(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, &xHigherPriorityTaskWoken);
+      uiRes = xQueueReceiveFromISR((void*)pRtosalMsgQueueCb->cMsgQueueCB, pRtosalMsgQueueDstBuf, &xHigherPriorityTaskWoken);
    }
    else
    {
-      uiRes = xQueueReceive(pRtosalMsgQueueCb->msgQueueHandle, pRtosalMsgQueueDstBuf, uiWaitTimeoutTicks);
+      uiRes = xQueueReceive((void*)pRtosalMsgQueueCb->cMsgQueueCB, pRtosalMsgQueueDstBuf, uiWaitTimeoutTicks);
    }
 
-   /* message sent successfuly */
+   /* message sent successfully */
    if (uiRes == pdPASS)
    {
       uiRes = D_RTOSAL_SUCCESS;

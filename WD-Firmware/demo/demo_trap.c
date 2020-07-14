@@ -47,7 +47,6 @@
 /**
 * external prototypes
 */
-extern void psp_vect_table(void);
 
 /**
 * global variables
@@ -81,7 +80,7 @@ void demoIllegalInstructionExceptionHandlingTest(void)
 {
   /* register trap handler */
   /* TODO: Replace trap handler registration with dedicated PSP API */
-  M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
+  M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &M_PSP_VECT_TABLE);
 
   pspRegisterExceptionHandler(demoIllegalInstructionExceptionHandler, E_EXC_ILLEGAL_INSTRUCTION);
 

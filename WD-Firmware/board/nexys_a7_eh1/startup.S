@@ -107,9 +107,9 @@ _start:
 
   /* Call global constructors *//*
   la a0, __libc_fini_array
-  call atexit
+  call atexit */
   call __libc_init_array
-  */
+
 
 #  #hart id
 #OS  csrr a0, mhartid

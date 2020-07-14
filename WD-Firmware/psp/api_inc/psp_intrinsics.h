@@ -51,7 +51,29 @@
 #define D_PSP_MCAUSE  mcause
 #define D_PSP_MEPC    mepc
 
+/**
+* types
+*/
 
+/**
+* local prototypes
+*/
+
+/**
+* external prototypes
+*/
+
+/**
+* macros
+*/
+
+/**
+* global variables
+*/
+
+/**
+* APIs
+*/
 
 #endif /* defined (__GNUC__) || defined (__clang__) */
 

@@ -52,8 +52,6 @@
 /**
 * external prototypes
 */
-/* General vector table */
-extern void psp_vect_table(void);
 
 /**
 * global variables
@@ -94,8 +92,8 @@ void demoCorrErrIsr(void)
 *********************************************************************************************************************************************/
 void demoStart(void)
 {
-   /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&psp_vect_table);
+  /* Register interrupt vector */
+  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
    /* Register correctable-error-counter ISR*/
    pspRegisterInterruptHandler(demoCorrErrIsr,E_MACHINE_CORRECTABLE_ERROR_CAUSE);

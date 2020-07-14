@@ -34,22 +34,33 @@
 #include "psp_macros.h"
 #include "psp_pragmas.h"
 #include "psp_attributes.h"
+#include "psp_memory_utils.h"
+#include "psp_int_vect.h"
 #include "psp_version.h"
 #ifdef D_HI_FIVE1
-    #include "psp_timers_hifive1.h"
-    #include "psp_interrupts_hifive1.h"
-#elif D_NEXYS_A7  /* Nati TO DO - change D_NEXYS_A7 all over the place to EH1 */
-    #include "psp_csrs_eh1.h"
-    #include "psp_timers_eh1.h"
-    #include "psp_interrupts_eh1.h"
-    #include "psp_ext_interrupts_eh1.h"
-    #include "psp_pmc_eh1.h"
-    #include "psp_performance_monitor_eh1.h"
-    #include "psp_nmi_eh1.h"
-    #include "psp_cache_control_eh1.h"
-    #include "psp_corr_err_cnt_eh1.h"
+  #include "psp_timers_hifive1.h"
+  #include "psp_interrupts_hifive1.h"
+#elif D_SWERV_EH1
+  #include "psp_csrs_eh1.h"
+  #include "psp_timers_eh1.h"
+  #include "psp_interrupts_eh1.h"
+  #include "psp_ext_interrupts_eh1.h"
+  #include "psp_pmc_eh1.h"
+  #include "psp_performance_monitor_eh1.h"
+  #include "psp_nmi_eh1.h"
+  #include "psp_cache_control_eh1.h"
+  #include "psp_corr_err_cnt_eh1.h"
 #endif
-
+#ifdef D_SWERV_EH2
+  #include "psp_csrs_eh2.h"
+  #include "psp_macros_eh2.h"
+  #include "psp_ext_interrupts_eh2.h"
+  #include "psp_nmi_eh2.h"
+  #include "psp_mutex_eh2.h"
+  #include "psp_atomics_eh2.h"
+  #include "psp_intrinsics_eh2.h"
+  #include "psp_int_vect_eh2.h"
+#endif
 /**
 * definitions
 */

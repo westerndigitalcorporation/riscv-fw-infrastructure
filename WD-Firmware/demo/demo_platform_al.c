@@ -26,7 +26,7 @@
 */
 #if defined(D_HI_FIVE1)
    #include <unistd.h>
-#elif defined(D_NEXYS_A7)
+#elif defined(D_SWERV_EH1) || defined(D_SWERV_EH2) ||defined(D_SWERV_EL2)
    #include "bsp_printf.h"
    #include "bsp_mem_map.h"
    #include "bsp_version.h"
@@ -93,7 +93,7 @@ void demoUartInit(void)
 #ifdef D_HI_FIVE1
    /* Empty implementation */
 #endif
-#ifdef D_NEXYS_A7
+#ifdef D_SWERV_EH1
   swervolfVersion_t stSwervolfVersion;
 
   versionGetSwervolfVer(&stSwervolfVersion);
@@ -136,7 +136,7 @@ void demoPlatformInit(void)
 {
 #ifdef D_HI_FIVE1
   _init();
-#elif defined(D_NEXYS_A7)
+#elif defined(D_SWERV_EH1) || defined(D_SWERV_EH2) ||defined(D_SWERV_EL2)
   // Nada for now
 #endif
   /* init LED GPIO*/
@@ -186,7 +186,7 @@ void demoOutputToggelLed(void)
     default:
        break;
   }
-#elif defined(D_NEXYS_A7)
+#elif defined(D_SWERV_EH1) || defined(D_SWERV_EH2) ||defined(D_SWERV_EL2)
   demoOutpuLed(ucLedAct);
 #endif
 
@@ -202,7 +202,7 @@ void demoOutputToggelLed(void)
 * */
 void demoOutpuLed(const u08_t ucOnOffMode)
 {
-#ifdef D_NEXYS_A7
+#ifdef D_SWERV_EH1
   M_PSP_ASSERT(ucOnOffMode>1);
   M_PSP_WRITE_REGISTER_32(D_LED_BASE_ADDRESS, ucOnOffMode);
 #endif

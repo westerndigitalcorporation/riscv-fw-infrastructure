@@ -86,7 +86,7 @@ rtosalTimerTickHandler_t fptrTimerTickHandler ;
 *                                     for no time slicing 
 * @param  uiAutoStart               - D_RTOSAL_AUTO_START: start run
 *                                     D_RTOSAL_DONT_START: task will be suspend. rtosalTaskResume() 
-*									  must be invoked to run the task
+*                    must be invoked to run the task
 * @param  uiPreemptThuiReshold      - Priority threshold, any priority which is higher then uiPreemptThuiReshold
 *                                     will cause preemprion to this task. (value must be below or equal to uiPriority value)
 *                                     If uiPreemptThuiReshold = uiPriority then this task will never be preempted  
@@ -101,9 +101,9 @@ rtosalTimerTickHandler_t fptrTimerTickHandler ;
 *                                  - D_RTOSAL_CALLER_ERROR - The caller can not call this function
 */
 RTOSAL_SECTION u32_t rtosalTaskCreate(rtosalTask_t* pRtosalTaskCb, const s08_t* pTaskName, rtosalPriority_t uiPriority,
-                     rtosalTaskHandler_t fptrRtosTaskEntryPoint, u32_t uiTaskEntryPointParameter,
-                     u32_t uiStackSize, void * pStackBuffer, u32_t uiTimeSliceTicks,
-                     u32_t uiAutoStart, u32_t uiPreemptThuiReshold)
+                                      rtosalTaskHandler_t fptrRtosTaskEntryPoint, u32_t uiTaskEntryPointParameter,
+                                      u32_t uiStackSize, void * pStackBuffer, u32_t uiTimeSliceTicks,
+                                      u32_t uiAutoStart, u32_t uiPreemptThuiReshold)
 {
    u32_t uiRes;
 
@@ -182,7 +182,7 @@ RTOSAL_SECTION u32_t rtosalTaskDestroy(rtosalTask_t* pRtosalTaskCb)
 *                      - D_RTOSAL_CALLER_ERROR   - The caller can not call this function
 */
 RTOSAL_SECTION u32_t rtosalTaskPriorityChange(rtosalTask_t* pRtosalTaskCb, u32_t uiNewPriority,
-                               u32_t *pOldPriority)
+                                              u32_t *pOldPriority)
 {
    u32_t uiRes;
 
@@ -379,25 +379,25 @@ RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 */
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
-	/* Register interrupt vector */
-	pspInterruptsSetVectorTableAddress(&rtosal_vect_table);
+  /* Register interrupt vector */
+  pspInterruptsSetVectorTableAddress(&rtosal_vect_table);
 
 #ifdef D_USE_FREERTOS
-	/* Initialize the timer-tick handler function pointer to NULL */
-	fptrTimerTickHandler = NULL;
+  /* Initialize the timer-tick handler function pointer to NULL */
+  fptrTimerTickHandler = NULL;
 
-	/* register E_CALL exception handler */
-    pspRegisterExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
+  /* register E_CALL exception handler */
+  pspRegisterExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
 
-    /* register timer interrupt handler */
-    pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
+  /* register timer interrupt handler */
+  pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
 
-    fptrInit(NULL);
-    vTaskStartScheduler();
+  fptrInit(NULL);
+  vTaskStartScheduler();
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"
 #else
-   #error "Add appropriate RTOS definitions"
+  #error "Add appropriate RTOS definitions"
 #endif /* #ifdef D_USE_FREERTOS */
 }
 
@@ -411,8 +411,8 @@ RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 * */
 RTOSAL_SECTION void rtosalEndScheduler( void )
 {
-	/* Not implemented. */
-	for( ;; );
+  /* Not implemented. */
+  for( ;; );
 }
 
 /**
@@ -420,7 +420,7 @@ RTOSAL_SECTION void rtosalEndScheduler( void )
 */
 void rtosalRegisterTimerTickHandler(rtosalTimerTickHandler_t fptrHandler)
 {
-	fptrTimerTickHandler = fptrHandler;
+  fptrTimerTickHandler = fptrHandler;
 }
 
 /**
