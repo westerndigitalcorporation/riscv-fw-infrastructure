@@ -51,11 +51,6 @@
 /* mutex */
 typedef struct rtosalMutex
 {
-#ifdef D_USE_FREERTOS
-   void* mutexHandle;
-#else
-   #error "Add appropriate RTOS definitions"
-#endif /* #ifdef D_USE_FREERTOS */
    s08_t cMutexCB[M_MUTEX_CB_SIZE_IN_BYTES];
 } rtosalMutex_t;
 

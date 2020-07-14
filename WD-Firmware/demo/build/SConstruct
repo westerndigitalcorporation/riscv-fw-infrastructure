@@ -32,7 +32,7 @@ strBsp              = 'bsp_'
 strNexys            = 'nexys_a7_'
 strBoard            = 'board'
 strSconscriptPrefix = 'SConscript_'
-listNexysA7Targets = ['eh1', 'el2']
+listNexysA7Targets = ['eh1','eh2','el2']
 listSupportedTargets = ['hifive1', 'hifive-un']
 listSupportedTargets += listNexysA7Targets
 listDependencies    = ['libftdi1-2']
@@ -139,8 +139,8 @@ if Env['TARGET_BOARD'] not in  objDemo.listDemoSpecificTargets:
   print "Error:\tDemo supported targets: %s  " % (" | ".join(objDemo.listDemoSpecificTargets))
   exit(1)
 if Env['TARGET_BOARD'] in listNexysA7Targets:
-	strBsp       = strBsp + strNexys
-	strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, strNexys+Env['TARGET_BOARD'])
+    strBsp       = strBsp + strNexys
+    strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, strNexys+Env['TARGET_BOARD'])
 else:
     strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, Env['TARGET_BOARD'])
 

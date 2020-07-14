@@ -42,8 +42,8 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_NEXYS_A7',                                    # Nexys A7 & board 
-                      'D_SWERV_EL2',                                   # EL2 defines
+Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                   # SweRV-EH1 
+                      'D_SWERV_EL2',                                   # SweRV-EL2
                       'D_MTIME_ADDRESS=0x80001020',                    # MTIME address
                       'D_MTIMECMP_ADDRESS=0x80001028',                 # MTIMECMP address
                       'D_CLOCK_RATE=25000000',                         # Clock rate = 25Mhz   

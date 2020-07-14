@@ -46,14 +46,6 @@
 #define M_PSP_CACHE_CONTROL_ICACHE_VAL(memRegionId)      (1 << M_CACHE_CONTROL_ICACHE_OFFSET(memRegionId))
 /* mrac sideeffect value of a specific region */
 #define M_PSP_CACHE_CONTROL_SIDEEFFECT_VAL(memRegionId)  (1 << M_CACHE_CONTROL_SIDEEFFECT_OFFSET(memRegionId))
-/* enable icache for a specific memory region */
-#define M_PSP_ENABLE_MEM_REGION_ICACHE(memRegionId)      (M_PSP_SET_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_ICACHE_VAL(memRegionId)))
-/* enable sideeffect for a specific memory region */
-#define M_PSP_ENABLE_MEM_REGION_SIDEEFFECT(memRegionId)  (M_PSP_SET_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_SIDEEFFECT_VAL(memRegionId)))
-/* disable icache for a specific memory region */
-#define M_PSP_DISABLE_MEM_REGION_ICACHE(memRegionId)     (M_PSP_CLEAR_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_ICACHE_VAL(memRegionId)))
-/* disable sideeffect for a specific memory region */
-#define M_PSP_DISABLE_MEM_REGION_SIDEEFFECT(memRegionId) (M_PSP_CLEAR_CSR(D_PSP_MRAC_NUM, M_PSP_CACHE_CONTROL_SIDEEFFECT_VAL(memRegionId)))
 
 /**
 * types
@@ -74,5 +66,31 @@
 /**
 * APIs
 */
+/**
+* @brief - Enable I-Cache for a given memory-id
+*
+* @parameter - memory Id
+*/
+void pspCacheControlEnableIcache(u32_t uiMemoryRegionId);
+
+/**
+* @brief - Enable side-effect for a given memory-id
+*
+* @parameter - memory Id
+*/
+void pspCacheControlEnableSideEfect(u32_t uiMemoryRegionId);
+
+/* @brief - Disable I-Cache for a given memory-id
+*
+* @parameter - memory Id
+*/
+void pspCacheControlDisableIcache(u32_t uiMemoryRegionId);
+
+/**
+* @brief - Disable side-effect for a given memory-id
+*
+* @parameter - memory Id
+*/
+void pspCacheControlDisableSideEfect(u32_t uiMemoryRegionId);
 
 #endif /* _PSP_CACHE_CONTROL_H_ */

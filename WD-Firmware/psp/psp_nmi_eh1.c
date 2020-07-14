@@ -35,7 +35,7 @@
 #if (0 != D_NMI_VEC_ADDRESSS)
     #define D_PSP_NMI_VEC_ADDRESSS   D_NMI_VEC_ADDRESSS
 #else
-    #error "NMI-VEC address is not defined!\n"
+    #error "D_NMI_VEC_ADDRESSS is not defined"
 #endif
 
 /**
@@ -101,22 +101,22 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
 
     switch (uiNmiCause)
   {
-     case D_PSP_NMI_EXT_PIN_ASSERTION:
-         fptrNmiFunc = g_fptrNmiExtPinAssrtHandler;
-         g_fptrNmiExtPinAssrtHandler = fptrNmiHandler;
-         break;
-     case D_PSP_NMI_D_BUS_STORE_ERROR:
-         fptrNmiFunc = g_fptrNmiDbusStoreErrHandler;
-         g_fptrNmiDbusStoreErrHandler = fptrNmiHandler;
-         break;
-     case D_PSP_NMI_D_BUS_LOAD_ERROR:
-         fptrNmiFunc = g_fptrNmiDbusLoadErrHandler;
-         g_fptrNmiDbusLoadErrHandler = fptrNmiHandler;
-         break;
-     default:
-         fptrNmiFunc = NULL;
-         break;
-    }
+    case D_PSP_NMI_EXT_PIN_ASSERTION:
+      fptrNmiFunc = g_fptrNmiExtPinAssrtHandler;
+      g_fptrNmiExtPinAssrtHandler = fptrNmiHandler;
+      break;
+    case D_PSP_NMI_D_BUS_STORE_ERROR:
+      fptrNmiFunc = g_fptrNmiDbusStoreErrHandler;
+      g_fptrNmiDbusStoreErrHandler = fptrNmiHandler;
+      break;
+    case D_PSP_NMI_D_BUS_LOAD_ERROR:
+      fptrNmiFunc = g_fptrNmiDbusLoadErrHandler;
+      g_fptrNmiDbusLoadErrHandler = fptrNmiHandler;
+      break;
+    default:
+      fptrNmiFunc = NULL;
+      break;
+  }
 
      return fptrNmiFunc;
 
@@ -164,18 +164,20 @@ D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
 
   switch (uiNmiCode)
   {
-       case D_PSP_NMI_EXT_PIN_ASSERTION:
-         g_fptrNmiExtPinAssrtHandler();
-         break;
-       case D_PSP_NMI_D_BUS_LOAD_ERROR:
-         g_fptrNmiDbusLoadErrHandler();
-         break;
-       case D_PSP_NMI_D_BUS_STORE_ERROR:
-         g_fptrNmiDbusStoreErrHandler();
-         break;
-       default:
-         break;
+    case D_PSP_NMI_EXT_PIN_ASSERTION:
+      g_fptrNmiExtPinAssrtHandler();
+      break;
+    case D_PSP_NMI_D_BUS_LOAD_ERROR:
+      g_fptrNmiDbusLoadErrHandler();
+      break;
+    case D_PSP_NMI_D_BUS_STORE_ERROR:
+      g_fptrNmiDbusStoreErrHandler();
+      break;
+    default:
+      break;
   }
+
+  /* No return from NMI handler. Loop here forever */
   while(1);
 }
 

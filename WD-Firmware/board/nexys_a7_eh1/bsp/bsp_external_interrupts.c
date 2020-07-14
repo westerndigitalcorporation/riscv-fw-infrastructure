@@ -16,10 +16,12 @@
 */
 
 /**
-* @author Ofer Shinaar
-* @date   24.02.2020
-* @brief  header file for external interrupts
+* @file   bsp_external_interrupts.c
+* @author Nati Rapaport
+* @date   29.03.2020
+* @brief  External_interrupts creation in Nexys_A7 SweRVolf FPGA
 */
+
 /**
 * include files
 */
@@ -105,7 +107,6 @@ void bspGenerateExtInterrupt(u32_t uiExtInterruptNumber, u32_t uiExtInterruptPol
         }
         uiExtInterruptBitMap |= (1 << D_BSP_IRQ3_ACTIVATE_BIT);  /* Set the trigger bit */
     }
-
     else if (D_BSP_IRQ_4 == uiExtInterruptNumber)
     {
         if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)

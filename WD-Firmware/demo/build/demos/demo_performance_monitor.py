@@ -45,6 +45,6 @@ class demo(object):
     ]
     
     self.listDemoSpecificTargets = [
-      'eh1', 'el2'
+      'eh1', 'eh2', 'el2'
     ]
 

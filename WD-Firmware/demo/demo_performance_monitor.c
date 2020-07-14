@@ -43,7 +43,6 @@
 /**
 * external prototypes
 */
-extern void psp_vect_table(void);
 
 /**
 * global variables
@@ -82,8 +81,8 @@ void demoStart(void)
 
   M_DEMO_START_PRINT();
 
-  /* register trap handler */
-  M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &psp_vect_table);
+  /* Register interrupt vector */
+  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
   /* Setting event counter (0) for event branches take (26) */
   pspPerformanceCounterSet(D_PSP_COUNTER0, E_BRANCHES_TAKEN);

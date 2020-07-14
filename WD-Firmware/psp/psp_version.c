@@ -31,7 +31,7 @@
 * definitions
 */
 #define PSP_VERSION_MAJOR  1
-#define PSP_VERSION_MINOR  0
+#define PSP_VERSION_MINOR  1
 
 /**
 * macros
@@ -62,7 +62,7 @@
 * @param input: pointer to PSP version structure
 *
 */
-void pspGetVersion(pspVersion_t *pPspVersion)
+D_PSP_TEXT_SECTION void pspGetVersion(pspVersion_t *pPspVersion)
 {
   pPspVersion->usMajor = (u16_t)PSP_VERSION_MAJOR;
   pPspVersion->usMinor = (u16_t)PSP_VERSION_MINOR;

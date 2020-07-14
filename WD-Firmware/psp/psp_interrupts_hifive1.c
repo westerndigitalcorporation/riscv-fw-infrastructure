@@ -55,7 +55,7 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 */
 /* The stack used by interrupt service routines */
 #if (0 == D_ISR_STACK_SIZE)
-  #error "ISR Stack size is not defined"
+  #error "D_ISR_STACK_SIZE is not defined"
 #else
   static /*D_PSP_DATA_SECTION*/ D_PSP_ALIGNED(16) pspStack_t udISRStack[ D_ISR_STACK_SIZE ] ;
   const pspStack_t xISRStackTop = ( pspStack_t ) &( udISRStack[ ( D_ISR_STACK_SIZE ) - 1 ] );
@@ -63,6 +63,7 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 
 /* Exception handlers */
 D_PSP_DATA_SECTION pspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
+                       pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
                        pspDefaultEmptyIntHandler_isr,
@@ -111,8 +112,12 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDef
 D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
    pspInterruptHandler_t fptrFunc;
+   u32_t uiInterruptsState;
 
-   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiInterruptCause < E_LAST_COMMON_CAUSE);
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiInterruptCause < E_LAST_CAUSE);
+
+   /* Disable interrupts */
+   pspInterruptsDisable(&uiInterruptsState);
 
    switch (uiInterruptCause)
    {
@@ -169,6 +174,9 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
         break;
    }
 
+   /* Restore interrupts */
+   pspInterruptsRestore(uiInterruptsState);
+
    return fptrFunc;
 }
 
@@ -184,7 +192,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterrup
 {
    pspInterruptHandler_t fptrFunc;
 
-   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_COMMON);
+   M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_CAUSE);
 
    fptrFunc = g_fptrExceptions_ints[uiExceptionCause];
 
@@ -241,9 +249,12 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 *
 * @return - none
 */
-void pspInterruptsSetVectorTableAddress(void* pVectTable)
+D_PSP_TEXT_SECTION void pspInterruptsSetVectorTableAddress(void* pVectTable)
 {
   u32_t uiInterruptsState;
+
+  /* Assert if vector-table address is NULL */
+  M_PSP_ASSERT(NULL != pVectTable)
 
   /* Disable interrupts */
   pspInterruptsDisable(&uiInterruptsState);
@@ -261,7 +272,7 @@ void pspInterruptsSetVectorTableAddress(void* pVectTable)
 *
 * @return - none
 */
-void pspInterruptsDisable(u32_t *pOutPrevIntState)
+D_PSP_TEXT_SECTION void pspInterruptsDisable(u32_t *pOutPrevIntState)
 {
   /* Disable interrupts (all privilege levels). Status of mstatus CSR before the 'disable' is saved in pOutPrevIntState */
   M_PSP_CLEAR_AND_READ_CSR(*pOutPrevIntState, D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
@@ -275,7 +286,7 @@ void pspInterruptsDisable(u32_t *pOutPrevIntState)
 *
 * @return - none
 */
-void pspInterruptsRestore(u32_t uiPrevIntState)
+D_PSP_TEXT_SECTION void pspInterruptsRestore(u32_t uiPrevIntState)
 {
   M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, uiPrevIntState);
 }
@@ -287,7 +298,7 @@ void pspInterruptsRestore(u32_t uiPrevIntState)
 *
 * @return - none
 */
-void pspInterruptsEnable(void)
+D_PSP_TEXT_SECTION void pspInterruptsEnable(void)
 {
   M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
 }
@@ -310,7 +321,7 @@ void pspInterruptsEnable(void)
 *
 * @return - none
 */
-void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 {
   M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
@@ -335,7 +346,7 @@ void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 *
 * @return - none
 */
-void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 {
   M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
@@ -352,7 +363,7 @@ void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
 *
 * @return - none
 */
-void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 {
   M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
                (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
@@ -375,7 +386,7 @@ void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 *
 * @return - none
 */
-void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
 {
   M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
                (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||

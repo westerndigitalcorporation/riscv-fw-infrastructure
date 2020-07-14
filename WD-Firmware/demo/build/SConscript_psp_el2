@@ -24,6 +24,7 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
+   (os.path.join('psp', 'psp_memory_utils.c'), os.path.join(strOutDir, 'psp_memory_utils.o')),
    (os.path.join('psp', 'psp_interrupts_eh1.c'), os.path.join(strOutDir, 'psp_interrupts_eh1.o')),
    (os.path.join('psp', 'psp_ext_interrupts_eh1.c'), os.path.join(strOutDir, 'psp_ext_interrupts_eh1.o')),
    (os.path.join('psp', 'psp_timers_eh1.c'), os.path.join(strOutDir, 'psp_timers_eh1.o')),
@@ -31,9 +32,9 @@ listCFiles=[
    (os.path.join('psp', 'psp_performance_monitor_eh1.c'), os.path.join(strOutDir, 'psp_performance_monitor.o')),
    (os.path.join('psp', 'psp_nmi_eh1.c'), os.path.join(strOutDir, 'psp_nmi_eh1.o')),
    (os.path.join('psp', 'psp_version.c'), os.path.join(strOutDir, 'psp_version.o')),
+   (os.path.join('psp', 'psp_cache_control_eh1.c'), os.path.join(strOutDir, 'psp_cache_control_eh1.o')),
+   (os.path.join('psp', 'psp_corr_err_cnt_eh1.c'), os.path.join(strOutDir, 'psp_corr_err_cnt_eh1.o')),
 ]
-
-   
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)

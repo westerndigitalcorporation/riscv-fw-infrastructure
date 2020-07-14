@@ -74,19 +74,19 @@
 RTOSAL_SECTION u32_t rtosalMutexCreate(rtosalMutex_t* pRtosalMutexCb, s08_t* pRtosalMutexName, u32_t uiPriorityInherit)
 {
    u32_t uiRes;
-
+   void* pMutexCb;
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMutexCb, pRtosalMutexCb == NULL, D_RTOSAL_MUTEX_ERROR);
 
 #ifdef D_USE_FREERTOS
    /* D_RTOSAL_NO_INHERIT isn't supported by FreeRTOS */
    M_RTOSAL_VALIDATE_FUNC_PARAM(uiPriorityInherit, uiPriorityInherit == D_RTOSAL_NO_INHERIT, D_RTOSAL_INHERIT_ERROR);
    /* create the mutex */
-   pRtosalMutexCb->mutexHandle = xSemaphoreCreateMutexStatic((StaticSemaphore_t*)pRtosalMutexCb->cMutexCB);
-   if (pRtosalMutexCb->mutexHandle != NULL)
+   pMutexCb = xSemaphoreCreateMutexStatic((StaticSemaphore_t*)pRtosalMutexCb->cMutexCB);
+   if (pRtosalMutexCb->cMutexCB == pMutexCb)
    {
       uiRes = D_RTOSAL_SUCCESS;
       /* assign a name to the created mutex */
-      vQueueAddToRegistry((QueueHandle_t)pRtosalMutexCb->mutexHandle, (const char*)pRtosalMutexName);
+      vQueueAddToRegistry((void*)pRtosalMutexCb->cMutexCB, (const char*)pRtosalMutexName);
    }
    else
    {
@@ -117,7 +117,7 @@ RTOSAL_SECTION u32_t rtosalMutexDestroy(rtosalMutex_t* pRtosalMutexCb)
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMutexCb, pRtosalMutexCb == NULL, D_RTOSAL_MUTEX_ERROR);
 
 #ifdef D_USE_FREERTOS
-   vSemaphoreDelete(pRtosalMutexCb->mutexHandle);
+   vSemaphoreDelete(pRtosalMutexCb->cMutexCB);
    uiRes = D_RTOSAL_SUCCESS;
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"
@@ -151,7 +151,7 @@ RTOSAL_SECTION u32_t rtosalMutexWait(rtosalMutex_t* pRtosalMutexCb, u32_t uiWait
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMutexCb, pRtosalMutexCb == NULL, D_RTOSAL_MUTEX_ERROR);
 
 #ifdef D_USE_FREERTOS
-   uiRes = xSemaphoreTake(pRtosalMutexCb->mutexHandle, uiWaitTimeoutTicks);
+   uiRes = xSemaphoreTake((void*)pRtosalMutexCb->cMutexCB, uiWaitTimeoutTicks);
    if (uiRes == pdPASS)
    {
       uiRes = D_RTOSAL_SUCCESS;
@@ -186,7 +186,7 @@ RTOSAL_SECTION u32_t rtosalMutexRelease(rtosalMutex_t* pRtosalMutexCb)
    M_RTOSAL_VALIDATE_FUNC_PARAM(pRtosalMutexCb, pRtosalMutexCb == NULL, D_RTOSAL_MUTEX_ERROR);
 
 #ifdef D_USE_FREERTOS
-   uiRes = xSemaphoreGive(pRtosalMutexCb->mutexHandle);
+   uiRes = xSemaphoreGive(pRtosalMutexCb->cMutexCB);
    if (uiRes == pdPASS)
    {
       uiRes = D_RTOSAL_SUCCESS;

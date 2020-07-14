@@ -66,8 +66,6 @@
 /**
 * macros
 */
-/* Convert mSec duration to number of clock cycles */
-#define M_DEMO_MSEC_TO_CYCLES(duration)   (duration * (D_CLOCK_RATE / D_PSP_MSEC))
 
 /**
 * types
@@ -80,7 +78,6 @@
 /**
 * external prototypes
 */
-extern void psp_vect_table(void);
 
 /**
 * global variables
@@ -431,8 +428,9 @@ void demoStart(void)
   u32_t uiPrevIntState;
 
   M_DEMO_START_PRINT();
+
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&psp_vect_table);
+  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
   /************************/
   /* Part1 - Sleep tests  */

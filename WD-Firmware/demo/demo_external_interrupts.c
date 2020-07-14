@@ -65,8 +65,6 @@
 /**
 * external prototypes
 */
-/* General vector table */
-extern void psp_vect_table(void);
 
 /**
 * global variables
@@ -263,11 +261,11 @@ void demoExtIntsTest1GlobalDisabled(void)
 {
   u32_t uiTestNumber = D_DEMO_EXT_INT_TEST_1;
 
-    /* Put the Generation-Register in its initial state (no external interrupts are generated) */
+  /* Put the Generation-Register in its initial state (no external interrupts are generated) */
   bspInitializeGenerationRegister(D_PSP_EXT_INT_ACTIVE_HIGH);
 
-    /* Initialize test results array and parameters */
-    demoInitializeTestResults();
+  /* Initialize test results array and parameters */
+  demoInitializeTestResults();
 
   /* Initialize PIC, gateways and other External-Interrupt related CSRs */
   demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
@@ -556,8 +554,9 @@ void demoExtIntsTest9NestedInteeruptHigherPriority(void)
 void demoStart(void)
 {
    M_DEMO_START_PRINT();
+
    /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&psp_vect_table);
+   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
    /* Demo #1 - Global disable external interrupts */
    demoExtIntsTest1GlobalDisabled();

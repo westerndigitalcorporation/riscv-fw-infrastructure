@@ -114,9 +114,6 @@ void demoRtosalTimerTickHandler(void);
 /**
 * external prototypes
 */
-#ifdef D_NEXYS_A7
-    extern void pspExtInterruptIsr(void);
-#endif
 
 /**
 * global variables
@@ -180,18 +177,8 @@ void demoRtosalCreateTasks(void *pParameters)
   
   u32_t uiResult;
 
-  /* Disable the machine external & timer interrupts until setup is done. */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+  /* Disable the timer interrupts until setup is done. */
   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
-
-    /*TODO [AD]: Add external interrupts handlers array registration to meivt CSR */
-
-#ifdef D_NEXYS_A7
-  pspRegisterInterruptHandler(pspExtInterruptIsr, E_MACHINE_EXTERNAL_CAUSE);
-
-  /* Enable the Machine-External interrupt */
-  pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
-#endif
 
   /* Create the queue used by the send-msg and receive-msg tasks. */
   uiResult = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);
@@ -316,7 +303,7 @@ static void demoRtosalTimerCallback(void* pTimer)
   demoOutputToggelLed();
 #ifdef D_HI_FIVE1
   demoOutputMsg("RTOS Timer Callback\n", 20);
-#elif defined(D_NEXYS_A7)
+#elif defined(D_SWERV_EH1) || defined(D_SWERV_EH2) || defined(D_SWERV_EL2)
   demoOutputMsg("RTOS Timer Callback\n");
 #else
   /* Developer: please add here implementation that fits your environment */
