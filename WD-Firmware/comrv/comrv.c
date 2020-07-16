@@ -597,7 +597,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       {
 #ifdef D_COMRV_EVICTION_LRU
          /* point to the CB cache entry to be updated */
-         pEntry = &g_stComrvCB.stOverlayCache[ucIndex + usOverlayGroupSize;
+         pEntry = &g_stComrvCB.stOverlayCache[ucIndex + usOverlayGroupSize];
          /* mark the group ID so that it won't pop in the next search */
          pEntry->unToken.uiValue      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
          /* update the cache entry new size - this will also clear remaining properties */
