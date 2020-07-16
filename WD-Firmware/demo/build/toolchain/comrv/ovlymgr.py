@@ -71,6 +71,8 @@ OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL \
     = "g_stComrvCB.stOverlayCache[%d].unLru.stFields.typNextLruIndex"
 OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL \
     = "g_stComrvCB.ucLruIndex"
+OVERLAY_TABLE_ENTRY_MRU_INDEX_VAL \
+    = "g_stComrvCB.ucMruIndex"
 OVERLAY_TABLE_ENTRY_TOKEN_VAL \
     = "g_stComrvCB.stOverlayCache[%d].unToken.uiValue"
 
@@ -290,6 +292,32 @@ def get_symbol_address (label):
     except:
         return None
 
+# Return the gdb.Block of the function containing address ADDR, or
+# None if the block could not be found.
+def function_block_at (addr):
+    block = gdb.current_progspace().block_for_pc(addr)
+    if (block == None or block.global_block == None):
+        return None
+    while (not (block.superblock.is_global or block.superblock.is_static)):
+        block = block.superblock
+    return block
+
+# Takes TOKEN which is a 32-bit multi-group token and returns the
+# overlay group number extracted from the token.
+def mg_token_group_id (token):
+    return (token >> 1) & 0xffff
+
+# Takes TOKEN which is a 32-bit multi-group token and returns the
+# offset in bytes of the multi-group function within the overlay group
+# identified by this TOKEN.
+def mg_token_func_offset (token):
+    return ((token >> 17) & 0x3ff) * 4
+
+# Takes TOKEN which is a 32-bit multi-group token and returns true if
+# TOKEN is a multi-group token, otherwise, returns false.
+def is_multi_group_token_p (token):
+    return ((token >> 31) & 0x1) == 1
+
 # Class to wrap reading memory.  Provides an API for reading unsigned
 # values of various sizes from memory.
 class mem_reader:
@@ -354,9 +382,10 @@ class overlay_data:
 
     # Holds information about a single group.
     class _overlay_group:
-        def __init__ (self, base_address, size_in_bytes):
+        def __init__ (self, base_address, size_in_bytes, id):
             self._base_address = base_address
             self._size_in_bytes = size_in_bytes
+            self._id = id
 
         def base_address (self):
             return self._base_address
@@ -364,21 +393,75 @@ class overlay_data:
         def size_in_bytes (self):
             return self._size_in_bytes
 
-    # Holds information about a single multi-group.
+        @property
+        def id (self):
+            return self._id
+
+    # Holds information about a single member of a multi-group.
+    class _overlay_multi_group_member:
+        def __init__ (self, overlay_group, token):
+            self._overlay_group = overlay_group
+            self._token = token
+            self._offset = mg_token_func_offset (token)
+
+        @property
+        def token (self):
+            return self._token
+
+        @property
+        def overlay_group (self):
+            return self._overlay_group
+
+        @property
+        def offset (self):
+            return self._offset
+
+    # Holds information about a single multi-group.  NUMBER is
+    # assigned to each multi-group in the order they are encountered
+    # in the multi-group table, with 0 assigned to the first
+    # multi-group, then 1, etc.
+    #
+    # The INDEX is the index into the multi-group table for the first
+    # token of that multi-group, so the first multi-group always has
+    # index 0, but the second multi-group could have any index value.
+    #
+    # The MEMBERS is the list of multi-group member objects.
+    #
+    # The SIZE is the size in bytes of the function that is the
+    # goal of this multi-group.
+    #
+    # The FUNC is a string, the name of the function this is a
+    # multi-group for, or None if this couldn't be figured out.
     class _overlay_multi_group:
-        def __init__ (self, number, index, tokens):
+        def __init__ (self, number, index, members, size, func):
             self._number = number
             self._index = index
-            self._tokens = tokens
+            self._members = members
+            self._size_in_bytes = size
+            self._function = func
 
+        @property
         def tokens (self):
-            return self._tokens
+            return map (lambda m : m.token,
+                        self._members)
 
         def index (self):
             return self._index
 
         def number (self):
             return self._number
+
+        @property
+        def members (self):
+            return self._members
+
+        @property
+        def size_in_bytes (self):
+            return self._size_in_bytes
+
+        @property
+        def function_name (self):
+            return self._function
 
     # A class to describe an area of memory.  This serves as a base
     # class for the cache region descriptor, and the storage region
@@ -578,13 +661,34 @@ class overlay_data:
                 # object to represent it.
                 size = next_offset - prev_offset
                 groups.append (overlay_data.
-                               _overlay_group (storage_start + prev_offset, size))
+                               _overlay_group (storage_start + prev_offset,
+                                               size, grp))
                 grp += 1
                 prev_offset = next_offset
 
             return groups
 
-        def _load_overlay_multi_groups (table_start, table_end):
+        def _mg_members_to_func_and_size (id, members):
+            mg_block = None
+            for m in members:
+                addr = m.overlay_group.base_address () + m.offset
+                #size = size_of_function_at (addr)
+                b = function_block_at (addr)
+                if (mg_block == None):
+                    mg_block = b
+                elif (b != None and b != mg_block):
+                    raise RuntimeError ("multiple sizes for multi-group %d" % id)
+            if (mg_block == None):
+                raise RuntimeError ("unable to find size of multi-group %d" % id)
+            mg_name = None
+            mg_size = None
+            if (mg_block != None):
+                if (mg_block.function != None):
+                    mg_name = mg_block.function.name
+                mg_size = mg_block.end - mg_block.start
+            return (mg_name, mg_size)
+
+        def _load_overlay_multi_groups (table_start, table_end, overlay_groups):
             multi_groups = list ()
             all_tokens = list ()
 
@@ -625,10 +729,19 @@ class overlay_data:
                     # Finalise this multi-group, and prepare to parse the
                     # next.
                     else:
-                        multi_groups.append (overlay_data.
-                                             _overlay_multi_group (mg_num,
-                                                                   mg_idx,
-                                                                   mg_tokens))
+                        def token_to_member (token):
+                            g = mg_token_group_id (token)
+                            og = overlay_groups[g]
+                            return overlay_data.\
+                                _overlay_multi_group_member (og, token)
+
+                        mg_members = map (token_to_member, mg_tokens)
+                        (mg_func, mg_size) \
+                            = _mg_members_to_func_and_size (mg_num, mg_members)
+                        multi_groups.append \
+                            (overlay_data._overlay_multi_group \
+                             (mg_num, mg_idx, mg_members, mg_size,
+                              mg_func))
                         # Now reset ready to read the next multi-group.
                         mg_num += 1
                         mg_idx = idx
@@ -653,7 +766,7 @@ class overlay_data:
             table_end = table_start + table_size
             table_start += multi_group_offset
             multi_groups, all_tokens \
-                = _load_overlay_multi_groups (table_start, table_end)
+                = _load_overlay_multi_groups (table_start, table_end, groups)
         else:
             multi_groups = list ()
             all_tokens = list ()
@@ -783,14 +896,21 @@ class mapped_overlay_group_walker:
             self.eviction_values = []
 
         def read_values(self):
-            # get the lru value
+            # get the lru and mru values
             lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_INDEX_VAL)
+            mru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_MRU_INDEX_VAL)
+            mru = int(mru)
             lru = int(lru)
-            # walk trouogh lru list and save eviction index 
-            while (lru != 255):
-                self.eviction_values.append(lru)
-                lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL % (lru))
-                lru = int(lru)
+            # this is a case where cache is fully ocupied with one 
+            # group - so lru an mru point to the same location
+            if lru == mru:
+                self.eviction_values.append(0)
+            else:
+                # walk trouogh lru list and save eviction index 
+                while (lru != 255):
+                    self.eviction_values.append(lru)
+                    lru = gdb.parse_and_eval(OVERLAY_TABLE_ENTRY_LRU_EVICTION_VAL % (lru))
+                    lru = int(lru)
 
         def get_eviction_value(self, index):
             return self.eviction_values.index(index)
@@ -929,23 +1049,24 @@ def print_current_comrv_state ():
     print ("")
     print ("Overlay multi-groups:")
     if (ovly_data.is_multi_group_enabled ()):
-        grp_num = 0
-        while (grp_num < ovly_data.multi_group_count ()):
+        for grp_num in range (0, ovly_data.multi_group_count ()):
             mg = ovly_data.multi_group (grp_num)
             if (grp_num == 0):
-                print ("  %6s%-7s%-12s%-9s%-8s"
-                       % ("", "", "", "Overlay", "Function"))
-                print ("  %-6s%-7s%-12s%-9s%-8s"
-                       % ("Num", "Index", "Token", "Group", "Offset"))
+                print ("  %6s%-7s%-12s%-9s%-10s%-10s%-10s"
+                       % ("", "", "", "Overlay", "Function",
+                          "Function", "Function"))
+                print ("  %-6s%-7s%-12s%-9s%-10s%-10s%-10s"
+                       % ("Num", "Index", "Token", "Group", "Offset",
+                          "Size", "Name"))
             else:
-                print ("  %-6s%-7s%-12s%-9s%-8s"
-                       % ("---", "---", "---", "---", "---"))
-            for token in mg.tokens ():
-                g = (token >> 1) & 0xffff
-                offset = ((token >> 17) & 0x3ff) * 4
-                print ("  %-6d%-7d0x%08x  %-9d0x%-8x"
-                       % (grp_num, mg.index (), token, g, offset))
-            grp_num += 1
+                print ("  %-6s%-7s%-12s%-9s%-10s%-10s%-10s"
+                       % ("---", "---", "---", "---", "---", "---",
+                          "---"))
+            for m in mg.members:
+                print ("  %-6d%-7d0x%08x  %-9d0x%-8x0x%-8x%s"
+                       % (grp_num, mg.index (), m.token,
+                          m.overlay_group.id, m.offset,
+                          mg.size_in_bytes, mg.function_name))
     else:
         print ("  Not supported in this ComRV build.")
     print ("")
@@ -1122,6 +1243,95 @@ class ParseComRV (gdb.Command):
     def invoke (self, args, from_tty):
         raise RuntimeError ("this command is deprecated, use 'comrv status' instead")
 
+# The class represents a new GDB command 'comrv group <LOC>' that
+# takes a location specifier, as taken by the 'break' command, and
+# reports which groups that location is in.
+class comrv_groups_command (gdb.Command):
+    '''Display the overlay groups a particular location is in.
+
+This command only works once ComRV has been initialised.
+
+Takes a single argument that is a string describing a location in the program
+being debugged, in the same format as the breakpoint command.  This location
+is translated to an address (or multiple addresses), and then the group or
+groups those addresses appear in are listed.'''
+    def __init__ (self):
+        gdb.Command.__init__ (self, "comrv groups", gdb.COMMAND_NONE,
+                              gdb.COMPLETE_LOCATION)
+
+    # If ADDR is inside a multi-group then return a list of all the
+    # storage area addresses that are duplicates of ADDR.  Otherwise
+    # return a single entry list containing just ADDR.
+    def _expand_mg_addresses (self, addr, ovly_data):
+        # If we have multi-groups in this program, we need to expand
+        # them now and figure out if our address is in any of them.
+        for i in range (0, ovly_data.multi_group_count ()):
+            mg = ovly_data.multi_group (i)
+            for m in mg.members:
+                low = m.overlay_group.base_address () + m.offset
+                high = low + mg.size_in_bytes
+                if (addr >= low and addr < high):
+                    # Is in this multi-group!
+                    offset = addr - low
+                    return map (
+                        lambda x : (x.overlay_group.base_address ()
+                                    + x.offset + offset),
+                        mg.members)
+
+        # Not in any multi-groups.
+        return [addr]
+
+    # Find an overlay group containing ADDR and return it, otherwise, return
+    # None.
+    def _find_group (self, ovly_data, addr):
+        for grp_num in range (0, ovly_data.group_count ()):
+            grp = ovly_data.group (grp_num)
+            if (addr >= grp.base_address ()
+                and addr < (grp.base_address () + grp.size_in_bytes ())):
+                return (grp, grp_num)
+        return (None, None)
+
+    def invoke (self, args, from_tty):
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            print ("ComRV not yet initialisd:")
+
+        if (args == ""):
+            raise RuntimeError ("missing location argument");
+        (junk,sal) = gdb.decode_line (args)
+        if (junk != None):
+            raise RuntimeError ("junk at end of line: %s" % (junk))
+
+        print ("%-12s%-7s%-12s%-12s%-8s%-8s"
+               % ("", "Group", "Group", "Group", "Group", ""))
+        print ("%-12s%-7s%-12s%-12s%-8s%-8s"
+               % ("Address", "Number", "Start", "End", "Size", "Offset"))
+        for s in (sal):
+            pc = s.pc
+            if (pc >= ovly_data.storage ().start_address ()
+                and pc < ovly_data.storage ().end_address ()):
+                all_addresses = self._expand_mg_addresses (pc, ovly_data)
+                for addr in (all_addresses):
+                    # Figure out which overlay group address ADDR is in.
+                    (grp, idx) = self._find_group (ovly_data, addr)
+                    if (grp == None):
+                        print ("0x%-10x\t** not in an overlay group **"
+                               % (addr))
+                    else:
+                        print ("0x%-10x%-7d0x%-10x0x%-10x0x%-6x0x%-6x"
+                               % (addr, idx, grp.base_address (),
+                                  (grp.base_address () + grp.size_in_bytes ()),
+                                  grp.size_in_bytes (),
+                                  (addr - grp.base_address ())))
+            else:
+                print ("0x%-10x\t** is not in overlay storage area **"
+                       % (pc))
+
+        # Discard the cached cache data, incase we ran this command at the
+        # wrong time and the cache information is invalid.  This will force
+        # GDB to reload the information each time this command is run.
+        overlay_data.clear ()
+
 class MyOverlayManager (gdb.OverlayManager):
     def __init__ (self):
         gdb.OverlayManager.__init__ (self, True)
@@ -1182,11 +1392,8 @@ class MyOverlayManager (gdb.OverlayManager):
             raise RuntimeError ("Multi-group index out of range")
         res = list ()
         mg = ovly_data.multi_group (id)
-        for token in mg.tokens ():
-            g = (token >> 1) & 0xffff
-            offset = ((token >> 17) & 0x3ff) * 4
-            addr = self.get_group_storage_area_address (g)
-            addr += offset
+        for m in mg.members:
+            addr = m.overlay_group.base_address () + m.offset
             res.append (addr)
         return res
 
@@ -1271,12 +1478,12 @@ class MyOverlayManager (gdb.OverlayManager):
           # address.
           return token;
 
-        if ((token >> 31) & 0x1) == 1:
+        if is_multi_group_token_p (token):
             multi_group_id = (token >> 1) & 0xffff
             token = ovly_data.get_token_from_multi_group_table (multi_group_id)
 
-        group_id = (token >> 1) & 0xffff
-        func_offset = ((token >> 17) & 0x3ff) * 4;
+        group_id = mg_token_group_id (token)
+        func_offset = mg_token_func_offset (token)
 
         ba = self.get_group_storage_area_address (group_id);
         addr = ba + func_offset;
@@ -1347,7 +1554,7 @@ class comrv_unwinder (Unwinder):
                                     + str (prev_frame.token ()))
 
             token = prev_frame.token ()
-            if (((token >> 31) & 0x1) == 0x1):
+            if is_multi_group_token_p (token):
                 if (prev_frame.multi_group_index () == -1):
                     raise RuntimeError ("mutli-group stack token with no valid token index")
                 idx = prev_frame.multi_group_index ()
@@ -1645,6 +1852,7 @@ ParseComRV ()
 comrv_prefix_command ()
 comrv_status_command ()
 comrv_stack_command ()
+comrv_groups_command ()
 
 # Create an instance of the overlay manager class.
 MyOverlayManager ()
