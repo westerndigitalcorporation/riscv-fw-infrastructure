@@ -284,7 +284,7 @@ extern void *__OVERLAY_MULTIGROUP_TABLE_END;
 extern void *COMRV_TEXT_SEC;
 
 /**
-* COM-RV initialization function
+* @brief COM-RV initialization function
 *
 * @param  pInitParams - initialization parameters (currently no args)
 *
@@ -361,7 +361,7 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 }
 
 /**
-* This function is performing the following:
+* @brief This function is performing the following:
 * 1.  load requested token (from t5 register)
 * 2.  search for the requested token in the loaded cache
 * 2.a for multi group search for each multi group token
@@ -799,7 +799,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 }
 
 /**
-* Get comrv cache eviction candidates according to a given size
+* @brief Get comrv cache eviction candidates according to a given size
 *
 * @param requestedEvictionSize - size requested for eviction; expressed in
 *                                units of D_COMRV_OVL_GROUP_SIZE_MIN
@@ -900,7 +900,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 }
 
 /**
-* search if a specific token is already loaded to the cache
+* @brief search if a specific token is already loaded to the cache
 *
 * @param token - the token to search for
 * @return if the token is loaded the return value is set to the loaded address
@@ -928,7 +928,7 @@ D_COMRV_TEXT_SECTION static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayT
 }
 
 /**
-* Update a given comrv cache entry was accessed
+* @brief Update a given comrv cache entry was accessed
 *
 * @param entryIndex - the comrv cache entry being accessed
 *
@@ -989,7 +989,7 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
 }
 
 /**
-* get comrv status
+* @brief get comrv status
 *
 * @param pComrvStatus - function output
 *
@@ -1002,7 +1002,7 @@ D_COMRV_TEXT_SECTION void comrvGetStatus(comrvStatus_t* pComrvStatus)
 }
 
 /**
-* initialize comrv stack - needs to be invoke by each task (if rtos exist)
+* @brief initialize comrv stack - needs to be invoke by each task (if rtos exist)
 * when before initializing task stack.
 * in bare-metal apps, this function is called by comrv initialization function
 * and the user application doesn't need to do that.
@@ -1060,7 +1060,7 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION u32_t comrvInitApplicationStack(void)
 }
 
 /**
-* comrv version of memset - set dwords only
+* @brief comrv version of memset - set dwords only
 *
 * @param pMemory - address of the memory to be initialized
 *        siVal   - pattern to initialize
@@ -1083,7 +1083,7 @@ void* comrvMemset(void* pMemory, s32_t siVal, u32_t uiSizeInDwords)
 }
 
 /**
-* load offset and multigroup tables
+* @brief load offset and multigroup tables
 *
 * @param None
 *
@@ -1156,7 +1156,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 }
 
 /**
-* lock/unlock a specific overlay group
+* @brief lock/unlock a specific overlay group
 *
 * @param pFuncAddress - overlay function its group shall be locked/unlocked
 *
@@ -1208,7 +1208,7 @@ u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockStat
 
 #ifdef D_COMRV_CONTROL_SUPPORT
 /**
-* Enable the ability to call/load overlay functions/data
+* @brief Enable the ability to call/load overlay functions/data
 * This function has no influence if invoked before comrvInit()
 *
 * @param none
@@ -1221,7 +1221,7 @@ D_COMRV_TEXT_SECTION void comrvEnable(void)
 }
 
 /**
-* Disable the ability to call/load overlay functions/data
+* @brief Disable the ability to call/load overlay functions/data
 * This function can be invoked before comrv has been
 * initialized with comrvInit() - in such a case, overlay functions/data
 * shall not be called/loaded after comrvInit() until comrvEnable() is called
@@ -1238,7 +1238,7 @@ D_COMRV_TEXT_SECTION void comrvDisable(void)
 #endif /* D_COMRV_CONTROL_SUPPORT */
 
 /**
-* This function is invoked by the comev engine in case an overlay function
+* @brief This function is invoked by the comev engine in case an overlay function
 * was invoked and comrv is disabled
 *
 * @param None
@@ -1253,10 +1253,22 @@ D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
    M_COMRV_ERROR(stErrArgs, D_COMRV_INVOKED_WHILE_DISABLED, D_COMRV_INVALID_TOKEN);
 }
 
+/**
+* @brief retrieve comrv database address
+*
+* @param None
+*
+* @return None
+*/
+D_COMRV_TEXT_SECTION const comrvCB_t* comrvGetDatabase(void)
+{
+   return &g_stComrvCB;
+}
+
 #ifdef D_COMRV_RTOS_SUPPORT
 
 /**
-* save comrv stack in case of context switch
+* @brief save comrv stack in case of context switch
 *
 * @param None
 *
@@ -1361,7 +1373,7 @@ D_COMRV_TEXT_SECTION u32_t* comrvSaveContextSwitch(volatile u32_t* pMepc, volati
 }
 
 /**
-* This function is invoked by the comev engine in case an overlay function
+* @brief This function is invoked by the comev engine in case an overlay function
 * was invoked and comrv is not initialized
 *
 * @param None
