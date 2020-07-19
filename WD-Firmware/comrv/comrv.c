@@ -980,7 +980,7 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
    {
       g_stComrvCB.ucLruIndex = ucEntryIndex;
       /* mark both LRU/MRU of the entry as the last */
-      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = 0xFFFF;
+      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = (u16_t)((D_COMRV_MRU_ITEM << 8) | D_COMRV_MRU_ITEM);
    }
 #endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
 #elif defined(D_COMRV_EVICTION_LFU)
