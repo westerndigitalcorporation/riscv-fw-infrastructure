@@ -557,13 +557,13 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
             {
 #ifdef D_COMRV_EVICTION_LRU
                /* if ucIndex prev isn't the last - update ucIndex prev */
-               if (g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex != 255)
+               if (g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex != D_COMRV_LRU_ITEM)
                {
                   /* update previous lru index */
                   g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex;
                }
                /* if the neighbour has a next */
-               if (g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex != 255)
+               if (g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex != D_COMRV_MRU_ITEM)
                {
                   /* update the prev of my neighbour's next */
                   g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex].unLru.stFields.typPrevLruIndex = ucIndex;
