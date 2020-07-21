@@ -284,7 +284,7 @@ extern void *__OVERLAY_MULTIGROUP_TABLE_END;
 extern void *COMRV_TEXT_SEC;
 
 /**
-* COM-RV initialization function
+* @brief COM-RV initialization function
 *
 * @param  pInitParams - initialization parameters (currently no args)
 *
@@ -361,12 +361,12 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 }
 
 /**
-* This function is performing the following:
+* @brief This function is performing the following:
 * 1.  load requested token (from t5 register)
 * 2.  search for the requested token in the loaded cache
 * 2.a for multi group search for each multi group token
 * 3.  if group not loaded, load it
-* 4.  return the address of the function (call or return address) or dada
+* 4.  return the address of the function (call or return address) or data
 *
 * @param none
 *
@@ -556,8 +556,20 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
             else
             {
 #ifdef D_COMRV_EVICTION_LRU
-               /* update previous lru index */
-               g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex;
+               /* if ucIndex prev isn't the last - update ucIndex prev */
+               if (g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex != D_COMRV_LRU_ITEM)
+               {
+                  /* update previous lru index */
+                  g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex;
+               }
+               /* if the neighbour has a next */
+               if (g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex != D_COMRV_MRU_ITEM)
+               {
+                  /* update the prev of my neighbour's next */
+                  g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex].unLru.stFields.typPrevLruIndex = ucIndex;
+                  /* my next is my neighbour's next */
+                  g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typNextLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex;
+               }
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -584,22 +596,22 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       if (ucSizeOfEvictionCandidates != 0)
       {
 #ifdef D_COMRV_EVICTION_LRU
-         /* update the global lru index */
-         g_stComrvCB.ucLruIndex = ucIndex + usOverlayGroupSize;
          /* point to the CB cache entry to be updated */
-         pEntry = &g_stComrvCB.stOverlayCache[g_stComrvCB.ucLruIndex];
+         pEntry = &g_stComrvCB.stOverlayCache[ucIndex + usOverlayGroupSize];
          /* mark the group ID so that it won't pop in the next search */
          pEntry->unToken.uiValue      = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
          /* update the cache entry new size - this will also clear remaining properties */
          pEntry->unProperties.ucValue = M_COMRV_CONVERT_TO_ENTRY_SIZE_FROM_VAL(ucSizeOfEvictionCandidates);
          /* update the cache entry 'prev lru' field of the previous lru */
-         g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex =
-               g_stComrvCB.ucLruIndex;
+         g_stComrvCB.stOverlayCache[g_stComrvCB.ucLruIndex].unLru.stFields.typPrevLruIndex =
+               ucIndex + usOverlayGroupSize;
          /* update the cache entry 'next lru' field */
-         pEntry->unLru.stFields.typNextLruIndex = ucIndex;
+         pEntry->unLru.stFields.typNextLruIndex = g_stComrvCB.ucLruIndex;
          /* update the cache entry 'previous lru' field - now it is the first lru as
             it is now considered 'evicted/empty' */
          pEntry->unLru.stFields.typPrevLruIndex = D_COMRV_LRU_ITEM;
+         /* update the global lru index */
+         g_stComrvCB.ucLruIndex = ucIndex + usOverlayGroupSize;
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
@@ -607,7 +619,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* update the entry access */
       comrvUpdateCacheEvectionParams(ucIndex);
 #ifdef D_COMRV_RTOS_SUPPORT
-      comrvUpdateCacheEvectionParams(ucIndex);
       /* mark the entry as locked - protect the soon loaded ram */
       g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucEntryLock = D_COMRV_ENTRY_LOCKED;
 #endif /* D_COMRV_RTOS_SUPPORT */
@@ -788,7 +799,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 }
 
 /**
-* Get comrv cache eviction candidates according to a given size
+* @brief Get comrv cache eviction candidates according to a given size
 *
 * @param requestedEvictionSize - size requested for eviction; expressed in
 *                                units of D_COMRV_OVL_GROUP_SIZE_MIN
@@ -816,7 +827,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 #endif /* D_BITMANIP_EXT */
 
    /* first lets clear the uiCandidates list */
-   comrvMemset(uiEvictCandidateMap, 0, sizeof(u32_t)*D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
+   comrvMemset(uiEvictCandidateMap, 0, D_COMRV_EVICT_CANDIDATE_MAP_SIZE);
 
 #ifdef D_COMRV_EVICTION_LRU
    /* get the first lru entry */
@@ -889,7 +900,7 @@ u08_t comrvGetEvictionCandidates(u08_t ucRequestedEvictionSize, u08_t* pEvictCan
 }
 
 /**
-* search if a specific token is already loaded to the cache
+* @brief search if a specific token is already loaded to the cache
 *
 * @param token - the token to search for
 * @return if the token is loaded the return value is set to the loaded address
@@ -917,7 +928,7 @@ D_COMRV_TEXT_SECTION static u16_t comrvSearchForLoadedOverlayGroup(comrvOverlayT
 }
 
 /**
-* Update a given comrv cache entry was accessed
+* @brief Update a given comrv cache entry was accessed
 *
 * @param entryIndex - the comrv cache entry being accessed
 *
@@ -948,6 +959,8 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
          /* update the lru item with the previous item index */
          g_stComrvCB.stOverlayCache[g_stComrvCB.ucLruIndex].unLru.stFields.typPrevLruIndex = D_COMRV_LRU_ITEM;
       }
+      /* update the prev index of next item index */
+      g_stComrvCB.stOverlayCache[pCacheEntry->unLru.stFields.typNextLruIndex].unLru.stFields.typPrevLruIndex = pCacheEntry->unLru.stFields.typPrevLruIndex;
       /* update ucEntryIndex previous index */
       pCacheEntry->unLru.stFields.typPrevLruIndex = g_stComrvCB.ucMruIndex;
       /* update ucEntryIndex next index - last item (MRU)*/
@@ -966,6 +979,8 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
    else if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits == g_stComrvCB.ucLastCacheEntry)
    {
       g_stComrvCB.ucLruIndex = ucEntryIndex;
+      /* mark both LRU/MRU of the entry as the last */
+      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = (u16_t)((D_COMRV_MRU_ITEM << 8) | D_COMRV_MRU_ITEM);
    }
 #endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
 #elif defined(D_COMRV_EVICTION_LFU)
@@ -974,7 +989,7 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
 }
 
 /**
-* get comrv status
+* @brief get comrv status
 *
 * @param pComrvStatus - function output
 *
@@ -987,7 +1002,7 @@ D_COMRV_TEXT_SECTION void comrvGetStatus(comrvStatus_t* pComrvStatus)
 }
 
 /**
-* initialize comrv stack - needs to be invoke by each task (if rtos exist)
+* @brief initialize comrv stack - needs to be invoke by each task (if rtos exist)
 * when before initializing task stack.
 * in bare-metal apps, this function is called by comrv initialization function
 * and the user application doesn't need to do that.
@@ -1045,7 +1060,7 @@ D_COMRV_NO_INLINE D_COMRV_TEXT_SECTION u32_t comrvInitApplicationStack(void)
 }
 
 /**
-* comrv version of memset - set dwords only
+* @brief comrv version of memset - set dwords only
 *
 * @param pMemory - address of the memory to be initialized
 *        siVal   - pattern to initialize
@@ -1068,7 +1083,7 @@ void* comrvMemset(void* pMemory, s32_t siVal, u32_t uiSizeInDwords)
 }
 
 /**
-* load offset and multigroup tables
+* @brief load offset and multigroup tables
 *
 * @param None
 *
@@ -1141,7 +1156,7 @@ D_COMRV_TEXT_SECTION void comrvLoadTables(void)
 }
 
 /**
-* lock/unlock a specific overlay group
+* @brief lock/unlock a specific overlay group
 *
 * @param pFuncAddress - overlay function its group shall be locked/unlocked
 *
@@ -1193,7 +1208,7 @@ u32_t comrvLockUnlockOverlayGroupByFunction(void* pOvlFuncAddress, comrvLockStat
 
 #ifdef D_COMRV_CONTROL_SUPPORT
 /**
-* Enable the ability to call/load overlay functions/data
+* @brief Enable the ability to call/load overlay functions/data
 * This function has no influence if invoked before comrvInit()
 *
 * @param none
@@ -1206,7 +1221,7 @@ D_COMRV_TEXT_SECTION void comrvEnable(void)
 }
 
 /**
-* Disable the ability to call/load overlay functions/data
+* @brief Disable the ability to call/load overlay functions/data
 * This function can be invoked before comrv has been
 * initialized with comrvInit() - in such a case, overlay functions/data
 * shall not be called/loaded after comrvInit() until comrvEnable() is called
@@ -1223,7 +1238,7 @@ D_COMRV_TEXT_SECTION void comrvDisable(void)
 #endif /* D_COMRV_CONTROL_SUPPORT */
 
 /**
-* This function is invoked by the comev engine in case an overlay function
+* @brief This function is invoked by the comev engine in case an overlay function
 * was invoked and comrv is disabled
 *
 * @param None
@@ -1238,10 +1253,22 @@ D_COMRV_TEXT_SECTION void comrvNotifyDisabledError(void)
    M_COMRV_ERROR(stErrArgs, D_COMRV_INVOKED_WHILE_DISABLED, D_COMRV_INVALID_TOKEN);
 }
 
+/**
+* @brief retrieve comrv database address
+*
+* @param None
+*
+* @return None
+*/
+D_COMRV_TEXT_SECTION const comrvCB_t* comrvGetDatabase(void)
+{
+   return &g_stComrvCB;
+}
+
 #ifdef D_COMRV_RTOS_SUPPORT
 
 /**
-* save comrv stack in case of context switch
+* @brief save comrv stack in case of context switch
 *
 * @param None
 *
@@ -1346,7 +1373,7 @@ D_COMRV_TEXT_SECTION u32_t* comrvSaveContextSwitch(volatile u32_t* pMepc, volati
 }
 
 /**
-* This function is invoked by the comev engine in case an overlay function
+* @brief This function is invoked by the comev engine in case an overlay function
 * was invoked and comrv is not initialized
 *
 * @param None
