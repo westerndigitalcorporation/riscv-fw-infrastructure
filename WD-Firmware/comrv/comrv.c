@@ -642,6 +642,10 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       stLoadArgs.pDest         = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
+
+      /* at this point we are sure comrv data is valid - debugger can now collect it */
+      M_COMRV_DEBUGGER_HOOK_SYMBOL();
+
       /* if group wasn't loaded */
       if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
       {
@@ -650,9 +654,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 
       M_COMRV_VERIFY_CRC(pAddress, usOverlayGroupSize-sizeof(u32_t),
                         *((u32_t*)(pAddress + (usOverlayGroupSize-sizeof(u32_t)))));
-
-      /* at this point we are sure comrv data is valid - debugger can now collect it */
-      M_COMRV_DEBUGGER_HOOK_SYMBOL();
 
 #ifdef D_COMRV_RTOS_SUPPORT
 #ifdef D_COMRV_OVL_DATA_SUPPORT

@@ -78,22 +78,6 @@ OVERLAY_TABLE_ENTRY_TOKEN_VAL \
 
 #=====================================================================#
 
-# This counts the number of times the ComRV event breakpoint has been
-# hit, and is used to help us decide if ComRV is likely initialised or
-# not yet.
-global_event_breakpoint_hit_count = 0
-
-# Return True if we believe that ComRV should have been initialised,
-# and it is therefore safe to try and read the ComRV tables from
-# memory.  Otherwise, return False.
-def global_has_comrv_been_initialised_yet ():
-    global global_event_breakpoint_hit_count
-
-    # Yuck! Borrow the symbol reading wrapper from overlay_data class.
-    return (global_event_breakpoint_hit_count > 0)
-
-#=====================================================================#
-
 # A class for the control variable 'set/show debug comrv on|off'.
 class debug_parameter (gdb.Parameter):
     '''Controls debugging messages from the Python Overlay Manager.  This
@@ -246,6 +230,74 @@ class show_comrv_tokens_parameter (gdb.Parameter):
         return self.value
 
 show_comrv_tokens = show_comrv_tokens_parameter ()
+
+# A class for the control variable 'set/show comrv initialized'.
+class comrv_initialized_parameter (gdb.Parameter):
+    '''This parameter displays whether the ComRV engine is currently
+    initialized.  This parameter will initially be `off`, but will
+    automatically enter the `on` state when GDB detects that ComRV
+    must now be initialized.
+
+    Manually switching this parameter back to `off` will cause GDB
+    to discard the currently cached ComRV state.  However, the next
+    time GDB detects that ComRV must be enabled this parameter will
+    be switched back to `on`.
+
+    Alternatively, manually switching this parameter to `on` will
+    cause GDB to assume that ComRV is initialized.  GDB will parse
+    the static ComRV and cache it.'''
+    set_doc = "Set whether ComRV is currently initialized."
+    show_doc = "Show whether ComRV is currently initialized."
+    def __init__ (self):
+        gdb.Parameter.__init__ (self, "comrv initialized",
+                                gdb.COMMAND_STACK,
+                                gdb.PARAM_BOOLEAN)
+        self.value = False
+
+    # Called to display this property.
+    def get_show_string (self, value):
+        if (value):
+            return ("The ComRV engine is considered initialized.")
+        else:
+            return ("The ComRV engine is NOT considered initialized.")
+
+    # Called to print a string when the user sets this property.  We
+    # make use of this to tweak the state when this property is
+    # adjusted.
+    def get_set_string (self):
+        if (not self.value):
+            # User has requested that we cosider ComRV not
+            # initialized.  Discard any existing cached data.
+            overlay_data.clear ()
+        return ""
+
+    # Allow this property to be treated as an integer.
+    def __nonzero__ (self):
+        if (self.value):
+            return 1
+        else:
+            return 0
+
+    # Allow this property to be treated as a boolean.
+    def __bool__ (self):
+        return self.value
+
+# An instance of this property.
+is_comrv_initialized_p =  comrv_initialized_parameter ()
+
+#=====================================================================#
+
+# Return True if we believe that ComRV should have been initialised,
+# and it is therefore safe to try and read the ComRV tables from
+# memory.  Otherwise, return False.
+def global_has_comrv_been_initialised_yet ():
+    global is_comrv_initialized_p
+    return is_comrv_initialized_p.value
+
+# Mark the ComRV engine as initialised.
+def global_mark_comrv_as_initialised ():
+    global is_comrv_initialized_p
+    is_comrv_initialized_p.value = True
 
 #=====================================================================#
 
@@ -1014,8 +1066,6 @@ def print_current_comrv_state ():
     ovly_data = overlay_data.fetch ()
     if (not ovly_data.comrv_initialised ()):
         print ("ComRV not yet initialisd:")
-        print ("%40s: %d" % ("ComRV event breakpoint hits",
-                             global_event_breakpoint_hit_count))
         return
 
     print ("Overlay Regions:")
@@ -1404,12 +1454,8 @@ class MyOverlayManager (gdb.OverlayManager):
     def read_mappings (self):
         debug ("In Python code, read_mappings")
 
-        # This is a proxy for counting the number of times the ComRV
-        # event breakpoint has been hit.  This works as we know that
-        # GDB will only call this when the event it hit and not
-        # before.
-        global global_event_breakpoint_hit_count
-        global_event_breakpoint_hit_count += 1
+        # If we're reading mappings then ComRV must be initialised.
+        global_mark_comrv_as_initialised ()
 
         global overlay_debug
         if (overlay_debug):
@@ -1456,10 +1502,7 @@ class MyOverlayManager (gdb.OverlayManager):
     # Get the callee that the overlay manager is calling.  This method should
     # only be called when the pc is at one of the comrv entry points for a call.
     def get_callee_primary_storage_area_address (self):
-        # HACK: Increment global_event_breakpoint_hit_count so
-        # overlay_data.fetch can assume comrv has been initialised.
-        global global_event_breakpoint_hit_count
-        global_event_breakpoint_hit_count += 1
+        global_mark_comrv_as_initialised ()
 
         ovly_data = overlay_data.fetch ()
         if (not ovly_data.comrv_initialised ()):
