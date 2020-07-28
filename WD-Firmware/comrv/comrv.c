@@ -205,7 +205,6 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)
    #error "M_COMRV_GET_SET_BIT_INDEX missing implementation"
 #endif /* D_BITMANIP_EXT */
-
 /**
 * types
 */
@@ -292,7 +291,6 @@ extern void *COMRV_TEXT_SEC;
 */
 D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 {
-   comrvCacheEntry_t *pCacheEntry;
    u08_t              ucIndex;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
 #ifdef D_COMRV_VERIFY_INIT_ARGS
@@ -312,24 +310,8 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
       to call overlay functions until comrv tables are loaded */
    M_COMRV_SET_ENTRY_ADDR(comrvEntryDisable);
 
-#ifdef D_COMRV_EVICTION_LRU
-   /* initialize all cache entries (exclude last cache entry which is
-      reserved for comrv tables) */
-   for (ucIndex = 0 ; ucIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucIndex++)
-   {
-      pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
-      /* initially each entry points to the previous and next neighbor cells */
-      pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
-      pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
-      pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
-      pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
-   }
-   /* set the index of the LRU */
-   g_stComrvCB.ucLruIndex = 0;
-
-#elif defined(D_COMRV_EVICTION_LFU)
-#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
-#endif /* D_COMRV_EVICTION_LRU */
+   /* initialize comrv cache control block - including offset/multi-group entry */
+   comrvReset(E_RESET_TYPE_ALL);
 
    /* initialize all stack entries */
    for (ucIndex = 0 ; ucIndex < D_COMRV_CALL_STACK_DEPTH ; ucIndex++, pStackPool++)
@@ -1390,3 +1372,55 @@ D_COMRV_TEXT_SECTION void comrvNotifyNotInitialized(void)
 }
 #endif /* D_COMRV_RTOS_SUPPORT */
 
+/**
+* @brief This function resets the comrv cache control block
+*
+* @param ucResetTables - non-zero value indicates that offset
+*                        and multi-group tables are also reset
+*
+* @return None
+*/
+void comrvReset(comrvResetType_t eResetType)
+{
+   comrvCacheEntry_t *pCacheEntry;
+   u08_t              ucIndex, ucLoopCount;
+
+   /* does the caller wishes to reset tables as well */
+   if (eResetType == E_RESET_TYPE_ALL)
+   {
+      /* loop all table entries */
+      ucLoopCount = D_COMRV_NUM_OF_CACHE_ENTRIES;
+   }
+   else
+   {
+      /* loop table entries excluding the offset/multi-group entry */
+      ucLoopCount = g_stComrvCB.ucLastCacheEntry;
+   }
+
+   /* enter critical section */
+   M_COMRV_ENTER_CRITICAL_SECTION();
+
+#ifdef D_COMRV_EVICTION_LRU
+   /* initialize all cache entries (exclude last cache entry which is
+      reserved for comrv tables) */
+   for (ucIndex = 0 ; ucIndex < ucLoopCount ; ucIndex++)
+   {
+      pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
+      /* initially each entry points to the previous and next neighbor cells */
+      pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
+      pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
+      pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+      pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+   }
+   /* set the index of the LRU and MRU */
+   g_stComrvCB.ucLruIndex = 0;
+   g_stComrvCB.ucMruIndex = ucLoopCount - 1;
+   pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
+
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
+
+   /* exit critical section */
+   M_COMRV_EXIT_CRITICAL_SECTION();
+}

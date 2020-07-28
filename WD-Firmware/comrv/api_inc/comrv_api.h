@@ -63,6 +63,7 @@ void comrvEnable(void);
 void comrvDisable(void);
 void comrvLoadTables(void);
 const comrvCB_t* comrvGetDatabase(void);
+void comrvReset(comrvResetType_t eResetType);
 void comrvInit(comrvInitArgs_t* pInitParams);
 void comrvGetStatus(comrvStatus_t* pComrvStatus);
 D_COMRV_NO_INLINE u32_t comrvInitApplicationStack(void);
