@@ -40,7 +40,7 @@ listCFiles=[
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
 listAssemblyFiles=[
-   (os.path.join(strRtosAlBase, 'rtosal_int_vect.S'), os.path.join(strOutDir, 'rtosal_int_vect.o')),
+   (os.path.join(strRtosAlBase, 'rtosal_int_vect_%s.S' %Env['TARGET_BOARD']), os.path.join(strOutDir, 'rtosal_int_vect_%s.o' %Env['TARGET_BOARD'])),
 ]
 
 # compiler flags

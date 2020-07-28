@@ -31,150 +31,39 @@
 #define M_DEMO_COMRV_RTOS_FENCE()   M_PSP_INST_FENCE(); \
                                     M_PSP_INST_FENCEI();
 
+#define M_DEMO_5_NOPS()    \
+   asm volatile ("nop");  \
+   asm volatile ("nop");  \
+   asm volatile ("nop");  \
+   asm volatile ("nop");  \
+   asm volatile ("nop");
+
+#define M_DEMO_10_NOPS()  \
+   M_DEMO_5_NOPS();       \
+   M_DEMO_5_NOPS();
+
+#define M_DEMO_50_NOPS()  \
+   M_DEMO_10_NOPS();      \
+   M_DEMO_10_NOPS();      \
+   M_DEMO_10_NOPS();      \
+   M_DEMO_10_NOPS();      \
+   M_DEMO_10_NOPS();
+
 #define M_OVL_DUMMY_FUNCTION(x,y) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
-  { \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    OvlTestFunc_##y##_();  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-  };
+   { \
+      M_DEMO_50_NOPS();     \
+      M_DEMO_10_NOPS();     \
+      OvlTestFunc_##y##_(); \
+      M_DEMO_10_NOPS();     \
+   };
 
 #define M_OVL_DUMMY_FUNCTION_LEAF(x) \
-  void _OVERLAY_ OvlTestFunc_##x##_() \
-  { \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-    asm volatile ("nop");  \
-  };
+   void _OVERLAY_ OvlTestFunc_##x##_() \
+   { \
+      M_DEMO_50_NOPS();     \
+      M_DEMO_10_NOPS();     \
+   };
 
 #define M_OVL_FUNCTIONS_GENERATOR \
   M_OVL_DUMMY_FUNCTION_LEAF(11) \
@@ -351,6 +240,11 @@ void demoStart(void)
 
    /* check that the overlay group > 512B works */
    M_OVL_FUNCTIONS_CALL;
+
+   /* at this point the entire cache is taken with 1 loaded group,
+      lets add a call to a none loaded function which will break the loaded
+      group */
+   OverlayFunc4();
 
    M_DEMO_END_PRINT();
 }
