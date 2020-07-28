@@ -71,7 +71,7 @@
 */
 
 /*
-This implementation supports riscv privileged v1.10
+This implementation supports riscv privileged v1.10 and PRM of SweRV-EH1
 */
 
 #include "psp_core_base.inc"
@@ -135,6 +135,44 @@ rtosal_vect_table:
     .align 2
     j       rtosal_m_external_int       /* Machine external interrupt           */
     .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
+    j       rtosal_timer_1_int          /* mcause #28 - Machine internal timer 1 local interrupt   */
+    .align 2
+    j       rtosal_timer_0_int          /* mcause #29 - Machine internal timer 0 local interrupt   */
+    .align 2
+    j       rtosal_reserved_int         /* Reserved for future standard use     */
+    .align 2
 
 rtosal_exceptions_int:
 .ifdef D_RTOSAL_VECT_TABLE
@@ -192,6 +230,31 @@ rtosal_m_external_int_no_cs:
     M_PSP_POP_REGFILE                                                /* Restore the registers of current application from the stack */
     mret
 
+rtosal_timer_0_int:
+#ifdef D_RTOSAL_VECT_TABLE
+    M_PSP_PUSH_REGFILE                                       /* Push registers of current application onto stack */
+    M_RTOSAL_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0                    /* Save MEPC & MSTATUS on stack. Save SP in currunt application CB */
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto application's-stack, we change sp to point to ISR-Stack */
+#endif /* D_RTOSAL_VECT_TABLE */
+    M_PSP_CALL_INT_HANDLER g_fptrIntMTimer0IntHandler        /* Call the interrupt handler */
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0                 /* Restore SP (application's one) and MEPC & MSTATUS */
+    M_RTOSAL_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
+    M_PSP_POP_REGFILE                                        /* Restore the registers of current application from the stack */
+    mret
+
+rtosal_timer_1_int:
+#ifdef D_RTOSAL_VECT_TABLE
+    M_PSP_PUSH_REGFILE                                       /* Push registers of current application onto stack */
+    M_RTOSAL_SET_INT_CONTEXT                                 /* Mark we are in interrupt context */
+    M_RTOSAL_SAVE_CONTEXT pxCurrentTCB, 0                    /* Save MEPC & MSTATUS on stack. Save SP in currunt application CB */
+    M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK                    /* After RegFile is pushed onto application's-stack, we change sp to point to ISR-Stack */
+#endif /* D_RTOSAL_VECT_TABLE */
+    M_PSP_CALL_INT_HANDLER g_fptrIntMTimer1IntHandler        /* Call the interrupt handler */
+    M_RTOSAL_RESTORE_CONTEXT pxCurrentTCB, 0                 /* Restore SP (application's one) and MEPC & MSTATUS */
+    M_RTOSAL_CLEAR_INT_CONTEXT                               /* Clear interrupt context indication */
+    M_PSP_POP_REGFILE                                        /* Restore the registers of current application from the stack */
+    mret
 
 .weak rtosal_reserved_int
 rtosal_reserved_int:
