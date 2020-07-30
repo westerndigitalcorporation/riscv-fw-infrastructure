@@ -45,6 +45,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #include "rtosal_interrupt_api.h"
    #include "rtosal_defines.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
+#ifdef D_COMRV_TI
+#include "comrv_ti_api.h"
+#endif /* D_COMRV_TI */
 
 /**
 * definitions
@@ -114,6 +117,10 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_ANY_LOCK_MASK                         0x41
 #define D_COMRV_DEBRUIJN32                            0x077CB531
 #define D_COMRV_DEBRUIJN32_SHFT_AMNT                  27
+
+#ifndef D_COMRV_TI
+#define D_COMRV_TI_SYNC_POINT(x)
+#endif /* D_COMRV_TI */
 
 /**
 * macros
@@ -413,9 +420,15 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 #endif /* D_COMRV_FW_INSTRUMENTATION */
    }
 
+   /* comrv test sync point - trigger sw int and force context switch */
+   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_BEFORE_ENTER_CRITICAL_SEC);
+
    /* we need to make sure that from this point
       we won't have new overlay requests - we alow context swiches */
    M_COMRV_ENTER_CRITICAL_SECTION();
+
+   /* comrv test sync point - trigger sw int and force context switch */
+   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_ENTER_CRITICAL_SEC);
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
@@ -615,8 +628,12 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* enable the interrupts */
       M_COMRV_ENABLE_INTS(uiPrevIntState);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
+      /* comrv test sync point - trigger sw int and force context switch */
+      D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_BEFORE_EXIT_CRITICAL_SEC);
       /* it is safe now to get new overlay requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
+      /* comrv test sync point - trigger sw int and force context switch */
+      D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC);
       /* the group size in bytes */
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
       /* now we can load the overlay group */
@@ -695,6 +712,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
      /* the group size in bytes */
      usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
+
+   /* comrv test sync point - trigger sw int and force context switch */
+   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_SEARCH_LOAD);
 
    /* invalidate data cache */
    M_COMRV_DCACHE_FLUSH(&g_stComrvCB, sizeof(g_stComrvCB));
@@ -1384,6 +1404,9 @@ void comrvReset(comrvResetType_t eResetType)
 {
    comrvCacheEntry_t *pCacheEntry;
    u08_t              ucIndex, ucLoopCount;
+#ifdef D_COMRV_RTOS_SUPPORT
+   u32_t              ret;
+#endif /* D_COMRV_RTOS_SUPPORT */
 
    /* does the caller wishes to reset tables as well */
    if (eResetType == E_RESET_TYPE_ALL)
