@@ -138,15 +138,15 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* write comrv stack register (t3) */
 #define M_COMRV_WRITE_STACK_REG(x)       asm volatile ("mv t3, %0" : : "r" (x) );
 /* set comrv entry engine address */
-#define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la t6, "#address : : : );
+#define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la x31, %0" : : "i"(address) : );
 /* get comrv entry engine address */
 #define M_COMRV_READ_ENTRY_ADDR(x)       asm volatile ("mv %0, t6" : "=r" (x)  : );
 /* set the comrv stack pool and comrv stack registers */
 #if __riscv_xlen == 64
- #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
+ #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, %0" : : "i"(address) : ); \
                                          asm volatile ("ld t3, 0x0(t3)"  : : : );
 #elif __riscv_xlen == 32
- #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
+ #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, %0" : : "i"(address) : ); \
                                          asm volatile ("lw t3, 0x0(t3)"  : : : );
 #endif
 /* overlay group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
