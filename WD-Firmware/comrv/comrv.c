@@ -201,8 +201,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
       ((((u32_t)(pReturnAddress)) - uiFuncOffset - ( pComrvStackFrame->ucAlignmentToMaxGroupSize << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)) & (D_COMRV_OVL_GROUP_SIZE_MAX-1))
 
 /* Get the index of the rightmost set bit */
-// TODO: Nati - when EH2 define is set we also need to set D_BITMANIP_EXT
-#ifndef D_BITMANIP_EXT
+#ifndef __riscv_bitmanip
    /* with the absence of RISC-V bitmanip extension we use a faster method to find the
       location of the first set bit - http://supertech.csail.mit.edu/papers/debruijn.pdf */
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)   ucArrDeBruijnBitPos[((u32_t)(uiFindFirstSet * D_COMRV_DEBRUIJN32)) >> D_COMRV_DEBRUIJN32_SHFT_AMNT]
@@ -211,7 +210,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    // TODO: Nati - also add macros for clz, ctz.
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)
    #error "M_COMRV_GET_SET_BIT_INDEX missing implementation"
-#endif /* D_BITMANIP_EXT */
+#endif /* __riscv_bitmanip */
+
 /**
 * types
 */
