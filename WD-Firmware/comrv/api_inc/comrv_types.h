@@ -253,4 +253,16 @@ typedef struct comrvTaskStackRegsVal
    u32_t uiRegT5;
 }comrvTaskStackRegsVal_t;
 
+/* comrv reset type */
+typedef enum comrvResetType
+{
+   /* reset cache control block  - reset all loaded groups and eviction values*/
+   E_RESET_TYPE_CACHE = 0,
+   /* reset cache control block including the 'offset' and 'multi-group' tables
+      if this option means the end user must reload these tables using
+      comrvLoadTables */
+   E_RESET_TYPE_ALL   = 1
+}comrvResetType_t;
+
 #endif /* __COMRV_TYPES_H__ */
+

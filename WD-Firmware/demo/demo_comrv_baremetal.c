@@ -246,6 +246,12 @@ void demoStart(void)
       group */
    OverlayFunc4();
 
+   /* reset comrv, keep the 'offset' and 'multi-group' tables loaded */
+   comrvReset(E_RESET_TYPE_CACHE);
+
+   /* due to comrvReset, OvlTestFunc_14_() will be loaded now */
+   OvlTestFunc_14_();
+
    M_DEMO_END_PRINT();
 }
 

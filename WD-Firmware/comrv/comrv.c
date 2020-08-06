@@ -45,6 +45,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #include "rtosal_interrupt_api.h"
    #include "rtosal_defines.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
+#ifdef D_COMRV_TI
+#include "comrv_ti_api.h"
+#endif /* D_COMRV_TI */
 
 /**
 * definitions
@@ -115,6 +118,10 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_DEBRUIJN32                            0x077CB531
 #define D_COMRV_DEBRUIJN32_SHFT_AMNT                  27
 
+#ifndef D_COMRV_TI
+#define D_COMRV_TI_SYNC_POINT(x)
+#endif /* D_COMRV_TI */
+
 /**
 * macros
 */
@@ -131,15 +138,15 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 /* write comrv stack register (t3) */
 #define M_COMRV_WRITE_STACK_REG(x)       asm volatile ("mv t3, %0" : : "r" (x) );
 /* set comrv entry engine address */
-#define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la t6, "#address : : : );
+#define M_COMRV_SET_ENTRY_ADDR(address)  asm volatile ("la x31, %0" : : "i"(address) : );
 /* get comrv entry engine address */
 #define M_COMRV_READ_ENTRY_ADDR(x)       asm volatile ("mv %0, t6" : "=r" (x)  : );
 /* set the comrv stack pool and comrv stack registers */
 #if __riscv_xlen == 64
- #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
+ #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, %0" : : "i"(address) : ); \
                                          asm volatile ("ld t3, 0x0(t3)"  : : : );
 #elif __riscv_xlen == 32
- #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, "#address : : : ); \
+ #define M_COMRV_SET_STACK_ADDR(address) asm volatile ("la t3, %0" : : "i"(address) : ); \
                                          asm volatile ("lw t3, 0x0(t3)"  : : : );
 #endif
 /* overlay group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
@@ -194,8 +201,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
       ((((u32_t)(pReturnAddress)) - uiFuncOffset - ( pComrvStackFrame->ucAlignmentToMaxGroupSize << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)) & (D_COMRV_OVL_GROUP_SIZE_MAX-1))
 
 /* Get the index of the rightmost set bit */
-// TODO: Nati - when EH2 define is set we also need to set D_BITMANIP_EXT
-#ifndef D_BITMANIP_EXT
+#ifndef __riscv_bitmanip
    /* with the absence of RISC-V bitmanip extension we use a faster method to find the
       location of the first set bit - http://supertech.csail.mit.edu/papers/debruijn.pdf */
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)   ucArrDeBruijnBitPos[((u32_t)(uiFindFirstSet * D_COMRV_DEBRUIJN32)) >> D_COMRV_DEBRUIJN32_SHFT_AMNT]
@@ -204,7 +210,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    // TODO: Nati - also add macros for clz, ctz.
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)
    #error "M_COMRV_GET_SET_BIT_INDEX missing implementation"
-#endif /* D_BITMANIP_EXT */
+#endif /* __riscv_bitmanip */
 
 /**
 * types
@@ -292,7 +298,6 @@ extern void *COMRV_TEXT_SEC;
 */
 D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
 {
-   comrvCacheEntry_t *pCacheEntry;
    u08_t              ucIndex;
    comrvStackFrame_t* pStackPool   = g_stComrvStackPool;
 #ifdef D_COMRV_VERIFY_INIT_ARGS
@@ -312,24 +317,8 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
       to call overlay functions until comrv tables are loaded */
    M_COMRV_SET_ENTRY_ADDR(comrvEntryDisable);
 
-#ifdef D_COMRV_EVICTION_LRU
-   /* initialize all cache entries (exclude last cache entry which is
-      reserved for comrv tables) */
-   for (ucIndex = 0 ; ucIndex < D_COMRV_NUM_OF_CACHE_ENTRIES ; ucIndex++)
-   {
-      pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
-      /* initially each entry points to the previous and next neighbor cells */
-      pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
-      pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
-      pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
-      pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
-   }
-   /* set the index of the LRU */
-   g_stComrvCB.ucLruIndex = 0;
-
-#elif defined(D_COMRV_EVICTION_LFU)
-#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
-#endif /* D_COMRV_EVICTION_LRU */
+   /* initialize comrv cache control block - including offset/multi-group entry */
+   comrvReset(E_RESET_TYPE_ALL);
 
    /* initialize all stack entries */
    for (ucIndex = 0 ; ucIndex < D_COMRV_CALL_STACK_DEPTH ; ucIndex++, pStackPool++)
@@ -431,9 +420,15 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 #endif /* D_COMRV_FW_INSTRUMENTATION */
    }
 
+   /* comrv test sync point - trigger sw int and force context switch */
+   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_BEFORE_ENTER_CRITICAL_SEC);
+
    /* we need to make sure that from this point
       we won't have new overlay requests - we alow context swiches */
    M_COMRV_ENTER_CRITICAL_SECTION();
+
+   /* comrv test sync point - trigger sw int and force context switch */
+   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_ENTER_CRITICAL_SEC);
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
@@ -633,8 +628,12 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       /* enable the interrupts */
       M_COMRV_ENABLE_INTS(uiPrevIntState);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
+      /* comrv test sync point - trigger sw int and force context switch */
+      D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_BEFORE_EXIT_CRITICAL_SEC);
       /* it is safe now to get new overlay requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
+      /* comrv test sync point - trigger sw int and force context switch */
+      D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC);
       /* the group size in bytes */
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
       /* now we can load the overlay group */
@@ -713,6 +712,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
      /* the group size in bytes */
      usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
+
+   /* comrv test sync point - trigger sw int and force context switch */
+   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_SEARCH_LOAD);
 
    /* invalidate data cache */
    M_COMRV_DCACHE_FLUSH(&g_stComrvCB, sizeof(g_stComrvCB));
@@ -1390,3 +1392,58 @@ D_COMRV_TEXT_SECTION void comrvNotifyNotInitialized(void)
 }
 #endif /* D_COMRV_RTOS_SUPPORT */
 
+/**
+* @brief This function resets the comrv cache control block
+*
+* @param ucResetTables - non-zero value indicates that offset
+*                        and multi-group tables are also reset
+*
+* @return None
+*/
+void comrvReset(comrvResetType_t eResetType)
+{
+   comrvCacheEntry_t *pCacheEntry;
+   u08_t              ucIndex, ucLoopCount;
+#ifdef D_COMRV_RTOS_SUPPORT
+   u32_t              ret;
+#endif /* D_COMRV_RTOS_SUPPORT */
+
+   /* does the caller wishes to reset tables as well */
+   if (eResetType == E_RESET_TYPE_ALL)
+   {
+      /* loop all table entries */
+      ucLoopCount = D_COMRV_NUM_OF_CACHE_ENTRIES;
+   }
+   else
+   {
+      /* loop table entries excluding the offset/multi-group entry */
+      ucLoopCount = g_stComrvCB.ucLastCacheEntry;
+   }
+
+   /* enter critical section */
+   M_COMRV_ENTER_CRITICAL_SECTION();
+
+#ifdef D_COMRV_EVICTION_LRU
+   /* initialize all cache entries (exclude last cache entry which is
+      reserved for comrv tables) */
+   for (ucIndex = 0 ; ucIndex < ucLoopCount ; ucIndex++)
+   {
+      pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
+      /* initially each entry points to the previous and next neighbor cells */
+      pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
+      pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
+      pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+      pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+   }
+   /* set the index of the LRU and MRU */
+   g_stComrvCB.ucLruIndex = 0;
+   g_stComrvCB.ucMruIndex = ucLoopCount - 1;
+   pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
+
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
+
+   /* exit critical section */
+   M_COMRV_EXIT_CRITICAL_SECTION();
+}
