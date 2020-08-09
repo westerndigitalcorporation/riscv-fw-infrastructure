@@ -256,6 +256,7 @@
          "number" : "0x7f1"
       },
       "mie" : {
+         "poke_mask" : "0x00000888",
          "reset" : "0x0",
          "exists" : "true",
          "mask" : "0x40000888"
