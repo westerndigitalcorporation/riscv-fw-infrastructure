@@ -48,6 +48,7 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
+Env['PUBLIC_DEF'] += ['D_RTOSAL']
 listCompilationDefines = [] + Env['PUBLIC_DEF'] # add "+ ['D_RTOSAL_VECT_TABLE']" when using vector table
 
 # include paths

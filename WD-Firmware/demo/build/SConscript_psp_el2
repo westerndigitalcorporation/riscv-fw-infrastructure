@@ -49,6 +49,11 @@ listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 # compilation defines (-D_)
 listCompilationDefines = []+Env['PUBLIC_DEF']
 
+# compilation defines (-D_)
+listCompilationDefines = [] + Env['PUBLIC_DEF']
+
+
+
 # public includes
 Env['PUBLIC_INC'] += [
   os.path.join(Env['ROOT_DIR'], 'psp', 'api_inc'),

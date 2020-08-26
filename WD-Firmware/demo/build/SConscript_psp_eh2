@@ -55,7 +55,7 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-listCompilationDefines = []+Env['PUBLIC_DEF']
+listCompilationDefines = [] + Env['PUBLIC_DEF']
 
 # public includes
 Env['PUBLIC_INC'] += [

@@ -45,7 +45,7 @@ class demo(object):
       'freertos',
       'rtosal',
       'demo_comrv_rtos',
-      'comrv_rtos',
+      'comrv',
     ]
 
     self.listDemoSpecificCFlags = [

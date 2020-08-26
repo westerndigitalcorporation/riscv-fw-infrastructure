@@ -112,6 +112,7 @@ void demoUartInit(void)
   printfNexys("Core list:");
   printfNexys("\t EH1 = 11 ");
   printfNexys("\t EL2 = 16 ");
+  printfNexys("\t EH2 = 17 ");
   printfNexys("Running demo on core %d...", M_PSP_READ_CSR(D_PSP_MARCHID_NUM));
   printfNexys("------------------------------------------");
   printfNexys("SweRVolf version %d.%d%d (SHA %08x) (dirty %d)",

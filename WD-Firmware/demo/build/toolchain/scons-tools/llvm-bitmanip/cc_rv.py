@@ -82,20 +82,21 @@ def generate(env):
     add_common_cc_variables(env)
 
     # Tool c compiler execution
-    env['CC_BIN']      = "riscv64-unknown-elf-gcc"
+    env['CC_BIN']      = "clang"
     # temporary location
-    env['SIZE_BIN']     = "riscv64-unknown-elf-size"
-    env['OBJDUMP_BIN']  = "riscv64-unknown-elf-objdump"
-    env['OBJDUMP_ATTR'] = ""
-    env['OBJCOPY_BIN']  = "riscv64-unknown-elf-objcopy"
-    env['READELF_BIN']  = "riscv64-unknown-elf-readelf"
+    env['SIZE_BIN']     = "riscv32-unknown-elf-size"
+    env['OBJDUMP_BIN']  = "llvm-objdump"
+    env['OBJDUMP_ATTR'] = " --mattr=+experimental-b"
+    env['OBJCOPY_BIN']  = "riscv32-unknown-elf-objcopy"
+    env['READELF_BIN']  = "riscv32-unknown-elf-readelf"
 
-    env['CC'] = os.path.join("$RISCV_GCC_TC_PATH", "bin", "$CC_BIN")
+    env['CC'] = os.path.join("$RISCV_LLVM_TC_PATH", "bin", "$CC_BIN")
     env['CFLAGS'] = SCons.Util.CLVar('')
     env['CCCOM'] = '$CC -o $TARGET -c $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCPATHS'
     env['SHCC'] = '$CC'
     env['SHCFLAGS'] = SCons.Util.CLVar('$CFLAGS')
     env['SHCCCOM'] = '$SHCC -o $TARGET -c $SHCFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES'
+    
     env['LINKCOM'] = '$LINK -o $TARGET $LINKFLAGS $LINKCOM_START_GROUP $SOURCES $__RPATH $_LIBDIRFLAGS $_LIBFLAGS $LINKCOM_END_GROUP'
     
     env['CPPDEFPREFIX'] = '-D'

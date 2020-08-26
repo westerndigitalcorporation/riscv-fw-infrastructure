@@ -41,7 +41,7 @@ class demo(object):
     ]
 
     self.listSconscripts = [
-      'comrv_baremetal',
+      'comrv',
       'demo_comrv_baremetal',
     ]
 

@@ -44,7 +44,8 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_COMRV']
+if 'D_RTOSAL' in Env['PUBLIC_DEF']:
+  Env['PUBLIC_DEF'] += ['D_COMRV']
 listCompilationDefines = [] + Env['PUBLIC_DEF']
 
 # include paths
