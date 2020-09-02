@@ -102,10 +102,10 @@ void demoStart(void)
       pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
       /* Activates Core's timer */
-      pspTimerCounterSetupAndRun(E_MACHINE_TIMER,  0xFFFFFFFF);
+      pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER,  0xFFFFFFFF);
 
       /* sample the timer value */
-      ulCounterCache_t1 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t1 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* we disable (again) the cache just to have the same amount
          of measured instructions */
@@ -115,7 +115,7 @@ void demoStart(void)
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounterCache_t2 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t2 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* sum the result for the "busy loop example " */
       ulCounterCacheOFF = ulCounterCache_t2 - ulCounterCache_t1;
@@ -128,7 +128,7 @@ void demoStart(void)
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounterCache_t2 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t2 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* sum the result for the "busy loop example " */
       ulCounterCacheON = ulCounterCache_t2 - ulCounterCacheOFF;   /*OFF was the reference t1 */
