@@ -47,6 +47,7 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
+Env['PUBLIC_DEF'] += ['D_EHX1_VER_1_0'] # SweRV EL2 PSP is aligned to SweRV EHX1 version 1.0
 listCompilationDefines = []+Env['PUBLIC_DEF']
 
 # compilation defines (-D_)
