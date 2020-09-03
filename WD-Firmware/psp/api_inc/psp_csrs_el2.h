@@ -35,6 +35,8 @@
 /**********************************/
 /* Non standard CSRs in SweRV EL2 */
 /**********************************/
+#define D_PSP_MDBB_NUM         0xBC2 /* D-Bus Barrier register */
+#define D_PSP_MDBAC_NUM        0xBC1 /* D-Bus 64-Bit Access Control register */
 #define D_PSP_MDBHD_NUM        0xBC7 /* D-Bus 64-Bit High Data register */
 #define D_PSP_DICAD0H_NUM      0x7CC /* I-cache array high bytes (number 4..7) data  (debug mode only) */
 #define D_PSP_MSPCBA_NUM       0x7F4 /* Stack Pointer Checker Base Address register */
@@ -91,6 +93,12 @@
 #define  D_PSP_MFDHS_NUM             0x7CF       /* Forced Debug Halt Status register */
 #define  D_PSP_MFDS_LSU_STATUS_MASK  0x00000001  /* LSU bus transaction termination status - bit 0 */
 #define  D_PSP_MFDS_IFU_STATUS_MASK  0x00000002  /* IFU bus transaction termination status - bit 1 */
+
+/**************************************/
+/* Performance monitoring control CSR */
+/**************************************/
+#define D_PSP_MCOUNTINHIBIT_NUM 0x320
+
 
 /**
 * macros

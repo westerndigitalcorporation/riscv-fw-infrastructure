@@ -54,6 +54,7 @@
 #ifdef D_SWERV_EL2
   #include "psp_csrs_el2.h"
   #include "psp_timers_el2.h"
+  #include "psp_performance_monitor_el2.h"
 #endif
 #ifdef D_SWERV_EH2
   #include "psp_csrs_eh2.h"

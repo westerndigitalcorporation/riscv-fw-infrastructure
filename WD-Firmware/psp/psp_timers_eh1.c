@@ -91,12 +91,8 @@ D_PSP_TEXT_SECTION void pspTimerSetupMachineTimer(u64_t udPeriodCycles)
 D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles)
 {
   u32_t uiNow, uiThen;
-  u32_t uiInterruptsState;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer));
-
-  /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
 
   switch (uiTimer)
   {
@@ -124,9 +120,6 @@ D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriod
     default:
       break;
   }
-
-  /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
 }
 
 /**
@@ -201,12 +194,7 @@ D_PSP_TEXT_SECTION u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 ***************************************************************************************************/
 D_PSP_TEXT_SECTION void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 {
-  u32_t uiInterruptsState = 0;
-
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer));
-
-  /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
 
   switch (uiTimer)
   {
@@ -219,9 +207,6 @@ D_PSP_TEXT_SECTION void pspTimerEnableCountInSleepMode(u32_t uiTimer)
     default:
       break;
   }
-
-  /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
 }
 
 /**
@@ -232,12 +217,7 @@ D_PSP_TEXT_SECTION void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 ***************************************************************************************************/
 D_PSP_TEXT_SECTION void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 {
-  u32_t uiInterruptsState;
-
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer));
-
-  /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
 
   switch (uiTimer)
   {
@@ -250,9 +230,6 @@ D_PSP_TEXT_SECTION void pspTimerDisableCountInSleepMode(u32_t uiTimer)
     default:
       break;
   }
-
-  /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
 }
 
 /**
@@ -263,12 +240,7 @@ D_PSP_TEXT_SECTION void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 ***************************************************************************************************/
 D_PSP_TEXT_SECTION void pspTimerEnableCountInStallMode(u32_t uiTimer)
 {
-  u32_t uiInterruptsState;
-
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer));
-
-  /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
 
   switch (uiTimer)
   {
@@ -281,9 +253,6 @@ D_PSP_TEXT_SECTION void pspTimerEnableCountInStallMode(u32_t uiTimer)
     default:
       break;
   }
-
-  /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
 }
 
 /**
@@ -294,12 +263,7 @@ D_PSP_TEXT_SECTION void pspTimerEnableCountInStallMode(u32_t uiTimer)
 ***************************************************************************************************/
 D_PSP_TEXT_SECTION void pspTimerDisableCountInStallMode(u32_t uiTimer)
 {
-  u32_t uiInterruptsState;
-
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer));
-
-  /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
 
   switch (uiTimer)
   {
@@ -312,9 +276,6 @@ D_PSP_TEXT_SECTION void pspTimerDisableCountInStallMode(u32_t uiTimer)
     default:
       break;
   }
-
-  /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
 }
 
 

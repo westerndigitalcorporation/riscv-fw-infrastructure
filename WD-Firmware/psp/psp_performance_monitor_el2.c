@@ -18,10 +18,11 @@
 */
 
 /**
-* @file    psp_performance_monitor.c
-* @author  Nidal Faour
-* @date    15.03.2020
-* @brief   performance monitor service provider
+* @file    psp_performance_monitor_el2.c
+* @author  Nati Rapaport
+* @date    20.08.2020
+* @brief   performance monitor service provider for SweRV EL2
+*          comply with The RISC-V Instruction Set Manual Volume II: Privileged Architecture 20190405-Priv-MSU-Ratification
 * 
 */
 
@@ -68,7 +69,8 @@
 */
 D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
 {
-  M_PSP_CLEAR_CSR(D_PSP_MGPMC_NUM, D_PSP_MGMPC_MASK);
+  /* In MCOUNTINHIBIT CSR, '1' means counter is disabled */
+  M_PSP_SET_CSR(D_PSP_MCOUNTINHIBIT_NUM, D_PSP_CYCLE_COUNTER|D_PSP_INSTRET_COUNTER|D_PSP_COUNTER0|D_PSP_COUNTER1|D_PSP_COUNTER2|D_PSP_COUNTER3);
 }
 
 /**
@@ -77,7 +79,44 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
 */
 D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
 {
-  M_PSP_SET_CSR(D_PSP_MGPMC_NUM, D_PSP_MGMPC_MASK);
+  /* In MCOUNTINHIBIT CSR, '0' means counter is enabled */
+  M_PSP_CLEAR_CSR(D_PSP_MCOUNTINHIBIT_NUM, D_PSP_CYCLE_COUNTER|D_PSP_INSTRET_COUNTER|D_PSP_COUNTER0|D_PSP_COUNTER1|D_PSP_COUNTER2|D_PSP_COUNTER3);
+}
+
+/**
+* @brief The function disable a specific performance monitor counter
+*
+* @param uiPerfMonCounter- Performance-Monitor counter to disable/enable
+*                          supported counters to enable/disbale are:
+*                             D_PSP_CYCLE_COUNTER
+*                             D_PSP_INSTRET_COUNTER
+*                             D_PSP_COUNTER0
+*                             D_PSP_COUNTER1
+*                             D_PSP_COUNTER2
+*                             D_PSP_COUNTER3
+*/
+D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableCounter(u32_t uiPerfMonCounter)
+{
+  /* In MCOUNTINHIBIT CSR, '1' means counter is disabled */
+  M_PSP_SET_CSR(D_PSP_MCOUNTINHIBIT_NUM, uiPerfMonCounter);
+}
+
+/**
+* @brief The function enable a specific performance monitor counter
+*
+* @param uiPerfMonCounter- Performance-Monitor counter to disable/enable
+*                          supported counters to enable/disbale are:
+*                             D_PSP_CYCLE_COUNTER
+*                             D_PSP_INSTRET_COUNTER
+*                             D_PSP_COUNTER0
+*                             D_PSP_COUNTER1
+*                             D_PSP_COUNTER2
+*                             D_PSP_COUNTER3
+*/
+D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableCounter(u32_t uiPerfMonCounter)
+{
+  /* In MCOUNTINHIBIT CSR, '0' means counter is enabled */
+  M_PSP_CLEAR_CSR(D_PSP_MCOUNTINHIBIT_NUM, uiPerfMonCounter);
 }
 
 /**
@@ -89,7 +128,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
 *                         D_PSP_COUNTER1
 *                         D_PSP_COUNTER2
 *                         D_PSP_COUNTER3
-* @param uiEvent      – event to be paired to the selected counter
+* @param uiEvent       – event to be paired to the selected counter
 *
 * @return No return value
 */
@@ -114,6 +153,7 @@ D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent)
         break;
   }
 }
+
 /**
 * @brief The function gets the counter value (64 bit)
 *
@@ -168,4 +208,3 @@ D_PSP_TEXT_SECTION u64_t pspPerformanceCounterGet(u32_t uiCounter)
   }
   return uiCounterVal;
 }
-

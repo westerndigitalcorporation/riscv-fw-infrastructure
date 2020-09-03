@@ -6,6 +6,8 @@
    "reset_vec" : "0x00000000",
    "harts" : 1,
    "nmi_vec" : "0x8000100C",
+   "enable_zbb" : "true",
+   "enable_zbs" : "true",
    "triggers" : [
       {
          "poke_mask" : [

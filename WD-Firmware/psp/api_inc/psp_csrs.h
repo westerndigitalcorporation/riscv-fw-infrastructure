@@ -107,12 +107,11 @@
 #define D_PSP_MHPMCOUNTER29_NUM    0xB1D
 #define D_PSP_MHPMCOUNTER30_NUM    0xB1E
 #define D_PSP_MHPMCOUNTER31_NUM    0xB1F
-#define D_PSP_TIME_NUM             0xC01
 #if __riscv_xlen == 32
     #define D_PSP_MCYCLEH_NUM           0xB80
     #define D_PSP_MINSTRETH_NUM         0xB82
     #define D_PSP_MHPMCOUNTER3H_NUM     0xB83
-    #define D_PSP_MHPMCOUNTER4HH_NUM    0xB84
+    #define D_PSP_MHPMCOUNTER4H_NUM     0xB84
     #define D_PSP_MHPMCOUNTER5H_NUM     0xB85
     #define D_PSP_MHPMCOUNTER6H_NUM     0xB86
     #define D_PSP_MHPMCOUNTER7H_NUM     0xB87
@@ -140,7 +139,6 @@
     #define D_PSP_MHPMCOUNTER29H_NUM    0xB9D
     #define D_PSP_MHPMCOUNTER30H_NUM    0xB9E
     #define D_PSP_MHPMCOUNTER31H_NUM    0xB9F
-    #define D_PSP_TIMEH_NUM             0xC81
 #endif /* __riscv_xlen == 32 */
 
 
