@@ -300,17 +300,17 @@ void demoSleepHaltIeOption(void)
   pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
 
   /* Activate Machine timer */
-  pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
+  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
-  udTimeBeforeSleep = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Sets core to Sleep (pmu/fw-halt) mode - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
   pspPmcHalt(D_DEMO_ATOMICALLY_ENABLE_INTERRUPTS_UPON_HALT);
 
   /* This line , and the following are executed only when core is not in 'Sleep' */
-  udTimeAfterSleep = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
 

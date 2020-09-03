@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_nmi_eh2.c
+* @file   psp_nmi_el2.c
 * @author Nati Rapaport
-* @date   19.05.2020
-* @brief  The file contains default NMI (Non-maskable Interrupt) handlers, registration services and interface for NMI features of SweRV EH2
+* @date   18.08.2020
+* @brief  The file contains default NMI (Non-maskable Interrupt) handlers, registration services and interface for NMI features of SweRV EL2
 *
 */ 
 
@@ -26,7 +26,6 @@
 * include files
 */
 #include "psp_api.h"
-#include "psp_internal_mutex_eh2.h"
 
 /**
 * types
@@ -90,7 +89,7 @@ D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptr
 *                    - D_PSP_NMI_EXT_PIN_ASSERTION
 *                    - D_PSP_NMI_D_BUS_STORE_ERROR
 *                    - D_PSP_NMI_D_BUS_LOAD_ERROR
-*                    - D_PSP_NMI_FAST_INT_DOUBLE_BIT_ECC_ERROR
+*                    - D_PSP_NMI_FAST_INT_DUOBLE_BIT_ECC_ERROR
 *                    - D_PSP_NMI_FAST_INT_DCCM_ACCESS_ERROR
 *                    - D_PSP_NMI_FAST_INT_NON_DCCM_REGION_ERROR
 *
@@ -99,7 +98,6 @@ D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptr
 D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
 {
   pspNmiHandler_t fptrNmiFunc;
-  u32_t uiHartNumber;
 
   M_PSP_ASSERT((NULL != fptrNmiHandler) && ( (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) || (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
             || (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause) ) )
@@ -109,9 +107,6 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
      case D_PSP_NMI_EXT_PIN_ASSERTION:
        fptrNmiFunc = g_fptrNmiExtPinAssrtHandler;
        g_fptrNmiExtPinAssrtHandler = fptrNmiHandler;
-       /* Delegate pin-asserted NMI handling to the current Hart (HW thread) */
-       uiHartNumber = M_PSP_GET_HART_ID();
-       pspNmiSetDelegation(uiHartNumber);
        break;
      case D_PSP_NMI_D_BUS_STORE_ERROR:
        fptrNmiFunc = g_fptrNmiDbusStoreErrHandler;
@@ -190,64 +185,3 @@ D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
   /* No return from NMI handler. Loop here forever */
   while(1);
 }
-
-/**
- * @brief - delegate pin-asserted NMI to a given Hart (HW thread)
- *          That means - upon occurence of the pin-asserted NMI, it will be handelled by the given Hart    
- *
- * @parameter - Hart number to delegate the NMI to
- */
-D_PSP_TEXT_SECTION void pspNmiSetDelegation(u32_t uiHartNumber)
-{
-  /* Assert on Hart number */
-  M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
-
-  /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
-
-  /* Delegate NMI handling to the given Hart number */
-  M_PSP_SET_CSR(D_PSP_MNMIPDEL_NUM, 1<<uiHartNumber);
-
-  /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
-}
-
-/**
- * @brief - clear delegation of pin-asserted NMI for a given Hart (HW thread)
- *          That means - upon occurence of the pin-asserted NMI, the given Hart will not handle the NMI    
- *
- * @parameter - Hart number to clear NMI delegation from
- */
-D_PSP_TEXT_SECTION void pspNmiClearDelegation(u32_t uiHartNumber)
-{
-  /* Assert on Hart number */
-  M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
-
-  /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
-
-  /* Clear delegation of NMI handling from the given Hart number */
-  M_PSP_CLEAR_CSR(D_PSP_MNMIPDEL_NUM, 1<<uiHartNumber);
-
-  /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
-}
-
-/**
- * @brief - check whether pin-asserted NMI handling is delegated to the given hart (HW thread) or not
- *
- * @parameter - Hart number
- * @return    - 0/1 to indicate whether the NMI handling is delegated to the given hart-number or not
- */
-D_PSP_TEXT_SECTION u32_t pspIsNmiDelegatedToHart(u32_t uiHartNumber)
-{
-  u32_t uiIsDelegated = 0;
-
-  /* Assert on Hart number */
-  M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
-
-  uiIsDelegated = !!(M_PSP_READ_CSR(D_PSP_MNMIPDEL_NUM) & (uiHartNumber+1));
-
-  return (uiIsDelegated);
-}
-
