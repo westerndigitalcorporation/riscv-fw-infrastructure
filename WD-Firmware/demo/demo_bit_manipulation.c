@@ -194,7 +194,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* clz */
+  /* clz - count leading zeros */
   M_PSP_BITMANIP_CLZ(D_DEMO_CLZ_INPUT_NUM, uiResult);
   if (D_DEMO_CLZ_EXPECTED_RESULT != uiResult)
   {
@@ -202,7 +202,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* ctz */
+  /* ctz - count trailing zeros */
   M_PSP_BITMANIP_CTZ(D_DEMO_CTZ_INPUT_NUM, uiResult);
   if (D_DEMO_CTZ_EXPECTED_RESULT != uiResult)
   {
@@ -210,7 +210,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* pcnt*/
+  /* pcnt - count bit set */
   M_PSP_BITMANIP_PCNT(D_DEMO_PCNT_INPUT_NUM, uiResult);
   if (D_DEMO_PCNT_EXPECTED_RESULT != uiResult)
   {
@@ -218,7 +218,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* andN */
+  /* andN - 'and' with negate argument */
   M_PSP_BITMANIP_ANDN(D_DEMO_ANDN_1ST_ARG, D_DEMO_ANDN_2ND_ARG, uiResult);
   if (D_DEMO_ANDN_EXPECTED_RESULT != uiResult)
   {
@@ -226,7 +226,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* orN */
+  /* orN - 'or' with negate argument */
   M_PSP_BITMANIP_ORN(D_DEMO_ORN_1ST_ARG, D_DEMO_ORN_2ND_ARG, uiResult);
   if (D_DEMO_ORN_EXPECTED_RESULT != uiResult)
   {
@@ -234,7 +234,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* xNor */
+  /* xNor - 'xor' with negate argument */
   M_PSP_BITMANIP_XNOR(D_DEMO_XNOR_1ST_ARG, D_DEMO_XNOR_2ND_ARG, uiResult);
   if (D_DEMO_XNOR_EXPECTED_RESULT != uiResult)
   {
@@ -242,7 +242,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* min */
+  /* min - minimum of 2 signed numbers */
   M_PSP_BITMANIP_MIN(D_DEMO_MIN_1ST_ARG, D_DEMO_MIN_2ND_ARG, uiResult);
   if (D_DEMO_MIN_EXPECTED_RESULT != uiResult)
   {
@@ -250,7 +250,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* max */
+  /* max - maximum of 2 signed numbers */
   M_PSP_BITMANIP_MAX(D_DEMO_MAX_1ST_ARG, D_DEMO_MAX_2ND_ARG, uiResult);
   if (D_DEMO_MAX_EXPECTED_RESULT != uiResult)
   {
@@ -259,7 +259,7 @@ void demoBitManipulation(void)
   }
 
 
-  /* minu */
+  /* minu - min of 2 unsigned numbers */
   M_PSP_BITMANIP_MINU(D_DEMO_MINU_1ST_ARG, D_DEMO_MINU_2ND_ARG, uiResult);
   if (D_DEMO_MINU_EXPECTED_RESULT != uiResult)
   {
@@ -267,7 +267,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* maxu */
+  /* maxu - maximum of 2 unsigned numbers */
   M_PSP_BITMANIP_MAXU(D_DEMO_MAXU_1ST_ARG, D_DEMO_MAXU_2ND_ARG, uiResult);
   if (D_DEMO_MAXU_EXPECTED_RESULT != uiResult)
   {
@@ -276,7 +276,7 @@ void demoBitManipulation(void)
   }
 
 #if 0 /* Currently we do not have an example for input & output for sextb and sexth operations */
-  /* sextb */
+  /* sextb - sign-extend byte */
   M_PSP_BITMANIP_SEXTB(D_DEMO_SEXTB_INPUT_NUM, uiResult);
   if (D_DEMO_SEXTB_EXPECTED_RESULT != uiResult)
   {
@@ -284,7 +284,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sexth */
+  /* sexth - sign-extend half-word */
   M_PSP_BITMANIP_SEXTH(D_DEMO_SEXTH_INPUT_NUM, uiResult);
   if (D_DEMO_SEXTH_EXPECTED_RESULT != uiResult)
   {
@@ -293,7 +293,7 @@ void demoBitManipulation(void)
   }
 #endif
 
-  /* pack */
+  /* pack - pack 2 lower halves of 2 arguments */
   M_PSP_BITMANIP_PACK(D_DEMO_PACK_1ST_ARG, D_DEMO_PACK_2ND_ARG, uiResult);
   if (D_DEMO_PACK_EXPECTED_RESULT != uiResult)
   {
@@ -301,7 +301,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* packu */
+  /* packu - pack 2 upper halves of 2 arguments  */
   M_PSP_BITMANIP_PACKU(D_DEMO_PACKU_1ST_ARG, D_DEMO_PACKU_2ND_ARG, uiResult);
   if (D_DEMO_PACKU_EXPECTED_RESULT != uiResult)
   {
@@ -309,7 +309,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* packh */
+  /* packh - pack 2 LSB bytes of 2 arguments  */
   M_PSP_BITMANIP_PACKH(D_DEMO_PACKH_1ST_ARG, D_DEMO_PACKH_2ND_ARG, uiResult);
   if (D_DEMO_PACKH_EXPECTED_RESULT != uiResult)
   {
@@ -341,7 +341,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* reverse */
+  /* reverse - reverse all 32 bits */
   M_PSP_BITMANIP_REV(D_DEMO_REVERSE_INPUT_NUM, uiResult);
   if (D_DEMO_REVERSE_EXPECTED_RESULT != uiResult)
   {
@@ -349,7 +349,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* reverse8 */
+  /* reverse8 - swap chars in each word */
   M_PSP_BITMANIP_REV8(D_DEMO_REVERSE_8_INPUT_NUM, uiResult);
   if (D_DEMO_REVERSE_8_EXPECTED_RESULT != uiResult)
   {
@@ -373,7 +373,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbset */
+  /* sbset - single-bit set */
   M_PSP_BITMANIP_SBSET(D_DEMO_SBSET_1ST_ARG, D_DEMO_SBSET_BIT_POSITION, uiResult);
   if (D_DEMO_SBSET_EXPECTED_RESULT != uiResult)
   {
@@ -381,7 +381,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbseti */
+  /* sbseti - single-bit set (with immediate) */
   M_PSP_BITMANIP_SBSETI(D_DEMO_SBSET_1ST_ARG, D_DEMO_SBSET_BIT_POSITION, uiResult);
   if (D_DEMO_SBSET_EXPECTED_RESULT != uiResult)
   {
@@ -389,7 +389,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbclr */
+  /* sbclr - single bit clear */
   M_PSP_BITMANIP_SBCLR(D_DEMO_SBCLR_1ST_ARG, D_DEMO_SBCLR_BIT_POSITION, uiResult);
   if (D_DEMO_SBCLR_EXPECTED_RESULT != uiResult)
   {
@@ -397,7 +397,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbclri */
+  /* sbclri - single bit clear (witj immediate) */
   M_PSP_BITMANIP_SBCLRI(D_DEMO_SBCLR_1ST_ARG, D_DEMO_SBCLR_BIT_POSITION, uiResult);
   if (D_DEMO_SBCLR_EXPECTED_RESULT != uiResult)
   {
@@ -405,7 +405,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbinvert */
+  /* sbinvert - single bit invert */
   M_PSP_BITMANIP_SBINV(D_DEMO_SBINVERT_1ST_ARG, D_DEMO_SBINVERT_BIT_POSITION, uiResult);
   if (D_DEMO_SBINVERT_EXPECTED_RESULT != uiResult)
   {
@@ -413,7 +413,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbinverti */
+  /* sbinverti - single bit invert (with immediate) */
   M_PSP_BITMANIP_SBINVI(D_DEMO_SBINVERT_1ST_ARG, D_DEMO_SBINVERT_BIT_POSITION, uiResult);
   if (D_DEMO_SBINVERT_EXPECTED_RESULT != uiResult)
   {
@@ -421,7 +421,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbextract */
+  /* sbextract - single bit extract */
   M_PSP_BITMANIP_SBEXT(D_DEMO_SBEXTRACT_1ST_ARG, D_DEMO_SBEXTRACT_BIT_POSITION, uiResult);
   if (D_DEMO_SBEXTRACT_EXPECTED_RESULT != uiResult)
   {
@@ -429,7 +429,7 @@ void demoBitManipulation(void)
     M_PSP_EBREAK();
   }
 
-  /* sbextracti */
+  /* sbextracti - single bit extract (with immediate) */
   M_PSP_BITMANIP_SBEXTI(D_DEMO_SBEXTRACT_1ST_ARG, D_DEMO_SBEXTRACT_BIT_POSITION, uiResult);
   if (D_DEMO_SBEXTRACT_EXPECTED_RESULT != uiResult)
   {
@@ -445,6 +445,9 @@ void demoBitManipulation(void)
 void demoStart(void)
 {
   M_DEMO_START_PRINT();
+
+  /* Register interrupt vector */
+  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
   demoBitManipulation();
 

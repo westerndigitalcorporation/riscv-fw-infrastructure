@@ -10,11 +10,6 @@
 <booleanAttribute key="org.eclipse.debug.core.launchGroup.1.enabled" value="true"/>
 <stringAttribute key="org.eclipse.debug.core.launchGroup.1.mode" value="inherit"/>
 <stringAttribute key="org.eclipse.debug.core.launchGroup.1.name" value="whisper_eh2_debug_hart0"/>
-<stringAttribute key="org.eclipse.debug.core.launchGroup.2.action" value="NONE"/>
-<booleanAttribute key="org.eclipse.debug.core.launchGroup.2.adoptIfRunning" value="false"/>
-<booleanAttribute key="org.eclipse.debug.core.launchGroup.2.enabled" value="true"/>
-<stringAttribute key="org.eclipse.debug.core.launchGroup.2.mode" value="inherit"/>
-<stringAttribute key="org.eclipse.debug.core.launchGroup.2.name" value="whisper_eh2_debug_hart1"/>
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
 <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>

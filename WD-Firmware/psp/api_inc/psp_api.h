@@ -68,7 +68,7 @@
   #include "psp_int_vect_eh2.h"
 #endif
 #ifdef D_BIT_MANIPULATION
-  #include "psp_bitmanip_eh2.h"
+  #include "psp_bitmanip_el2.h"
 #endif
 
 /**

@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 /**
-* @file   psp_bitmanip_eh2.h
+* @file   psp_bitmanip_el2.h
 * @author Nati Rapaport
 * @date   23.07.2020
-* @brief  The file contains APIs for bit-manipulation operations on SweRV EH2
+* @brief  The file contains APIs for bit-manipulation operations on SweRV EL2
 */
-#ifndef  __PSP_BITMANIP_EH2_H__
-#define  __PSP_BITMANIP_EH2_H__
+#ifndef  __PSP_BITMANIP_EL2_H__
+#define  __PSP_BITMANIP_EL2_H__
 
 
 /**
@@ -185,4 +185,4 @@
 * APIs
 */
 
-#endif /* __PSP_BITMANIP_EH2_H__ */
+#endif /* __PSP_BITMANIP_EL2_H__ */
