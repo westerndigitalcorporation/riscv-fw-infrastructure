@@ -210,3 +210,12 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 	- Initial LLVM/Clang official 10.0.0 release
 	- ComRV support modules
 	- GCC Binutils-gdb 2.32.51.20190122 supporting ComRV
+
+# Notes and status
+This repo is always under work, following are notes and status for items that is still missing or under work.
+- #### 08-Sep-2020
+    - All EH2 demos are working only on Whisper, no fpga
+    - EL2 fpga have interrupt issues, so several demos that use interrupts, will not work.
+    - Bitmanip is supported only on LLVM. That llvm version is still missing, so bitmanip demo will not work. Soon to be released....
+
+
