@@ -6,7 +6,7 @@
 This repo is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
-  - GCC 10.2.0 Toolchain for RISC-V
+  - GCC 9.2.0 Toolchain for RISC-V
   - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.51.20190122]***
   - Eclipse MCU
 
@@ -77,7 +77,7 @@ WD-Firmware
 - #### Using GCC Toolchain
 	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 
-      	  $ tar -xvf riscv-gnu-toolchain-debian_10_2_0.tar.gz -C ./WD-Firmware/demo/build/toolchain/
+      	  $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
 - #### Using LLVM Toolchain
 	- From the repo root folder unzip riscv-llvm-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
@@ -210,8 +210,16 @@ We provide several platforms to work with, please follow the instructions for th
 The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
 &nbsp;
 # Supporting GCC Releases
-- #### RISCV GCC 10.2.0
-	- RISCV official 10.2.0 GCC release
+- #### RISCV GCC 8.2
+	- Initial RISCV official 8.2 GCC release
+- #### RISCV GCC 8.3
+	- RISCV official 8.3 GCC release
+	- GDB fix for skipping breakpoint at fist line after ASM lable
+	- lto simple_object fix opening mode in windows (text->bin)
+- #### RISCV GCC 9.2
+	- RISCV official 9.2 GCC release
+	- WD Code density improvement and optimization patches
+
 
 # Supporting LLVM Releases
 - #### RISCV LLVM/Clang 10.0.0
