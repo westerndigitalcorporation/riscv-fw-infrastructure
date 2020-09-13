@@ -180,15 +180,6 @@
 #define D_PSP_TDATA2_NUM     0x7A2
 #define D_PSP_TDATA3_NUM     0x7A3
 
-/* Debug mode registers */
-#define D_PSP_DCSR_NUM       0x7B0
-#define D_PSP_DPC_NUM        0x7B1
-#define D_PSP_DSCRATCH_NUM   0x7B2
-
-
-
-
-
 /* Definitions for the various fields in CSRs */
 
 /* counteren CSR */

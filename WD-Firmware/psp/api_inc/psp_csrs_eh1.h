@@ -40,11 +40,6 @@
 
 /** Non standard CSRs in SweRV first-generation cores   **/
 #define    D_PSP_MRAC_NUM       0x7C0   /* Region access control  */
-#define    D_PSP_DMST_NUM       0x7C4   /* Memory synchronization trigger (debug mode only)  */
-#define    D_PSP_DICAWICS_NUM   0x7C8   /* I-cache array/way/index selection (debug mode only)  */
-#define    D_PSP_DICAD0_NUM     0x7C9   /* I-cache array data 0 (debug mode only)  */
-#define    D_PSP_DICAD1_NUM     0x7CA   /* I-cache array data 1 (debug mode only)  */
-#define    D_PSP_DICAGO_NUM     0x7CB   /* I-cache array go (debug mode only)  */
 #define    D_PSP_MGPMC_NUM      0x7D0   /* Group performance monitor control  */
 #define    D_PSP_MICECT_NUM     0x7F0   /* I-cache error counter/threshold */
 #define    D_PSP_MICCMECT_NUM   0x7F1   /* ICCM correctable error counter/threshold  */
