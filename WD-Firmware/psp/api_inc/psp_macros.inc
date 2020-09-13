@@ -112,8 +112,13 @@
 /* Macro for setting SP to use stack dedicated to ISRs */
 /* [NR] - To do: add stack check */
 .macro M_PSP_CHANGE_SP_FROM_APP_TO_ISR_STACK
-    /* Load sp register with the addres of current Task-CB */
+/* Load sp register with the addres of current Task-CB */
+#ifdef D_SWERV_EH2
+    /* [Nati] TO DO - for now support only single hart */
+    M_PSP_LOAD    sp, xISRStackTopHart0
+#else
     M_PSP_LOAD    sp, xISRStackTop
+#endif
 .endm
 
 /* Macro for setting SP to use stack of current application */
