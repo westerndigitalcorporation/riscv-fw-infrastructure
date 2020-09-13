@@ -30,7 +30,7 @@ This repostority is WD RISC-V Firmware package, holds:
 [comment]:  [] ($ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git)
 
 # Code Convention 
-See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
+    See [./code convention.htm]
 
 # WD Firmware     
 The “WD Firmware package” constitutes an SDK FW. It contains Firmware applications and Processor Support Package (PSP) for various cores, alongside demos which support all features.
