@@ -100,6 +100,10 @@ void bspRoutTimer(eTimerRouting_t eTimerRouting)
 
   /* Set the routing selection */
   M_PSP_SET_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiRoutingValue);
+
+  /* Sync the output. Make sure not to progress until the write to external register is done */
+  M_PSP_INST_FENCEI();
+
 }
 
 /**
@@ -113,6 +117,9 @@ void bspSetTimerDurationMsec(u32_t uiTimerDurationMsec)
   u32_t uiTimerSet = M_MSEC_DURATION_TO_CYCLES(uiTimerDurationMsec);
 
   M_PSP_WRITE_REGISTER_32(D_BSP_TIMER_DURATION_SETUP_REGISTER, uiTimerSet);
+
+  /* Sync the output. Make sure not to progress until the write to external register is done */
+  M_PSP_INST_FENCEI();
 }
 
 /**
@@ -122,6 +129,9 @@ void bspSetTimerDurationMsec(u32_t uiTimerDurationMsec)
 void bspStartTimer(void)
 {
   M_PSP_WRITE_REGISTER_32(D_BSP_TIMER_ACTIVATION_REGISTER, D_TIMER_START);
+
+  /* Sync the output. Make sure not to progress until the write to external register is done */
+  M_PSP_INST_FENCEI();
 }
 
 /**
@@ -131,5 +141,8 @@ void bspStartTimer(void)
 void bspStopTimer(void)
 {
   M_PSP_WRITE_REGISTER_32(D_BSP_TIMER_ACTIVATION_REGISTER, D_TIMER_STOP);
+
+  /* Sync the output. Make sure not to progress until the write to external register is done */
+  M_PSP_INST_FENCEI();
 }
 
