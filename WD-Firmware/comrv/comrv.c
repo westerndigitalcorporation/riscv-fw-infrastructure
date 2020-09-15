@@ -604,12 +604,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
             else
             {
 #ifdef D_COMRV_EVICTION_LRU
-               /* if ucIndex prev isn't the last - update ucIndex prev */
-               if (g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex != D_COMRV_LRU_ITEM)
-               {
-                  /* update previous lru index */
-                  g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex;
-               }
                /* if the neighbour has a next */
                if (g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex != D_COMRV_MRU_ITEM)
                {
@@ -996,7 +990,22 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
    comrvCacheEntry_t *pCacheEntry;
 
 #ifdef D_COMRV_EVICTION_LRU
-
+   /* the '+ D_COMRV_OVL_GROUP_SIZE_MIN' is for the tables */
+#if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES+D_COMRV_OVL_GROUP_SIZE_MIN)
+   /* this code is for a corner case where the cache size is smaller then
+      the maximum group size; this mean we may reach to a point that the
+      entire cache is occupied with a single overlay group */
+      /* is one group loaded and occupies the entire cache */
+   if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits == g_stComrvCB.ucLastCacheEntry)
+   {
+      /* both lru and mru globals point to the same index */
+      g_stComrvCB.ucMruIndex = ucEntryIndex;
+      g_stComrvCB.ucLruIndex = ucEntryIndex;
+      /* mark both LRU/MRU of the entry as the last */
+      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = (u16_t)((D_COMRV_MRU_ITEM << 8) | D_COMRV_MRU_ITEM);
+   }
+   else
+#endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
    /* there is no need to update if ucEntryIndex is already MRU */
    if (ucEntryIndex !=  g_stComrvCB.ucMruIndex)
    {
@@ -1026,19 +1035,6 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
       /* update the new MRU */
       g_stComrvCB.ucMruIndex = ucEntryIndex;
    }
-   // TODO: need a more robust #if
-#if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES)
-/* this code is for a corner case where the cache size is smaller then
-   the maximum group size; this mean we may reach to a point that the
-   entire cache is occupied with a single overlay group */
-   /* is one group loaded and occupies the entire cache */
-   else if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits == g_stComrvCB.ucLastCacheEntry)
-   {
-      g_stComrvCB.ucLruIndex = ucEntryIndex;
-      /* mark both LRU/MRU of the entry as the last */
-      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = (u16_t)((D_COMRV_MRU_ITEM << 8) | D_COMRV_MRU_ITEM);
-   }
-#endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
