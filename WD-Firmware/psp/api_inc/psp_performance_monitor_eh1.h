@@ -43,6 +43,61 @@
 #define D_PSP_COUNTER2          M_PSP_BIT_MASK(5)
 #define D_PSP_COUNTER3          M_PSP_BIT_MASK(6)
 
+/*
+ * Performance monitoring events
+*/
+/* Event 0 is Reserved */
+#define   D_CYCLES_CLOCKS_ACTIVE                     1
+#define   D_I_CACHE_HITS                             2
+#define   D_I_CACHE_MISSES                           3
+#define   D_INSTR_COMMITTED_ALL                      4
+#define   D_INSTR_COMMITTED_16BIT                    5
+#define   D_INSTR_COMMITTED_32BIT                    6
+#define   D_INSTR_ALLIGNED_ALL                       7
+#define   D_INSTR_DECODED_ALL                        8
+#define   D_MULS_COMMITTED                           9
+#define   D_DIVS_COMMITTED                           10
+#define   D_LOADS_COMMITED                           11
+#define   D_STORES_COMMITTED                         12
+#define   D_MISALIGNED_LOADS                         13
+#define   D_MISALIGNED_STORES                        14
+#define   D_ALUS_COMMITTED                           15
+#define   D_CSR_READ                                 16
+#define   D_CSR_READ_WRITE                           17
+#define   D_WRITE_RD_0                               18
+#define   D_EBREAK                                   19
+#define   D_ECALL                                    20
+#define   D_FENCE                                    21
+#define   D_FENCE_I                                  22
+#define   D_MRET                                     23
+#define   D_BRANCHES_COMMITTED                       24
+#define   D_BRANCHES_MISPREDICTED                    25
+#define   D_BRANCHES_TAKEN                           26
+#define   D_UNPREDICTABLE_BRANCHES                   27
+#define   D_CYCLES_FETCH_STALLED                     28
+#define   D_CYCLES_ALIGNER_STALLED                   29
+#define   D_CYCLE_DECODE_STALLED                     30
+#define   D_CYCLE_POSTSYNC_STALLED                   31
+#define   D_CYCLE_PRESYNC_STALLED                    32
+#define   D_CYCLE_FROZEN                             33
+#define   D_CYCLES_SB_WB_STALLED                     34
+#define   D_CYCLES_DMA_DCCM_TRANSACTION_STALLED      35
+#define   D_CYCLES_DMA_ICCM_TRANSACTION_STALLED      36
+#define   D_EXCEPTIONS_TAKEN                         37
+#define   D_TIMER_INTERRUPTS_TAKEN                   38
+#define   D_EXTERNAL_INTERRUPTS_TAKEN                39
+#define   D_TLU_FLUSHES                              40
+#define   D_BRANCH_FLUSHES                           41
+#define   D_I_BUS_TRANSACTIONS_INSTR                 42
+#define   D_D_BUD_TRANSACTIONS_LD_ST                 43
+#define   D_D_BUS_TRANSACTIONS_MISALIGNED            44
+#define   D_I_BUS_ERRORS                             45
+#define   D_D_BUS_ERRORS                             46
+#define   D_CYCLES_STALLED_DUE_TO_I_BUS_BUSY         47
+#define   D_CYCLES_STALLED_DUE_TO_D_BUS_BUSY         48
+#define   D_CYCLES_INTERRUPTS_DISABLED               49
+#define   D_CYCLES_INTERRUPTS_STALLED_WHILE_DISABLED 50
+
 /**
 * macros
 */
@@ -51,66 +106,9 @@
 * types
 */
 
-
 /*
  * Performance monitoring events
 */
-typedef enum pspPerformanceMonitorEvents
-{
-   /* Event 0 Reserved */
-   E_CYCLES_CLOCKS_ACTIVE                     = 1,
-   E_I_CACHE_HITS                             = 2,
-   E_I_CACHE_MISSES                           = 3,
-   E_INSTR_COMMITTED_ALL                      = 4,
-   E_INSTR_COMMITTED_16BIT                    = 5,
-   E_INSTR_COMMITTED_32BIT                    = 6,
-   E_INSTR_ALLIGNED_ALL                       = 7,
-   E_INSTR_DECODED_ALL                        = 8,
-   E_MULS_COMMITTED                           = 9,
-   E_DIVS_COMMITTED                           = 10,
-   E_LOADS_COMMITED                           = 11,
-   E_STORES_COMMITTED                         = 12,
-   E_MISALIGNED_LOADS                         = 13,
-   E_MISALIGNED_STORES                        = 14,
-   E_ALUS_COMMITTED                           = 15,
-   E_CSR_READ                                 = 16,
-   E_CSR_READ_WRITE                           = 17,
-   E_WRITE_RD_0                               = 18,
-   E_EBREAK                                   = 19,
-   E_ECALL                                    = 20,
-   E_FENCE                                    = 21,
-   E_FENCE_I                                  = 22,
-   E_MRET                                     = 23,
-   E_BRANCHES_COMMITTED                       = 24,
-   E_BRANCHES_MISPREDICTED                    = 25,
-   E_BRANCHES_TAKEN                           = 26,
-   E_UNPREDICTABLE_BRANCHES                   = 27,
-   E_CYCLES_FETCH_STALLED                     = 28,
-   E_CYCLES_ALIGNER_STALLED                   = 29,
-   E_CYCLE_DECODE_STALLED                     = 30,
-   E_CYCLE_POSTSYNC_STALLED                   = 31,
-   E_CYCLE_PRESYNC_STALLED                    = 32,
-   E_CYCLE_FROZEN                             = 33,
-   E_CYCLES_SB_WB_STALLED                     = 34,
-   E_CYCLES_DMA_DCCM_TRANSACTION_STALLED      = 35,
-   E_CYCLES_DMA_ICCM_TRANSACTION_STALLED      = 36,
-   E_EXCEPTIONS_TAKEN                         = 37,
-   E_TITMER_INTERRUPTS_TAKEN                  = 38,
-   E_EXTERNAL_INTERRUPTS_TAKEN                = 39,
-   E_TLU_FLUSHES                              = 40,
-   E_BRANCH_FLUSHES                           = 41,
-   E_I_BUS_TRANSACTIONS_INSTR                 = 42,
-   E_D_BUD_TRANSACTIONS_LD_ST                 = 43,
-   E_D_BUS_TRANSACTIONS_MISALIGNED            = 44,
-   E_I_BUS_ERRORS                             = 45,
-   E_D_BUS_ERRORS                             = 46,
-   E_CYCLES_STALLED_DUE_TO_I_BUS_BUSY         = 47,
-   E_CYCLES_STALLED_DUE_TO_D_BUS_BUSY         = 48,
-   E_CYCLES_INTERRUPTS_DISABLED               = 49,
-   E_CYCLES_INTERRUPTS_STALLED_WHILE_DISABLED = 50,
-   E_END
-} ePspPerformanceMonitorEvents_t;
-
 
 /**
 * local prototypes
@@ -129,18 +127,23 @@ typedef enum pspPerformanceMonitorEvents
 */
 
 /**
-* @brief The function enable/disable the group performance monitor
+* @brief The function disables all the performance monitors
+*        ** Note ** Only Performance-Monitor counters 3..6 are disabled by this setting.
+*                   The instruction-retired, cycles and time counters stay enabled.
 *
-* @param uiMonitorEn           – monitor enable disable
-*
-* @return No return value
 */
-void pspEnableAllPerformanceMonitor(u32_t uiMonitorEn);
+void pspPerformanceMonitorDisableAll(void);
+
+/**
+* @brief The function enables all the performance monitors
+*
+*/
+void pspPerformanceMonitorEnableAll(void);
 
 /**
 * @brief The function pair a counter to an event
 *
-* @param eCounter     – counter to be set
+* @param uiCounter    – counter to be set
 *                     – supported counters are:
 *                         D_PSP_COUNTER0
 *                         D_PSP_COUNTER1
@@ -150,10 +153,10 @@ void pspEnableAllPerformanceMonitor(u32_t uiMonitorEn);
 *
 * @return No return value
 */
-void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEvent);
+void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent);
 
 /**
-* @brief The function gets the counter value
+* @brief The function gets the counter value (64 bit)
 *
 * @param eCounter     – counter index
 *                     – supported counters are:
@@ -167,6 +170,6 @@ void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEv
 *
 * @return u32_t      – Counter value
 */
-u32_t pspPerformanceCounterGet(u32_t eCounter);
+u64_t pspPerformanceCounterGet(u32_t uiCounter);
 
 #endif /* _PSP_PERFORMANCE_MONITOR_H_ */

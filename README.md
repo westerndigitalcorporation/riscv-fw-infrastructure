@@ -3,16 +3,17 @@
 ![N|Solid](http://riscv.net/wp-content/uploads/2015/01/riscv-logo-retina.png)
 
 # WD RISC-V Firmware Package 
-This repo is WD RISC-V Firmware package, holds:
+This repostority is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
-  - GCC 9.2.0 Toolchain for RISC-V
+  - GCC 10.2.0 Toolchain for RISC-V
   - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.51.20190122]***
   - Eclipse MCU
 
 
 # Getting the sources
-  If you dont have git lfs installed, please do the following steps:
+  This repostority use LFS.
+  If you dont have git LFS installed, please do the following steps (based on Debian/Ubuntu):
   
     $ curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
     $ sudo apt-get install git-lfs
@@ -20,18 +21,21 @@ This repo is WD RISC-V Firmware package, holds:
   Getting the repository 
     
     $  git clone https://github.com/westerndigitalcorporation/riscv-fw-infrastructure.git
-  
+    
+    Since we use LFS its advice to use shallow cloning (without all hostory)
+    
+    $  git clone --depth 1 https://github.com/westerndigitalcorporation/riscv-fw-infrastructure.git
 [comment]:  [] (This repository uses submodules..... )
   
 [comment]:  [] ($ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git)
 
 # Code Convention 
-See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
+    See [./code convention.htm]
 
 # WD Firmware     
 The “WD Firmware package” constitutes an SDK FW. It contains Firmware applications and Processor Support Package (PSP) for various cores, alongside demos which support all features.
 The following README file describes how to setup a build environment for the WD RISC-V firmware. It guides how to build the program, downloading it, and debugging it on the supported platforms and cores.
-The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. This demo was based on 
+The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. 
 
 
 #### Current FW support:
@@ -39,15 +43,14 @@ The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. This demo
     Abstraction Layer (AL) on embedded small footprint real time operation systems (RTOS). The target is to provide homogenies API for the developer usage, so the kernel can be replaced for several different RTOS’s, without any need from the developer to change its application code. 
     Currently this AL supports FreeRTOS and ThreadX (only API's, without core) with a real running demo for FreeRTOS. 
     The structure of WD Firmware package allows quick and easy integration for more RTOS’s, Platforms, boards and new firmware features. 
-    Demos is based on HiFive FW example, by SiFIve. Cuurrently the reference is part of FreeRTOS maintenance 
+    Demos is based on HiFive FW example, by SiFIve. Currently the reference is part of FreeRTOS maintenance 
 
 - **Coming soon**: more FW features and more Platform supports 
 
 #### Current Platform and Core support:
 - **HiFive1** 
-- **SweRV**    - running on *Nexys-A7 FPGA*
-- **SweRVolf** - running on *Nexys-A7 FPGA* EH1 with full SoC
-- **Whisper**  - ISS tool running on SweRVolf EH1
+- **SweRVolf** - running on *Nexys-A7 FPGA* EH1, EL2 with full SoC ( [LINK to source](https://github.com/chipsalliance/Cores-SweRVolf) )
+- **Whisper**  - ISS tool running EH1,EH2,EL2 ( [LINK to source](https://github.com/chipsalliance/SweRV-ISS) )
 
 
 ### Source tree structure 
@@ -55,12 +58,15 @@ The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6. This demo
 WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
-          ├── ihfive-unleashed (not supported yet)
-          ├── nexys_a7_eh1 (Support for SweRV eh1, also support SweRVolf)
-          ├── whisper (Support for SweRV eh1)
+          ├── nexys_a7_eh1 (support for SweRV eh1, running on SweRVolf)
+          ├── nexys_a7_eh2 (upcoming...)
+          ├── nexys_a7_el2 (Support for SweRV el2, running on SweRVolf)
+          ├── whisper (SweRV ISS Support for SweRV eh1, eh2, el2)
      ├── common                               <-- common source
+     ├── comrv                                <-- ComRV - Cacheable Overlay Mangager for RISC-V (core source)    
      ├── demo                                 <-- demos source 
           ├── build                           <-- example build scripts
+             ├── toolchain                    <-- container for the unzip toolchains 
           ├── demo_rtosal.c                   <-- Abstruction Layer (AL) demo on FreeRTOS
           ├── main.c                          <-- The main of all demos
           ├──  ....
@@ -75,9 +81,9 @@ WD-Firmware
 ### Additional downloads
 	NOTE: The COMRV demo will work only with the LLVM toolchain, GCC is not supported
 - #### Using GCC Toolchain
-	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
+	- From the repo root folder unzip riscv-gnu-toolchain-debian-10_2_0.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 
-      	  $ tar -xvf riscv-gnu-toolchain-debian.tar.gz -C ./WD-Firmware/demo/build/toolchain/
+      	  $ tar -xvf riscv-gnu-toolchain-debian-10_2_0.tar.gz -C ./WD-Firmware/demo/build/toolchain/
 
 - #### Using LLVM Toolchain
 	- From the repo root folder unzip riscv-llvm-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
@@ -163,31 +169,7 @@ We provide several platforms to work with, please follow the instructions for th
     	- The eclipse IDE Console will display *shutdown command invoked* upon completion
 
 &nbsp;
-- #### Setting up Nexys-A7 for SweRV
 
-    Since Nexys-A7 is an FPGA platform it need special handling...
-    - ***Prerequisite***: 
-    Following are prerequisite running SweRV core on Xilinx FPGA on Nexys-A7 board
-        - To compile the RTL please follow the instruction at this link: [swerv_eh1_fpga](https://github.com/westerndigitalcorporation/swerv_eh1_fpga)
-        - Our debugger uses the ***Olimex ARM-USB-Tiny-H*** Emulator with OpenOCD
-        - Pin layout for Nexys Pmod JD header with Olimex:
-        
-                H4 = TDO
-                H1 = nTRST
-                G1 = TCK
-                H2 = TDI
-                G4 = TMS
-                G2 = nRST
-
-    - ***FPGA image file loading***: 
-    for loading the FPGA bit file, do the following steps:
-    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit***
-	   to uSD device (locate it at the uSD root)
-    	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
-		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
-		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done.
-		- Wait for ORANGE led to be off, once off the board is ready to be used
-&nbsp;
 - #### Setting up ISS (works as simulator for EH1)
     
     There is nothing to set for SweRV ISS, just select debugger luncher (following next)..
@@ -198,11 +180,13 @@ We provide several platforms to work with, please follow the instructions for th
     - Current support:
         ```javascript
         - hifive1                              <-- HiFive Eval board
-        - nexys_a7_eh1                         <-- Nexys A7 digilent FPGA board running SweRV EH1
         - nexys_a7_eh1_swerolf                 <-- Nexys A7 digilent FPGA board running SweRV EH1 
-                                                   with full System on chip. 
+        - nexys_a7_el2_swerolf                 <-- Nexys A7 digilent FPGA board running SweRV EL2 
+                                                   with full System on chip support. 
                                                    From chipsalliance/Cores-SweRVolf
-        - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator 
+        - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator for EH1
+        - whisper_eh2_connect_and_debug        <-- SweRV ISS simulator for RH2
+        - whisper_el2_connect_and_debug        <-- SweRV ISS simulator for EL2
         ```
 
 ### Adding new source modules
@@ -210,15 +194,9 @@ We provide several platforms to work with, please follow the instructions for th
 The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
 &nbsp;
 # Supporting GCC Releases
-- #### RISCV GCC 8.2
-	- Initial RISCV official 8.2 GCC release
-- #### RISCV GCC 8.3
-	- RISCV official 8.3 GCC release
-	- GDB fix for skipping breakpoint at fist line after ASM lable
-	- lto simple_object fix opening mode in windows (text->bin)
-- #### RISCV GCC 9.2
-	- RISCV official 9.2 GCC release
-	- WD Code density improvement and optimization patches
+- #### RISCV GCC 10.2.0
+	- RISCV official 10.2.0 GCC release
+	- Official GDB 9.2.0
 
 
 # Supporting LLVM Releases
@@ -226,3 +204,12 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 	- Initial LLVM/Clang official 10.0.0 release
 	- ComRV support modules
 	- GCC Binutils-gdb 2.32.51.20190122 supporting ComRV
+
+# Notes and status
+This repo is always under work, following are notes and status for items that is still missing or under work.
+- #### 08-Sep-2020
+    - All EH2 demos are working only on Whisper, no fpga
+    - EL2 fpga have interrupt issues, so several demos that use interrupts, will not work.
+    - Bitmanip is supported only on LLVM. That llvm version is still missing, so bitmanip demo will not work. Soon to be released....
+
+

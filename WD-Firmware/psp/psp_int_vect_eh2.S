@@ -28,7 +28,7 @@
 #include "psp_macros_eh2.inc"
 #include "psp_int_vect_eh1.inc"
 
-#ifdef __clang__
+#ifdef D_LLVM_COMRV
 /* disable warning for reserved registers use - we are using comrv
    reserved register and don't want to see these warnings. */
 .option nowarnreservedreg

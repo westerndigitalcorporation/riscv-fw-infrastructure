@@ -30,7 +30,7 @@ listCFiles=[
    (os.path.join('psp', 'psp_ext_interrupts_eh1.c'), os.path.join(strOutDir, 'psp_ext_interrupts_eh1.o')),
    (os.path.join('psp', 'psp_timers_eh1.c'), os.path.join(strOutDir, 'psp_timers_eh1.o')),
    (os.path.join('psp', 'psp_pmc_eh1.c'), os.path.join(strOutDir, 'psp_pmc_eh1.o')),
-   (os.path.join('psp', 'psp_performance_monitor_eh1.c'), os.path.join(strOutDir, 'psp_performance_monitor.o')),
+   (os.path.join('psp', 'psp_performance_monitor_eh1.c'), os.path.join(strOutDir, 'psp_performance_monitor_eh1.o')),
    (os.path.join('psp', 'psp_nmi_eh1.c'), os.path.join(strOutDir, 'psp_nmi_eh1.o')),
    (os.path.join('psp', 'psp_corr_err_cnt_eh1.c'), os.path.join(strOutDir, 'psp_corr_err_cnt_eh1.o')),
    (os.path.join('psp', 'psp_cache_control_eh1.c'), os.path.join(strOutDir, 'psp_cache_control_eh1.o')),
@@ -49,6 +49,7 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
+Env['PUBLIC_DEF'] += ['D_EHX1_VER_0_9'] # PSP is aligned to SweRV EHX1 version 0.9
 listCompilationDefines = []+Env['PUBLIC_DEF']
 
 # public includes

@@ -25,6 +25,14 @@
    "harts" : 1,
    "num_mmode_perf_regs" : "4",
    "csr" : {
+      "mgpmc" : {
+         "reset" : "0x1",
+         "exists" : "true",
+         "poke_mask" : "0x00000001",
+         "mask" : "0x00000001",
+         "comment" : "Group Performance Monitor Control",
+         "number" : "0x7d0"
+      },
       "dcsr" : {
          "mask" : "0x00008c04",
          "poke_mask" : "0x00008dcc",

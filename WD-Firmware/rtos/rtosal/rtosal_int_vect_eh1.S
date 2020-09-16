@@ -79,7 +79,7 @@ This implementation supports riscv privileged v1.10 and PRM of SweRV-EH1
 #include "rtosal_defines.inc"
 #include "rtosal_macros.inc"
 
-#ifdef __clang__
+#ifdef D_LLVM_COMRV
 /* disable warning for reserved registers use - we are using comrv
    reserved register and don't want to see these warnings. */
 .option nowarnreservedreg

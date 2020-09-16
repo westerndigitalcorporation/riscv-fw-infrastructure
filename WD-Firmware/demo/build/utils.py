@@ -44,6 +44,7 @@ else:
 STR_TC_LLVM                  = "llvm"
 STR_BINUTILS                 = "binutils"
 STR_TC_GCC                   = "gcc"
+STR_TC_LLVM_BITMANIP         = "llvm-bitmanip"
 
 STR_TOOLCHAIN            = "toolchain"
 STR_BIN_FOLDER           = "bin"
@@ -80,7 +81,7 @@ def fnProduceSectionsSize(target, source, env):
 def fnProduceDump(target, source, env):
    strDmpName     = env['DMP_FILE']
    strDmpUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['OBJDUMP_BIN'])
-   fnExecuteCommand(strDmpUtilName + ' ' + env['ELF_FILE'] + ' -DSh > ' + strDmpName)
+   fnExecuteCommand(strDmpUtilName + ' ' + env['ELF_FILE'] + env['OBJDUMP_ATTR'] + ' -DSh > ' + strDmpName)
    return None
 
 # move overlay section from virtual address to flash address 
@@ -189,8 +190,19 @@ def fnSetToolchainPath(strTCName, env):
        else:
          print "Setting GCC Toolchain to => %s" % env['RISCV_GCC_TC_PATH']
 
+    elif strTCName == STR_TC_LLVM_BITMANIP:
+       env['RISCV_LLVM_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_LLVM_BITMANIP)
+       env['UTILS_BASE_DIR'] = env['RISCV_LLVM_TC_PATH'] 
+       env['RISCV_BINUTILS_TC_PATH'] = env['RISCV_LLVM_TC_PATH']
+       # check if the TC folder exist
+       if not os.path.isdir(env['RISCV_LLVM_TC_PATH']):
+         print ("Error: No LLVM bitmanipulation Toolchain found at: %s" % env['RISCV_LLVM_TC_PATH'])
+         exit(1)
+       else:
+         print "Setting LLVM Toolchain to => %s" % env['RISCV_LLVM_TC_PATH']
+
     else:
-      print ("Error: No toolchain present")
+      print ("Error: No toolchain present for : %s" %strTCName)
       exit(1)
 
     # setting up a bin folder for the debugger
@@ -224,11 +236,15 @@ def fnGetToolchainSpecificFlags(strTCName, env):
       listSpecificLinkerOptions = ['']
       listSpecificCFlagsOptions = ['--gcc-toolchain='+ env['RISCV_BINUTILS_TC_PATH'],
                                    '--sysroot=' + os.path.join(env['RISCV_BINUTILS_TC_PATH'],'riscv32-unknown-elf')]
+    elif strTCName == STR_TC_LLVM_BITMANIP:
+      listSpecificLinkerOptions = ['']
+      listSpecificCFlagsOptions = ['--gcc-toolchain='+ env['RISCV_BINUTILS_TC_PATH'],
+                                   '--sysroot=' + os.path.join(env['RISCV_BINUTILS_TC_PATH'],'riscv32-unknown-elf')]
     elif strTCName == STR_TC_GCC:
       listSpecificLinkerOptions = ['']
       listSpecificCFlagsOptions = ['']
     else:
-      print ("Error: No toolchain present")
+      print ("Error: No toolchain present for:%s" %strTCName)
       exit(1)
 
     return listSpecificCFlagsOptions, listSpecificLinkerOptions
@@ -250,4 +266,3 @@ def fnGetDefine(strDefine, listDefines):
     if strDefine in strdef:
       return strdef.split("=")[0]
   return None
-  

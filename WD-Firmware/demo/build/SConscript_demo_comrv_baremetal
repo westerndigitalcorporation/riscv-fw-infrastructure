@@ -40,6 +40,7 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
+Env['PUBLIC_DEF'] += ['D_LLVM_COMRV']
 listCompilationDefines = [] + Env['PUBLIC_DEF']
 
 # public includes

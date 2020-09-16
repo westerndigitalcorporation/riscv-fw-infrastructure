@@ -192,7 +192,7 @@ void demoTimerIsrHart0()
   if(D_DEMO_NUMBER_OF_TIMER_INTERRUPTS_HART0 > g_uiNumberOfTimerInterruptsHart0)
   {
     /* Setup Core's timer for another turn */
-    pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
+    pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
 
     /* Enable timer interrupt */
     pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
@@ -213,7 +213,7 @@ void demoTimerIsrHart1()
   if(D_DEMO_NUMBER_OF_TIMER_INTERRUPTS_HART1 > g_uiNumberOfTimerInterruptsHart1)
   {
     /* Setup Core's timer for another turn */
-    pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART1));
+    pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART1));
 
     /* Enable timer interrupt */
     pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
@@ -401,7 +401,7 @@ void demoMultiHartsTimerInterrupts()
   }
 
   /* Initialize the timer and let it run */
-  pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
+  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
   /* Enable Timer interrupt */
   pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
   /* Enable all interrupts in mstatus CSR */

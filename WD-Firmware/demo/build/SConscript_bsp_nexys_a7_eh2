@@ -42,7 +42,8 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                   # SweRV-EH1
+Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                   # SweRV-EH1 definition is common to SweRV EH2 also         
+                      'D_SWERV_EL2',                                   # SweRV-EL2 definition is common to SweRV EH2 also
                       'D_SWERV_EH2',                                   # SweRV-EH2
                       'D_NUMBER_OF_HARTS=2',                           # 2 HW threads in EH2 core 
                       'D_MTIME_ADDRESS=0x80001020',                    # MTIME address

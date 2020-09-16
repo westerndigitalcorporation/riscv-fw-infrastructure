@@ -84,10 +84,11 @@ def generate(env):
     # Tool c compiler execution
     env['CC_BIN']      = "riscv64-unknown-elf-gcc"
     # temporary location
-    env['SIZE_BIN']    = "riscv64-unknown-elf-size"
-    env['OBJDUMP_BIN'] = "riscv64-unknown-elf-objdump"
-    env['OBJCOPY_BIN'] = "riscv64-unknown-elf-objcopy"
-    env['READELF_BIN'] = "riscv64-unknown-elf-readelf"
+    env['SIZE_BIN']     = "riscv64-unknown-elf-size"
+    env['OBJDUMP_BIN']  = "riscv64-unknown-elf-objdump"
+    env['OBJDUMP_ATTR'] = ""
+    env['OBJCOPY_BIN']  = "riscv64-unknown-elf-objcopy"
+    env['READELF_BIN']  = "riscv64-unknown-elf-readelf"
 
     env['CC'] = os.path.join("$RISCV_GCC_TC_PATH", "bin", "$CC_BIN")
     env['CFLAGS'] = SCons.Util.CLVar('')

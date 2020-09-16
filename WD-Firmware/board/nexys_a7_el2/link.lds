@@ -108,6 +108,15 @@ SECTIONS
     . = ALIGN(8); 
   } > ram : ram_load
 
+  /* 4 bytes reserved for software interrupt memory control
+     used by whisper only! to trigger sw interrupt 
+     this must be first in ram2 - don't change it's location */
+  SW_INT : ALIGN(4)
+  {
+    _sw_int_mem_ctrl = .;
+    . = 4;
+  }  > ram2 : ram_load
+  
   COMRV_DATA_SEC : ALIGN(16)
   {
   

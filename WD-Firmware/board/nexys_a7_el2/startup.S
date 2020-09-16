@@ -17,7 +17,7 @@
 
 #Simple start up file for the reference design
 
-#ifdef __clang__
+#ifdef D_LLVM_COMRV
 /* disable warning for reserved registers use - we are using comrv
    reserved register and don't want to see these warnings. */
 .option nowarnreservedreg

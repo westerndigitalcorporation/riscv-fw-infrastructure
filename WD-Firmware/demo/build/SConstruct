@@ -92,9 +92,10 @@ Env['ELF_FILE'] = os.path.join(Env['OUT_DIR_PATH'], strElf_file)
 # get any toolchain specific options/flags
 listSpecificCFlagsOptions, listSpecificLinkerOptions = utils.fnGetToolchainSpecificFlags(objDemo.toolchain, Env);
 
+
 listCCOptions = ['-mabi=ilp32', '-g3', '-march=rv32imac', '-mcmodel=medlow'] + listSpecificCFlagsOptions + objDemo.listDemoSpecificCFlags
 Env['C_FLAGS'] = ['-Os', '-ffunction-sections','-fdata-sections','-Wall','-c','-fno-builtin-printf','-include', 'sys/cdefs.h'] + listCCOptions
-Env['A_FLAGS'] = ['-Wall', '-c', '-Wa,-march=rv32imac', '-x', 'assembler-with-cpp'] + listCCOptions
+Env['A_FLAGS'] = ['-Wall', '-c', '-x', 'assembler-with-cpp'] + listCCOptions
 
 if verbose == False:
   # set output to minimal mode
