@@ -23,7 +23,6 @@ class demo(object):
     self.toolchain     = ""
     self.toolchainPath = ""
     self.strGrpFile    = ""
-    self.strComrvCacheSize = "0"
     self.strLinkFilePrefix = ''
 
     self.public_defs = [
@@ -40,7 +39,6 @@ class demo(object):
     ]
 
     self.listDemoSpecificLinkerFlags = [
-      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
     
     self.listDemoSpecificTargets = [

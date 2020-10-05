@@ -46,7 +46,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #include "rtosal_defines.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
 #ifdef D_CTI
-#include "cti_api.h"
+   #include "cti_api.h"
 #endif /* D_CTI */
 
 /**
@@ -119,8 +119,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_DEBRUIJN32_SHFT_AMNT                  27
 
 #ifndef D_CTI
-#define M_CTI_SYNC_POINT(x)
-#define M_CTI_MARK_DEFRAG()
+   #define M_CTI_SYNC_POINT(x)
+   #define M_CTI_MARK_DEFRAG()
 #endif /* D_CTI */
 
 /**

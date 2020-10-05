@@ -16,36 +16,43 @@
 #*/
 import os
 
-strCacheSize = "1536"
-
 class demo(object):
   def __init__(self):
-    self.strDemoName   = "comrv_baremetal_multigroup"
+    self.strDemoName   = "cti_rtos"
     self.rtos_core     = ""
     self.toolchain     = ""
     self.toolchainPath = ""
-    self.strGrpFile    = os.path.join("..", "comrv-baremetal-multigroup.csv")
-    self.strComrvCacheSize = strCacheSize
+    self.strGrpFile    = os.path.join("..", "cti.csv")
+    self.strComrvCacheSize = "16896"
     self.strLinkFilePrefix = ''
     self.strComrvCacheAlinmentSize = '512'
-    self.strOverlayStorageSize = "5120"
+    self.strOverlayStorageSize = "33792"
 
     self.public_defs = [
-        'D_BARE_METAL',
-        'D_TICK_TIME_MS=4',
+        'D_USE_FREERTOS',
+        'D_USE_RTOSAL',
+        'D_TICK_TIME_MS=10',
         'D_ISR_STACK_SIZE=400',
+        'D_COMRV_ENABLE_RTOS_SUPPORT',
         'D_COMRV_ENABLE_ERROR_NOTIFICATIONS',
-        'D_COMRV_ENABLE_MULTI_GROUP_SUPPORT',
         'D_COMRV_MIN_GROUP_SIZE_IN_BYTES=512',
         'D_COMRV_MAX_GROUP_SIZE_IN_BYTES=4096',
         'D_COMRV_MAX_CALL_STACK_DEPTH=10',
-        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES='+strCacheSize,
+        'D_COMRV_MAX_OVL_CACHE_SIZE_IN_BYTES='+self.strComrvCacheSize,
+        'D_CTI',
+        'D_CTI_RTOS',
+        'D_COMRV_ENABLE_MULTI_GROUP_SUPPORT',
         'D_COMRV_ENABLE_MIN_NUM_OF_MULTI_GROUP_SUPPORT',
+        'D_COMRV_ENABLE_CONTROL_SUPPORT',
+        'D_COMRV_ENABLE_CRC_SUPPORT',
     ]
 
     self.listSconscripts = [
+      'freertos',
+      'rtosal',
       'comrv',
-      'demo_comrv_baremetal_multigroup',
+      'cti',
+      'demo_cti_rtos',
     ]
 
     self.listDemoSpecificCFlags = [
@@ -56,15 +63,15 @@ class demo(object):
     self.listDemoSpecificLinkerFlags = [
       # provide user defined grouping file (file name is in self.strGrpFile))
       '-Wl,--grouping-file=' + self.strGrpFile,
-      # __comrv_cache_size defines the size of ram size to reserve for overlay data and overlay functions execution 
+      # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
       '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize,
       # __comrv_cache_alignment_size defines the alinment size of the cache area 
       '-Wl,--defsym=__comrv_cache_alignment_size=' + self.strComrvCacheAlinmentSize,
       # size of the overlay storage 
       '-Wl,--defsym=__comrv_overlay_storage_size=' + self.strOverlayStorageSize,
-    ]
-    
-    self.listDemoSpecificTargets = [
-      'eh1', 'eh2', 'el2', 'hifive1', 'hifive-un'
+      #'-Wl,--comrv-debug',
     ]
 
+    self.listDemoSpecificTargets = [
+      'eh2', 'el2',
+    ]

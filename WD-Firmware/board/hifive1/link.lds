@@ -4,9 +4,11 @@ ENTRY( _start )
 
 MEMORY
 {
-  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
-  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 16K
-  ovl          : ORIGIN = 0xE0000000, LENGTH = 8K
+  flash (rxai!w)              : ORIGIN = 0x20400000, LENGTH = 512M
+  ram (wxa!ri)                : ORIGIN = 0x80000000, LENGTH = 16K
+  ovl                         : ORIGIN = 0xE0000000, LENGTH = DEFINED(__comrv_overlay_storage_size) ? __comrv_overlay_storage_size : 0
+  unused_cache_size           : ORIGIN = 0xFFFFFFF0, LENGTH = DEFINED(__comrv_cache_size) ? __comrv_cache_size : 0
+  unused_cache_alignment_size : ORIGIN = 0xFFFFFFe0, LENGTH = DEFINED(__comrv_cache_alignment_size) ? __comrv_cache_alignment_size : 0
 }
 
 PHDRS
@@ -15,13 +17,13 @@ PHDRS
   ram_init PT_LOAD;
   ram PT_NULL;
   ovl PT_NULL;
+  unused_cache_size PT_NULL;
+  unused_cache_alignment_size PT_NULL;
 }
 
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
-  /* __comrv_cache_alignment_size defines the alinment size of the start cache area */
-  __comrv_align_size = __comrv_cache_size != 0 ? __comrv_cache_alignment_size : 0;
 
   .init           :
   {
@@ -61,7 +63,7 @@ SECTIONS
   .reserved_ovl : ALIGN(4)
   {
     _OVERLAY_STORAGE_START_ADDRESS_ = .;
-    . = 0x2000;
+    . = LENGTH(ovl);
   } >flash AT>flash :flash
 
   . = ALIGN(4);
@@ -189,10 +191,10 @@ SECTIONS
 
   /* this area is used for loading and executing the comrv 
      overlay groups */
-  .overlay_sec ALIGN(__comrv_align_size) :
+  .overlay_sec ALIGN(LENGTH(unused_cache_alignment_size)) :
   {
     __OVERLAY_CACHE_START__ = . ;
-    . = __comrv_cache_size; 
+    . = . + LENGTH(unused_cache_size); 
     __OVERLAY_CACHE_END__ = . ;
   }  >ram AT>ram :ram
 
