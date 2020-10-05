@@ -449,7 +449,17 @@ void demoStart(void)
   /* Register interrupt vector */
   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-  demoBitManipulation();
+  /* Run this demo only if target is Whisper. Cannot run on SweRV */
+  if (D_PSP_FALSE == demoIsSwervBoard())
+  {
+    /* Bit-manipulation demo function */
+    demoBitManipulation();
+  }
+  else
+  {
+    /* SweRV */
+    printfNexys("This demo is currently not supported in SweRV FPGA Board");
+  }
 
   M_DEMO_END_PRINT();
 }

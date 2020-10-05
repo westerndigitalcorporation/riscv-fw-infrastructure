@@ -516,29 +516,37 @@ void demoStart(void)
   /* Register interrupt vector */
   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-  /************************/
-  /* Part1 - Sleep tests  */
-  /************************/
-  /* Set core to sleep (halt/fw-halt) mode and wake it up with machine timer interrupt */
-  demoSleepAndWakeupByMtimer();
-  /* Set core to Sleep (pmu/fw-halt) mode and wake it up with external interrupt */
-  demoSleepAndWakeupByExternalInterrupt();
+  /* Run this demo only if target is Swerv. Cannot run on Whisper */
+  if (D_PSP_TRUE == demoIsSwervBoard())
+  {
+    /************************/
+    /* Part1 - Sleep tests  */
+    /************************/
+    /* Set core to sleep (halt/fw-halt) mode and wake it up with machine timer interrupt */
+    demoSleepAndWakeupByMtimer();
+    /* Set core to Sleep (pmu/fw-halt) mode and wake it up with external interrupt */
+    demoSleepAndWakeupByExternalInterrupt();
 
 #ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
-  /* Set core to Sleep (pmu/fw-halt) mode , with 'haltie' (Atomically interrupts-enable upon 'Halt' initiation) and wake it up with timer interrupt */
-  demoSleepHaltIeOption();
+    /* Set core to Sleep (pmu/fw-halt) mode , with 'haltie' (Atomically interrupts-enable upon 'Halt' initiation) and wake it up with timer interrupt */
+    demoSleepHaltIeOption();
 #endif
 
-  /************************/
-  /* Part2 - Stall tests  */
-  /************************/
-  /* Stall the core ('pause', per EH1 PRM) and resume it when count down expires */
-  demoStallAndResumeByCountdown();
-  /* Stall the core ('pause', per EH1 PRM) and resume it with  machine timer interrupt */
-  demoStallAndResumeByMtimeInterrupt();
-  /* Stall the core ('pause', per EH1 PRM) and resume it with  external interrupt */
-  demoStallAndResumeByExternalInterrupt();
+    /************************/
+    /* Part2 - Stall tests  */
+    /************************/
+    /* Stall the core ('pause', per EH1 PRM) and resume it when count down expires */
+    demoStallAndResumeByCountdown();
+    /* Stall the core ('pause', per EH1 PRM) and resume it with  machine timer interrupt */
+    demoStallAndResumeByMtimeInterrupt();
+    /* Stall the core ('pause', per EH1 PRM) and resume it with  external interrupt */
+    demoStallAndResumeByExternalInterrupt();
+  }
+  else
+  {
+    /* whisper */
+    printfNexys("This demo can't run under whisper");
+  }
 
   M_DEMO_END_PRINT();
-
 }

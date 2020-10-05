@@ -40,6 +40,9 @@
 /**
 * definitions
 */
+#define D_DEMO_SWERVOLF    0xC1
+#define D_IS_SWERV_BOARD   D_PSP_TRUE
+#define D_NOT_SWERV_BOARD  D_PSP_FALSE
 
 /**
 * macros
@@ -126,11 +129,11 @@ void demoUartInit(void)
 }
 
 /**
-* api functions
+* API functions
 */
 
 /**
-* demoPlatformInit - Initialize board related stuff
+* @brief demoPlatformInit - Initialize board related stuff
 *
 * */
 void demoPlatformInit(void)
@@ -145,12 +148,10 @@ void demoPlatformInit(void)
 
   /* init Uart for 115200 baud, 8 data bits, 1 stop bit, no parity */
   demoUartInit();
-
-
 }
 
 /**
-* demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
+* @brief demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
 *                 using the platform means for that.
 *
 * const void *pStr - pointer to a string to be printed out
@@ -166,7 +167,7 @@ void demoOutputMsg(const void *pStr, u32_t uiSize)
 #endif
 
 /**
-* demoOutputToggelLed - sets LED output according input request.
+* @brief demoOutputToggelLed - sets LED output according input request.
 *
 *
 * The "LED action" is defined per each platform, it is the led color
@@ -195,7 +196,7 @@ void demoOutputToggelLed(void)
 }
 
 /**
-* demoOutputLed - sets LED output on/off
+* brief demoOutputLed - sets LED output on/off
 *
 * const uiOnOffMode = 0/1
 *
@@ -209,3 +210,23 @@ void demoOutpuLed(const u08_t ucOnOffMode)
 #endif
 }
 
+/**
+*
+* @brief Indicates whether the running target is Swerv board or Whisper Instruction-set simulator
+*
+* @return 1 if Swerv board , 0 otherwise
+*/
+u32_t demoIsSwervBoard(void)
+{
+  volatile u32_t* pUartState;
+  u32_t uiIsSwerv = D_NOT_SWERV_BOARD;
+
+  pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
+
+  if (D_DEMO_SWERVOLF == *pUartState)
+  {
+    uiIsSwerv = D_IS_SWERV_BOARD;
+  }
+
+  return (uiIsSwerv);
+}
