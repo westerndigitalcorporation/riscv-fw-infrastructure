@@ -88,17 +88,26 @@ DemoExternalErrorHook_t fptrDemoExternalErrorHook = NULL;
 */
 void demoStart(void)
 {
+   u32_t uiIsSwerv;
    comrvInitArgs_t stComrvInitArgs = { 1 };
 
    M_DEMO_START_PRINT();
 
-   /* Disable the timer interrupts until setup is done. */
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+   uiIsSwerv = demoIsSwervBoard();
+   /* verify we only run whisper */
+   if (uiIsSwerv == D_PSP_FALSE)
+   {
+	   /* Disable the timer interrupts until setup is done. */
+	   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-   /* Init ComRV engine */
-   comrvInit(&stComrvInitArgs);
+	   /* Init ComRV engine */
+	   comrvInit(&stComrvInitArgs);
 
-   rtosalStart(demoCreateTasks);
+	   rtosalStart(demoCreateTasks);
+   }
+
+   printfNexys("This demo can only execute under whisper");
+   M_DEMO_END_PRINT();
 }
 
 /**
