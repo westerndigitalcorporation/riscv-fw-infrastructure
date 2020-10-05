@@ -73,7 +73,6 @@
 void demoStart(void)
 {
    u32_t uiIndex;
-   volatile u32_t* pUartState;
 
    volatile u64_t ulCounterCacheOFF;
    volatile u64_t ulCounterCacheON;
@@ -85,10 +84,8 @@ void demoStart(void)
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-   /* give us an indication if under whisper or not */
-   pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
-   /* is swerv (not whisper) */
-   if (*pUartState == D_DEMO_OLOF_SWERV)
+   /* Run this demo only if target is Swerv. Cannot run on Whisper */
+   if (D_PSP_TRUE == demoIsSwervBoard())
    {
       /* clear all mrac bits - disable cache and sideeffect bits */
       for (uiIndex = 0 ; uiIndex < D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS ; uiIndex++)

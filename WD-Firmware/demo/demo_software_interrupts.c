@@ -136,6 +136,7 @@ void demoSoftwareInterrupts(void)
   }
 }
 
+
 /**
  * demoStart - startup point of the demo application. called from main function.
  *
@@ -147,8 +148,17 @@ void demoStart(void)
   /* Register interrupt vector */
   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-  /* Software interrupts demo function */
-  demoSoftwareInterrupts();
+  /* Run this demo only if target is Whisper. Cannot run on SweRV */
+  if (D_PSP_FALSE == demoIsSwervBoard())
+  {
+    /* Software interrupts demo function */
+    demoSoftwareInterrupts();
+  }
+  else
+  {
+    /* SweRV */
+    printfNexys("This demo is currently not supported in SweRV FPGA Board");
+  }
 
   M_DEMO_END_PRINT();
 }
