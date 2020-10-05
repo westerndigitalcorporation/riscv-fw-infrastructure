@@ -1,0 +1,6 @@
+Date: 23/09/2020
+llvm-project
+	url=https://github.com/westerndigitalcorporation/llvm-project.git
+	branch=comrv
+	hash=12812e526cdbbe08e992d5c4bd01e5b2f1bfa656
+

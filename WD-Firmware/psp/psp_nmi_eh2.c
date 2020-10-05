@@ -90,7 +90,7 @@ D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptr
 *                    - D_PSP_NMI_EXT_PIN_ASSERTION
 *                    - D_PSP_NMI_D_BUS_STORE_ERROR
 *                    - D_PSP_NMI_D_BUS_LOAD_ERROR
-*                    - D_PSP_NMI_FAST_INT_DUOBLE_BIT_ECC_ERROR
+*                    - D_PSP_NMI_FAST_INT_DOUBLE_BIT_ECC_ERROR
 *                    - D_PSP_NMI_FAST_INT_DCCM_ACCESS_ERROR
 *                    - D_PSP_NMI_FAST_INT_NON_DCCM_REGION_ERROR
 *
@@ -121,7 +121,7 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
        fptrNmiFunc = g_fptrNmiDbusLoadErrHandler;
        g_fptrNmiDbusLoadErrHandler = fptrNmiHandler;
        break;
-     case D_PSP_NMI_FAST_INT_DUOBLE_BIT_ECC_ERROR:
+     case D_PSP_NMI_FAST_INT_DOUBLE_BIT_ECC_ERROR:
        fptrNmiFunc = g_fptrNmiFastIntEccErrHandler;
        g_fptrNmiFastIntEccErrHandler = fptrNmiHandler;
        break;
@@ -174,7 +174,7 @@ D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
     case D_PSP_NMI_D_BUS_STORE_ERROR:
       g_fptrNmiDbusStoreErrHandler();
       break;
-    case D_PSP_NMI_FAST_INT_DUOBLE_BIT_ECC_ERROR:
+    case D_PSP_NMI_FAST_INT_DOUBLE_BIT_ECC_ERROR:
       g_fptrNmiFastIntEccErrHandler();
       break;
     case D_PSP_NMI_FAST_INT_DCCM_ACCESS_ERROR:

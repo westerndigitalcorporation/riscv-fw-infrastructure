@@ -1,0 +1,79 @@
+'''
+ SPDX-License-Identifier: Apache-2.0
+ Copyright 2019 Western Digital Corporation or its affiliates.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http:www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+'''
+import os
+import utils
+Import('Env')
+
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], Env['DEMO_NAME'])+'_demo'
+utils.fnCreateFolder(strOutDir)
+
+# C language source and out files in list of tupples
+# (sourcefile.c, outputfile.o)
+listCFiles=[
+   (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
+   (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
+   (os.path.join('demo' , 'demo_bit_manipulation.c'), os.path.join(strOutDir, 'demo_bit_manipulation.o')),
+]
+
+# Assembly language source and out files in list of tupples
+# (sourcefile.S, outputfile.o)
+listAssemblyFiles=[]
+
+# compiler, assembler and linker directivs update for bit-manipulation - ** for LLVM version 11.0.0 (bit-manipulation) only **
+STRARC = '-march=rv32imac'
+STRARC_BITMANIP = '-march=rv32imaczbb0p92_zbs0p92'
+LIST_BITMANIT = ['-menable-experimental-extensions']
+
+# telling the tools which toolchains we are using. by default it is empty so GCC tools will be used
+Env['STR_TOOL_PREFIX'] = "LLVM_"
+
+if Env["Scan"]:
+  Env['C_FLAGS'][Env['C_FLAGS'].index(STRARC)] = STRARC_BITMANIP
+  Env['A_FLAGS'][Env['A_FLAGS'].index(STRARC)] = STRARC_BITMANIP
+  Env['LINKFLAGS'][Env['LINKFLAGS'].index(STRARC)] = STRARC_BITMANIP
+  Env['C_FLAGS'] += LIST_BITMANIT
+  Env['A_FLAGS'] += LIST_BITMANIT
+  Env['LINKFLAGS'] += LIST_BITMANIT
+  
+listCCompilerDirectivs = [] + Env['C_FLAGS']
+listAsimCompilerDirectivs = [] + Env['A_FLAGS']
+
+# compilation defines (-D_)
+listCompilationDefines = [] + Env['PUBLIC_DEF']
+
+# public includes
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
+listIncPaths = [ ] + Env['PUBLIC_INC']
+
+if not Env["Scan"]:
+  # for objects
+  listObjects = []
+  for tplFile in listCFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listCCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+
+  # asm file objects
+  for tplFile in listAssemblyFiles:
+    listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
+
+  # for libraries
+  objDemoLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
+
+  #print Env.Dump()
+
+  # return the demo lib
+  Return('objDemoLib')
+

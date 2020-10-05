@@ -20,6 +20,8 @@
 * @date   23.10.2019
 * @brief  initializations and api layer to the specific platform functions 
 */
+#ifndef  __DEMO_PLATFORM_AL_H__
+#define  __DEMO_PLATFORM_AL_H__
 
 /**
 * include files
@@ -88,7 +90,7 @@ void demoPlatformInit(void);
 
 
 /**
-* demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
+* @brief demoOutputMsg - output (usually, but not necessarily - print it out) a given string,
 *                 using the platform means for that.
 *
 * const void *pStr - pointer to a string to be printed out
@@ -106,7 +108,7 @@ void demoPlatformInit(void);
 #endif
 
 /**
-* demoOutputToggelLed - sets LED output according input request.
+* @brief demoOutputToggelLed - sets LED output according input request.
 *
 *
 * The "LED action" is defined per each platform
@@ -115,7 +117,7 @@ void demoPlatformInit(void);
 void demoOutputToggelLed(void);
 
 /**
-* demoOutputLed - sets LED output on/off
+* @brief demoOutputLed - sets LED output on/off
 *
 * const uiOnOffMode = 0/1
 *
@@ -123,3 +125,13 @@ void demoOutputToggelLed(void);
 * */
 void demoOutpuLed(const u08_t ucOnOffMode);
 
+
+/**
+*
+* @brief Indicates whether the running target is Swerv board or Whisper Instruction-set simulator
+*
+* @return 1 if Swerv board , 0 otherwise
+*/
+u32_t demoIsSwervBoard(void);
+
+#endif /* __DEMO_PLATFORM_AL_H__ */

@@ -553,42 +553,51 @@ void demoExtIntsTest9NestedInteeruptHigherPriority(void)
  */
 void demoStart(void)
 {
-   M_DEMO_START_PRINT();
+  M_DEMO_START_PRINT();
 
-   /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  /* Register interrupt vector */
+  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-   /* Demo #1 - Global disable external interrupts */
-   demoExtIntsTest1GlobalDisabled();
+  /* Run this demo only if target is Swerv. Cannot run on Whisper */
+  if (D_PSP_TRUE == demoIsSwervBoard())
+  {
+    /* Demo #1 - Global disable external interrupts */
+    demoExtIntsTest1GlobalDisabled();
 
-   /* Demo #2 - Disable specific external interrupt */
-   demoExtIntsTest2SpecificDisabled();
+    /* Demo #2 - Disable specific external interrupt */
+    demoExtIntsTest2SpecificDisabled();
 
-   /* Demo #3 - Priority & Threshold - standard order */
-   demoExtIntsTest3PriorityStandardOrder();
+    /* Demo #3 - Priority & Threshold - standard order */
+    demoExtIntsTest3PriorityStandardOrder();
 
-   /* Demo #4 - Priority & Threshold - reversed order*/
-   demoExtIntsTest4PriorityReversedOrder();
+    /* Demo #4 - Priority & Threshold - reversed order*/
+    demoExtIntsTest4PriorityReversedOrder();
 
-   /* Demo #5 - Polarity - active-high/active-low */
-   demoExtIntsTest5GatweayPolarity();
+    /* Demo #5 - Polarity - active-high/active-low */
+    demoExtIntsTest5GatweayPolarity();
 
-   /* Demo #6 - Gateways Level/Edge setting*/
-   demoExtIntsTest6GatweayConfiguration();
+    /* Demo #6 - Gateways Level/Edge setting*/
+    demoExtIntsTest6GatweayConfiguration();
 
 #if 0
-   /* Demo #7 - Nested interrupts - lower priority */
-   demoExtIntsTest7NestedInteeruptLowerPriority();
+    /* Demo #7 - Nested interrupts - lower priority */
+    demoExtIntsTest7NestedInteeruptLowerPriority();
 
-   /* Demo #8 - Nested interrupts - same priority */
-   demoExtIntsTest8NestedInteeruptSamePriority();
+    /* Demo #8 - Nested interrupts - same priority */
+    demoExtIntsTest8NestedInteeruptSamePriority();
 
-   /* Demo #9 - Nested interrupts - higher priority */
-   demoExtIntsTest9NestedInteeruptHigherPriority();
+    /* Demo #9 - Nested interrupts - higher priority */
+    demoExtIntsTest9NestedInteeruptHigherPriority();
 #endif
-   /* Arriving here means all tests passed successfully */
-   demoOutputMsg("External Interrupts tests passed successfully\n");
+    /* Arriving here means all tests passed successfully */
+    demoOutputMsg("External Interrupts tests passed successfully\n");
+  }
+  else
+  {
+    /* whisper */
+    printfNexys("This demo can't run under whisper");
+  }
 
-   M_DEMO_END_PRINT();
+  M_DEMO_END_PRINT();
 }
 

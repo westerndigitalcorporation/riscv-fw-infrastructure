@@ -6,6 +6,8 @@
    "reset_vec" : "0x00000000",
    "harts" : 2,
    "nmi_vec" : "0x8000100C",
+   "enable_zbb" : "true",
+   "enable_zbs" : "true",
    "triggers" : [
       {
          "poke_mask" : [
@@ -149,7 +151,7 @@
       },
       "marchid" : {
          "exists" : "true",
-         "reset" : "0x00000010",
+         "reset" : "0x00000011",
          "mask" : "0x0"
       },
       "pmpaddr4" : {

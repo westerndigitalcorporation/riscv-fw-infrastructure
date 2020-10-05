@@ -35,9 +35,6 @@
 /**
 * definitions
 */
-#define D_PSP_NMI_FAST_INT_DUOBLE_BIT_ECC_ERROR   0xF0001000
-#define D_PSP_NMI_FAST_INT_DCCM_ACCESS_ERROR      0xF0001001
-#define D_PSP_NMI_FAST_INT_NON_DCCM_REGION_ERROR  0xF0001002
 
 /**
 * local prototypes

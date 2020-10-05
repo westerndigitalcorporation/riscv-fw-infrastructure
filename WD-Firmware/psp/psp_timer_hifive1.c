@@ -58,11 +58,11 @@
 /**
 * @brief Setup and activate core's Timer
 *
-* @parameter - timer         - indicates which timer to setup and run
-* @parameter - uiPeriodCycles  - defines the timer's period in cycles 
+* @parameter - timer           - indicates which timer to setup and run
+* @parameter - udPeriodCycles  - defines the timer's period in cycles 
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodCycles)
+D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles)
 {
   #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
     #error "D_MTIME_ADDRESS or D_MTIMECMP_ADDRESS is not defined"
@@ -72,14 +72,14 @@ D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriod
   volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
   volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
   u64_t udNow = *pMtime;
-  u64_t udThen = udNow + uiPeriodCycles;
+  u64_t udThen = udNow + udPeriodCycles;
   *pMtimecmp = udThen;
 }
 
 /**
 * @brief Get Timer counter value
 *
-* @parameter - timer - indicates which timer to setup and run
+* @parameter - timer - indicates from which timer to get the counter value
 *
 * @return u64_t      - Timer counter value
 *
@@ -93,7 +93,7 @@ D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
 /**
 * @brief Get Time compare counter value
 *
-* @parameter - timer - indicates which timer to setup and run
+* @parameter - timer - indicates from which timer to get the compare-counter value
 *
 * @return u64_t      – Time compare counter value
 *

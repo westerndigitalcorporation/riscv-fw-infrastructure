@@ -20,7 +20,7 @@
 
 
 #include <stdarg.h>
-#include "psp_types.h"
+#include "psp_api.h"
 #include "bsp_mem_map.h"
 #include "bsp_printf.h"
 
@@ -135,14 +135,17 @@ int printUartPutchar(char ch)
 */
 void uartInit(void)
 {
+  u32_t uiTempDiv;
+
   /* SET LSR to be 1's so Whisper will be happy that ch is ready */
   M_UART_WR_REG_LSR(0xff);
 
   /* Set DLAB bit in LCR */
   M_UART_WR_REG_LCR(D_UART_DLAB_BIT);
 
-  /* Set divisor regs  devisor = 27: clock_freq/baud_rate*16 -->> clock = 50MHz, baud=115200*/
-  M_UART_WR_REG_BRDL((D_CLOCK_RATE/D_BAUD_RATE)/16);
+  /* Set divisor regs  divisor = 7: clock_freq/baud_rate/16 -->> EL2 clock = 12.5MHz, EL2 URAT baud-rate = 115200 */
+  uiTempDiv = D_CLOCK_RATE / D_BAUD_RATE;
+  M_UART_WR_REG_BRDL(M_PSP_DIV_AND_ROUND_CEILING(uiTempDiv, 16));
 
   /* 8 data bits, 1 stop bit, no parity, clear DLAB */
   M_UART_WR_REG_LCR((D_UART_LCR_CS8  | D_UART_LCR_1_STB | D_UART_LCR_PDIS));
@@ -158,12 +161,12 @@ void uartInit(void)
 /*----------------------------------------------------*/
 typedef struct params_s 
 {
-    int len;
-    long num1;
-    long num2;
-    char pad_character;
-    int do_padding;
-    int left_flag;
+  int len;
+  long num1;
+  long num2;
+  char pad_character;
+  int do_padding;
+  int left_flag;
   int upper_hex_digit_flag; //added hexdigit uppercase [A-F]
   int maxium_length; // max_length
 } params_t;

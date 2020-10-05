@@ -63,6 +63,12 @@
 #define D_DEMO_IRQ           D_BSP_IRQ_3
 #define D_DEMO_TIMER_TO_IRQ  E_TIMER_TO_IRQ3
 
+#ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
+  /* Upon initiating 'Halted' mode - whether to atomically enable interrupts or not */
+  #define D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT     0
+  #define D_DEMO_ATOMICALLY_ENABLE_INTERRUPTS_UPON_HALT 1
+#endif
+
 /**
 * macros
 */
@@ -142,8 +148,12 @@ void demoSetupExternalInterrupts(void)
  */
 void demoSleepAndWakeupByExternalInterrupt(void)
 {
+  u32_t uiPrevIntState;
   u64_t udTimeBeforeSleep;
   u64_t udTimeAfterSleep;
+
+  /* Disable interrupts */
+  pspInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
@@ -158,23 +168,28 @@ void demoSleepAndWakeupByExternalInterrupt(void)
   bspSetTimerDurationMsec(D_SLEEP_TIME);
 
   /* Setup external interrupts */
-    demoSetupExternalInterrupts();
+  demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
   pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
-  udTimeBeforeSleep = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Let the SweRVolf FPGA timer to start running */
   bspStartTimer();
 
+#ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
+  /* Halt the core - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
+  pspPmcHalt(D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT);
+#else /* D_EHX1_VER_0_9 - does not contain 'haltie' feature */
   /* Halt the core */
   pspPmcHalt();
+#endif
 
   /* This line , and the following are executed only when core is not in 'Sleep' */
-  udTimeAfterSleep = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
 
@@ -214,8 +229,12 @@ void demoMtimerIsrHandler(void)
  */
 void demoSleepAndWakeupByMtimer(void)
 {
+  u32_t uiPrevIntState;
   u64_t udTimeBeforeSleep;
   u64_t udTimeAfterSleep;
+
+  /* Disable interrupts */
+  pspInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
@@ -227,20 +246,25 @@ void demoSleepAndWakeupByMtimer(void)
   pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
 
   /* Activate Machine timer */
-  pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
+  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
+
+  g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
+
+  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Enable all Machine level interrupts */
   pspInterruptsEnable();
 
-  g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
-
-  udTimeBeforeSleep = pspTimerCounterGet(E_MACHINE_TIMER);
-
-  /* Sets core to Sleep (pmu/fw-halt) mode */
+#ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
+  /* Sets core to Sleep (pmu/fw-halt) mode - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
+  pspPmcHalt(D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT);
+#else /* D_EHX1_VER_0_9 - does not contain 'haltie' feature */
+  /* Halt the core */
   pspPmcHalt();
+#endif
 
   /* This line , and the following are executed only when core is not in 'Sleep' */
-  udTimeAfterSleep = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
 
@@ -259,6 +283,60 @@ void demoSleepAndWakeupByMtimer(void)
   }
 }
 
+#ifdef D_EHX1_VER_1_0  /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
+/**
+ * @brief - Set core to Sleep (pmu/fw-halt) mode with 'haltie' option enabled and wake it up with timer interrupt.
+ *          This test is like demoSleepAndWakeupByMtimer test with one difference - Interrupts are enabled not via explicit write
+ *          to MSTATUS CSR (mie bit) but via activating 'haltie' option. That means interrupts are enabled atomically only upon 'Halt' initiation.
+ */
+void demoSleepHaltIeOption(void)
+{
+  u64_t udTimeBeforeSleep;
+  u64_t udTimeAfterSleep;
+  u32_t uiIntStatus;
+
+  /* Zero the test results variable */
+  g_uiTestWayPoints = 0;
+
+  /* Disable all machine level interrupts (interrupts will be enabled using the 'halt-ie' option, upon 'Halted' initiation */
+  pspInterruptsDisable(&uiIntStatus);
+
+  /* Register Machine timer interrupt handler */
+  pspRegisterInterruptHandler(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
+
+  /* Enable Machine timer interrupt */
+  pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
+
+  /* Activate Machine timer */
+  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
+
+  g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
+
+  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+
+  /* Sets core to Sleep (pmu/fw-halt) mode - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
+  pspPmcHalt(D_DEMO_ATOMICALLY_ENABLE_INTERRUPTS_UPON_HALT);
+
+  /* This line , and the following are executed only when core is not in 'Sleep' */
+  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+
+  g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
+
+  /* verify all test way points were visited */
+  if(g_uiTestWayPoints != D_MTIMER_WAKEUP_TEST_RESULT)
+  {
+    /* Test failed */
+    M_DEMO_ENDLESS_LOOP();
+  }
+
+  /* verify that core was indeed halted */
+  if(udTimeAfterSleep - udTimeBeforeSleep < D_SLEEP_TIME)
+  {
+    /* Test failed */
+    M_DEMO_ENDLESS_LOOP();
+  }
+}
+#endif /* D_EHX1_VER_1_0 */
 
 /**
  * @brief - Stall the core ('pause', per EH1 PRM) and resume it when count down expires
@@ -274,13 +352,13 @@ void demoStallAndResumeByCountdown(void)
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
-  udTimeBeforeStall = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeBeforeStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Pause core */
   pspPmcStall(M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
 
   /* This line , and the following are executed only when core is not in 'Pause' */
-  udTimeAfterStall = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeAfterStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_STALL);
 
@@ -305,9 +383,13 @@ void demoStallAndResumeByCountdown(void)
  */
 void demoStallAndResumeByMtimeInterrupt(void)
 {
+  u32_t uiPrevIntState;
   u64_t udTimeBeforeStall;
   u64_t udTimeAfterStall;
   u64_t udStallTime;
+
+  /* Disable interrupts */
+  pspInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
@@ -319,20 +401,20 @@ void demoStallAndResumeByMtimeInterrupt(void)
   pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
 
   /* Activate Machine timer */
-  pspTimerCounterSetupAndRun(E_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
-
-  /* Enable all Machine level interrupts */
-  pspInterruptsEnable();
+  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
-  udTimeBeforeStall = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeBeforeStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+
+  /* Enable all Machine level interrupts */
+  pspInterruptsEnable();
 
   /* Stall the core - for longer time than Machine timer duration */
   pspPmcStall(M_DEMO_MSEC_TO_CYCLES(D_LONG_STALL_TIME));
 
   /* This line , and the following are executed only when core is not in 'Stall' */
-  udTimeAfterStall = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeAfterStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_STALL);
 
@@ -362,9 +444,13 @@ void demoStallAndResumeByMtimeInterrupt(void)
  */
 void demoStallAndResumeByExternalInterrupt(void)
 {
+  u32_t uiPrevIntState;
   u64_t udTimeBeforeStall;
   u64_t udTimeAfterStall;
   u64_t udStallTime;
+
+  /* Disable interrupts */
+  pspInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
@@ -379,14 +465,14 @@ void demoStallAndResumeByExternalInterrupt(void)
   bspSetTimerDurationMsec(D_STALL_TIME);
 
   /* Setup external interrupts */
-    demoSetupExternalInterrupts();
+  demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
   pspInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
-  udTimeBeforeStall = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeBeforeStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Let the SweRVolf FPGA timer to start running */
   bspStartTimer();
@@ -395,7 +481,7 @@ void demoStallAndResumeByExternalInterrupt(void)
   pspPmcStall(M_DEMO_MSEC_TO_CYCLES(D_LONG_STALL_TIME));
 
   /* This line , and the following are executed only when core is not in 'Stall' */
-  udTimeAfterStall = pspTimerCounterGet(E_MACHINE_TIMER);
+  udTimeAfterStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_STALL);
 
@@ -425,33 +511,42 @@ void demoStallAndResumeByExternalInterrupt(void)
  */
 void demoStart(void)
 {
-  u32_t uiPrevIntState;
-
   M_DEMO_START_PRINT();
 
   /* Register interrupt vector */
   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-  /************************/
-  /* Part1 - Sleep tests  */
-  /************************/
-  /* Set core to sleep (halt/fw-halt) mode and wake it up with machine timer interrupt */
-  demoSleepAndWakeupByMtimer();
-  /* Set core to Sleep (pmu/fw-halt) mode and wake it up with external interrupt */
-  demoSleepAndWakeupByExternalInterrupt();
-  /* Disable interrupts at the end of part 1*/
-  pspInterruptsDisable(&uiPrevIntState);
+  /* Run this demo only if target is Swerv. Cannot run on Whisper */
+  if (D_PSP_TRUE == demoIsSwervBoard())
+  {
+    /************************/
+    /* Part1 - Sleep tests  */
+    /************************/
+    /* Set core to sleep (halt/fw-halt) mode and wake it up with machine timer interrupt */
+    demoSleepAndWakeupByMtimer();
+    /* Set core to Sleep (pmu/fw-halt) mode and wake it up with external interrupt */
+    demoSleepAndWakeupByExternalInterrupt();
 
-  /************************/
-  /* Part2 - Stall tests  */
-  /************************/
-  /* Stall the core ('pause', per EH1 PRM) and resume it when count down expires */
-  demoStallAndResumeByCountdown();
-  /* Stall the core ('pause', per EH1 PRM) and resume it with  machine timer interrupt */
-  demoStallAndResumeByMtimeInterrupt();
-  /* Stall the core ('pause', per EH1 PRM) and resume it with  external interrupt */
-  demoStallAndResumeByExternalInterrupt();
+#ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
+    /* Set core to Sleep (pmu/fw-halt) mode , with 'haltie' (Atomically interrupts-enable upon 'Halt' initiation) and wake it up with timer interrupt */
+    demoSleepHaltIeOption();
+#endif
+
+    /************************/
+    /* Part2 - Stall tests  */
+    /************************/
+    /* Stall the core ('pause', per EH1 PRM) and resume it when count down expires */
+    demoStallAndResumeByCountdown();
+    /* Stall the core ('pause', per EH1 PRM) and resume it with  machine timer interrupt */
+    demoStallAndResumeByMtimeInterrupt();
+    /* Stall the core ('pause', per EH1 PRM) and resume it with  external interrupt */
+    demoStallAndResumeByExternalInterrupt();
+  }
+  else
+  {
+    /* whisper */
+    printfNexys("This demo can't run under whisper");
+  }
 
   M_DEMO_END_PRINT();
-
 }

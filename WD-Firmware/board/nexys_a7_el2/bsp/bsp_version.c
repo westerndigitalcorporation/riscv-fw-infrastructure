@@ -25,7 +25,6 @@
 /**
 * include files
 */
-#include "psp_types.h"
 #include "psp_api.h"
 #include "bsp_mem_map.h"
 #include "bsp_version.h"
@@ -33,9 +32,6 @@
 /**
 * definitions
 */
-
-/* The stack used by interrupt service routines */
-
 
 /**
 * macros

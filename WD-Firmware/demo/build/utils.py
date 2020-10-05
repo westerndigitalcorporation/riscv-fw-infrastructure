@@ -79,8 +79,12 @@ def fnProduceSectionsSize(target, source, env):
 # create the dump file
 def fnProduceDump(target, source, env):
    strDmpName     = env['DMP_FILE']
-   strDmpUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['OBJDUMP_BIN'])
-   fnExecuteCommand(strDmpUtilName + ' ' + env['ELF_FILE'] + ' -DSh > ' + strDmpName)
+   strUtilsBaseDir = env[env['STR_TOOL_PREFIX']+'UTILS_BASE_DIR']
+   strDumpUtil = env[env['STR_TOOL_PREFIX']+'OBJDUMP_BIN']
+   strAttr = env[env['STR_TOOL_PREFIX']+'OBJDUMP_ATTR']
+   strDmpUtilName = os.path.join(strUtilsBaseDir, "bin", strDumpUtil)
+   strcmd = strDmpUtilName + ' ' + env['ELF_FILE'] + strAttr + ' -DSh > ' + strDmpName
+   fnExecuteCommand(strDmpUtilName + ' ' + env['ELF_FILE'] + strAttr + ' -DSh > ' + strDmpName)
    return None
 
 # move overlay section from virtual address to flash address 
@@ -173,6 +177,7 @@ def fnSetToolchainPath(strTCName, env):
        # check if the Binutils folder exist
        env['RISCV_BINUTILS_TC_PATH'] = os.path.join(env['RISCV_LLVM_TC_PATH'], STR_TC_GCC)
        env['UTILS_BASE_DIR']         = env['RISCV_BINUTILS_TC_PATH'] 
+       env['LLVM_UTILS_BASE_DIR'] = env['RISCV_LLVM_TC_PATH']
        if not env['RISCV_BINUTILS_TC_PATH']:
          print ("Error: No Binutils found at: %s" % env['RISCV_BINUTILS_TC_PATH'])
          exit(1)
@@ -190,7 +195,7 @@ def fnSetToolchainPath(strTCName, env):
          print "Setting GCC Toolchain to => %s" % env['RISCV_GCC_TC_PATH']
 
     else:
-      print ("Error: No toolchain present")
+      print ("Error: No toolchain present for : %s" %strTCName)
       exit(1)
 
     # setting up a bin folder for the debugger
@@ -228,7 +233,7 @@ def fnGetToolchainSpecificFlags(strTCName, env):
       listSpecificLinkerOptions = ['']
       listSpecificCFlagsOptions = ['']
     else:
-      print ("Error: No toolchain present")
+      print ("Error: No toolchain present for:%s" %strTCName)
       exit(1)
 
     return listSpecificCFlagsOptions, listSpecificLinkerOptions
@@ -250,4 +255,3 @@ def fnGetDefine(strDefine, listDefines):
     if strDefine in strdef:
       return strdef.split("=")[0]
   return None
-  

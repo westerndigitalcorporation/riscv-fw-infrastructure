@@ -56,48 +56,58 @@
 * global variables
 */
 
+/**
+* APIs
+*/
 
 /**
-* @brief The function enable/disable the group performance monitor
+* @brief The function disables all the performance monitors
+*        ** Note ** Only Performance-Monitor counters 3..6 are disabled by this setting.
+*                   The instruction-retired, cycles and time counters stay enabled.
 *
-* @param uiMonitorEnBit           – monitor enable/disable bit
-*
-* @return No return value
 */
-D_PSP_TEXT_SECTION void pspEnableAllPerformanceMonitor(u32_t uiMonitorEnBit)
+D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
 {
-  M_PSP_SET_CSR(D_PSP_MGPMC_NUM, uiMonitorEnBit & D_PSP_MGMPC_MASK);
+  M_PSP_CLEAR_CSR(D_PSP_MGPMC_NUM, D_PSP_MGMPC_MASK);
 }
 
+/**
+* @brief The function enables all the performance monitors
+*
+*/
+D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
+{
+  M_PSP_SET_CSR(D_PSP_MGPMC_NUM, D_PSP_MGMPC_MASK);
+}
 
 /**
 * @brief The function pair a counter to an event
 *
-* @param eCounter     – counter to be set
+* @param uiCounter    – counter to be set
 *                     – supported counters are:
 *                         D_PSP_COUNTER0
 *                         D_PSP_COUNTER1
 *                         D_PSP_COUNTER2
 *                         D_PSP_COUNTER3
-* @param eEvent       – event to be paired to the selected counter
+* @param uiEvent      – event to be paired to the selected counter
 *
 * @return No return value
 */
-D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t eCounter, ePspPerformanceMonitorEvents_t eEvent)
+D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent)
 {
-  switch (eCounter)
+  switch (uiCounter)
   {
     case D_PSP_COUNTER0:
-        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, eEvent);
+        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT3_NUM, uiEvent);
         break;
     case D_PSP_COUNTER1:
-        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT4_NUM, eEvent);
+        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT4_NUM, uiEvent);
         break;
     case D_PSP_COUNTER2:
-        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT5_NUM, eEvent);
+        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT5_NUM, uiEvent);
         break;
     case D_PSP_COUNTER3:
-        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, eEvent);
+        M_PSP_WRITE_CSR(D_PSP_MHPMEVENT6_NUM, uiEvent);
         break;
     default:
         M_PSP_ASSERT(1);
@@ -105,9 +115,9 @@ D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t eCounter, ePspPerformance
   }
 }
 /**
-* @brief The function gets the counter value
+* @brief The function gets the counter value (64 bit)
 *
-* @param eCounter    – counter index
+* @param uiCounter    – counter index
 *                     – supported counters are:
 *                         D_PSP_CYCLE_COUNTER
 *                         D_PSP_TIME_COUNTER
@@ -117,33 +127,40 @@ D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t eCounter, ePspPerformance
 *                         D_PSP_COUNTER2
 *                         D_PSP_COUNTER3
 *
-* @return u32_t      – Counter value
+* @return u64_t      – Counter value
 */
-D_PSP_TEXT_SECTION u32_t pspPerformanceCounterGet(u32_t eCounter)
+D_PSP_TEXT_SECTION u64_t pspPerformanceCounterGet(u32_t uiCounter)
 {
-  u32_t uiCounterVal = 0;
-  switch (eCounter)
+  u64_t uiCounterVal = 0xDEAFBEEFDEAFBEEF;
+
+  switch (uiCounter)
   {
     case D_PSP_CYCLE_COUNTER:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_MCYCLE_NUM);
+      uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MCYCLE_NUM);                    /* read low 32 bits */
+      uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MCYCLEH_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_TIME_COUNTER:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_TIME_NUM);
+      uiCounterVal = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
       break;
     case D_PSP_INSTRET_COUNTER:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);
+      uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);                    /* read low 32 bits */
+      uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MINSTRETH_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_COUNTER0:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER3_NUM);
+      uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER3_NUM);                    /* read low 32 bits */
+      uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER3H_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_COUNTER1:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER4_NUM);
+      uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER4_NUM);                    /* read low 32 bits */
+      uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER4H_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_COUNTER2:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER5_NUM);
+      uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER5_NUM);                    /* read low 32 bits */
+      uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER5H_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_COUNTER3:
-      uiCounterVal = M_PSP_READ_CSR(D_PSP_MHPMCOUNTER6_NUM);
+      uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER6_NUM);                    /* read low 32 bits */
+      uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MHPMCOUNTER6H_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     default:
       M_PSP_ASSERT(1);

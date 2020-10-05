@@ -16,7 +16,7 @@
 #*/
 import os
 
-strCacheSize = "1536"
+strCacheSize = "4608"
 
 class demo(object):
   def __init__(self):
@@ -41,7 +41,7 @@ class demo(object):
     ]
 
     self.listSconscripts = [
-      'comrv_baremetal',
+      'comrv',
       'demo_comrv_baremetal',
     ]
 
