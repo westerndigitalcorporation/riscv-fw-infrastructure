@@ -49,6 +49,21 @@
    M_DEMO_10_NOPS();      \
    M_DEMO_10_NOPS();
 
+#define M_DEMO_100_NOPS() \
+   M_DEMO_50_NOPS() \
+   M_DEMO_50_NOPS()
+
+#define M_DEMO_512B_NOPS() \
+   M_DEMO_100_NOPS() \
+   M_DEMO_100_NOPS() \
+   M_DEMO_50_NOPS()  \
+   M_DEMO_5_NOPS()   \
+   asm volatile ("nop");
+
+#define M_DEMO_1K_NOPS() \
+   M_DEMO_512B_NOPS() \
+   M_DEMO_512B_NOPS()
+
 #define M_OVL_DUMMY_FUNCTION(x,y) \
   void _OVERLAY_ OvlTestFunc_##x##_() \
    { \
@@ -132,6 +147,15 @@ volatile u32_t gOverlayFunc2 = 0;
 /**
 * functions
 */
+void _OVERLAY_ OvlTestFunc4K(void)
+{
+   M_DEMO_1K_NOPS();
+   M_DEMO_1K_NOPS();
+   M_DEMO_1K_NOPS();
+   M_DEMO_512B_NOPS();
+   asm volatile ("nop");
+}
+
 /* overlay function 4 */
 void OVL_OverlayFunc4 OverlayFunc4(void)
 {
@@ -249,7 +273,10 @@ void demoStart(void)
    /* reset comrv, keep the 'offset' and 'multi-group' tables loaded */
    comrvReset(E_RESET_TYPE_CACHE);
 
-   /* due to comrvReset, OvlTestFunc_14_() will be loaded now */
+   /* call 4K overlay - will fill the cache */
+   OvlTestFunc4K();
+
+   /* load small function, following cache being full */
    OvlTestFunc_14_();
 
    M_DEMO_END_PRINT();

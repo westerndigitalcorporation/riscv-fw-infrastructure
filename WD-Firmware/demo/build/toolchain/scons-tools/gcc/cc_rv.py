@@ -84,6 +84,8 @@ def generate(env):
     # Tool c compiler execution
     env['CC_BIN']      = "riscv64-unknown-elf-gcc"
     # temporary location
+    # telling the tools which toolchains we are using. by default it is empty so GCC tools will be used
+    env['STR_TOOL_PREFIX'] = ""
     env['SIZE_BIN']     = "riscv64-unknown-elf-size"
     env['OBJDUMP_BIN']  = "riscv64-unknown-elf-objdump"
     env['OBJDUMP_ATTR'] = ""

@@ -36,7 +36,11 @@ listAssemblyFiles=[]
 # compiler, assembler and linker directivs update for bit-manipulation - ** for LLVM version 11.0.0 (bit-manipulation) only **
 STRARC = '-march=rv32imac'
 STRARC_BITMANIP = '-march=rv32imaczbb0p92_zbs0p92'
-LIST_BITMANIT = ['-menable-experimental-extensions', '--target=riscv32-unknown-elf']
+LIST_BITMANIT = ['-menable-experimental-extensions']
+
+# telling the tools which toolchains we are using. by default it is empty so GCC tools will be used
+Env['STR_TOOL_PREFIX'] = "LLVM_"
+
 if Env["Scan"]:
   Env['C_FLAGS'][Env['C_FLAGS'].index(STRARC)] = STRARC_BITMANIP
   Env['A_FLAGS'][Env['A_FLAGS'].index(STRARC)] = STRARC_BITMANIP
@@ -44,6 +48,7 @@ if Env["Scan"]:
   Env['C_FLAGS'] += LIST_BITMANIT
   Env['A_FLAGS'] += LIST_BITMANIT
   Env['LINKFLAGS'] += LIST_BITMANIT
+  
 listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 

@@ -84,12 +84,18 @@ def generate(env):
     # Tool c compiler execution
     env['CC_BIN']      = "clang"
     # temporary location
+    # telling the tools which toolchains we are using. by default it is empty so GCC tools will be used
+    env['STR_TOOL_PREFIX'] = ""
     env['SIZE_BIN']     = "riscv32-unknown-elf-size"
     env['OBJDUMP_BIN']  = "riscv32-unknown-elf-objdump"
     env['OBJDUMP_ATTR'] = ""
     env['OBJCOPY_BIN']  = "riscv32-unknown-elf-objcopy"
     env['READELF_BIN']  = "riscv32-unknown-elf-readelf"
 
+    # llvm objdump tool 
+    env['LLVM_OBJDUMP_BIN']  = "llvm-objdump"
+    env['LLVM_OBJDUMP_ATTR'] = " --mattr=+experimental-b"
+    
     env['CC'] = os.path.join("$RISCV_LLVM_TC_PATH", "bin", "$CC_BIN")
     env['CFLAGS'] = SCons.Util.CLVar('')
     env['CCCOM'] = '$CC -o $TARGET -c $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCPATHS'

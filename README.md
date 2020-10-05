@@ -6,8 +6,8 @@
 This repostority is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
-  - GCC 9.2.0 Toolchain for RISC-V
-  - LLVM/Clang 10.0.0 Toolchain for RISC-V ***[along with GCC Binutils 2.32.51.20190122]***
+  - GCC 10.2.0 Toolchain for RISC-V
+  - LLVM/Clang 12.0.0 Toolchain for RISC-V ***[along with Custom GCC Binutils COMRV]***
   - Eclipse MCU
 
 
@@ -30,7 +30,7 @@ This repostority is WD RISC-V Firmware package, holds:
 [comment]:  [] ($ git clone --recursiv https://bitbucket.wdc.com/scm/ctoriscvfwinfra/infra-riscv-fw.git)
 
 # Code Convention 
-See [code convention.htm](https://bitbucket.wdc.com/projects/CTORISCVFWINFRA/repos/infra-riscv-fw/browse)
+    See [./code convention.htm]
 
 # WD Firmware     
 The “WD Firmware package” constitutes an SDK FW. It contains Firmware applications and Processor Support Package (PSP) for various cores, alongside demos which support all features.
@@ -159,7 +159,9 @@ We provide several platforms to work with, please follow the instructions for th
     - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
     	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit*** to uSD device (locate it at the uSD root)
     	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
-		- Set the following jumpers:  JP1 - connect JTAG & USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
+		- Set the following jumpers:  JP1 - USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
+
+        ![](prog_mode.png)
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done
 		- Wait for ORANGE led to be off, once off the board is ready to be used
 
@@ -194,28 +196,23 @@ We provide several platforms to work with, please follow the instructions for th
 The folder WD-Firmware/demo/build/ contains a template file (SConscript_template) which can be used.
 &nbsp;
 # Supporting GCC Releases
-- #### RISCV GCC 8.2
-	- Initial RISCV official 8.2 GCC release
-- #### RISCV GCC 8.3
-	- RISCV official 8.3 GCC release
-	- GDB fix for skipping breakpoint at fist line after ASM lable
-	- lto simple_object fix opening mode in windows (text->bin)
-- #### RISCV GCC 9.2
-	- RISCV official 9.2 GCC release
-	- WD Code density improvement and optimization patches
+- #### RISCV GCC 10.2.0
+	- RISCV official 10.2.0 GCC release
+	- Official GDB 9.2.0
+	- Check gcc-hash.txt for the precise commits of toolchain build
 
 
 # Supporting LLVM Releases
-- #### RISCV LLVM/Clang 10.0.0
-	- Initial LLVM/Clang official 10.0.0 release
+- #### RISCV LLVM/Clang 12.0.0
+	- Initial LLVM/Clang official 12.0.0 release
 	- ComRV support modules
-	- GCC Binutils-gdb 2.32.51.20190122 supporting ComRV
+	- Check llvm-hash.txt for the precise commits of toolchain build
 
 # Notes and status
 This repo is always under work, following are notes and status for items that is still missing or under work.
-- #### 08-Sep-2020
+- #### 05-Oct-2020
     - All EH2 demos are working only on Whisper, no fpga
     - EL2 fpga have interrupt issues, so several demos that use interrupts, will not work.
-    - Bitmanip is supported only on LLVM. That llvm version is still missing, so bitmanip demo will not work. Soon to be released....
+    - Bitmanip is supported only on LLVM.
 
 
