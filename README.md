@@ -22,7 +22,7 @@ This repostority is WD RISC-V Firmware package, holds:
     
     $  git clone https://github.com/westerndigitalcorporation/riscv-fw-infrastructure.git
     
-    Since we use LFS its advice to use shallow cloning (without all hostory)
+    Since we use LFS it is adviced to use shallow cloning (without all history)
     
     $  git clone --depth 1 https://github.com/westerndigitalcorporation/riscv-fw-infrastructure.git
 [comment]:  [] (This repository uses submodules..... )
@@ -212,7 +212,6 @@ The folder WD-Firmware/demo/build/ contains a template file (SConscript_template
 This repo is always under work, following are notes and status for items that is still missing or under work.
 - #### 05-Oct-2020
     - All EH2 demos are working only on Whisper, no fpga
-    - EL2 fpga have interrupt issues, so several demos that use interrupts, will not work.
+    - Currently, Software-Interrupts are not supported in EL2 fpga. Until it will be supported, you can use Whisper for this demo.
     - Bitmanip is supported only on LLVM.
-
 

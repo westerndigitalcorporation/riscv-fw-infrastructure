@@ -128,15 +128,16 @@
 #define M_PSP_SWAP_CSR(read_val, csr, write_val)      _SWAP_CSR_INTERMEDIATE_(csr, val)
 #define M_PSP_SET_AND_READ_CSR(read_val, csr, bits)   _SET_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
 #define M_PSP_CLEAR_AND_READ_CSR(read_val, csr, bits) _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
-/*****************************************************************************************/
 
+
+
+/*****************************************************************************************/
 #define M_PSP_EBREAK()              asm volatile ("ebreak" : : : );
 #define M_PSP_ECALL()               asm volatile ("ecall" : : : );
 #define M_PSP_NOP()                 asm volatile ("nop")
 #define M_PSP_MEMORY_BARRIER()      asm volatile ( "" ::: "memory" )
 
 /*******************************************************/
-
 /* __builtin_expect instruction provides branch
    prediction information. The condition parameter is the expected
    comparison value. If it is equal to 1 (true), the condition
@@ -145,24 +146,26 @@
 #define M_PSP_BUILTIN_EXPECT(condition, expected)  __builtin_expect(condition, expected)
 
 /*******************************************************/
-
 /* order device I/O and memory accesses */
 #define M_PSP_INST_FENCE()          asm volatile( "fence rw,rw" )
 /* synchronize the instruction and data streams */
 #define M_PSP_INST_FENCEI()         asm volatile( "fence.i" )
 
-
-
 /*******************************************************/
-
-
 #define M_PSP_WRITE_REGISTER_32(reg, value)  ((*(volatile u32_t *)(void*)(reg)) = (value))  //need to use _Uncached u32_t if we have d$
 #define M_PSP_READ_REGISTER_32(reg)          ((*(volatile u32_t *)(void*)(reg)))
 #define M_PSP_SET_REGISTER_32(reg, bits)     ((*(volatile u32_t *)(void*)(reg)) |= (bits))  //need to use _Uncached u32_t if we have d$
 #define M_PSP_CLEAR_REGISTER_32(reg, bits)   ((*(volatile u32_t *)(void*)(reg)) &= (~bits)) //need to use _Uncached u32_t if we have d$
 
+/*******************************************************/
 /* Get Core-Id */
 #define M_PSP_GET_CORE_ID()    M_PSP_READ_CSR(D_PSP_MHARTID_NUM)
+
+/*******************************************************/
+/** Divides the number "value" and applies ceiling/floor rounding to the result **/
+#define M_PSP_DIV_AND_ROUND_CEILING(value, divisor) (((value) + (divisor) - 1) / (divisor))
+#define M_PSP_DIV_AND_ROUND_FLOOR(value, divisor) ( (value) / (divisor))
+
 
 /* TODO: - this #ifdef is temporarily here. Should replace it with proper definitions of statements in this file (e.g. "asm volatile")
  *         and wrapping them with this protection */
