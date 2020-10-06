@@ -23,13 +23,13 @@ OUTPUT_ARCH( "riscv" )
 
 ENTRY( _start )
 
+__comrv_overlay_storage_size = DEFINED(__comrv_overlay_storage_size) ? __comrv_overlay_storage_size : 0;
+
 MEMORY
 {
-  ram  (wxa!ri)               : ORIGIN = 0x00000000, LENGTH = 64M
-  ram2 (wxa!ri)               : ORIGIN = 0x04000000, LENGTH = 64M
-  ovl                         : ORIGIN = 0xE0000000, LENGTH = DEFINED(__comrv_overlay_storage_size) ? __comrv_overlay_storage_size : 0
-  unused_cache_size           : ORIGIN = 0xFFFFFFF0, LENGTH = DEFINED(__comrv_cache_size) ? __comrv_cache_size : 0
-  unused_cache_alignment_size : ORIGIN = 0xFFFFFFe0, LENGTH = DEFINED(__comrv_cache_alignment_size) ? __comrv_cache_alignment_size : 0
+  ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
+  ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
+  ovl           : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
 PHDRS
@@ -38,8 +38,6 @@ PHDRS
   ram_init PT_LOAD;
   ram_load PT_LOAD;
   ovl PT_NULL;
-  unused_cache_size PT_NULL;
-  unused_cache_alignment_size PT_NULL;
 }
 
 
@@ -51,6 +49,8 @@ SECTIONS
 {
   /* overall, stacks size here is 4K*2harts = 8K */
   __hart_stack_size = 4K;
+  __comrv_cache_size = DEFINED(__comrv_cache_size) ? __comrv_cache_size : 0;
+  __comrv_cache_alignment_size = DEFINED(__comrv_cache_alignment_size) ? __comrv_cache_alignment_size : 0;
   
   .text.init :
   {
@@ -159,10 +159,10 @@ SECTIONS
 
   /* this area is used for loading and executing the comrv 
      overlay groups */
-  .overlay_sec ALIGN(LENGTH(unused_cache_alignment_size)) :
+  .overlay_sec ALIGN(__comrv_cache_alignment_size) :
   {
     __OVERLAY_CACHE_START__ = . ;
-    . = . + LENGTH(unused_cache_size); 
+    . = . + __comrv_cache_size; 
     __OVERLAY_CACHE_END__ = . ;
   } > ram : ram_load
 

@@ -147,7 +147,7 @@ else:
 
 
 strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
-Env['LINKFLAGS'] += ['-T', strLinkerScriptFile,'-L'+strBoardFolder]
+Env['LINKFLAGS'] += ['-Wl,-T', strLinkerScriptFile,'-L'+strBoardFolder]
 
 
 Env['PUBLIC_DEF'] = objDemo.public_defs
