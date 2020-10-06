@@ -218,8 +218,9 @@ void demoOutpuLed(const u08_t ucOnOffMode)
 */
 u32_t demoIsSwervBoard(void)
 {
-  volatile u32_t* pUartState;
   u32_t uiIsSwerv = D_NOT_SWERV_BOARD;
+#ifndef D_HI_FIVE1
+  volatile u32_t* pUartState;
 
   pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
 
@@ -227,6 +228,6 @@ u32_t demoIsSwervBoard(void)
   {
     uiIsSwerv = D_IS_SWERV_BOARD;
   }
-
+#endif /* D_HI_FIVE1 */
   return (uiIsSwerv);
 }
