@@ -45,7 +45,7 @@ class demo(object):
       'freertos',
       'rtosal',
       'demo_comrv_rtos',
-      'comrv_rtos',
+      'comrv',
     ]
 
     self.listDemoSpecificCFlags = [
@@ -63,6 +63,6 @@ class demo(object):
     ]
     
     self.listDemoSpecificTargets = [
-      'eh1', 'el2', 'hifive1', 'hifive-un'
+      'eh1', 'eh2', 'el2', 'hifive1', 'hifive-un'
     ]
 

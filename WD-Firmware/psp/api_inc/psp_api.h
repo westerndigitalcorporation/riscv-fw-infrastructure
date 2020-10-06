@@ -51,6 +51,12 @@
   #include "psp_cache_control_eh1.h"
   #include "psp_corr_err_cnt_eh1.h"
 #endif
+#ifdef D_SWERV_EL2
+  #include "psp_csrs_el2.h"
+  #include "psp_timers_el2.h"
+  #include "psp_performance_monitor_el2.h"
+  #include "psp_nmi_el2.h"
+#endif
 #ifdef D_SWERV_EH2
   #include "psp_csrs_eh2.h"
   #include "psp_macros_eh2.h"
@@ -61,6 +67,10 @@
   #include "psp_intrinsics_eh2.h"
   #include "psp_int_vect_eh2.h"
 #endif
+#ifdef D_BIT_MANIPULATION
+  #include "psp_bitmanip_el2.h"
+#endif
+
 /**
 * definitions
 */

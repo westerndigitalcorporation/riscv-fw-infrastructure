@@ -36,7 +36,7 @@ INT_TOOLCHAIN_INDEX = 1
 INT_NUM_OF_CONFIGS = 2
 STR_COMRV_DEMO = "comrv"
 STR_COMRV_TC = "llvm"
-
+STR_BITMANIP_DEMO = "bit_manipulation"
 
 
 class clsGenerate(object):
@@ -130,9 +130,10 @@ class clsGenerate(object):
     intItemDemo = self.pickItem(STR_DEMO, self.listDemos)
     strConfiguration += "\n" + STR_DEMO + self.listDemos[intItemDemo]
     
-    if self.listDemos[intItemDemo].find(STR_COMRV_DEMO) > -1:
+    if self.listDemos[intItemDemo].find(STR_COMRV_DEMO) > -1 or self.listDemos[intItemDemo].find(STR_BITMANIP_DEMO) > -1:
       intItemTool = self.listToolchain.index(STR_COMRV_TC)
       print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItemDemo], STR_COMRV_TC)
+
     else:
       intItemTool = self.pickItem(STR_TOOLCHAIN, self.listToolchain)
     strConfiguration += "\n" + STR_TOOLCHAIN + self.listToolchain[intItemTool]

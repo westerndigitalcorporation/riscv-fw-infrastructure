@@ -31,7 +31,8 @@
 /**
 * definitions
 */
-#define D_PSP_PMC_INITIATE_HALT (0x1)
+#define D_PSP_INTERRUPTS_DISABLE_IN_HALT   0
+
 /**
 * macros
 */
@@ -52,6 +53,27 @@
 * global variables
 */
 
+#ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
+/**
+* @brief Initiate core halt (i.e., transition to Halted (pmu/fw-halt, C3) state)
+*
+* @param uiEnableInterrupts - indication whether to (atomically) enable interrupts upon transition to 'halted' mode or not
+*
+* @return none
+*/
+D_PSP_TEXT_SECTION void pspPmcHalt(u32_t uiEnableInterrupts)
+{
+  if (D_PSP_INTERRUPTS_DISABLE_IN_HALT == uiEnableInterrupts)
+  {
+	  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_MPMC_HALT_MASK); /* Initiate 'Halted' mode. Don't enable interrupts upon initiation */
+  }
+  else
+  {
+	  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, (D_PSP_MPMC_HALT_MASK | D_PSP_MPMC_HALTIE_MASK)); /* Initiate 'Halted' mode. Atomically enable interrupts upon initiation */
+  }
+
+}
+#else /* #ifdef D_EHX1_VER_0_9 does not contain 'haltie' feature */
 /**
 * @brief Initiate core halt (i.e., transition to Halted (pmu/fw-halt, C3) state)
 *
@@ -61,8 +83,9 @@
 */
 D_PSP_TEXT_SECTION void pspPmcHalt(void)
 {
-  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_PMC_INITIATE_HALT);
+  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_MPMC_HALT_MASK); /* Initiate 'Halted' mode. Don't enable interrupts upon initiation */
 }
+#endif /* D_EHX1_VER_1_0 or D_EHX1_VER_0_9 */
 
 /**
 * @brief The following function temporarily stop the core from executing instructions for given number of core clock cycles(ticks)

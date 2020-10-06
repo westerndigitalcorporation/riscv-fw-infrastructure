@@ -45,9 +45,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #include "rtosal_interrupt_api.h"
    #include "rtosal_defines.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
-#ifdef D_COMRV_TI
-#include "comrv_ti_api.h"
-#endif /* D_COMRV_TI */
+#ifdef D_CTI
+#include "cti_api.h"
+#endif /* D_CTI */
 
 /**
 * definitions
@@ -118,9 +118,10 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_DEBRUIJN32                            0x077CB531
 #define D_COMRV_DEBRUIJN32_SHFT_AMNT                  27
 
-#ifndef D_COMRV_TI
-#define D_COMRV_TI_SYNC_POINT(x)
-#endif /* D_COMRV_TI */
+#ifndef D_CTI
+#define M_CTI_SYNC_POINT(x)
+#define M_CTI_MARK_DEFRAG()
+#endif /* D_CTI */
 
 /**
 * macros
@@ -201,7 +202,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
       ((((u32_t)(pReturnAddress)) - uiFuncOffset - ( pComrvStackFrame->ucAlignmentToMaxGroupSize << D_COMRV_GRP_SIZE_IN_BYTES_SHIFT_AMNT)) & (D_COMRV_OVL_GROUP_SIZE_MAX-1))
 
 /* Get the index of the rightmost set bit */
-#ifndef __riscv_bitmanip
+#ifndef D_BIT_MANIPULATION
    /* with the absence of RISC-V bitmanip extension we use a faster method to find the
       location of the first set bit - http://supertech.csail.mit.edu/papers/debruijn.pdf */
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)   ucArrDeBruijnBitPos[((u32_t)(uiFindFirstSet * D_COMRV_DEBRUIJN32)) >> D_COMRV_DEBRUIJN32_SHFT_AMNT]
@@ -210,7 +211,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    // TODO: Nati - also add macros for clz, ctz.
    #define M_COMRV_GET_SET_BIT_INDEX(uiFindFirstSet)
    #error "M_COMRV_GET_SET_BIT_INDEX missing implementation"
-#endif /* __riscv_bitmanip */
+#endif /* D_BIT_MANIPULATION */
 
 /**
 * types
@@ -391,6 +392,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    u32_t                  ret;
    u32_t                  uiPrevIntState;
 #endif /* D_COMRV_RTOS_SUPPORT */
+   comrvCacheEntry_t stCacheEntry;
 
    /* read the requested token value (t5) */
    M_COMRV_READ_TOKEN_REG(unToken.uiValue);
@@ -421,14 +423,14 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    }
 
    /* comrv test sync point - trigger sw int and force context switch */
-   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_BEFORE_ENTER_CRITICAL_SEC);
+   M_CTI_SYNC_POINT(D_CTI_TASK_SYNC_BEFORE_ENTER_CRITICAL_SEC);
 
    /* we need to make sure that from this point
       we won't have new overlay requests - we alow context swiches */
    M_COMRV_ENTER_CRITICAL_SECTION();
 
    /* comrv test sync point - trigger sw int and force context switch */
-   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_ENTER_CRITICAL_SEC);
+   M_CTI_SYNC_POINT(D_CTI_TASK_SYNC_AFTER_ENTER_CRITICAL_SEC);
 
 #ifdef D_COMRV_MULTI_GROUP_SUPPORT
    /* if the requested token isn't a multi-group token */
@@ -510,6 +512,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
             /* verify we are not coping from neighbour candidate entries */
             if (ucNeighbourIndex != ucEvictCandidateList[ucEntryIndex])
             {
+               M_CTI_MARK_DEFRAG();
                /* get the candidate cache entry address */
                pDestinationAddress = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
                /* calc the source address - we point here to the cache area
@@ -524,8 +527,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
                /* after code copy we need to align the entries structures */
                do
                {
-                  /* pEntry will point to the CB entry we want to copy from */
-                  pEntry = &g_stComrvCB.stOverlayCache[ucNeighbourIndex];
 #ifdef D_COMRV_OVL_DATA_SUPPORT
                   /* an overlay data is present when handling de-fragmentation */
                   if (M_COMRV_BUILTIN_EXPECT(pEntry->unProperties.stFields.ucData, 0))
@@ -534,29 +535,75 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
                      M_COMRV_ERROR(stErrArgs, D_COMRV_OVL_DATA_DEFRAG_ERR, unToken.uiValue);
                   }
 #endif /* D_COMRV_OVL_DATA_SUPPORT */
-                  /* now we copy the cache entry properties and token */
-                  g_stComrvCB.stOverlayCache[ucIndex].unProperties = pEntry->unProperties;
-                  g_stComrvCB.stOverlayCache[ucIndex].unToken.uiValue = pEntry->unToken.uiValue;
+                  /* remember entire entry */
+                  stCacheEntry = g_stComrvCB.stOverlayCache[ucIndex];
+                  /* replace ucIndex entry with ucNeighbourIndex entry */
+                  g_stComrvCB.stOverlayCache[ucIndex] = g_stComrvCB.stOverlayCache[ucNeighbourIndex];
+                  /* get new neighbour's index - may have changed */
+                  ucNeighbourIndex = ucIndex + g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits;
+                  /* replace ucNeighbourIndex entry with ucIndex entry */
+                  g_stComrvCB.stOverlayCache[ucNeighbourIndex] = stCacheEntry;
 #ifdef D_COMRV_EVICTION_LRU
-                  /* we also need to align the LRU list */
-                  g_stComrvCB.stOverlayCache[pEntry->unLru.stFields.typPrevLruIndex].unLru.typValue = pEntry->unLru.typValue;
+                  /* update the 'prev' field of ucNeighbourIndex's 'next' */
+                  g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex].unLru.stFields.typPrevLruIndex = ucNeighbourIndex;
+                  /* updating the lru */
+                  if (g_stComrvCB.ucLruIndex == ucIndex)
+                  {
+                     /* update the lru index */
+                     g_stComrvCB.ucLruIndex = ucNeighbourIndex;
+                     /* update the 'next' field of ucIndex's 'prev' */
+                     g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex = ucIndex;
+                  }
+                  else
+                  {
+                     /* update the 'next' field of ucNeighbourIndex's 'prev' */
+                     g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex = ucNeighbourIndex;
+                     /* ucNeighbourIndex is the lru (can be if the lru index is locked) */
+                     if (g_stComrvCB.ucLruIndex == ucNeighbourIndex)
+                     {
+                        /* update the lru index */
+                        g_stComrvCB.ucLruIndex = ucIndex;
+                     }
+                     else
+                     {
+                        /* update the 'next' field of ucIndex's 'prev' */
+                        g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex].unLru.stFields.typNextLruIndex = ucIndex;
+                     }
+                  }
+                  /* updating the mru */
+                  if (g_stComrvCB.ucMruIndex == ucNeighbourIndex)
+                  {
+                     /* update the mru index */
+                     g_stComrvCB.ucMruIndex = ucIndex;
+                  }
+                  else
+                  {
+                     /* update the 'prev' field of ucIndex's 'next' */
+                     g_stComrvCB.stOverlayCache[g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typNextLruIndex].unLru.stFields.typPrevLruIndex = ucIndex;
+                  }
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */
+                  /* move to the next index */
                   ucIndex = ucNeighbourIndex;
+                  /* get new neighbour's index */
                   ucNeighbourIndex = ucIndex + g_stComrvCB.stOverlayCache[ucIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits;
-                  /* end of loop -> do while  ... */
                } while (ucNeighbourIndex != ucEvictCandidateList[ucEntryIndex]);
+               /* end of do while loop */
+#ifdef D_COMRV_EVICTION_LRU
+               /* if ucNeighbourIndex is the ucIndex's 'next' than update ucIndex's 'next' to be ucNeighbourIndex's 'next' */
+               if (g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typNextLruIndex == ucNeighbourIndex)
+               {
+                  /* now 2 entries are merged - update cachec entry 'next' value */
+                  g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typNextLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex;
+               }
+#elif defined(D_COMRV_EVICTION_LFU)
+#elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
+#endif /* D_COMRV_EVICTION_LRU */
             }
             else
             {
 #ifdef D_COMRV_EVICTION_LRU
-               /* if ucIndex prev isn't the last - update ucIndex prev */
-               if (g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex != D_COMRV_LRU_ITEM)
-               {
-                  /* update previous lru index */
-                  g_stComrvCB.stOverlayCache[ucIndex].unLru.stFields.typPrevLruIndex = g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typPrevLruIndex;
-               }
                /* if the neighbour has a next */
                if (g_stComrvCB.stOverlayCache[ucNeighbourIndex].unLru.stFields.typNextLruIndex != D_COMRV_MRU_ITEM)
                {
@@ -629,11 +676,11 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       M_COMRV_ENABLE_INTS(uiPrevIntState);
 #endif /* D_COMRV_FW_INSTRUMENTATION */
       /* comrv test sync point - trigger sw int and force context switch */
-      D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_BEFORE_EXIT_CRITICAL_SEC);
+      M_CTI_SYNC_POINT(D_CTI_TASK_SYNC_BEFORE_EXIT_CRITICAL_SEC);
       /* it is safe now to get new overlay requests */
       M_COMRV_EXIT_CRITICAL_SECTION();
       /* comrv test sync point - trigger sw int and force context switch */
-      D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC);
+      M_CTI_SYNC_POINT(D_CTI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC);
       /* the group size in bytes */
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
       /* now we can load the overlay group */
@@ -714,7 +761,7 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    } /* if (usSearchResultIndex == D_COMRV_GROUP_NOT_FOUND) */
 
    /* comrv test sync point - trigger sw int and force context switch */
-   D_COMRV_TI_SYNC_POINT(D_COMRV_TI_TASK_SYNC_AFTER_SEARCH_LOAD);
+   M_CTI_SYNC_POINT(D_CTI_TASK_SYNC_AFTER_SEARCH_LOAD);
 
    /* invalidate data cache */
    M_COMRV_DCACHE_FLUSH(&g_stComrvCB, sizeof(g_stComrvCB));
@@ -943,7 +990,22 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
    comrvCacheEntry_t *pCacheEntry;
 
 #ifdef D_COMRV_EVICTION_LRU
-
+   /* the '+ D_COMRV_OVL_GROUP_SIZE_MIN' is for the tables */
+#if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES+D_COMRV_OVL_GROUP_SIZE_MIN)
+   /* this code is for a corner case where the cache size is smaller then
+      the maximum group size; this mean we may reach to a point that the
+      entire cache is occupied with a single overlay group */
+      /* is one group loaded and occupies the entire cache */
+   if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits == g_stComrvCB.ucLastCacheEntry)
+   {
+      /* both lru and mru globals point to the same index */
+      g_stComrvCB.ucMruIndex = ucEntryIndex;
+      g_stComrvCB.ucLruIndex = ucEntryIndex;
+      /* mark both LRU/MRU of the entry as the last */
+      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = (u16_t)((D_COMRV_MRU_ITEM << 8) | D_COMRV_MRU_ITEM);
+   }
+   else
+#endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
    /* there is no need to update if ucEntryIndex is already MRU */
    if (ucEntryIndex !=  g_stComrvCB.ucMruIndex)
    {
@@ -973,19 +1035,6 @@ D_COMRV_TEXT_SECTION static void comrvUpdateCacheEvectionParams(u08_t ucEntryInd
       /* update the new MRU */
       g_stComrvCB.ucMruIndex = ucEntryIndex;
    }
-   // TODO: need a more robust #if
-#if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES)
-/* this code is for a corner case where the cache size is smaller then
-   the maximum group size; this mean we may reach to a point that the
-   entire cache is occupied with a single overlay group */
-   /* is one group loaded and occupies the entire cache */
-   else if (g_stComrvCB.stOverlayCache[ucEntryIndex].unProperties.stFields.ucSizeInMinGroupSizeUnits == g_stComrvCB.ucLastCacheEntry)
-   {
-      g_stComrvCB.ucLruIndex = ucEntryIndex;
-      /* mark both LRU/MRU of the entry as the last */
-      g_stComrvCB.stOverlayCache[ucEntryIndex].unLru.typValue = (u16_t)((D_COMRV_MRU_ITEM << 8) | D_COMRV_MRU_ITEM);
-   }
-#endif /* #if (D_COMRV_OVL_CACHE_SIZE_IN_BYTES <= D_COMRV_MAX_GROUP_SIZE_IN_BYTES) */
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
 #endif /* D_COMRV_EVICTION_LRU */

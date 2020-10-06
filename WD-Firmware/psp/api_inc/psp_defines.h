@@ -58,6 +58,30 @@
 #define D_PSP_SHIFT_6    6
 #define D_PSP_SHIFT_7    7
 #define D_PSP_SHIFT_8    8
+#define D_PSP_SHIFT_9    9
+#define D_PSP_SHIFT_10   10
+#define D_PSP_SHIFT_11   11
+#define D_PSP_SHIFT_12   12
+#define D_PSP_SHIFT_13   13
+#define D_PSP_SHIFT_14   14
+#define D_PSP_SHIFT_15   15
+#define D_PSP_SHIFT_16   16
+#define D_PSP_SHIFT_17   17
+#define D_PSP_SHIFT_18   18
+#define D_PSP_SHIFT_19   19
+#define D_PSP_SHIFT_20   20
+#define D_PSP_SHIFT_21   21
+#define D_PSP_SHIFT_22   22
+#define D_PSP_SHIFT_23   23
+#define D_PSP_SHIFT_24   24
+#define D_PSP_SHIFT_25   25
+#define D_PSP_SHIFT_26   26
+#define D_PSP_SHIFT_27   27
+#define D_PSP_SHIFT_28   28
+#define D_PSP_SHIFT_29   29
+#define D_PSP_SHIFT_30   30
+#define D_PSP_SHIFT_31   31
+#define D_PSP_SHIFT_32   32
 
 
 

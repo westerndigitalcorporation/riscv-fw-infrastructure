@@ -62,6 +62,9 @@
    #define D_RTOSAL_S10_INDEX_ON_TASK_STACK           25
    #define D_RTOSAL_S11_INDEX_ON_TASK_STACK           26
    #define D_RTOSAL_T3_INDEX_ON_TASK_STACK            27
+#ifdef D_COMRV
+   #define D_RTOSAL_TP_INDEX_ON_TASK_STACK            28
+#endif /* D_COMRV */
    #define D_RTOSAL_T5_INDEX_ON_TASK_STACK            29
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"

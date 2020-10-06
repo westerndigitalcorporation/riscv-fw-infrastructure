@@ -1,0 +1,31 @@
+Date: 09/09/2020
+riscv-gnu-toolchain
+	url=https://github.com/westerndigitalcorporation/riscv-gnu-toolchain.git
+	branch=gcc-10-2-gdb-9-2
+	hash=5d25a757bb8626f22862cab884f445d0b855e28e
+
+
+	riscv-binutils
+		url=https://github.com/westerndigitalcorporation/binutils-gdb.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	riscv-gcc
+		url=https://github.com/gcc-mirror/gcc.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	riscv-glibc
+		url=https://sourceware.org/git/glibc.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	riscv-dejagnu
+		url=https://git.savannah.gnu.org/git/dejagnu.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	riscv-newlib
+		url=https://github.com/westerndigitalcorporation/newlib.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	riscv-gdb
+		url=https://github.com/westerndigitalcorporation/binutils-gdb.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	qemu
+		url=https://git.qemu.org/git/qemu.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e
+	libexpat
+		url=https://github.com/libexpat/libexpat.git
+		hash=5d25a757bb8626f22862cab884f445d0b855e28e

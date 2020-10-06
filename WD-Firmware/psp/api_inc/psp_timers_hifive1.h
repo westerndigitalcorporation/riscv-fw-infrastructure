@@ -31,15 +31,11 @@
 /**
 * definitions
 */
+#define D_PSP_MACHINE_TIMER 1
 
 /**
 * types
 */
-typedef enum pspTimers
-{
-   E_MACHINE_TIMER  = 0,
-   E_LAST_TIMER
-} ePspTimers_t;
 
 /**
 * local prototypes
@@ -65,15 +61,15 @@ typedef enum pspTimers
 * @brief Setup and activate core's Timer
 *
 * @parameter - timer            - indicates which timer to setup and run
-* @parameter - uiPeriodMseconds - defines the timer's period in mSeconds
+* @parameter - udPeriodCycles  - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-void pspTimerCounterSetupAndRun(u32_t uiTimer, u32_t uiPeriodMseconds);
+void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles);
 
 /**
 * @brief Get Timer counter value
 *
-* @parameter - timer - indicates which timer to setup and run
+* @parameter - timer - indicates from which timer to get the counter value
 *
 * @return u64_t      - Timer counter value
 *
@@ -83,7 +79,7 @@ u64_t pspTimerCounterGet(u32_t uiTimer);
 /**
 * @brief Get Time compare counter value
 *
-* @parameter - timer - indicates which timer to setup and run
+* @parameter - timer - indicates from which timer to get the compare-counter value
 *
 * @return u64_t      – Time compare counter value
 *

@@ -46,7 +46,7 @@ Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                   # SweRV-E
                       'D_SWERV_EL2',                                   # SweRV-EL2
                       'D_MTIME_ADDRESS=0x80001020',                    # MTIME address
                       'D_MTIMECMP_ADDRESS=0x80001028',                 # MTIMECMP address
-                      'D_CLOCK_RATE=25000000',                         # Clock rate = 25Mhz   
+                      'D_CLOCK_RATE=12500000',                         # Clock rate = 12.5Mhz   
                       'D_PIC_BASE_ADDRESS=0xf00c0000',                 # PIC base address
                       'D_PIC_NUM_OF_EXT_INTERRUPTS=256',               # Number of external interrupts = 256
                       'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0',           # First external interrupt = 0

@@ -73,7 +73,6 @@
 void demoStart(void)
 {
    u32_t uiIndex;
-   volatile u32_t* pUartState;
 
    volatile u64_t ulCounterCacheOFF;
    volatile u64_t ulCounterCacheON;
@@ -85,10 +84,8 @@ void demoStart(void)
    /* Register interrupt vector */
    pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
 
-   /* give us an indication if under whisper or not */
-   pUartState = (u32_t*)(D_UART_BASE_ADDRESS+0x8);
-   /* is swerv (not whisper) */
-   if (*pUartState == D_DEMO_OLOF_SWERV)
+   /* Run this demo only if target is Swerv. Cannot run on Whisper */
+   if (D_PSP_TRUE == demoIsSwervBoard())
    {
       /* clear all mrac bits - disable cache and sideeffect bits */
       for (uiIndex = 0 ; uiIndex < D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS ; uiIndex++)
@@ -102,10 +99,10 @@ void demoStart(void)
       pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
       /* Activates Core's timer */
-      pspTimerCounterSetupAndRun(E_MACHINE_TIMER,  0xFFFFFFFF);
+      pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER,  0xFFFFFFFF);
 
       /* sample the timer value */
-      ulCounterCache_t1 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t1 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* we disable (again) the cache just to have the same amount
          of measured instructions */
@@ -115,7 +112,7 @@ void demoStart(void)
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounterCache_t2 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t2 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* sum the result for the "busy loop example " */
       ulCounterCacheOFF = ulCounterCache_t2 - ulCounterCache_t1;
@@ -128,7 +125,7 @@ void demoStart(void)
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounterCache_t2 = pspTimerCounterGet(E_MACHINE_TIMER);
+      ulCounterCache_t2 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* sum the result for the "busy loop example " */
       ulCounterCacheON = ulCounterCache_t2 - ulCounterCacheOFF;   /*OFF was the reference t1 */

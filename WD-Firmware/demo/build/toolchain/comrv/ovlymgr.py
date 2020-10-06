@@ -1041,8 +1041,9 @@ class mapped_overlay_group_walker:
                     # force to 1 so we don't get stuck.
                     offset = 1
             else:
-                # Found an entry that is not currently mapped.
-                offset = 1
+                # Found an entry that is not currently mapped - get the entry size
+                offset = gdb.parse_and_eval (OVERLAY_CACHE_AT_INDEX_TO_SIZE_IN_MIN_UNITS % (index))
+                offset = int (offset)
 
             # Move to the next cache entry.
             index += offset
