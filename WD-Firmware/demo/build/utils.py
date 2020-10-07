@@ -68,7 +68,7 @@ def fnProduceSectionsSize(target, source, env):
    # check if there was any change in the .map file
    if not STR_HEADER_TEXT in f.read():
       # .map was updated so add the sections size
-      strElfName = str(source[0])
+      strElfName = env['ELF_FILE']
       strSizeUtilName = os.path.join(env['UTILS_BASE_DIR'], "bin", env['SIZE_BIN'])
       strHeader = fnHeaderCreate([STR_HEADER_TEXT])
       fnExecuteCommand(STR_MAP_SECTION_APPEND % (strHeader, env['MAP_FILE']))
