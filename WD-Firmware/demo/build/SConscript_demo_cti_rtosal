@@ -26,7 +26,7 @@ utils.fnCreateFolder(strOutDir)
 listCFiles=[
    (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
    (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
-   (os.path.join('demo' , 'demo_cti_rtos.c'), os.path.join(strOutDir, 'demo_rtosal.o')),
+   (os.path.join('demo' , 'demo_cti_rtosal.c'), os.path.join(strOutDir, 'demo_cti_rtosal.o')),
    (os.path.join('demo' , 'demo_comrv_crc32.c'), os.path.join(strOutDir, 'demo_comrv_crc32.o')),
 ]
 

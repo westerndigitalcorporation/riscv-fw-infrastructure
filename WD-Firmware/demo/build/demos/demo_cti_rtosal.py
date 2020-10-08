@@ -52,7 +52,7 @@ class demo(object):
       'rtosal',
       'comrv',
       'cti',
-      'demo_cti_rtos',
+      'demo_cti_rtosal',
     ]
 
     self.listDemoSpecificCFlags = [
