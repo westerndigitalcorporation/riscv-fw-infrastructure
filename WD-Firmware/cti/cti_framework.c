@@ -18,7 +18,7 @@
 * @file   cti_framework.c
 * @author Ronen Haen
 * @date   01.07.2020
-* @brief  The file implements cti framework
+* @brief  The file implements cti framework (COMRV Testing Infrastructure)
 */
 
 /**
