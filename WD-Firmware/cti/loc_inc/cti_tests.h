@@ -18,7 +18,7 @@
 * @file   cti_tests.h
 * @author Ronen Haen
 * @date   01.07.2020
-* @brief  The file defines cti (comrv testing infrastructute) test overlay functions
+* @brief  The file defines cti (comrv testing infrastructure) test overlay functions
 */
 #ifndef __CTI_TESTS_H
 #define __CTI_TESTS_H

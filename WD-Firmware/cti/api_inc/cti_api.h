@@ -18,7 +18,7 @@
 * @file   cti_api.h
 * @author Ronen Haen
 * @date   01.07.2020
-* @brief  The file defines cti (comrv testing infrastructute) interface
+* @brief  The file defines cti (comrv testing infrastructure) interface
 */
 #ifndef __CTI_API_H
 #define __CTI_API_H

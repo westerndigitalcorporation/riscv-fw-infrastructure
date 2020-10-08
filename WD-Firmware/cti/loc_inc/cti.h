@@ -18,7 +18,7 @@
 * @file   cti.h
 * @author Ronen Haen
 * @date   01.07.2020
-* @brief  The file defines cti (comrv testing infrastructute) local interface
+* @brief  The file defines cti (comrv testing infrastructure) local interface
 */
 #ifndef __CTI_H
 #define __CTI_H
