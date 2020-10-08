@@ -32,6 +32,8 @@
 /**
 * definitions
 */
+/* we need to flush the i$ when loading code to memory area (comrv cache) */
+/* TOOD: try to use only FENCEI */
 #define M_DEMO_COMRV_RTOS_FENCE()   M_PSP_INST_FENCE(); \
                                     M_PSP_INST_FENCEI();
 
@@ -89,7 +91,9 @@ DemoExternalErrorHook_t fptrDemoExternalErrorHook = NULL;
 void demoStart(void)
 {
    u32_t uiIsSwerv;
-   comrvInitArgs_t stComrvInitArgs = { 1 };
+   comrvInitArgs_t stComrvInitArgs;
+
+   stComrvInitArgs.ucCanLoadComrvTables = 1;
 
    M_DEMO_START_PRINT();
 
@@ -97,13 +101,13 @@ void demoStart(void)
    /* verify we only run whisper */
    if (uiIsSwerv == D_PSP_FALSE)
    {
-	   /* Disable the timer interrupts until setup is done. */
-	   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+      /* Disable the timer interrupts until setup is done. */
+      pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-	   /* Init ComRV engine */
-	   comrvInit(&stComrvInitArgs);
+      /* Init ComRV engine */
+      comrvInit(&stComrvInitArgs);
 
-	   rtosalStart(demoCreateTasks);
+      rtosalStart(demoCreateTasks);
    }
 
    printfNexys("This demo can only execute under whisper");

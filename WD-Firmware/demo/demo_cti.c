@@ -60,7 +60,9 @@ DemoExternalErrorHook_t fptrDemoExternalErrorHook = NULL;
 */
 void demoStart(void)
 {
-   comrvInitArgs_t stComrvInitArgs = { 1 };
+   comrvInitArgs_t stComrvInitArgs;
+
+   stComrvInitArgs.ucCanLoadComrvTables = 1;
 
    M_DEMO_START_PRINT();
 
