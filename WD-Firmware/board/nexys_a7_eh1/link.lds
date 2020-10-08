@@ -27,10 +27,10 @@ __comrv_overlay_storage_size = DEFINED(__comrv_overlay_storage_size) ? __comrv_o
 
 MEMORY
 {
-  ram  (wxa!ri)               : ORIGIN = 0x00000000, LENGTH = 64M
-  ram2 (wxa!ri)               : ORIGIN = 0x04000000, LENGTH = 64M
-  dccm (wxa!ri)               : ORIGIN = 0xf0040000, LENGTH = 64K
-  ovl                         : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
+  ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
+  ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
+  dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
+  ovl           : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
 PHDRS
