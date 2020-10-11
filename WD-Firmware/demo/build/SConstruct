@@ -145,9 +145,8 @@ if Env['TARGET_BOARD'] in listNexysA7Targets:
 else:
     strBoardFolder = os.path.join(Env['ROOT_DIR'], strBoard, Env['TARGET_BOARD'])
 
-
 strLinkerScriptFile = os.path.join(strBoardFolder, strLinkerScriptFile)
-Env['LINKFLAGS'] += ['-Wl,-T', strLinkerScriptFile,'-L'+strBoardFolder]
+Env['LINKFLAGS'] += ['-Wl,-T%s' % strLinkerScriptFile,'-L'+strBoardFolder]
 
 
 Env['PUBLIC_DEF'] = objDemo.public_defs
