@@ -18,43 +18,33 @@ import os
 import utils
 Import('Env')
 
-strOutDir = os.path.join(Env['OUT_DIR_PATH'], 'freertos')
+strOutDir = os.path.join(Env['OUT_DIR_PATH'], Env['DEMO_NAME'])+'_demo'
 utils.fnCreateFolder(strOutDir)
-
-rtos_base=os.path.join('rtos', 'rtos_core', 'freertos', 'Source')
 
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles=[
-   (os.path.join(rtos_base, 'croutine.c'), os.path.join(strOutDir, 'croutine.o')),
-   (os.path.join(rtos_base, 'list.c'), os.path.join(strOutDir, 'list.o')),
-   (os.path.join(rtos_base, 'queue.c'), os.path.join(strOutDir, 'queue.o')),
-   (os.path.join(rtos_base, 'tasks.c'), os.path.join(strOutDir, 'tasks.o')),
-   (os.path.join(rtos_base, 'timers.c'), os.path.join(strOutDir, 'timers.o')),
-   (os.path.join(rtos_base, 'event_groups.c'), os.path.join(strOutDir, 'event_groups.o')),
-   #[os.path.join(rtos_base, 'portable', 'MemMang', 'heap_4.c'), os.path.join(strOutDir, 'heap_4.o')],
+   (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
+   (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
+   (os.path.join('demo' , 'demo_comrv_rtosal.c'), os.path.join(strOutDir, 'demo_comrv_rtosal.o')),
+   (os.path.join('demo' , 'demo_comrv_common.c'), os.path.join(strOutDir, 'demo_comrv_common.o')),
+   (os.path.join('demo' , 'demo_comrv_crc32.c'), os.path.join(strOutDir, 'demo_comrv_crc32.o')),
 ]
-
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)
-listAssemblyFiles=[
-   (os.path.join(rtos_base, 'portable', 'portASM.S'), os.path.join(strOutDir, 'portASM.o')),
-]
+listAssemblyFiles=[]
 
 # compiler directivs
 listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-listCompilationDefines = [ ] + Env['PUBLIC_DEF']
+Env['PUBLIC_DEF'] += ['D_LLVM_COMRV']
+listCompilationDefines = [] + Env['PUBLIC_DEF']
 
-# include paths
-Env['PUBLIC_INC'] += [
-  os.path.join(Env['ROOT_DIR'], rtos_base, 'include'),
-]
-
-# privte includes
+# public includes
+Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'demo'),]
 listIncPaths = [ ] + Env['PUBLIC_INC']
 
 if not Env["Scan"]:
@@ -68,8 +58,9 @@ if not Env["Scan"]:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  objFreertosLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', 'freertos.a'), source=listObjects)
+  objDemoRtosaolLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
 
-  # return the freertos lib
-  Return('objFreertosLib')
+  #print Env.Dump()
 
+  # return the demo lib
+  Return('objDemoRtosaolLib')

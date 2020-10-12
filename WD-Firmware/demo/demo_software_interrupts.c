@@ -32,8 +32,7 @@
 /**
 * external prototypes
 */
-extern void* _sw_int_mem_ctrl;
-u32_t* pSwIntCtrl = (u32_t*)&_sw_int_mem_ctrl;
+u32_t* pSwIntCtrl = (u32_t*)D_SW_INT_ADDRESS;
 
 /**
 * global variables

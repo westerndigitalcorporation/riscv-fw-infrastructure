@@ -26,8 +26,7 @@ utils.fnCreateFolder(strOutDir)
 listCFiles=[
    (os.path.join('demo' , 'main.c'), os.path.join(strOutDir, 'main.o')),
    (os.path.join('demo' , 'demo_platform_al.c'), os.path.join(strOutDir, 'demo_platform_al.o')),
-   (os.path.join('demo' , 'demo_comrv_rtos.c'), os.path.join(strOutDir, 'demo_comrv_rtos.o')),
-   (os.path.join('demo' , 'demo_comrv_common.c'), os.path.join(strOutDir, 'demo_comrv_common.o')),
+   (os.path.join('demo' , 'demo_cti_rtosal.c'), os.path.join(strOutDir, 'demo_cti_rtosal.o')),
    (os.path.join('demo' , 'demo_comrv_crc32.c'), os.path.join(strOutDir, 'demo_comrv_crc32.o')),
 ]
 
@@ -58,9 +57,9 @@ if not Env["Scan"]:
     listObjects.append(Env.Object(source=os.path.join(Env['ROOT_DIR'], tplFile[0]), target=tplFile[1], CPPPATH=listIncPaths, CCFLAGS=listAsimCompilerDirectivs, CPPDEFINES=listCompilationDefines))
 
   # for libraries
-  objDemoRtosaolLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
+  objDemoCtiRtosLib = Env.Library (target=os.path.join(Env['OUT_DIR_PATH'], 'libs', Env['DEMO_NAME']+'_demo.a'), source=listObjects)
 
   #print Env.Dump()
 
   # return the demo lib
-  Return('objDemoRtosaolLib')
+  Return('objDemoCtiRtosLib')

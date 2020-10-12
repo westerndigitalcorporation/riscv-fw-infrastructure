@@ -227,8 +227,8 @@ def linkGDBFolder(strBinFolder):
 def fnGetToolchainSpecificFlags(strTCName, env):
     if strTCName == STR_TC_LLVM:
       listSpecificLinkerOptions = ['']
-      listSpecificCFlagsOptions = ['--gcc-toolchain='+ env['RISCV_BINUTILS_TC_PATH'],
-                                   '--sysroot=' + os.path.join(env['RISCV_BINUTILS_TC_PATH'],'riscv32-unknown-elf')]
+      listSpecificCFlagsOptions = ['--gcc-toolchain=%s' % env['RISCV_BINUTILS_TC_PATH'],
+                                   '--sysroot=%s' % os.path.join(env['RISCV_BINUTILS_TC_PATH'],'riscv32-unknown-elf')]
     elif strTCName == STR_TC_GCC:
       listSpecificLinkerOptions = ['']
       listSpecificCFlagsOptions = ['']

@@ -1,19 +1,3 @@
-#/* 
-#* SPDX-License-Identifier: Apache-2.0
-#* Copyright 2019 Western Digital Corporation or its affiliates.
-#* 
-#* Licensed under the Apache License, Version 2.0 (the "License");
-#* you may not use this file except in compliance with the License.
-#* You may obtain a copy of the License at
-#* 
-#* http:*www.apache.org/licenses/LICENSE-2.0
-#* 
-#* Unless required by applicable law or agreed to in writing, software
-#* distributed under the License is distributed on an "AS IS" BASIS,
-#* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#* See the License for the specific language governing permissions and
-#* limitations under the License.
-#*/
 import gdb
 import re
 import sys
@@ -23,6 +7,80 @@ from gdb.FrameDecorator import FrameDecorator
 
 # Required to make calls to super () work in python2.
 __metaclass__ = type
+
+#=====================================================================#
+
+# Notes on ComRV stack management.
+#
+# The ComRV stack is full-descending.
+#
+# Register $t3 points to the current comrv stack frame, that is the
+# frame that was used for the last call into ComRV.
+#
+# Register $t4 points to the next comrv stack frame to use, this is the
+# frame that will be used by the next call into ComRV.
+#
+# Each ComRV stack frame can potentially be of different sizes, though
+# at the time of writing this, I have never seen a non-standard sized
+# ComRV stack frame in the wild.  It might be the case that only when
+# using an RTOS will ComRV stack frames be anything other than the
+# standard size(s).
+#
+# The layout and size of a standard ComRV stack frame depends on
+# whether the application has multi-group support compiled in, and
+# then there are two versions of multi-group support, depending on how
+# large your multi-groups might be.
+#
+# This is one layout of a stack frame (size 12-bytes):
+#
+# |0|1|2|3|	[ Byte numbering, for information, not part of the stack. ]
+# |  A|B|C|	A=Offset (2-bytes), B=Alignment (1-byte), C=Multi-group Index (1-byte)
+# |       |	4-byte token.
+# |       |	4-byte return address.
+#
+# This is another layout of a stack frame (size 16-bytes):
+#
+# |0|1|2|3|	[ Byte numbering, for information, not part of the stack. ]
+# |  D|  E|	D=Padding (2-bytes), E=Multi-group Index (2-bytes)
+# |  A|B|C|	A=Offset (2-bytes), B=Alignment (1-byte), C=Padding (1-byte)
+# |       |	4-byte token.
+# |       |	4-byte return address.
+#
+# The first stack frame entry, created when the comrv enginee is
+# initialised will have return address, token, and alignment fields
+# all set to 0.  The Offset field will be set to 0xdead.  This entry
+# marks the outer most entry of the comrv stack, we never unwind past
+# this.  To try to do so is a mistake.
+#
+# The 'Offset' field: This contains the offset in bytes between the
+# current comrv stack frame pointer and the previous comrv-stack frame
+# pointer.
+#
+# The 'Alignment' is used during the process of unwinding.  When we
+# have a return address within the cache, and we know which overlay
+# group used to be mapped in, the alignment is used as part of the
+# process of figuring out the correct return address.
+#
+# The 'Token' field contains the token that was requested when ComRV
+# was called into.  This will represent the overlay that is going to
+# be loaded into memory with this call (or maybe the overlay will
+# already be loaded).
+#
+# When calling a non-overlay function from an overlay function we
+# still need to pass through ComRV, so returns from the non-overlay
+# function will, upon passing through ComRV trigger the overlay
+# function to be mapped back in.  As a result, the 'Token' field can
+# also contain real addresses in non-overlay functions.
+#
+# The 'return address' field is the value of $ra on entry into ComRV.
+# If we call to ComRV from non-overlay code, then this will be a real
+# address we can return too.  If we call into ComRV from overlay code
+# then this address will be in the cache and we will need to figure
+# out which overlay used to be mapped, and recompute a new return
+# address.
+
+
+
 
 #=====================================================================#
 
@@ -49,8 +107,10 @@ OVERLAY_CACHE_START_SYMBOL = "__OVERLAY_CACHE_START__"
 OVERLAY_CACHE_END_SYMBOL = "__OVERLAY_CACHE_END__"
 COMRV_RETURN_FROM_CALLEE_LABEL = "comrv_ret_from_callee"
 COMRV_RETURN_FROM_CALLEE_CONTEXT_SWITCH_LABEL = "comrv_ret_from_callee_context_switch"
+COMRV_IGONR_CALLER_THUNK_STACK_FRAME = "comrv_igonr_caller_thunk_stack_frame"
 COMRV_INVOKE_CALLEE_LABEL = "comrv_invoke_callee"
 COMRV_ENTRY_LABEL = "comrvEntry"
+COMRV_END_LABEL = "comrvEntryDisable"
 COMRV_ENTRY_CONTEXT_SWITCH_LABEL = "comrvEntry_context_switch"
 COMRV_EXIT_LABEL = "comrv_exit_ret_to_caller"
 
@@ -354,21 +414,40 @@ def function_block_at (addr):
         block = block.superblock
     return block
 
-# Takes TOKEN which is a 32-bit multi-group token and returns the
-# overlay group number extracted from the token.
-def mg_token_group_id (token):
-    return (token >> 1) & 0xffff
-
-# Takes TOKEN which is a 32-bit multi-group token and returns the
-# offset in bytes of the multi-group function within the overlay group
-# identified by this TOKEN.
-def mg_token_func_offset (token):
-    return ((token >> 17) & 0x3ff) * 4
+# Takes TOKEN_OR_ADDRESS which could be a 32-bit token, or a valid
+# 32-bit RISC-V code address and returns true if it is a ComRV token,
+# or false if it is a code address.
+#
+# This choice is based on the least-significant bit of the value in
+# TOKEN_OR_ADDRESS, as a valid code address must have the least
+# significant bit set to zero, while ComRV tokens have the least
+# significant bit set to 1.
+def is_overlay_token_p (token_or_address):
+    return ((token_or_address & 0x1) == 1)
 
 # Takes TOKEN which is a 32-bit multi-group token and returns true if
 # TOKEN is a multi-group token, otherwise, returns false.
 def is_multi_group_token_p (token):
+    assert (is_overlay_token_p (token))
     return ((token >> 31) & 0x1) == 1
+
+# Takes TOKEN which is a 32-bit multi-group token and returns the
+# overlay group number extracted from the token.
+def mg_token_group_id (token):
+    assert (is_multi_group_token_p (token))
+    return (token >> 1) & 0xffff
+
+# Takes TOKEN, a non-multi-group token, and extract the group-id from
+# the token.
+def overlay_token_group_id (token):
+    assert (not is_multi_group_token_p (token))
+    return (token >> 1) & 0xffff
+
+# Takes TOKEN, a non-multi-group token, and extract the function
+# offset in bytes for the function referenced by this token.
+def overlay_token_func_offset (token):
+    assert (not is_multi_group_token_p (token))
+    return ((token >> 17) & 0x3ff) * 4
 
 # Class to wrap reading memory.  Provides an API for reading unsigned
 # values of various sizes from memory.
@@ -454,7 +533,7 @@ class overlay_data:
         def __init__ (self, overlay_group, token):
             self._overlay_group = overlay_group
             self._token = token
-            self._offset = mg_token_func_offset (token)
+            self._offset = overlay_token_func_offset (token)
 
         @property
         def token (self):
@@ -595,8 +674,12 @@ class overlay_data:
                 = get_symbol_address (COMRV_RETURN_FROM_CALLEE_LABEL)
             self.comrv_ret_from_callee_context_switch \
                 = get_symbol_address (COMRV_RETURN_FROM_CALLEE_CONTEXT_SWITCH_LABEL)
+            self.comrv_igonr_caller_thunk_stack_frame \
+                = get_symbol_address (COMRV_IGONR_CALLER_THUNK_STACK_FRAME)
             self.comrv_entry \
                 = get_symbol_address (COMRV_ENTRY_LABEL)
+            self.comrv_end \
+                = get_symbol_address (COMRV_END_LABEL)
             self.comrv_entry_context_switch \
                 = get_symbol_address (COMRV_ENTRY_CONTEXT_SWITCH_LABEL)
             self.comrv_exit \
@@ -781,12 +864,19 @@ class overlay_data:
                     # Finalise this multi-group, and prepare to parse the
                     # next.
                     else:
+                        # Take TOKEN, a non-multi-group token
+                        # extracted from the multi-group table, and
+                        # return a new multi-group member object.
                         def token_to_member (token):
-                            g = mg_token_group_id (token)
+                            g = overlay_token_group_id (token)
                             og = overlay_groups[g]
                             return overlay_data.\
                                 _overlay_multi_group_member (og, token)
 
+                        # Convert MG_TOKENS, a list of all the
+                        # non-multi-group tokens that are within this
+                        # multi-group, into a list of multi-group
+                        # member objects (in MG_MEMBERS).
                         mg_members = map (token_to_member, mg_tokens)
                         (mg_func, mg_size) \
                             = _mg_members_to_func_and_size (mg_num, mg_members)
@@ -954,7 +1044,7 @@ class mapped_overlay_group_walker:
             mru = int(mru)
             lru = int(lru)
             # this is a case where cache is fully ocupied with one 
-            # group - so lru an mru point to the same location
+            # group - so lru and mru point to the same location
             if lru == mru:
                 self.eviction_values.append(0)
             else:
@@ -1279,7 +1369,7 @@ Alignment - The alignment field from the ComRV stack, alignment to size of
                           ("0x%08x" % (frame.align ())),
                           ("0x%x" % (frame.offset ()))))
             depth += 1
-            if (frame.offset () == 0xdead):
+            if (frame.offset () == 0xdead or frame.offset () == 0x0):
                 break
             t3_addr += frame.offset ()
 
@@ -1517,22 +1607,439 @@ class MyOverlayManager (gdb.OverlayManager):
 
         token = int (gdb.parse_and_eval ("$t5"))
 
-        if (token & 0x1) == 0:
+        if (not is_overlay_token_p (token)):
           # The callee is a non-overlay function and token is destination
           # address.
           return token;
 
         if is_multi_group_token_p (token):
-            multi_group_id = (token >> 1) & 0xffff
+            multi_group_id = mg_token_group_id (token)
             token = ovly_data.get_token_from_multi_group_table (multi_group_id)
 
-        group_id = mg_token_group_id (token)
-        func_offset = mg_token_func_offset (token)
+        # TOKEN is now a non-multi-group token.
+        assert (not is_multi_group_token_p (token))
+        group_id = overlay_token_group_id (token)
+        func_offset = overlay_token_func_offset (token)
 
         ba = self.get_group_storage_area_address (group_id);
         addr = ba + func_offset;
 
         return addr
+
+#=====================================================================#
+#                         Frame Filters
+#=====================================================================#
+#
+# The frame filter modifies how GDB displays certain frames in the
+# backtrace.
+#
+# As the assembler core of ComRV is split up into parts by the
+# different global labels, normally GDB would display a different
+# function name depending on which part of the ComRV core you are in.
+#
+# However, we install a frame filter that groups all of these parts
+# together and labels them all as 'comrv'.
+#
+# The frame filter can also provide, or modify, the arguments that are
+# displayed for a particular frame.  For ComRV we create a single
+# pseudo-argument 'token', in which we try to display the token that
+# was passed in to ComRV.
+#
+# Obviously, we can't always figure out the ComRV token, for example,
+# after calling the callee, during the return phase, the previous
+# token is gone.  In this case we return an optimised out value for
+# the token.  The intention is that _if_ GDB displays a token value,
+# then it should be the correct token value.
+#
+# The user command 'set comrv show-token on|off' can be used to
+# control whether GDB displays the pseudo token parameter or not.
+#
+#=====================================================================#
+
+class comrv_frame_filter ():
+    """
+    A class for filtering ComRV stack frame entries.
+
+    This class does one of two jobs based on the current value of
+    SHOW_COMRV_FRAMES.  When SHOW_COMRV_FRAMES is true then this class
+    identifies ComRV stack frames and applies the DECORATOR sub-class
+    to those frames.  When SHOW_COMRV_FRAMES is false this class
+    causes the ComRV stack frames to be skipped so they will not be
+    printed in the backtrace.
+    """
+
+    class decorator (FrameDecorator):
+        """
+        A FrameDecorator to change the name of the ComRV stack frames.
+
+        This class is applied to ComRV stack frames when
+        SHOW_COMRV_FRAMES is true, and changes the name of the frame
+        to be simply "comrv".
+        """
+
+        def __init__(self, frame):
+            FrameDecorator.__init__ (self, frame)
+            self.uint_t = gdb.lookup_type ("unsigned int")
+            self._frame = frame
+
+        def function (self):
+            return "comrv"
+
+        def frame_args (self):
+            '''Add pseudo-parameters to comrv frames.  When SHOW_COMRV_TOKENS is
+            true this function returns a description of the 'token'
+            parameter for the comrv frame.'''
+            class _sym_value ():
+                def __init__ (self, name, value):
+                    self._name = name
+                    self._value = value
+
+                def symbol (self):
+                    return self._name
+
+                def value (self):
+                    return self._value
+
+            if (not show_comrv_tokens):
+                return None
+
+            def _get_token_from_comrv_stack (obj):
+                # Find the token on the ComRV stack.
+                t3 = obj._frame.inferior_frame ()\
+                                .read_register ("t3").cast (obj.uint_t)
+                t3 &= 0xfffffffe
+                ovly_data = overlay_data.fetch ()
+                mg_index_offset = ovly_data.multi_group_index_offset ()
+                comrv_frame = comrv_stack_frame (t3, mg_index_offset)
+                labels = ovly_data.labels ()
+                assert (labels.ret_from_callee != None)
+                while (comrv_frame.return_address () == labels.ret_from_callee
+                       and comrv_frame.return_address () != 0
+                       and comrv_frame.offset () != 0xdead):
+                    t3 += comrv_frame.offset ()
+                    comrv_frame = comrv_stack_frame (t3, mg_index_offset)
+                token = comrv_frame.token ()
+                return token
+
+            addr = self._frame.address ()
+            labels = overlay_data.fetch ().labels ()
+            if (addr <= labels.comrv_entry_context_switch):
+                token = self._frame.inferior_frame ().read_register ("t5")
+            elif (addr < labels.comrv_igonr_caller_thunk_stack_frame):
+                token = _get_token_from_comrv_stack (self)
+            else:
+                token = self.uint_t.optimized_out ()
+            return [_sym_value ("token", gdb.Value (token).cast (self.uint_t))]
+
+    class iterator ():
+        """
+        An iterator to wrap the default iterator and filter frames.
+
+        An instance of this iterator is created around GDB's default
+        FrameDecorator iterator.  As frames are extracted from this
+        iterator, if the frame looks like a ComRV frame then we apply
+        an extra decorator to it.
+        """
+
+        def __init__ (self, iter):
+            self.iter = iter
+
+        def __iter__(self):
+            return self
+
+        def next (self):
+            """Called each time GDB needs the next frame.  If the frame
+            looks like a ComRV frame (based on its $pc value) then we
+            either apply the comrv frame decorator, or we skip the
+            frame (based on the value of SHOW_COMRV_FRAMES)."""
+            frame = next (self.iter)
+            addr = frame.address ()
+            labels = overlay_data.fetch ().labels ()
+            if (addr >= labels.comrv_entry
+                and addr <= labels.comrv_end):
+                if (not show_comrv_frames
+                    and (frame.inferior_frame ()
+                         != gdb.selected_frame ())):
+                    return next (self.iter)
+                else:
+                    return comrv_frame_filter.decorator (frame)
+            return frame
+
+        def __next__ (self):
+            return self.next ()
+
+    def __init__ (self):
+        self.name = "comrv filter"
+        self.priority = 100
+        self.enabled = True
+        gdb.frame_filters [self.name] = self
+
+    def filter (self, frame_iter):
+        return self.iterator (frame_iter)
+
+# Register the frame filter.
+comrv_frame_filter ()
+
+#=====================================================================#
+#                    Disassembly Analysis
+#=====================================================================#
+#
+# The following provides a mechanism for analysing assembly code at a
+# very basic level.  These utilities are used by the stack unwinders.
+# These analysis routines have just enough logic to analyse the ComRV
+# assembler core, and are not sufficient for general assembler analysis.
+#
+#=====================================================================#
+
+class pv_type:
+    @property
+    def type (self):
+        return self.__class__.__name__
+
+class pv_register (pv_type):
+    def __init__ (self, name, addend = 0):
+        self._name = name
+        self._addend = addend
+
+    def __str__ (self):
+        if (self._addend > 0):
+            return "PV_register (%s + %d)" % (self._name, self._addend)
+        elif (self._addend < 0):
+            return "PV_register (%s - %d)" % (self._name, abs (self._addend))
+        else:
+            return "PV_register (%s)" % (self._name)
+
+    @property
+    def addend (self):
+        return self._addend
+
+    @property
+    def reg (self):
+        return self._name
+
+class pv_unknown (pv_type):
+    def __init__ (self):
+        pass
+
+    def __str__ (self):
+        return "PV_unknown ()"
+
+class pv_constant (pv_type):
+    def __init__ (self, imm):
+        self._imm = int (imm)
+
+    def __str__ (self):
+        return "PV_constant (%d)" % (self._imm)
+
+    @property
+    def imm (self):
+        return self._imm
+
+def pv_add (src1, src2):
+    if (src1.type == "pv_register"
+        and src2.type == "pv_constant"):
+        return pv_register (src1.reg, src1.addend + src2.imm)
+    elif (src1.type == "pv_constant"
+          and src2.type == "pv_constant"):
+        return pv_constant (src1.imm + src2.imm)
+    else:
+        return pv_unknown ()
+
+def pv_sub (src1, src2):
+    if (src1.type == "pv_register"
+        and src2.type == "pv_constant"):
+        return pv_register (src1.reg, src1.addend - src2.imm)
+    elif (src1.type == "pv_constant"
+          and src2.type == "pv_constant"):
+        return pv_constant (src1.imm - src2.imm)
+    else:
+        return pv_unknown ()
+
+# INSN is a decoded_instruction, and REGS is a register_tracker.
+def pv_simulate (insn, regs):
+    if (insn.is_2_reg_insn ("mv")):
+        regs[insn.rd] = regs[insn.rs1]
+    elif (insn.mnemonic == "lw"
+          or insn.mnemonic == "lh"
+          or insn.mnemonic == "lb"):
+        regs[insn.rd] = pv_unknown ()
+    elif (insn.mnemonic in ["sw", "sh", "sb"]):
+        # Ignore these instructions.
+        pass
+    elif (insn.is_3_reg_insn ("add")):
+        regs[insn.rd] = pv_add (regs[insn.rs1], regs[insn.rs2])
+    elif (insn.is_2_reg_and_imm_insn ("addi")):
+        regs[insn.rd] = pv_add (regs[insn.rs1], pv_constant (insn.imm))
+    elif (insn.is_3_reg_insn ("sub")):
+        regs[insn.rd] = pv_sub (regs[insn.rs1], regs[insn.rs2])
+    elif ((insn.mnemonic in ["andi", "ori", "slli"])
+          and insn.rd != None):
+        regs[insn.rd] = pv_unknown ()
+    elif (insn.mnemonic in ["beqz", "bltz"]):
+        # Ignore these instructions.
+        pass
+    elif (insn.mnemonic == "jal"):
+        for r in ["ra", "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7"]:
+            regs[r] = pv_unknown ()
+    else:
+        print ("Unknown instruction: %s" % str (insn))
+
+class register_tracker:
+    def __init__ (self):
+        self._regs = {}
+        all_regs = ["x0", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1",
+                    "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7",
+                    "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11",
+                    "t3", "t4", "t5", "t6"]
+        self._reg_names = all_regs
+        self._iter_index = 0
+        for r in all_regs:
+            self._regs[r] = pv_register (r)
+
+    def __getitem__ (self, key):
+        return self._regs[key]
+
+    def __setitem__ (self, key, value):
+        self._regs[key] = value
+
+    def __iter__ (self):
+        self._iter_index = 0
+        return self
+
+    def next (self):
+        return self.__next__ ()
+
+    def __next__ (self):
+        try:
+            r = self._reg_names[self._iter_index]
+        except IndexError:
+            raise StopIteration
+        self._iter_index += 1
+        return r
+
+class decoded_instruction:
+    def __init__ (self, insn):
+        # Split the INSN so everything up to the first space is the
+        # mnemonic, and everything after that is the operands.
+        insn = insn.lstrip ().strip ()
+        self._raw = insn
+        (mnemonic, xxx, operands) = insn.partition ("\t")
+        self._mnemonic = mnemonic
+        self._rd = None
+        self._rs1 = None
+        self._rs2 = None
+        self._imm = None
+
+        # Now parse the operands.
+        if (operands.find (",") == -1):
+            # An immediate.
+            (imm, sep, rest) = operands.partition (" ")
+            self._imm = imm
+            return
+
+        (rd, sep, operands) = operands.partition (",")
+        self._rd = rd
+
+        if (operands.find ("(") != -1):
+            # We have IMM(REG) remaining.
+            (imm, sep, reg) = operands.partition ("(")
+            (reg, sep, rest) = reg.partition (")")
+            self._imm = imm
+            self._rs1 = reg
+            return
+
+        if (operands.find (",") != -1):
+            # We have REG,REG or REG,IMM remaining.
+            (reg, sep, operands) = operands.partition (",")
+            self._rs1 = reg
+
+        # We should now have either REG or IMM left.
+        m = re.match (r"^((?:0x[0-9a-f]+)|(?:-?[0-9]+))", operands)
+        if (m):
+            self._imm = m.group (0)
+            return
+
+        if (self._rs1 != None):
+            self._rs2 = operands
+        else:
+            self._rs1 = operands
+
+    def __str__ (self):
+        return "[%s] MNEM=%s RD=%s, RS1=%s, RS2=%s, IMM=%s" % (
+            self._raw, self._mnemonic, self._rd,
+            self._rs1, self._rs2, self._imm
+        )
+
+    @property
+    def mnemonic (self):
+        return self._mnemonic
+
+    @property
+    def rd (self):
+        return self._rd
+
+    @property
+    def rs1 (self):
+        return self._rs1
+
+    @property
+    def rs2 (self):
+        return self._rs2
+
+    @property
+    def imm (self):
+        return self._imm
+
+    def is_2_reg_insn (self, mnem):
+        return (self.mnemonic == mnem
+                and self.rd != None
+                and self.rs1 != None)
+
+    def is_2_reg_and_imm_insn (self, mnem):
+        return (self.mnemonic == mnem
+                and self.rd != None
+                and self.rs1 != None
+                and self.imm != None)
+
+    def is_3_reg_insn (self, mnem):
+        return (self.mnemonic == mnem
+                and self.rd != None
+                and self.rs1 != None
+                and self.rs2 != None)
+
+def comrv_disassemble_and_analyse (start, end):
+    regs = register_tracker ()
+    dis = gdb.execute (("disassemble 0x%x,0x%x" % (start, end)), False, True)
+    dis = dis.splitlines ()
+    found_header = False
+    insns = []
+    for l in (dis):
+        if (l.startswith ("Dump of assembler code from ")):
+            found_header = True
+            continue
+        elif (l.startswith ("End of assembler dump")):
+            break
+        elif (not found_header):
+            continue
+        elif (l.startswith ("=> ")):
+            break
+        (b,s,a) = l.partition (":")
+        insns.append (decoded_instruction (a))
+
+    for i in (insns):
+        pv_simulate (i, regs)
+
+    return regs
+
+#=====================================================================#
+#                         Stack Unwinder
+#=====================================================================#
+#
+# The following stack unwinder performs unwinding for the ComRV
+# assembler core.  The stack unwinder should be sufficient to unwind
+# from any location within the assembler core.
+#
+#=====================================================================#
 
 class comrv_unwinder (Unwinder):
     """
@@ -1599,9 +2106,7 @@ class comrv_unwinder (Unwinder):
 
             token = prev_frame.token ()
             if is_multi_group_token_p (token):
-                if (prev_frame.multi_group_index () == -1):
-                    raise RuntimeError ("mutli-group stack token with no valid token index")
-                idx = prev_frame.multi_group_index ()
+                idx = mg_token_group_id (token)
                 token = self._get_multi_group_table_by_index (idx)
 
             group_id = (token >> 1) & 0xffff
@@ -1627,7 +2132,7 @@ class comrv_unwinder (Unwinder):
             debug ("  ra: " + str (ra))
         return ra
 
-    def _unwind (self, addr):
+    def _unwind (self, addr, allow_uninitialised_frame_p = False):
         """Perform an unwind of one ComRV stack frame.  ADDR is the
         address of a frame on the ComRV stack.  This function returns
         a tuple of the address to return to and the previous ComRV
@@ -1650,10 +2155,16 @@ class comrv_unwinder (Unwinder):
             addr += frame.offset ()
             frame = comrv_stack_frame (addr, mg_index_offset)
 
+        # Check for an uninitialised stack frame.  We allow this case when
+        # performing stack unwinding as we need to be able to unwind at the
+        # point when the stack is in the process of being set up.
+        if (not allow_uninitialised_frame_p
+            and (frame.return_address () == 0
+                 and frame.token () == 0)):
+            raise RuntimeError ("uninitialized comrv stack frame")
+
         # Check to see if we have hit the top of the ComRV Stack.
-        if ((frame.return_address () == 0
-             and frame.token () == 0)
-            or frame.offset () == 0xdead):
+        if (frame.offset () == 0xdead):
             raise RuntimeError ("hit top of ComRV stack (2)")
 
         # Adjust the ComRV stack pointer; ADDR is now the ComRV stack
@@ -1666,63 +2177,305 @@ class comrv_unwinder (Unwinder):
 
         return self._get_primary_storage_area_ra (ra, addr), addr
 
-    def _unwind_at_ret_from_callee_context_switch (self, pending_frame, labels):
-        # Create UnwindInfo.  Usually the frame is identified by the stack
-        # pointer and the program counter.
+    def _unwind_before_comrv_exit (self, pending_frame, labels):
+        # Check we're in the valid range of $pc values for this unwinder.
+        pc = pending_frame.read_register ("pc").cast (self.void_ptr_t)
+        assert (pc > labels.comrv_ret_from_callee_context_switch
+                and pc < labels.comrv_exit)
+
+        # This disassembly deliberately starts early so we can figure
+        # out the stack adjustment that is required.
+        regs = comrv_disassemble_and_analyse (labels.comrv_igonr_caller_thunk_stack_frame,
+                                              pc)
+
+        # Now we can calculate the stack pointer value for this frame-id.
         sp = pending_frame.read_register ("sp")
-        pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
-        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, pc))
+        if (regs["sp"].type == "pv_register" and regs["sp"].reg == "sp"):
+            sp = int (sp) - regs["sp"].addend
+        frame_pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        sp = gdb.Value (sp).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, frame_pc))
 
-        # Find the values of the registers in the caller's frame and
-        # save them in the result:
-        t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
-        ra = int (pending_frame.read_register ("ra"))
-        ra = self._get_primary_storage_area_ra (ra, t3)
-        unwind_info.add_saved_register("pc", gdb.Value (ra).cast (self.void_ptr_t))
-        unwind_info.add_saved_register("t3", gdb.Value (t3).cast (self.void_ptr_t))
-        unwind_info.add_saved_register("sp", pending_frame.read_register ("sp"))
-        # TODO: We should pass through all of the other registers that
-        # are not corrupted by passing through ComRV.
+        # Read the current values for $t3 and $ra.
+        t3 = pending_frame.read_register ("t3").cast (self.void_ptr_t)
+        ra = int (pending_frame.read_register ("ra").cast (self.void_ptr_t))
 
-        # Return the result:
+        # The token or address we're going to retunr too will have
+        # been placed into $a0 already if this unwinder is reached,
+        # but within the scope of this unwinder the value in $a0 is
+        # moved back into $ra.
+        if (not (regs["a0"].type == "pv_register" and regs["a0"].reg == "ra")
+            and (ra == int (pc))):
+            ra = int (pending_frame.read_register ("a0").cast (self.void_ptr_t))
+
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        cache_start = ovly_data.cache ().start_address ()
+        cache_end = ovly_data.cache ().end_address ()
+        if (ra >= cache_start and ra < cache_end):
+            ra = self._get_primary_storage_area_ra (ra, int (t3))
+        ra = gdb.Value (ra).cast (self.void_ptr_t)
+
+        unwind_info.add_saved_register ("sp", sp)
+        unwind_info.add_saved_register ("pc", ra)
+        unwind_info.add_saved_register ("t3", t3)
+        unwind_info.add_saved_register ("t4", pending_frame.read_register ("t4"))
+
         return unwind_info
 
     def _unwind_through_comrv_stack (self, pending_frame, labels):
-        # Create UnwindInfo.  Usually the frame is identified by the stack
-        # pointer and the program counter.
-        sp = pending_frame.read_register ("sp")
-        pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
-        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, pc))
+        # Build the unwind info.  No stack adjustment is needed here,
+        # the stack pointer has been restored to the value it had when
+        # comrvEntry was called.
+        sp = pending_frame.read_register ("sp").cast (self.void_ptr_t)
+        frame_pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, frame_pc))
 
         # Find the values of the registers in the caller's frame and
         # save them in the result:
-        t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
-        ra, t3 = self._unwind (t3)
+        t3 = pending_frame.read_register ("t3").cast (self.void_ptr_t)
+        prev_t4 = t3
+        ra, t3 = self._unwind (int (t3))
         unwind_info.add_saved_register("pc", gdb.Value (ra).cast (self.void_ptr_t))
         unwind_info.add_saved_register("t3", gdb.Value (t3).cast (self.void_ptr_t))
-        unwind_info.add_saved_register("sp", pending_frame.read_register ("sp"))
-        # TODO: We should pass through all of the other registers that
-        # are not corrupted by passing through ComRV.
+        unwind_info.add_saved_register("t4", prev_t4)
+        unwind_info.add_saved_register("sp", sp)
 
         # Return the result:
         return unwind_info
 
-    def _unwind_direct (self, pending_frame, labels):
-        # Create UnwindInfo.  Usually the frame is identified by the stack
-        # pointer and the program counter.
-        sp = pending_frame.read_register ("sp")
-        pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
-        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, pc))
+    def _unwind_early_common (self, pending_frame, labels):
+        pc = pending_frame.read_register ("pc").cast (self.void_ptr_t)
 
-        # Find the values of the registers in the caller's frame and
-        # save them in the result:
+        # Disassemble from the start of comrvEntry up to the current
+        # value of the program counter.  Use this disassembly to
+        # analyse the current state of the machine, and apply our
+        # understanding of how ComRV operates to this state in order
+        # to build a picture of how to unwind from here.
+
+        regs = comrv_disassemble_and_analyse (labels.comrv_entry, pc)
+
+        # Create UnwindInfo.  Usually the frame is identified by the
+        # stack pointer and the program counter.  We try to be good
+        # and always use the stack pointer as it was at the start of
+        # this frame.
+        sp = pending_frame.read_register ("sp")
+        if (regs["sp"].type == "pv_register"
+            and regs["sp"].reg == "sp"):
+            sp = int (sp) - regs["sp"].addend
+
+        frame_pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        sp = gdb.Value (sp).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, frame_pc))
+
+        # Setup unwinding for the `s` registers.  This logic is correct in a
+        # non-rtos world, but is not going to be correct once we start seeing
+        # builds of ComRV for RTOS as these registers get spilt to the stack.
+        unwind_info.add_saved_register ("fp", pending_frame.read_register ("fp"))
+        unwind_info.add_saved_register ("s1", pending_frame.read_register ("s1"))
+        unwind_info.add_saved_register ("s2", pending_frame.read_register ("s2"))
+        unwind_info.add_saved_register ("s3", pending_frame.read_register ("s3"))
+        unwind_info.add_saved_register ("s4", pending_frame.read_register ("s4"))
+        unwind_info.add_saved_register ("s5", pending_frame.read_register ("s5"))
+        unwind_info.add_saved_register ("s6", pending_frame.read_register ("s6"))
+        unwind_info.add_saved_register ("s7", pending_frame.read_register ("s7"))
+        unwind_info.add_saved_register ("s8", pending_frame.read_register ("s8"))
+        unwind_info.add_saved_register ("s9", pending_frame.read_register ("s9"))
+        unwind_info.add_saved_register ("s10", pending_frame.read_register ("s10"))
+        unwind_info.add_saved_register ("s11", pending_frame.read_register ("s11"))
+
+        return unwind_info, regs, pc, sp
+
+    def _unwind_before_context_switch (self, pending_frame, labels):
+        unwind_info, regs, pc, sp = self._unwind_early_common (pending_frame,
+                                                           labels)
+
+        # This is what we know about the range of possible pc values.
+        assert (pc >= labels.comrv_entry
+                and pc <= labels.comrv_entry_context_switch)
+
+        # Unwind $t4 which contains the "next" comrv stack frame pointer.
+        # Once we've setup the comrv stack frame we're about to use then the
+        # old "next" frame, is the frame we're now about to use.
+        if (regs["t4"].type == "pv_register"
+            and regs["t4"].reg == "t4"):
+            unwind_info.add_saved_register("t4", pending_frame.read_register ("t4"))
+        elif (regs["t2"].type == "pv_register"
+            and regs["t2"].reg == "t4"):
+            unwind_info.add_saved_register("t4", pending_frame.read_register ("t2"))
+        else:
+            t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
+            t3 &= 0xfffffffe
+            t3 = gdb.Value (t3).cast (self.void_ptr_t)
+            unwind_info.add_saved_register("t4", t3)
+
+        # Unwinding of $t3 is tricky.
+        if (regs["t3"].type == "pv_unknown"
+            and regs["t2"].type == "pv_register"
+            and regs["t2"].reg == "t4"):
+            t2 = int (pending_frame.read_register ("t2").cast (self.void_ptr_t))
+            t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
+            t3 = gdb.Value (t2 + t3).cast (self.void_ptr_t)
+        elif (regs["t3"].type == "pv_register"
+              and regs["t3"].reg == "t3"):
+            t3 = pending_frame.read_register ("t3")
+        elif ((regs["t3"].type == "pv_register"
+               and regs["t3"].reg == "t4")
+              or (regs["t2"].type == "pv_unknown"
+                  and regs["t3"].type == "pv_unknown"
+                  and regs["t4"].type == "pv_unknown")):
+            t3 = int (pending_frame.read_register ("t3").cast (self.void_ptr_t))
+            t3 &= 0xfffffffe
+            ra, t3 = self._unwind (t3, True)
+            # The return address we just fetched is not valid as the actual
+            # return address might not yet have been written to the stack.
+            # Set ra to None here, just to ensure this doesn't get used be
+            # accident.
+            ra = None
+            # Pack the t3 integer back into a Value object.
+            t3 = gdb.Value (t3).cast (self.void_ptr_t)
+        unwind_info.add_saved_register("t3", t3)
+
+        # If the return address is in the cache region then we need to
+        # map the cache address to the address within the storage area
+        # that this cache region represented.
+        ra = int (pending_frame.read_register ("ra"))
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        cache_start = ovly_data.cache ().start_address ()
+        cache_end = ovly_data.cache ().end_address ()
+        if (ra >= cache_start and ra < cache_end):
+            ra = self._get_primary_storage_area_ra (ra, int (t3))
+        ra = gdb.Value (ra).cast (self.void_ptr_t)
+        unwind_info.add_saved_register("pc", ra)
+        unwind_info.add_saved_register("sp", sp)
+        return unwind_info
+
+    def _unwind_before_invoke_callee (self, pending_frame, labels):
+        unwind_info, regs, pc, sp = self._unwind_early_common (pending_frame,
+                                                           labels)
+
+        # This is what we know about the range of possible pc values.
+        assert (pc > labels.comrv_entry_context_switch
+                and pc <= labels.comrv_invoke_callee)
+
+        # Find the values of the registers in the caller's frame and save them
+        # in the result.  The stack-pointer is super easy as the early unwind
+        # logic figured this out for us.  The other two values need to be
+        # pulled from the comrv stack.
+        unwind_info.add_saved_register("sp", sp)
+
+        t3 = pending_frame.read_register ("t3").cast (self.void_ptr_t)
+        prev_t4 = t3
+        ra, t3 = self._unwind (int (t3))
+
+        unwind_info.add_saved_register("pc", gdb.Value (ra).cast (self.void_ptr_t))
+        unwind_info.add_saved_register("t3", gdb.Value (t3).cast (self.void_ptr_t))
+        unwind_info.add_saved_register("t4", prev_t4)
+        return unwind_info
+
+    def _unwind_before_ret_from_callee_context_switch (self, pending_frame, labels):
+        # This is what we know about the range of possible pc values.
+        pc = int (pending_frame.read_register ("pc").cast (self.void_ptr_t))
+        assert (pc >= labels.comrv_igonr_caller_thunk_stack_frame
+                and pc <= labels.comrv_ret_from_callee_context_switch)
+
+        # First thing we need to do is figure out the stack pointer at entry
+        # to this function.
+        #
+        # For the region we're looking at the stack pointer does get adjusted,
+        # but at the start of the block the stack pointer should be correct.
+        regs = comrv_disassemble_and_analyse (labels.comrv_igonr_caller_thunk_stack_frame,
+                                              pc)
+
+        # Check we understand the current contents of the stack pointer.
+        if (regs["sp"].type != "pv_register" or regs["sp"].reg != "sp"):
+            return None
+
+        sp = int (pending_frame.read_register ("sp").cast (self.void_ptr_t))
+        sp = sp - regs["sp"].addend
+        sp = gdb.Value (sp).cast (self.void_ptr_t)
+        frame_pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, frame_pc))
+
+        unwind_info.add_saved_register("sp", sp)
+
+        if (regs["t3"].type == "pv_register" and regs["t3"].reg == "t5"):
+            prev_t3 = pending_frame.read_register ("t3")
+        else:
+            prev_t3 = pending_frame.read_register ("t5")
+        unwind_info.add_saved_register("t3", prev_t3)
+
+        # If the return address is in the cache region then we need to
+        # map the cache address to the address within the storage area
+        # that this cache region represented.
+        ra = int (pending_frame.read_register ("ra"))
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        cache_start = ovly_data.cache ().start_address ()
+        cache_end = ovly_data.cache ().end_address ()
+        if (ra >= cache_start and ra < cache_end):
+            ra = self._get_primary_storage_area_ra (ra, int (prev_t3))
+        ra = gdb.Value (ra).cast (self.void_ptr_t)
+        unwind_info.add_saved_register("pc", ra)
+
+        if (regs["t4"].type == "pv_register" and regs["t4"].reg == "t3"):
+            unwind_info.add_saved_register("t4", pending_frame.read_register ("t4"))
+        else:
+            unwind_info.add_saved_register("t4", pending_frame.read_register ("t3"))
+
+        return unwind_info
+
+    def _unwind_at_return (self, pending_frame, labels):
+        # Check where we are.
+        pc = int (pending_frame.read_register ("pc").cast (self.void_ptr_t))
+        assert (pc == labels.comrv_exit)
+
+        # We are at the return point.  All registers that are going to be
+        # restored should have been restored by now.
+        frame_pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        sp = pending_frame.read_register ("sp").cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, frame_pc))
+        unwind_info.add_saved_register("sp", sp)
         unwind_info.add_saved_register("pc", pending_frame.read_register ("ra"))
         unwind_info.add_saved_register("t3", pending_frame.read_register ("t3"))
-        unwind_info.add_saved_register("sp", pending_frame.read_register ("sp"))
-        # TODO: We should pass through all of the other registers that
-        # are not corrupted by passing through ComRV.
+        unwind_info.add_saved_register("t4", pending_frame.read_register ("t4"))
+        return unwind_info
 
-        # Return the result:
+    def _unwind_before_comrv_end (self, pending_frame, labels):
+        # Check where we are.
+        pc = int (pending_frame.read_register ("pc").cast (self.void_ptr_t))
+        assert (pc > labels.comrv_exit and pc < labels.comrv_end)
+
+        # Build the unwind info.
+        sp = pending_frame.read_register ("sp").cast (self.void_ptr_t)
+        frame_pc = gdb.Value (labels.comrv_entry).cast (self.void_ptr_t)
+        unwind_info = pending_frame.create_unwind_info (self.frame_id (sp, frame_pc))
+
+        prev_t3 = pending_frame.read_register ("t3").cast (self.void_ptr_t)
+
+        # If the return address is in the cache region then we need to
+        # map the cache address to the address within the storage area
+        # that this cache region represented.
+        ra = int (pending_frame.read_register ("ra"))
+        ovly_data = overlay_data.fetch ()
+        if (not ovly_data.comrv_initialised ()):
+            raise RuntimeError ("ComRV is not initialised")
+        cache_start = ovly_data.cache ().start_address ()
+        cache_end = ovly_data.cache ().end_address ()
+        if (ra >= cache_start and ra < cache_end):
+            ra = self._get_primary_storage_area_ra (ra, int (prev_t3))
+        ra = gdb.Value (ra).cast (self.void_ptr_t)
+        unwind_info.add_saved_register("pc", ra)
+
+        #t3 = pending_frame.read_register ("t3").cast (self.void_ptr_t)
+        t4 = pending_frame.read_register ("t4").cast (self.void_ptr_t)
+        unwind_info.add_saved_register("t3", prev_t3)
+        unwind_info.add_saved_register("t4", t4)
+        unwind_info.add_saved_register("sp", sp)
         return unwind_info
 
     def __call__ (self, pending_frame):
@@ -1735,160 +2488,53 @@ class comrv_unwinder (Unwinder):
         self.void_ptr_t = gdb.lookup_type("void").pointer()
         pc = pending_frame.read_register ("pc").cast (self.void_ptr_t)
         if (not labels.enabled
-            or pc < labels.comrv_entry or pc > labels.comrv_exit):
+            or pc < labels.comrv_entry or pc >= labels.comrv_end):
             return None
 
-        # Inside the core of ComRV there are 3 states I think we could
-        # be in, these are:
+        # We know that the user is unside the comrv entry point.  At this
+        # point we are allowed to assume that comrv is initialised.  If comrv
+        # is not initialised then the user has messed up (calling into comrv
+        # before initialisation) and so all bets are off.
+        global_mark_comrv_as_initialised ()
+
+        # For unwinding we split the ComRV assembler core into
+        # regions, and use a different unwinder for each region.  When
+        # working on this unwinder please consider that the frame_id
+        # created in each different unwinder should use the $pc value
+        # for 'comrvEntry' and should use the $sp value as it was at
+        # the point of entry into 'comrvEntry'; this ensures that the
+        # frame-id will not change as the user single steps through
+        # the assembler core, a changing frame-id will confuse GDB.
         #
-        # 1. Near the entry point, the ComRV stack is not yet updated,
-        # and to unwind we just look in the return address register.
-        #
-        # 2. Immediately after coming back from the callee, at this
-        # point we unwind by popping one or more frames from the ComRV
-        # stack.
-        #
-        # 3. Not the previous two states.  These are the areas of code
-        # where we're in the process of adjusting the ComRV stack, and
-        # setting up the new return address register value.  To unwind
-        # at these addresses would require an instruction by
-        # instruction analysis I think.
-        #
-        # Here I just blindly carve the comrv core into two, before we
-        # invoke the callee and afterwards.  This will work for the
-        # easy cases 1 and 2 above.  Case 3 wouldn't work before, and
-        # still doesn't work with this mechanism.
-        #
-        # Update: a new specific case is now handled - re-entering comrv at
-        # comrv_ret_from_callee_context_switch after a context switch whilst
-        # returning from a callee.  At this point, the comrv stack relating to
-        # the callee has already been popped.
-        if (pc <= labels.comrv_invoke_callee):
-            return self._unwind_direct (pending_frame, labels)
-        if (pc == labels.comrv_ret_from_callee_context_switch):
-            return self._unwind_at_ret_from_callee_context_switch (pending_frame, labels)
-        else:
+        # Each unwind handler should start with an assertion for the
+        # range of $pc values that it handles.
+        if (pc <= labels.comrv_entry_context_switch):
+            return self._unwind_before_context_switch (pending_frame, labels)
+        elif (pc <= labels.comrv_invoke_callee):
+            return self._unwind_before_invoke_callee (pending_frame, labels)
+        elif (pc < labels.comrv_igonr_caller_thunk_stack_frame):
             return self._unwind_through_comrv_stack (pending_frame, labels)
+        elif (pc <= labels.comrv_ret_from_callee_context_switch):
+            return self._unwind_before_ret_from_callee_context_switch (pending_frame, labels)
+        elif (pc < labels.comrv_exit):
+            return self._unwind_before_comrv_exit (pending_frame, labels)
+        elif (pc == labels.comrv_exit):
+            return self._unwind_at_return (pending_frame, labels)
+        elif (pc < labels.comrv_end):
+            return self._unwind_before_comrv_end (pending_frame, labels)
 
-class comrv_frame_filter ():
-    """
-    A class for filtering ComRV stack frame entries.
-
-    This class does one of two jobs based on the current value of
-    SHOW_COMRV_FRAMES.  When SHOW_COMRV_FRAMES is true then this class
-    identifies ComRV stack frames and applies the DECORATOR sub-class
-    to those frames.  When SHOW_COMRV_FRAMES is false this class
-    causes the ComRV stack frames to be skipped so they will not be
-    printed in the backtrace.
-    """
-
-    class decorator (FrameDecorator):
-        """
-        A FrameDecorator to change the name of the ComRV stack frames.
-
-        This class is applied to ComRV stack frames when
-        SHOW_COMRV_FRAMES is true, and changes the name of the frame
-        to be simply "comrv".
-        """
-
-        def __init__(self, frame):
-            FrameDecorator.__init__ (self, frame)
-            self.uint_t = gdb.lookup_type ("unsigned int")
-            self._frame = frame
-
-        def function (self):
-            return "comrv"
-
-        def frame_args (self):
-            '''Add pseudo-parameters to comrv frames.  When SHOW_COMRV_TOKENS is
-            true this function returns a description of the 'token'
-            parameter for the comrv frame.'''
-            class _sym_value ():
-                def __init__ (self, name, value):
-                    self._name = name
-                    self._value = value
-
-                def symbol (self):
-                    return self._name
-
-                def value (self):
-                    return self._value
-
-            if (not show_comrv_tokens):
-                return None
-
-            addr = self._frame.address ()
-            labels = overlay_data.fetch ().labels ()
-            if (addr <= labels.comrv_invoke_callee):
-                token = self._frame.inferior_frame ().read_register ("t5")
-            else:
-                # Find the token on the ComRV stack.
-                t3 = self._frame.inferior_frame ().\
-                          read_register ("t3").cast (self.uint_t)
-                ovly_data = overlay_data.fetch ()
-                mg_index_offset = ovly_data.multi_group_index_offset ()
-                comrv_frame = comrv_stack_frame (t3, mg_index_offset)
-                labels = ovly_data.labels ()
-                assert (labels.ret_from_callee != None)
-                while (comrv_frame.return_address () == labels.ret_from_callee
-                       and comrv_frame.return_address () != 0
-                       and comrv_frame.offset () != 0xdead):
-                    t3 += comrv_frame.offset ()
-                    comrv_frame = comrv_stack_frame (t3, mg_index_offset)
-                token = comrv_frame.token ()
-            return [_sym_value ("token", gdb.Value (token).cast (self.uint_t))]
-
-    class iterator ():
-        """
-        An iterator to wrap the default iterator and filter frames.
-
-        An instance of this iterator is created around GDB's default
-        FrameDecorator iterator.  As frames are extracted from this
-        iterator, if the frame looks like a ComRV frame then we apply
-        an extra decorator to it.
-        """
-
-        def __init__ (self, iter):
-            self.iter = iter
-
-        def __iter__(self):
-            return self
-
-        def next (self):
-            """Called each time GDB needs the next frame.  If the frame
-            looks like a ComRV frame (based on its $pc value) then we
-            either apply the comrv frame decorator, or we skip the
-            frame (based on the value of SHOW_COMRV_FRAMES)."""
-            frame = next (self.iter)
-            addr = frame.address ()
-            labels = overlay_data.fetch ().labels ()
-            if (addr >= labels.comrv_entry
-                and addr <= labels.comrv_exit):
-                if (not show_comrv_frames
-                    and (frame.inferior_frame ()
-                         != gdb.selected_frame ())):
-                    return next (self.iter)
-                else:
-                    return comrv_frame_filter.decorator (frame)
-            return frame
-
-        def __next__ (self):
-            return self.next ()
-
-    def __init__ (self):
-        self.name = "comrv filter"
-        self.priority = 100
-        self.enabled = True
-        gdb.frame_filters [self.name] = self
-
-    def filter (self, frame_iter):
-        return self.iterator (frame_iter)
+        raise RuntimeError ("no unwinder logic for address 0x%x" % pc)
 
 # Register the ComRV stack unwinder.
 gdb.unwinder.register_unwinder (None, comrv_unwinder (), True)
 
-# Register the frame filter.
-comrv_frame_filter ()
+#=====================================================================#
+#                         Final Setup
+#=====================================================================#
+#
+# Perform some final initialisation steps.
+#
+#=====================================================================#
 
 # Create an instance of the command class.
 ParseComRV ()
@@ -1910,3 +2556,4 @@ gdb.execute ("overlay auto", False, False)
 # play well, probably with pipeline caching or some such.
 #
 # gdb.execute ("set remote software-breakpoint-packet off", False, False)
+
