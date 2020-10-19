@@ -188,7 +188,7 @@ u32_t comrvEnterCriticalSectionHook(void)
    }
    else
    {
-      pspInterruptsDisable(&uiPrevIntState);
+      pspMachineInterruptsDisable(&uiPrevIntState);
    }
 
    return 0;
@@ -212,7 +212,7 @@ u32_t comrvExitCriticalSectionHook(void)
    }
    else
    {
-      pspInterruptsRestore(uiPrevIntState);
+      pspMachineInterruptsRestore(uiPrevIntState);
    }
 
    return 0;

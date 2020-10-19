@@ -104,7 +104,7 @@ void demoStart(void)
    M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+   pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
    /* mark that comrv init shall load comrv tables */
    stComrvInitArgs.ucCanLoadComrvTables = 1;

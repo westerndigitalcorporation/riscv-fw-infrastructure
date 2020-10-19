@@ -67,7 +67,7 @@ void demoStart(void)
    M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+   pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
    /* Init ComRV engine */
    comrvInit(&stComrvInitArgs);

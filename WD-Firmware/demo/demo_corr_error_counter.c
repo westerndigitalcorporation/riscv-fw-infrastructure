@@ -93,13 +93,13 @@ void demoCorrErrIsr(void)
 void demoStart(void)
 {
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
    /* Register correctable-error-counter ISR*/
-   pspRegisterInterruptHandler(demoCorrErrIsr,E_MACHINE_CORRECTABLE_ERROR_CAUSE);
+   pspMachineInterruptsRegisterIsr(demoCorrErrIsr,E_MACHINE_CORRECTABLE_ERROR_CAUSE);
 
    /* Set correctable-error-counter threshold of 1 (== after 1 correctable-error (bit-flip), an interrupt will be raised) */
-   pspCorErrCntSetThreshold(E_ICACHE_CORR_ERR_COUNTER ,1);
+   pspMachineCorErrCntSetThreshold(E_ICACHE_CORR_ERR_COUNTER ,1);
 
    while(1);
 }

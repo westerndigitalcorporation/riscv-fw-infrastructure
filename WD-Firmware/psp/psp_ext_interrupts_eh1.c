@@ -84,7 +84,7 @@ D_PSP_DATA_SECTION D_PSP_ALIGNED(1024) pspInterruptHandler_t G_Ext_Interrupt_Han
 /**
 * @brief - Set external interrupts vector-table address at MEIVT CSR
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
+D_PSP_TEXT_SECTION void pspMachineExternalInterruptSetVectorTableAddress(void* pExtIntVectTable)
 {
   u32_t uiInterruptsState;
 
@@ -92,12 +92,12 @@ D_PSP_TEXT_SECTION void pspExternalInterruptSetVectorTableAddress(void* pExtIntV
   M_PSP_ASSERT(NULL != pExtIntVectTable)
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   M_PSP_WRITE_CSR(D_PSP_MEIVT_NUM, pExtIntVectTable);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -108,7 +108,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptSetVectorTableAddress(void* pExtIntV
 *        pParameter = NOT IN USE for baremetal implementation
 * @return pOldIsr = pointer to the previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
+D_PSP_TEXT_SECTION pspInterruptHandler_t pspMachineExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
 {
    u32_t uiInterruptsState;
    pspInterruptHandler_t fptrPrevIsr = NULL;
@@ -117,17 +117,17 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
    M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiVectorNumber)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiVectorNumber))
 
    /* Disable interrupts */
-   pspInterruptsDisable(&uiInterruptsState);
+   pspMachineInterruptsDisable(&uiInterruptsState);
 
    /* Set external-interrupts vector-table address in MEIVT CSR */
-   pspExternalInterruptSetVectorTableAddress(G_Ext_Interrupt_Handlers);
+   pspMachineExternalInterruptSetVectorTableAddress(G_Ext_Interrupt_Handlers);
 
    /* Register the interrupt */
    fptrPrevIsr = G_Ext_Interrupt_Handlers[uiVectorNumber];
    G_Ext_Interrupt_Handlers[uiVectorNumber] = pIsr;
 
    /* Restore interrupts */
-   pspInterruptsRestore(uiInterruptsState);
+   pspMachineInterruptsRestore(uiInterruptsState);
 
    return(fptrPrevIsr);
 }
@@ -138,7 +138,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspExternalInterruptRegisterISR(u32_t u
 * @param intNum = the number of the external interrupt to disable
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
+D_PSP_TEXT_SECTION void pspMachineExternalInterruptDisableNumber(u32_t uiIntNum)
 {
   u32_t uiInterruptsState;
 
@@ -146,13 +146,13 @@ D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
   M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiIntNum)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiIntNum))
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Clear Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
   M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum)) , 0);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -161,7 +161,7 @@ D_PSP_TEXT_SECTION void pspExternalInterruptDisableNumber(u32_t uiIntNum)
 * @param intNum = the number of the external interrupt to enable
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
+D_PSP_TEXT_SECTION void pspMachineExternalInterruptEnableNumber(u32_t uiIntNum)
 {
   u32_t uiInterruptsState;
 
@@ -169,13 +169,13 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
   M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiIntNum)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiIntNum))
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set Int-Enable bit in meie register, corresponds to given source (interrupt-number) */
   M_PSP_WRITE_REGISTER_32((D_PSP_PIC_MEIE_ADDR + M_PSP_MULT_BY_4(uiIntNum)), D_PSP_MEIE_INT_EN_MASK);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -185,18 +185,18 @@ D_PSP_TEXT_SECTION void pspExternalInterruptEnableNumber(u32_t uiIntNum)
 *  @param priority = priority to be set
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
+D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPriority)
 {
   u32_t uiInterruptsState;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set priority in meipl register, corresponds to given source (interrupt-number) */
   M_PSP_WRITE_REGISTER_32((D_PSP_MEIPL_ADDR + M_PSP_MULT_BY_4(uiIntNum)), uiPriority);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -205,18 +205,18 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPriority(u32_t uiIntNum, u32_t uiPrior
 * @param threshold = priority threshold to be programmed to PIC
 * @return None
 */
-D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
+D_PSP_TEXT_SECTION void pspMachineExtInterruptsSetThreshold(u32_t uiThreshold)
 {
   u32_t uiInterruptsState;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set in meipt CSR, the priority-threshold */
   M_PSP_WRITE_CSR(D_PSP_MEIPT_NUM, uiThreshold);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -225,12 +225,12 @@ D_PSP_TEXT_SECTION void pspExtInterruptsSetThreshold(u32_t uiThreshold)
 * @param threshold = nesting priority threshold to be programmed to PIC
 * @return None
 */
-D_PSP_TEXT_SECTION void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold)
+D_PSP_TEXT_SECTION void  pspMachineExtInterruptsSetNestingPriorityThreshold(u32_t uiNestingPriorityThreshold)
 {
   u32_t uiInterruptsState;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set in meicidpl CSR, the nesting priority priority-threshold */
   M_PSP_WRITE_CSR(D_PSP_MEICIDPL_NUM, uiNestingPriorityThreshold);
@@ -239,7 +239,7 @@ D_PSP_TEXT_SECTION void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNes
   M_PSP_WRITE_CSR(D_PSP_MEICURPL_NUM, uiNestingPriorityThreshold);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -248,7 +248,7 @@ D_PSP_TEXT_SECTION void  pspExtInterruptsSetNestingPriorityThreshold(u32_t uiNes
 * @param uiExtInterrupt = Number of external interrupt
 * @return = pending (1) or not (0)
 */
-D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
+D_PSP_TEXT_SECTION u32_t pspMachineExtInterruptIsPending(u32_t uiExtInterrupt)
 {
   u32_t uiRegister, uiBit, uiResult;
 
@@ -272,7 +272,7 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptIsPending(u32_t uiExtInterrupt)
 * @param uiIntType = Type of the interrupt (level or edge)
 *
 */
-D_PSP_TEXT_SECTION void pspExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType)
+D_PSP_TEXT_SECTION void pspMachineExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType)
 {
   u32_t uiInterruptsState;
 
@@ -280,13 +280,13 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType)
   M_PSP_ASSERT((D_PSP_EXT_INT_LEVEL_TRIG_TYPE == uiIntType) || (D_PSP_EXT_INT_EDGE_TRIG_TYPE == uiIntType));
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set interrupt type */
   M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiIntType << D_PSP_MEIGWCTRL_TYPE_BIT_OFFSET);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 
@@ -297,7 +297,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetType(u32_t uiIntNum, u32_t uiIntType)
 * @param uiPolarity = active-high or active-low
 *
 */
-D_PSP_TEXT_SECTION void pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolarity)
+D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolarity)
 {
   u32_t uiInterruptsState;
 
@@ -305,13 +305,13 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolar
   M_PSP_ASSERT((D_PSP_EXT_INT_ACTIVE_HIGH == uiPolarity) || (D_PSP_EXT_INT_ACTIVE_LOW == uiPolarity));
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set interrupt type */
   M_PSP_SET_REGISTER_32(D_PSP_PIC_MEIGWCTRL_ADDR + M_PSP_MULT_BY_4(uiIntNum), uiPolarity << D_PSP_MEIGWCTRL_POLARITY_BIT_OFFSET);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -319,18 +319,18 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPolarity(u32_t uiIntNum, u32_t uiPolar
 *
 * @param uiIntNum   = Number of external interrupt
 */
-D_PSP_TEXT_SECTION void  pspExtInterruptClearPendingInt(u32_t uiIntNum)
+D_PSP_TEXT_SECTION void  pspMachineExtInterruptClearPendingInt(u32_t uiIntNum)
 {
   u32_t uiInterruptsState;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Clear the gwateway */
   M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MEIGWCLR_ADDR + M_PSP_MULT_BY_4(uiIntNum), 0);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -339,7 +339,7 @@ D_PSP_TEXT_SECTION void  pspExtInterruptClearPendingInt(u32_t uiIntNum)
 * @param uiPriorityOrder = Standard or Reserved
 *
 */
-D_PSP_TEXT_SECTION void pspExtInterruptSetPriorityOrder(u32_t uiPriorityOrder)
+D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPriorityOrder(u32_t uiPriorityOrder)
 {
   u32_t uiInterruptsState;
 
@@ -347,13 +347,13 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPriorityOrder(u32_t uiPriorityOrder)
   M_PSP_ASSERT((D_PSP_EXT_INT_STANDARD_PRIORITY == uiPriorityOrder) || (D_PSP_EXT_INT_REVERSED_PRIORITY == uiPriorityOrder));
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   /* Set Priority Order */
   M_PSP_WRITE_REGISTER_32(D_PSP_PIC_MPICCFG_ADDR, uiPriorityOrder);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /*
@@ -361,7 +361,7 @@ D_PSP_TEXT_SECTION void pspExtInterruptSetPriorityOrder(u32_t uiPriorityOrder)
 *
 * @return - claim-id number
 */
-D_PSP_TEXT_SECTION u32_t pspExtInterruptGetClaimId(void)
+D_PSP_TEXT_SECTION u32_t pspMachineExtInterruptGetClaimId(void)
 {
   u32_t uiClaimId = (M_PSP_READ_CSR(D_PSP_MEIHAP_NUM) & D_PSP_MEIHAP_CLAIMID_MASK)  ;
   uiClaimId = uiClaimId >> D_PSP_SHIFT_2;
@@ -375,7 +375,7 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptGetClaimId(void)
 *
 * @return - priority level
 */
-D_PSP_TEXT_SECTION u32_t pspExtInterruptGetPriority(void )
+D_PSP_TEXT_SECTION u32_t pspMachineExtInterruptGetPriority(void )
 {
   u32_t uiPriorityLevel = (M_PSP_READ_CSR(D_PSP_MEICIDPL_NUM) & D_PSP_MEICIDPL_CLIDPRI_MASK) ;
 
@@ -389,7 +389,7 @@ D_PSP_TEXT_SECTION u32_t pspExtInterruptGetPriority(void )
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspExtInterruptIsr(void)
+D_PSP_TEXT_SECTION void pspMachineExtInterruptIsr(void)
 {
   fptrFunction fptrExtIntHandler = NULL;
   u32_t* pClaimId;

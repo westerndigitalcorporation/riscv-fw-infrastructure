@@ -35,8 +35,8 @@
 /**
 * macros
 */
-#define M_CTI_INT_DISABLE(pPrevIntState) pspInterruptsDisable(pPrevIntState)
-#define M_CTI_INT_ENABLE(uiPrevIntState)  pspInterruptsRestore(uiPrevIntState)
+#define M_CTI_INT_DISABLE(pPrevIntState) pspMachineInterruptsDisable(pPrevIntState)
+#define M_CTI_INT_ENABLE(uiPrevIntState)  pspMachineInterruptsRestore(uiPrevIntState)
 
 /**
 * types

@@ -61,7 +61,7 @@
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspPmcHalt(u32_t uiEnableInterrupts)
+D_PSP_TEXT_SECTION void pspMachinePowerMngCtrlHalt(u32_t uiEnableInterrupts)
 {
   if (D_PSP_INTERRUPTS_DISABLE_IN_HALT == uiEnableInterrupts)
   {
@@ -81,7 +81,7 @@ D_PSP_TEXT_SECTION void pspPmcHalt(u32_t uiEnableInterrupts)
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspPmcHalt(void)
+D_PSP_TEXT_SECTION void pspMachinePowerMngCtrlHalt(void)
 {
   M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_MPMC_HALT_MASK); /* Initiate 'Halted' mode. Don't enable interrupts upon initiation */
 }
@@ -94,7 +94,7 @@ D_PSP_TEXT_SECTION void pspPmcHalt(void)
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspPmcStall(u32_t uiTicks)
+D_PSP_TEXT_SECTION void pspMachinePowerMngCtrlStall(u32_t uiTicks)
 {
   M_PSP_WRITE_CSR(D_PSP_MCPC_NUM, uiTicks);
 }

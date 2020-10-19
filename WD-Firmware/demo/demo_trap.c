@@ -82,7 +82,7 @@ void demoIllegalInstructionExceptionHandlingTest(void)
   /* TODO: Replace trap handler registration with dedicated PSP API */
   M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, &M_PSP_VECT_TABLE);
 
-  pspRegisterExceptionHandler(demoIllegalInstructionExceptionHandler, E_EXC_ILLEGAL_INSTRUCTION);
+  pspMachineInterruptsRegisterExcpHandler(demoIllegalInstructionExceptionHandler, E_EXC_ILLEGAL_INSTRUCTION);
 
   /* create illegal instruction exception by writing to non valid CSR address */
   M_PSP_WRITE_CSR(D_ILLEGAL_CSR_ADDRESS, 0);

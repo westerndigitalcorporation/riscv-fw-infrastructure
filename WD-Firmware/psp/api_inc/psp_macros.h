@@ -38,7 +38,6 @@
 #define M_PSP_BIT_MASK(num) (1 << (num))
 #define M_PSP_MULT_BY_4(val) ((val) << 2)
 
-
 /* error checking macro */
 #if (D_PSP_ERROR_CHECK==1)
    /* TODO: need to add default function */
@@ -119,7 +118,6 @@
 #define _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, reg, bits) _CLEAR_AND_READ_CSR_(read_val, reg, bits)
 /*************************************************************************/
 
-
 /******************************** Macros of CSRs handling ********************************/
 #define M_PSP_READ_CSR(csr)                           _READ_CSR_INTERMEDIATE_(csr)
 #define M_PSP_WRITE_CSR(csr, val)                     _WRITE_CSR_INTERMEDIATE_(csr, val)
@@ -128,8 +126,6 @@
 #define M_PSP_SWAP_CSR(read_val, csr, write_val)      _SWAP_CSR_INTERMEDIATE_(csr, val)
 #define M_PSP_SET_AND_READ_CSR(read_val, csr, bits)   _SET_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
 #define M_PSP_CLEAR_AND_READ_CSR(read_val, csr, bits) _CLEAR_AND_READ_CSR_INTERMEDIATE_(read_val, csr, bits)
-
-
 
 /*****************************************************************************************/
 #define M_PSP_EBREAK()              asm volatile ("ebreak" : : : );
@@ -158,13 +154,25 @@
 #define M_PSP_CLEAR_REGISTER_32(reg, bits)   ((*(volatile u32_t *)(void*)(reg)) &= (~bits)) //need to use _Uncached u32_t if we have d$
 
 /*******************************************************/
-/* Get Core-Id */
-#define M_PSP_GET_CORE_ID()    M_PSP_READ_CSR(D_PSP_MHARTID_NUM)
+/* Get Core-Id . Available in MACHINE mode only */
+#define M_PSP_MACHINE_GET_CORE_ID()    M_PSP_READ_CSR(D_PSP_MHARTID_NUM)
 
 /*******************************************************/
 /** Divides the number "value" and applies ceiling/floor rounding to the result **/
 #define M_PSP_DIV_AND_ROUND_CEILING(value, divisor) (((value) + (divisor) - 1) / (divisor))
 #define M_PSP_DIV_AND_ROUND_FLOOR(value, divisor) ( (value) / (divisor))
+
+/*******************************************************/
+/* Set MEPC (Machine Exception Program Counter) to next instruction . Available in MACHINE mode only */
+#define M_PSP_MACHINE_SET_MEPC_TO_NEXT_INSTRUCTION()\
+            {u32_t uiMepc;\
+            uiMepc = M_PSP_READ_CSR(D_PSP_MEPC_NUM);\
+            uiMepc += 4;\
+            M_PSP_WRITE_CSR(D_PSP_MEPC_NUM, uiMepc);}
+
+/*******************************************************/
+/* Macro to verify that core is in MACHINE mode. If not in MACHINE mode - an exception raises */
+#define M_PSP_ASSURE_MACHINE_MODE()    M_PSP_READ_CSR(D_PSP_MISA_NUM);
 
 
 /* TODO: - this #ifdef is temporarily here. Should replace it with proper definitions of statements in this file (e.g. "asm volatile")

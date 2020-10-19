@@ -102,7 +102,7 @@ void demoStart(void)
    if (uiIsSwerv == D_PSP_FALSE)
    {
       /* Disable the timer interrupts until setup is done. */
-      pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+      pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
       /* Init ComRV engine */
       comrvInit(&stComrvInitArgs);
@@ -131,11 +131,11 @@ void demoCreateTasks(void *pParam)
    u32_t res;
 
    /* Disable the machine external & timer interrupts until setup is done. */
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+   pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
    /* Enable the Machine-External bit in MIE */
-   pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
 
    /* Create the rx task */
    res = rtosalTaskCreate(&stTestTaskA, (s08_t*)"TASK-A-RV", E_RTOSAL_PRIO_30,
@@ -334,7 +334,7 @@ u32_t comrvEnterCriticalSectionHook(void)
    }
    else
    {
-      pspInterruptsDisable(&uiPrevIntState);
+      pspMachineInterruptsDisable(&uiPrevIntState);
    }
 
    return 0;
@@ -358,7 +358,7 @@ u32_t comrvExitCriticalSectionHook(void)
    }
    else
    {
-      pspInterruptsRestore(uiPrevIntState);
+      pspMachineInterruptsRestore(uiPrevIntState);
    }
 
    return 0;

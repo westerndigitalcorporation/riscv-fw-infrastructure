@@ -104,7 +104,7 @@ void demoExternalInterruptIsr(void)
     bspClearExtInterrupt(D_DEMO_IRQ);
 
   /* Disable External-interrupts */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
 
   /* Mark that ISR visited */
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_IN_EXT_INT_ISR);
@@ -117,28 +117,28 @@ void demoExternalInterruptIsr(void)
 void demoSetupExternalInterrupts(void)
 {
     /* Set Standard priority order */
-  pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
+  pspMachineExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
 
     /* Set interrupts threshold to minimal level (== all interrupts should be served) */
-  pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+  pspMachineExtInterruptsSetThreshold(M_PSP_MACHINE_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
   /* Set the nesting priority threshold to minimal level (== all interrupts should be served) */
-  pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+  pspMachineExtInterruptsSetNestingPriorityThreshold(M_PSP_MACHINE_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
   /* Set Gateway Interrupt type (Level) */
-  pspExtInterruptSetType(D_DEMO_IRQ, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
+  pspMachineExtInterruptSetType(D_DEMO_IRQ, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
   /* Set gateway Polarity (Active high) */
-  pspExtInterruptSetPolarity(D_DEMO_IRQ, D_PSP_EXT_INT_ACTIVE_HIGH);
+  pspMachineExtInterruptSetPolarity(D_DEMO_IRQ, D_PSP_EXT_INT_ACTIVE_HIGH);
 
   /* Set the priority level to highest */
-  pspExtInterruptSetPriority(D_DEMO_IRQ, M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
+  pspMachineExtInterruptSetPriority(D_DEMO_IRQ, M_PSP_MACHINE_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE);
 
   /* Enable IRQ3 interrupt in the PIC */
-  pspExternalInterruptEnableNumber(D_DEMO_IRQ);
+  pspMachineExternalInterruptEnableNumber(D_DEMO_IRQ);
 
   /* Enable external interrupts */
-  pspEnableInterruptNumberMachineLevel(E_MACHINE_EXTERNAL_CAUSE);
+  pspMachineInterruptsEnableIntNumber(E_MACHINE_EXTERNAL_CAUSE);
 }
 
 /**
@@ -153,13 +153,13 @@ void demoSleepAndWakeupByExternalInterrupt(void)
   u64_t udTimeAfterSleep;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiPrevIntState);
+  pspMachineInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
 
   /* register external interrupt handler */
-  pspExternalInterruptRegisterISR(D_DEMO_IRQ, demoExternalInterruptIsr, 0);
+  pspMachineExternalInterruptRegisterISR(D_DEMO_IRQ, demoExternalInterruptIsr, 0);
 
   /* Rout SweRVolf FPGA timer to IRQ3 assertion - i.e. when the timer expires, IRQ3 external interrupt is asserted */
   bspRoutTimer(D_DEMO_TIMER_TO_IRQ);
@@ -171,25 +171,25 @@ void demoSleepAndWakeupByExternalInterrupt(void)
   demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
-  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeBeforeSleep = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Let the SweRVolf FPGA timer to start running */
   bspStartTimer();
 
 #ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
   /* Halt the core - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
-  pspPmcHalt(D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT);
+  pspMachinePowerMngCtrlHalt(D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT);
 #else /* D_EHX1_VER_0_9 - does not contain 'haltie' feature */
   /* Halt the core */
-  pspPmcHalt();
+  pspMachinePowerMngCtrlHalt();
 #endif
 
   /* This line , and the following are executed only when core is not in 'Sleep' */
-  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeAfterSleep = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
 
@@ -216,7 +216,7 @@ void demoSleepAndWakeupByExternalInterrupt(void)
 void demoMtimerIsrHandler(void)
 {
   /* Disable Machine-Timer interrupt */
-  pspDisableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsDisableIntNumber(E_MACHINE_TIMER_CAUSE);
 
   /* Mark that ISR visited */
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_IN_MTIMER_ISR);
@@ -234,37 +234,37 @@ void demoSleepAndWakeupByMtimer(void)
   u64_t udTimeAfterSleep;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiPrevIntState);
+  pspMachineInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
 
   /* Register Machine timer interrupt handler */
-  pspRegisterInterruptHandler(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsRegisterIsr(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
 
   /* Enable Machine timer interrupt */
-  pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsEnableIntNumber(E_MACHINE_TIMER_CAUSE);
 
   /* Activate Machine timer */
-  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
+  pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
-  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeBeforeSleep = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Enable all Machine level interrupts */
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
 #ifdef D_EHX1_VER_1_0 /* 'haltie' feature is added to SweRV EHX1 from version 1.0 only */
   /* Sets core to Sleep (pmu/fw-halt) mode - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
-  pspPmcHalt(D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT);
+  pspMachinePowerMngCtrlHalt(D_DEMO_DO_NOT_ENABLE_INTERRUPTS_UPON_HALT);
 #else /* D_EHX1_VER_0_9 - does not contain 'haltie' feature */
   /* Halt the core */
-  pspPmcHalt();
+  pspMachinePowerMngCtrlHalt();
 #endif
 
   /* This line , and the following are executed only when core is not in 'Sleep' */
-  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeAfterSleep = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
 
@@ -299,26 +299,26 @@ void demoSleepHaltIeOption(void)
   g_uiTestWayPoints = 0;
 
   /* Disable all machine level interrupts (interrupts will be enabled using the 'halt-ie' option, upon 'Halted' initiation */
-  pspInterruptsDisable(&uiIntStatus);
+  pspMachineInterruptsDisable(&uiIntStatus);
 
   /* Register Machine timer interrupt handler */
-  pspRegisterInterruptHandler(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsRegisterIsr(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
 
   /* Enable Machine timer interrupt */
-  pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsEnableIntNumber(E_MACHINE_TIMER_CAUSE);
 
   /* Activate Machine timer */
-  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
+  pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_SLEEP_TIME));
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_SLEEP);
 
-  udTimeBeforeSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeBeforeSleep = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Sets core to Sleep (pmu/fw-halt) mode - do not activate the "interrupt-enable" atomically upon 'Halted' initiation */
-  pspPmcHalt(D_DEMO_ATOMICALLY_ENABLE_INTERRUPTS_UPON_HALT);
+  pspMachinePowerMngCtrlHalt(D_DEMO_ATOMICALLY_ENABLE_INTERRUPTS_UPON_HALT);
 
   /* This line , and the following are executed only when core is not in 'Sleep' */
-  udTimeAfterSleep = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeAfterSleep = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_SLEEP);
 
@@ -352,13 +352,13 @@ void demoStallAndResumeByCountdown(void)
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
-  udTimeBeforeStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeBeforeStall = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Pause core */
-  pspPmcStall(M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
+  pspMachinePowerMngCtrlStall(M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
 
   /* This line , and the following are executed only when core is not in 'Pause' */
-  udTimeAfterStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeAfterStall = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_STALL);
 
@@ -389,32 +389,32 @@ void demoStallAndResumeByMtimeInterrupt(void)
   u64_t udStallTime;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiPrevIntState);
+  pspMachineInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
 
   /* Register Machine timer interrupt handler */
-  pspRegisterInterruptHandler(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsRegisterIsr(demoMtimerIsrHandler, E_MACHINE_TIMER_CAUSE);
 
   /* Enable Machine timer interrupt */
-  pspEnableInterruptNumberMachineLevel(E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsEnableIntNumber(E_MACHINE_TIMER_CAUSE);
 
   /* Activate Machine timer */
-  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
+  pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_STALL_TIME));
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
-  udTimeBeforeStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeBeforeStall = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Enable all Machine level interrupts */
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
   /* Stall the core - for longer time than Machine timer duration */
-  pspPmcStall(M_DEMO_MSEC_TO_CYCLES(D_LONG_STALL_TIME));
+  pspMachinePowerMngCtrlStall(M_DEMO_MSEC_TO_CYCLES(D_LONG_STALL_TIME));
 
   /* This line , and the following are executed only when core is not in 'Stall' */
-  udTimeAfterStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeAfterStall = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_STALL);
 
@@ -450,13 +450,13 @@ void demoStallAndResumeByExternalInterrupt(void)
   u64_t udStallTime;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiPrevIntState);
+  pspMachineInterruptsDisable(&uiPrevIntState);
 
   /* Zero the test results variable */
   g_uiTestWayPoints = 0;
 
   /* Register external interrupt handler */
-  pspExternalInterruptRegisterISR(D_DEMO_IRQ, demoExternalInterruptIsr, 0);
+  pspMachineExternalInterruptRegisterISR(D_DEMO_IRQ, demoExternalInterruptIsr, 0);
 
   /* Rout SweRVolf FPGA timer to IRQ3 assertion - i.e. when the timer expires, IRQ3 external interrupt is asserted */
   bspRoutTimer(D_DEMO_TIMER_TO_IRQ);
@@ -468,20 +468,20 @@ void demoStallAndResumeByExternalInterrupt(void)
   demoSetupExternalInterrupts();
 
   /* Enable all machine level interrupts */
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_BEFORE_STALL);
 
-  udTimeBeforeStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeBeforeStall = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   /* Let the SweRVolf FPGA timer to start running */
   bspStartTimer();
 
   /* Pause core - for longer time than machine timer duration */
-  pspPmcStall(M_DEMO_MSEC_TO_CYCLES(D_LONG_STALL_TIME));
+  pspMachinePowerMngCtrlStall(M_DEMO_MSEC_TO_CYCLES(D_LONG_STALL_TIME));
 
   /* This line , and the following are executed only when core is not in 'Stall' */
-  udTimeAfterStall = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+  udTimeAfterStall = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
   g_uiTestWayPoints |= M_PSP_BIT_MASK(D_AFTER_STALL);
 
@@ -514,7 +514,7 @@ void demoStart(void)
   M_DEMO_START_PRINT();
 
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
   /* Run this demo only if target is Swerv. Cannot run on Whisper */
   if (D_PSP_TRUE == demoIsSwervBoard())

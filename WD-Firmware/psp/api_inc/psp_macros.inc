@@ -19,6 +19,7 @@
 
 .equ D_PSP_MIE, 8
 
+/* Macro for calling interrupt handler */
 .macro M_PSP_CALL_INT_HANDLER fptIntHandler
     /* load the address of provided fptIntHandler */
     la        a0, \fptIntHandler
@@ -130,13 +131,13 @@
     M_PSP_LOAD    sp, \spLocationInAppCB(sp)
 .endm
 
-/* disable machine interrupts after reading the current status */
-.macro M_PSP_DISABLE_MINTERRUPTS saveCurrentStatusToReg
+/* Macro for disable machine interrupts after reading the current status . Available in MACHINE mode only */
+.macro M_PSP_MACHINE_DISABLE_INTERRUPTS saveCurrentStatusToReg
     csrrci \saveCurrentStatusToReg, mstatus, D_PSP_MIE
 .endm
 
-/* restore machine interrupts status */
-.macro M_PSP_RESTORE_MINTERRUPTS restorStatusFromReg
+/* Macro for restore machine interrupts status . Available in MACHINE mode only */
+.macro M_PSP_MACHINE_RESTORE_INTERRUPTS restorStatusFromReg
     csrs mstatus, \restorStatusFromReg
 .endm
 

@@ -86,15 +86,15 @@ void demoSoftwareInterrupts(void)
   u32_t uiNumberOfSwInterrupts;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsStatus);
+  pspMachineInterruptsDisable(&uiInterruptsStatus);
 
   /* Register software ISR number 1 */
-  pspRegisterInterruptHandler(demoSoftwareIsr1, E_MACHINE_SOFTWARE_CAUSE);
+  pspMachineInterruptsRegisterIsr(demoSoftwareIsr1, E_MACHINE_SOFTWARE_CAUSE);
 
   /* Enable software interrupts */
-  pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_SW);
+  pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_SW);
   /* Enable interrupts*/
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
   /* Create a series of software interrupts */
   for(uiNumberOfSwInterrupts = 0; uiNumberOfSwInterrupts < D_DEMO_NUM_OF_SW_INTERRUPTS; uiNumberOfSwInterrupts++)
@@ -113,10 +113,10 @@ void demoSoftwareInterrupts(void)
   }
 
   /* Disable software interrupts */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_SW);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_SW);
 
   /* Register software ISR number 2 */
-  pspRegisterInterruptHandler(demoSoftwareIsr2, E_MACHINE_SOFTWARE_CAUSE);
+  pspMachineInterruptsRegisterIsr(demoSoftwareIsr2, E_MACHINE_SOFTWARE_CAUSE);
 
   /* Create a series of software interrupts */
   for(uiNumberOfSwInterrupts = 0; uiNumberOfSwInterrupts < D_DEMO_NUM_OF_SW_INTERRUPTS; uiNumberOfSwInterrupts++)
@@ -145,7 +145,7 @@ void demoStart(void)
   M_DEMO_START_PRINT();
 
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
   /* Run this demo only if target is Whisper. Cannot run on SweRV */
   if (D_PSP_FALSE == demoIsSwervBoard())

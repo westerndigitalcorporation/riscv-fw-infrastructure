@@ -125,11 +125,11 @@ void demoComrvRtosCreateTasks(void *pParam)
    comrvInit(&stComrvInitArgs);
 
    /* Disable the machine external & timer interrupts until setup is done. */
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+   pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
    /* Enable the Machine-External bit in MIE */
-   pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
 
    /* Create the queue used by the send-msg and receive-msg tasks. */
    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH,

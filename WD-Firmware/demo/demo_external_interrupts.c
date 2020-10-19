@@ -112,40 +112,40 @@ void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
   u32_t uiSourceId;
 
     /* Set Standard priority order */
-  pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
+  pspMachineExtInterruptSetPriorityOrder(D_PSP_EXT_INT_STANDARD_PRIORITY);
 
     /* Set interrupts threshold to minimal (== all interrupts should be served) */
-  pspExtInterruptsSetThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+  pspMachineExtInterruptsSetThreshold(M_PSP_MACHINE_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
   /* Set the nesting priority threshold to minimal (== all interrupts should be served) */
-  pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+  pspMachineExtInterruptsSetNestingPriorityThreshold(M_PSP_MACHINE_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
   /* Initialize all Interrupt-sources & Register ISR for all */
   for (uiSourceId = D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
   {
     /* Set Gateway Interrupt type (Level) */
-    pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
+    pspMachineExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_LEVEL_TRIG_TYPE);
 
     /* Set gateway Polarity (Active high) */
-    pspExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
+    pspMachineExtInterruptSetPolarity(uiSourceId, D_PSP_EXT_INT_ACTIVE_HIGH);
 
     /* Clear the gateway */
-    pspExtInterruptClearPendingInt(uiSourceId);
+    pspMachineExtInterruptClearPendingInt(uiSourceId);
 
     /* Priority-level is checked after each test so store it here as "expected results"*/
-    g_uiDemoPriorityLevelPerSourceId[uiSourceId] = M_PSP_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
+    g_uiDemoPriorityLevelPerSourceId[uiSourceId] = M_PSP_MACHINE_EXT_INT_PRIORITY_SET_TO_HIGHEST_VALUE;
     /* Set the priority level to highest to all interrupt sources */
-    pspExtInterruptSetPriority(uiSourceId, g_uiDemoPriorityLevelPerSourceId[uiSourceId]);
+    pspMachineExtInterruptSetPriority(uiSourceId, g_uiDemoPriorityLevelPerSourceId[uiSourceId]);
 
     /* Enable each one of the interrupts in the PIC */
-    pspExternalInterruptEnableNumber(uiSourceId);
+    pspMachineExternalInterruptEnableNumber(uiSourceId);
 
     /* Register ISRs to all interrupt sources (here we use same ISR to all of them) */
-    pspExternalInterruptRegisterISR(uiSourceId, pTestIsr, 0);
+    pspMachineExternalInterruptRegisterISR(uiSourceId, pTestIsr, 0);
   }
 
   /* Enable all interrupts in mstatus CSR */
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
   /* Enable external interrupts in mie CSR */
   M_PSP_SET_CSR(D_PSP_MIE_NUM, D_PSP_MIE_MEIE_MASK);
@@ -187,19 +187,19 @@ void demoVerifyExpectedTestResults(u32_t uiTestNumber, u32_t uiExpectedResultFir
 u08_t demoCheckInterruptStatusInISR(void)
 {
   /* Get the claim-id (== source-id) of the current ISR */
-  u08_t ucIntSourceId = pspExtInterruptGetClaimId();
+  u08_t ucIntSourceId = pspMachineExtInterruptGetClaimId();
 
   /* Indication of the ISR occurrence */
   g_uiDemoExtIntsPassFailResult[ucIntSourceId] |= M_PSP_BIT_MASK(D_DEMO_EXT_INT_ISR_JUMPED);
 
   /* Mark whether corresponding pending-bit is set or not */
-  if (D_PSP_ON == pspExtInterruptIsPending(ucIntSourceId))
+  if (D_PSP_ON == pspMachineExtInterruptIsPending(ucIntSourceId))
   {
     g_uiDemoExtIntsPassFailResult[ucIntSourceId] |= M_PSP_BIT_MASK(D_DEMO_EXT_INT_PENDING_BIT_SET);
   }
 
   /* Check correct priority-level (clidpri) field in meicidpl CSR */
-  if (pspExtInterruptGetPriority() ==  g_uiDemoPriorityLevelPerSourceId[ucIntSourceId])
+  if (pspMachineExtInterruptGetPriority() ==  g_uiDemoPriorityLevelPerSourceId[ucIntSourceId])
   {
     g_uiDemoExtIntsPassFailResult[ucIntSourceId] |= M_PSP_BIT_MASK(D_DEMO_EXT_INT_CORRECT_PRIORITY);
   }
@@ -246,7 +246,7 @@ void demoExtIntTest_6_ISR(void)
   ucIntSourceId = demoCheckInterruptStatusInISR();
 
   /* Stop the generation of the specific external interrupt */
-  pspExtInterruptClearPendingInt(ucIntSourceId);
+  pspMachineExtInterruptClearPendingInt(ucIntSourceId);
 }
 
 
@@ -301,7 +301,7 @@ void demoExtIntsTest2SpecificDisabled(void)
   demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
 
   /* Disable IRQ3 */
-  pspExternalInterruptDisableNumber(D_BSP_IRQ_3);
+  pspMachineExternalInterruptDisableNumber(D_BSP_IRQ_3);
 
   /* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
   bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -332,17 +332,17 @@ void demoExtIntsTest3PriorityStandardOrder(void)
   /* Part1: Set the priority of both IRQ3 and IRQ4 not higher than threshold. Expect no ISR to jump */
 
   /* Set interrupts threshold to 7 */
-  pspExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_7);
+  pspMachineExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_7);
 
   /* Set IRQ3 priority to 6 */
   g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_6;
   /* Priority-level is checked later so store it here as expected value */
-  pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+  pspMachineExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
   /* Set IRQ4 priority to 7 */
   g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_7;
   /* Priority-level is checked later so store it here as expected value */
-  pspExtInterruptSetPriority(D_BSP_IRQ_4, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4]);
+  pspMachineExtInterruptSetPriority(D_BSP_IRQ_4, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
   /* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
   bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -359,7 +359,7 @@ void demoExtIntsTest3PriorityStandardOrder(void)
   /* Set IRQ3 priority to 8 */
   g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_8;
   /* Priority-level is checked later so store it here as expected value */
-  pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+  pspMachineExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
   /* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
   bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -388,26 +388,26 @@ void demoExtIntsTest4PriorityReversedOrder(void)
   demoDefaultInitialization(demoExtIntTest_1_2_3_4_5_ISR);
 
   /* Set Reversed priority order */
-  pspExtInterruptSetPriorityOrder(D_PSP_EXT_INT_REVERSED_PRIORITY);
+  pspMachineExtInterruptSetPriorityOrder(D_PSP_EXT_INT_REVERSED_PRIORITY);
 
   /* Part1: Set the priority of both IRQ3 and IRQ4 not lower than threshold. Expect no ISR to jump */
 
   /* Set interrupts threshold to 5 */
-  pspExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_5);
+  pspMachineExtInterruptsSetThreshold(D_PSP_EXT_INT_THRESHOLD_5);
 
   /* As priority-order has been set to 'reversed', need to set again the nesting priority threshold to minimum (== all should be served)
    * - now it should be '15' */
-  pspExtInterruptsSetNestingPriorityThreshold(M_PSP_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
+  pspMachineExtInterruptsSetNestingPriorityThreshold(M_PSP_MACHINE_EXT_INT_THRESHOLD_UNMASK_ALL_VALUE);
 
   /* Set IRQ3 priority to 5 */
   g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_5;
   /* Priority-level is checked later so store it here as expected value */
-  pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+  pspMachineExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
   /* Set IRQ4 priority to 6 */
   g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4] = D_PSP_EXT_INT_PRIORITY_6;
   /* Priority-level is checked later so store it here as expected value */
-  pspExtInterruptSetPriority(D_BSP_IRQ_4, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4]);
+  pspMachineExtInterruptSetPriority(D_BSP_IRQ_4, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_4]);
 
   /* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
   bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -424,7 +424,7 @@ void demoExtIntsTest4PriorityReversedOrder(void)
   /* Set IRQ3 priority to 4 */
   g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3] = D_PSP_EXT_INT_PRIORITY_4;
   /* Priority-level is checked later so store it here as expected value */
-  pspExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
+  pspMachineExtInterruptSetPriority(D_BSP_IRQ_3, g_uiDemoPriorityLevelPerSourceId[D_BSP_IRQ_3]);
 
   /* Generate external interrupts 3 & 4 (with Active-High, Level trigger type) */
   bspGenerateExtInterrupt(D_BSP_IRQ_3, D_PSP_EXT_INT_ACTIVE_HIGH, D_PSP_EXT_INT_LEVEL_TRIG_TYPE );
@@ -504,7 +504,7 @@ void demoExtIntsTest6GatweayConfiguration(void)
   /* Set Gateway Interrupt type (Edge) */
   for (uiSourceId = D_BSP_FIRST_IRQ_NUM; uiSourceId <= D_BSP_LAST_IRQ_NUM; uiSourceId++)
   {
-    pspExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_EDGE_TRIG_TYPE);
+    pspMachineExtInterruptSetType(uiSourceId, D_PSP_EXT_INT_EDGE_TRIG_TYPE);
   }
 
   /* Generate external interrupts 3 & 4 (with Active-Low, Level trigger type) */
@@ -556,7 +556,7 @@ void demoStart(void)
   M_DEMO_START_PRINT();
 
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
   /* Run this demo only if target is Swerv. Cannot run on Whisper */
   if (D_PSP_TRUE == demoIsSwervBoard())

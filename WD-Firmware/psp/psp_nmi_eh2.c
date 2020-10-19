@@ -45,7 +45,7 @@
 /**
 * local prototypes
 */
-D_PSP_NO_RETURN void pspNmiDefaultHandler(void);          /* Default NMI handler */
+D_PSP_NO_RETURN void pspMachineNmiDefaultHandler(void);          /* Default NMI handler */
 
 /**
 * external prototypes
@@ -59,12 +59,12 @@ D_PSP_NO_RETURN void pspNmiDefaultHandler(void);          /* Default NMI handler
 * global variables
 */
 /* NMI handler pointers */
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiExtPinAssrtHandler            = pspNmiDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusLoadErrHandler            = pspNmiDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler           = pspNmiDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntEccErrHandler          = pspNmiDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntDccmAccessErrHandler   = pspNmiDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntNonDccmErrHandler      = pspNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiExtPinAssrtHandler            = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusLoadErrHandler            = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler           = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntEccErrHandler          = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntDccmAccessErrHandler   = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntNonDccmErrHandler      = pspMachineNmiDefaultHandler;
 
 /**
 * APIs
@@ -76,9 +76,12 @@ D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntNonDccmErrHandler      = pspN
  * @parameter - uiNmiVecAddress - address of NMI_VEC register
  * @parameter - fptrNmiSelector - address of NMI initial handler
  */
-D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector)
+D_PSP_TEXT_SECTION void pspMachineNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector)
 {
-    M_PSP_WRITE_REGISTER_32(uiNmiVecAddress, (u32_t)fptrNmiSelector);
+  /* Make sure this function is not called outside MACHINE mode */
+	M_PSP_ASSURE_MACHINE_MODE();
+
+  M_PSP_WRITE_REGISTER_32(uiNmiVecAddress, (u32_t)fptrNmiSelector);
 }
 
 /**
@@ -96,10 +99,13 @@ D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptr
 *
 * @return u32_t      - previously registered ISR. If NULL then registration is erroneous.
 */
-D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
+D_PSP_TEXT_SECTION pspNmiHandler_t pspMachineNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
 {
   pspNmiHandler_t fptrNmiFunc;
   u32_t uiHartNumber;
+
+  /* Make sure this function is not called outside MACHINE mode */
+  M_PSP_ASSURE_MACHINE_MODE();
 
   M_PSP_ASSERT((NULL != fptrNmiHandler) && ( (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) || (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
             || (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause) ) )
@@ -110,8 +116,8 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
        fptrNmiFunc = g_fptrNmiExtPinAssrtHandler;
        g_fptrNmiExtPinAssrtHandler = fptrNmiHandler;
        /* Delegate pin-asserted NMI handling to the current Hart (HW thread) */
-       uiHartNumber = M_PSP_GET_HART_ID();
-       pspNmiSetDelegation(uiHartNumber);
+       uiHartNumber = M_PSP_MACHINE_GET_HART_ID();
+       pspMachineNmiSetDelegation(uiHartNumber);
        break;
      case D_PSP_NMI_D_BUS_STORE_ERROR:
        fptrNmiFunc = g_fptrNmiDbusStoreErrHandler;
@@ -146,7 +152,7 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
 * @brief - Default NMI handler
 *
 */
-D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDefaultHandler(void)
+D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspMachineNmiDefaultHandler(void)
 {
   M_PSP_EBREAK();
   while(1);
@@ -156,7 +162,7 @@ D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDefaultHandler(void)
 * @brief - This function is called upon NMI and selects the appropriate handler
 *
 */
-D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
+D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspMachineNmiHandlerSelector(void)
 {
   u32_t uiNmiCode;
 
@@ -197,7 +203,7 @@ D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
  *
  * @parameter - Hart number to delegate the NMI to
  */
-D_PSP_TEXT_SECTION void pspNmiSetDelegation(u32_t uiHartNumber)
+D_PSP_TEXT_SECTION void pspMachineNmiSetDelegation(u32_t uiHartNumber)
 {
   /* Assert on Hart number */
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
@@ -218,7 +224,7 @@ D_PSP_TEXT_SECTION void pspNmiSetDelegation(u32_t uiHartNumber)
  *
  * @parameter - Hart number to clear NMI delegation from
  */
-D_PSP_TEXT_SECTION void pspNmiClearDelegation(u32_t uiHartNumber)
+D_PSP_TEXT_SECTION void pspMachineNmiClearDelegation(u32_t uiHartNumber)
 {
   /* Assert on Hart number */
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
@@ -239,7 +245,7 @@ D_PSP_TEXT_SECTION void pspNmiClearDelegation(u32_t uiHartNumber)
  * @parameter - Hart number
  * @return    - 0/1 to indicate whether the NMI handling is delegated to the given hart-number or not
  */
-D_PSP_TEXT_SECTION u32_t pspIsNmiDelegatedToHart(u32_t uiHartNumber)
+D_PSP_TEXT_SECTION u32_t pspMachineNmiIsDelegatedToHart(u32_t uiHartNumber)
 {
   u32_t uiIsDelegated = 0;
 

@@ -808,10 +808,10 @@ E_TEST_ERROR ctiOvlTestThreadSafe(S_FW_CB_PTR pCtiFrameWorkCB)
 {
 #ifdef D_COMRV_RTOS_SUPPORT
    /* register software interrupt handler */
-   pspRegisterInterruptHandler(ctiSwiIsr, E_MACHINE_SOFTWARE_CAUSE);
+   pspMachineInterruptsRegisterIsr(ctiSwiIsr, E_MACHINE_SOFTWARE_CAUSE);
 
    /* enable sw int */
-   pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_SW);
+   pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_SW);
 
    /* update sync point */
    pCtiFrameWorkCB->uiTestSyncPoint = D_CTI_TASK_SYNC_BEFORE_ENTER_CRITICAL_SEC;

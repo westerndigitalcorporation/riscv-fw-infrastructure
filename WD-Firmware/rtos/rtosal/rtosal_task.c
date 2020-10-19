@@ -380,17 +380,17 @@ RTOSAL_SECTION u32_t rtosalTaskWaitAbort(rtosalTask_t* pRtosalTaskCb)
 RTOSAL_SECTION void rtosalStart(rtosalApplicationInit_t fptrInit)
 {
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&rtosal_vect_table);
+  pspMachineInterruptsSetVecTableAddress(&rtosal_vect_table);
 
 #ifdef D_USE_FREERTOS
   /* Initialize the timer-tick handler function pointer to NULL */
   fptrTimerTickHandler = NULL;
 
   /* register E_CALL exception handler */
-  pspRegisterExceptionHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
+  pspMachineInterruptsRegisterExcpHandler(rtosalHandleEcall, E_EXC_ENVIRONMENT_CALL_FROM_MMODE);
 
   /* register timer interrupt handler */
-  pspRegisterInterruptHandler(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsRegisterIsr(rtosalTimerIntHandler, E_MACHINE_TIMER_CAUSE);
 
   fptrInit(NULL);
   vTaskStartScheduler();
