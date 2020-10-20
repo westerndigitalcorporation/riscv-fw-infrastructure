@@ -65,11 +65,11 @@ D_PSP_TEXT_SECTION void pspMachinePowerMngCtrlHalt(u32_t uiEnableInterrupts)
 {
   if (D_PSP_INTERRUPTS_DISABLE_IN_HALT == uiEnableInterrupts)
   {
-	  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_MPMC_HALT_MASK); /* Initiate 'Halted' mode. Don't enable interrupts upon initiation */
+    M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, D_PSP_MPMC_HALT_MASK); /* Initiate 'Halted' mode. Don't enable interrupts upon initiation */
   }
   else
   {
-	  M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, (D_PSP_MPMC_HALT_MASK | D_PSP_MPMC_HALTIE_MASK)); /* Initiate 'Halted' mode. Atomically enable interrupts upon initiation */
+    M_PSP_WRITE_CSR(D_PSP_MPMC_NUM, (D_PSP_MPMC_HALT_MASK | D_PSP_MPMC_HALTIE_MASK)); /* Initiate 'Halted' mode. Atomically enable interrupts upon initiation */
   }
 
 }

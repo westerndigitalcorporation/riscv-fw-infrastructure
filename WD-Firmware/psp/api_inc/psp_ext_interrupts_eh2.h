@@ -71,7 +71,7 @@ void pspMachineExternalInterruptDelegateToHart(u32_t uiExtIntNumber, u32_t uiHar
 * @param uiExtInterrupt = Number of external interrupt
 * @return = pending (1) or not (0)
 */
-u32_t pspMachineExtInterruptIsPendingOnHart(u32_t uiExtInterrupt);
+u32_t pspMachineExternalInterruptIsPendingOnHart(u32_t uiExtInterrupt);
 
 
 #endif /* __PSP_EXT_INTERRUPTS_EH2_H__ */

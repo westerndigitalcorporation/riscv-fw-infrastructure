@@ -78,7 +78,7 @@ D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiFastIntNonDccmErrHandler      = pspM
 D_PSP_TEXT_SECTION void pspMachineNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector)
 {
   /* Make sure this function is not called outside MACHINE mode */
-	M_PSP_ASSURE_MACHINE_MODE();
+  M_PSP_ASSURE_MACHINE_MODE();
 
   M_PSP_WRITE_REGISTER_32(uiNmiVecAddress, (u32_t)fptrNmiSelector);
 }

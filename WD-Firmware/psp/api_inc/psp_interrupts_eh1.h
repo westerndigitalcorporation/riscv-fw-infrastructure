@@ -80,7 +80,7 @@ typedef enum pspExceptionCause
 } ePspExceptionCause_t;
 
 /* interrupt handler definition */
-typedef void (*pspInterruptHandler_t)(void);
+typedef void (*fptrPspInterruptHandler_t)(void);
 
 /**
 * definitions
@@ -129,7 +129,7 @@ typedef void (*pspInterruptHandler_t)(void);
 * @parameter - interruptCause           - interrupt source
 * @return    - u32_t                    - previously registered ISR
 */
-pspInterruptHandler_t pspMachineInterruptsRegisterIsr(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
+fptrPspInterruptHandler_t pspMachineInterruptsRegisterIsr(fptrPspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 /**
 * @brief - The function installs an exception handler per exception cause
@@ -138,7 +138,7 @@ pspInterruptHandler_t pspMachineInterruptsRegisterIsr(pspInterruptHandler_t fptr
 * @parameter -  exceptionCause           - exception cause
 * @return    -  u32_t                    - previously registered ISR
 */
-pspInterruptHandler_t pspMachineInterruptsRegisterExcpHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
+fptrPspInterruptHandler_t pspMachineInterruptsRegisterExcpHandler(fptrPspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
 /**
 * @brief - Set vector-table address at mtvec CSR
@@ -264,6 +264,6 @@ void pspUserInterruptsEnableIntNumber(u32_t uiInterruptNumber);
 * @parameter -  exceptionCause           - exception cause
 * @return    -  fptrInterruptHandler     - function pointer to the exception handler
 */
-pspInterruptHandler_t pspInterruptsGetExceptionHandler(u32_t uiExceptionCause);
+fptrPspInterruptHandler_t pspInterruptsGetExceptionHandler(u32_t uiExceptionCause);
 
 #endif /* __PSP_INTERRUPTS_EH1_H__ */

@@ -129,7 +129,7 @@ D_PSP_TEXT_SECTION void pspMachineTimerCounterSetupAndRun(u32_t uiTimer, u64_t u
   u32_t uiNow, uiThen;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) ||
-		       (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
+           (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
   switch (uiTimer)
   {
@@ -176,7 +176,7 @@ D_PSP_TEXT_SECTION u64_t pspMachineTimerCounterGet(u32_t uiTimer)
   u64_t udCounterTemp = 0;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) ||
-		       (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
+           (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
   switch (uiTimer)
   {
@@ -190,9 +190,9 @@ D_PSP_TEXT_SECTION u64_t pspMachineTimerCounterGet(u32_t uiTimer)
       udCounter = (u64_t)M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
       break;
     case D_PSP_INTERNAL_64BIT_TIMER:
-	  udCounterTemp = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
-	  udCounter = udCounterTemp << D_PSP_SHIFT_32;
-	  udCounter |= M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
+    udCounterTemp = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
+    udCounter = udCounterTemp << D_PSP_SHIFT_32;
+    udCounter |= M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
       break;
     default:
       break;
@@ -215,7 +215,7 @@ D_PSP_TEXT_SECTION u64_t pspMachineTimerCompareCounterGet(u32_t uiTimer)
   u64_t udCounterCompareTemp = 0;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) ||
-		       (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
+           (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
   switch (uiTimer)
   {
@@ -340,8 +340,8 @@ D_PSP_TEXT_SECTION void pspMachineTimerDisableCountInStallMode(u32_t uiTimer)
       M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
       break;
     case D_PSP_INTERNAL_64BIT_TIMER:
-  	    M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
-  	    M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+        M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+        M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
       break;
     default:
       break;

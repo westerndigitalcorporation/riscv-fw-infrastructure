@@ -107,7 +107,7 @@ void demoInitializeTestResults(void)
  *
  * @param - pIsr - pointer of ISR to register for this test
  */
-void demoDefaultInitialization(pspInterruptHandler_t pTestIsr)
+void demoDefaultInitialization(fptrPspInterruptHandler_t pTestIsr)
 {
   u32_t uiSourceId;
 

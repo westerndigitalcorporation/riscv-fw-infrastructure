@@ -25,10 +25,10 @@
 
 //[OS]: this is currently obsolete
 //Memory map SweRV EH1 (Arup)
-//[OS] #define EXT_SRAM_BASE_ADDRES 	0x00000000
-//[OS] #define ICCM_BASE_ADDRESS		0xEE000000
-//[OS] #define DCCM_BASE_ADDRESS		0xF0080000
-//[OS] #define UART_BASE_ADDRESS		0x44A00000
+//[OS] #define EXT_SRAM_BASE_ADDRES       0x00000000
+//[OS] #define ICCM_BASE_ADDRESS            0xEE000000
+//[OS] #define DCCM_BASE_ADDRESS            0xF0080000
+//[OS] #define UART_BASE_ADDRESS            0x44A00000
 
 //Memory map SweRV EH1 (SweRVWolf - Olof)
 #define D_UART_BASE_ADDRESS     0x80002000

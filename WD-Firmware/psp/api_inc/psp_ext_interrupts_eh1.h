@@ -146,7 +146,7 @@ void pspMachineExternalInterruptSetVectorTableAddress(void* pExtIntVectTable);
 *        pParameter = NOT IN USE for baremetal implementation
 * @return pOldIsr = pointer to the previously registered ISR (Null in case of a failure)
 */
-pspInterruptHandler_t pspMachineExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter);
+fptrPspInterruptHandler_t pspMachineExternalInterruptRegisterISR(u32_t uiVectorNumber, fptrPspInterruptHandler_t pIsr, void* pParameter);
 
 
 /*

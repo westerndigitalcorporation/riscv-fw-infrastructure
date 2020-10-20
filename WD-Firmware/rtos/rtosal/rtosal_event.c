@@ -254,11 +254,11 @@ RTOSAL_SECTION u32_t rtosalEventGroupGet(rtosalEventGroup_t* pRtosalEventGroupCb
          xEventGroupWaitBits() returns */
       if (uiRetrieveOption == D_RTOSAL_AND_CLEAR || uiRetrieveOption == D_RTOSAL_OR_CLEAR)
       {
-	      xClearOnExit = pdTRUE;
+              xClearOnExit = pdTRUE;
       }
       else
       {
-	      xClearOnExit = pdFALSE;
+              xClearOnExit = pdFALSE;
       }
       /* determine if to wait for all the event bits */
       if (uiRetrieveOption == D_RTOSAL_AND_CLEAR || uiRetrieveOption == D_RTOSAL_AND)

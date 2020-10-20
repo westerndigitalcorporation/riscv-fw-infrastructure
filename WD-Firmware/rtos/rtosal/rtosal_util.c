@@ -87,7 +87,7 @@ rtosalStackType_t uTimerTaskStackBuffer[D_TIMER_TASK_SIZE];
 */
 RTOSAL_SECTION void rtosalContextSwitchIndicationSet(void)
 {
-	g_rtosalContextSwitch = 1;
+        g_rtosalContextSwitch = 1;
 }
 
 /**
@@ -99,7 +99,7 @@ RTOSAL_SECTION void rtosalContextSwitchIndicationSet(void)
 */
 RTOSAL_SECTION void rtosalContextSwitchIndicationClear(void)
 {
-	g_rtosalContextSwitch = 0;
+        g_rtosalContextSwitch = 0;
 }
 
 /**
@@ -127,7 +127,7 @@ RTOSAL_SECTION void rtosalTick(void)
 #ifdef D_USE_FREERTOS
    if (xTaskIncrementTick() == D_PSP_TRUE)
    {
-	   vTaskSwitchContext();
+           vTaskSwitchContext();
    }
 #elif D_USE_THREADX
    #error "Add THREADX appropriate definitions"
@@ -183,7 +183,7 @@ void vApplicationMallocFailedHook( void )
     internally by FreeRTOS API functions that create tasks, queues, software
     timers, and semaphores.  The size of the FreeRTOS heap is set by the
     configTOTAL_HEAP_SIZE configuration constant in FreeRTOSConfig.h. */
-	demoOutputMsg("malloc failed\n", 14);
+        demoOutputMsg("malloc failed\n", 14);
     for( ;; );
 }
 
@@ -217,7 +217,7 @@ void vApplicationStackOverflowHook(void* xTask, signed char *pcTaskName)
  */
 void vApplicationIdleHook( void )
 {
-	/*demoOutputMsg("Idle Task Hook\n", 15);*/
+        /*demoOutputMsg("Idle Task Hook\n", 15);*/
 }
 
 /**
@@ -227,9 +227,9 @@ void vApplicationIdleHook( void )
 //extern void rtosalContextSwitchIndicationClear(void); /* Temporarily here! */
 void vApplicationTickHook( void )
 {
-	if (NULL != fptrTimerTickHandler)
-	{
-		fptrTimerTickHandler();
-	}
+        if (NULL != fptrTimerTickHandler)
+        {
+                fptrTimerTickHandler();
+        }
 }
 #endif /* D_USE_FREERTOS */

@@ -74,7 +74,7 @@
 */
 
 /* External interrupt handlers Global Table */
-D_PSP_DATA_SECTION D_PSP_ALIGNED(1024) pspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
+D_PSP_DATA_SECTION D_PSP_ALIGNED(1024) fptrPspInterruptHandler_t G_Ext_Interrupt_Handlers[PSP_PIC_NUM_OF_EXT_INTERRUPTS];
 
 
 /**
@@ -108,10 +108,10 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptSetVectorTableAddress(void* p
 *        pParameter = NOT IN USE for baremetal implementation
 * @return pOldIsr = pointer to the previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspMachineExternalInterruptRegisterISR(u32_t uiVectorNumber, pspInterruptHandler_t pIsr, void* pParameter)
+fptrPspInterruptHandler_t pspMachineExternalInterruptRegisterISR(u32_t uiVectorNumber, fptrPspInterruptHandler_t pIsr, void* pParameter)
 {
    u32_t uiInterruptsState;
-   pspInterruptHandler_t fptrPrevIsr = NULL;
+   fptrPspInterruptHandler_t fptrPrevIsr = NULL;
 
    /* Assert if uiVectorNumber is beyond first or last interrupts-in-use */
    M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiVectorNumber)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiVectorNumber))
