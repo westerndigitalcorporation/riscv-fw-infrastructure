@@ -67,7 +67,7 @@ volatile u32_t g_uiReturnAddress;    /* Store the RA register contents */
  *
  *  Flow of the test:
  *  1.  Store RA register in a global parameter
- *  2.  Set address of pspNmiHandlerSelector in nmi_vec
+ *  2.  Set address of pspMachineNmiHandlerSelector in nmi_vec
  *  3.  Register NMI handler for External-Pin-Assertion NMI
  *  4.  Set the timer to generate External-Pin-Assertion NMI upon expiration
  *  5.  Set 0.5 second duration in the timer
@@ -94,10 +94,10 @@ void demoStart(void)
     asm volatile ("mv %0, ra" : "=r" (g_uiReturnAddress)  : );
 
     /* Register the initial NMI handler in nmi_vec register */
-    pspNmiSetVec(D_NMI_VEC_ADDRESSS, pspNmiHandlerSelector);
+    pspMachineNmiSetVec(D_NMI_VEC_ADDRESSS, pspMachineNmiHandlerSelector);
 
     /* Register External-Pin-Asserted NMI handler function */
-    pspNmiRegisterHandler(demoNmiPinAssertionHandler, D_PSP_NMI_EXT_PIN_ASSERTION);
+    pspMachineNmiRegisterHandler(demoNmiPinAssertionHandler, D_PSP_NMI_EXT_PIN_ASSERTION);
 
     /* Rout timer to NMI pin assertion - i.e. when the timer expires, an NMI will be asserted */
     bspRoutTimer(E_TIMER_TO_NMI);

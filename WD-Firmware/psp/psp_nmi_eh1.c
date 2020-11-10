@@ -49,9 +49,7 @@
 /**
 * local prototypes
 */
-D_PSP_NO_RETURN void pspNmiPinAssertionDefaultHandler(void);    /* Default handler for pin-asserted NMI */
-D_PSP_NO_RETURN void pspNmiDbusLoadErrorDefaultHandler(void);   /* Default handler for D-bus load error NMI */
-D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void);  /* Default handler for D-bus store error NMI */
+D_PSP_NO_RETURN void pspMachineNmiDefaultHandler(void);          /* Default NMI handler */
 
 /**
 * external prototypes
@@ -61,9 +59,9 @@ D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void);  /* Default handl
 * global variables
 */
 /* NMI handler pointers */
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiExtPinAssrtHandler    = pspNmiPinAssertionDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusLoadErrHandler    = pspNmiDbusLoadErrorDefaultHandler;
-D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler   = pspNmiDbusStoreErrorDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiExtPinAssrtHandler    = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusLoadErrHandler    = pspMachineNmiDefaultHandler;
+D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler   = pspMachineNmiDefaultHandler;
 
 /**
 * functions
@@ -75,9 +73,12 @@ D_PSP_DATA_SECTION pspNmiHandler_t g_fptrNmiDbusStoreErrHandler   = pspNmiDbusSt
  * @parameter - uiNmiVecAddress - address of NMI_VEC register
  * @parameter - fptrNmiSelector - address of NMI initial handler
  */
-D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector)
+D_PSP_TEXT_SECTION void pspMachineNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector)
 {
-    M_PSP_WRITE_REGISTER_32(uiNmiVecAddress, (u32_t)fptrNmiSelector);
+  /* Make sure this function is not called outside MACHINE mode */
+  M_PSP_ASSURE_MACHINE_MODE();
+
+  M_PSP_WRITE_REGISTER_32(uiNmiVecAddress, (u32_t)fptrNmiSelector);
 }
 
 /**
@@ -92,9 +93,12 @@ D_PSP_TEXT_SECTION void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptr
 *
 * @return u32_t      - previously registered ISR. If NULL then registration is erroneous.
 */
-D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
+D_PSP_TEXT_SECTION pspNmiHandler_t pspMachineNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause)
 {
   pspNmiHandler_t fptrNmiFunc;
+
+  /* Make sure this function is not called outside MACHINE mode */
+  M_PSP_ASSURE_MACHINE_MODE();
 
   M_PSP_ASSERT((NULL != fptrNmiHandler) && ( (D_PSP_NMI_EXT_PIN_ASSERTION == uiNmiCause) || (D_PSP_NMI_D_BUS_STORE_ERROR == uiNmiCause)
             || (D_PSP_NMI_D_BUS_LOAD_ERROR == uiNmiCause) ) )
@@ -121,31 +125,12 @@ D_PSP_TEXT_SECTION pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmi
      return fptrNmiFunc;
 
 }
-/**
-* @brief - Default handler for pin assertion NMI
-*
-*/
-D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiPinAssertionDefaultHandler(void)
-{
-  M_PSP_EBREAK();
-  while(1);
-}
 
 /**
-* @brief - Default handler for D-Bus load error NMI
+* @brief - Default NMI handler
 *
 */
-D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusLoadErrorDefaultHandler(void)
-{
-  M_PSP_EBREAK();
-  while(1);
-}
-
-/**
-* @brief - Default handler for D-Bus store error NMI
-*
-*/
-D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void)
+D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspMachineNmiDefaultHandler(void)
 {
   M_PSP_EBREAK();
   while(1);
@@ -155,7 +140,7 @@ D_PSP_TEXT_SECTION D_PSP_NO_RETURN void pspNmiDbusStoreErrorDefaultHandler(void)
 * @brief - This function is called upon NMI and selects the appropriate handler
 *
 */
-D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspNmiHandlerSelector(void)
+D_PSP_NO_RETURN D_PSP_TEXT_SECTION  void pspMachineNmiHandlerSelector(void)
 {
   u32_t uiNmiCode;
 

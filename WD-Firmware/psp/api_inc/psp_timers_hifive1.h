@@ -64,7 +64,7 @@
 * @parameter - udPeriodCycles  - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles);
+void pspMachineTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles);
 
 /**
 * @brief Get Timer counter value
@@ -74,7 +74,7 @@ void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles);
 * @return u64_t      - Timer counter value
 *
 ***************************************************************************************************/
-u64_t pspTimerCounterGet(u32_t uiTimer);
+u64_t pspMachineTimerCounterGet(u32_t uiTimer);
 
 /**
 * @brief Get Time compare counter value
@@ -84,6 +84,6 @@ u64_t pspTimerCounterGet(u32_t uiTimer);
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-u64_t pspTimeCompareCounterGet(u32_t uiTimer);
+u64_t pspMachineTimerCompareCounterGet(u32_t uiTimer);
 
 #endif /* __PSP_TIMERS_HIFIVE1_H__ */

@@ -178,7 +178,7 @@ void demoRtosalCreateTasks(void *pParameters)
   u32_t uiResult;
 
   /* Disable the timer interrupts until setup is done. */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   /* Create the queue used by the send-msg and receive-msg tasks. */
   uiResult = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH, sizeof(u32_t), NULL);

@@ -43,7 +43,6 @@
 #define D_PSP_MHARTID_NUM     0xF14
 
 /* Machine Trap setup registers */
-
 #define D_PSP_MIDELEG_NUM     0x301
 #define D_PSP_MEDELEG_NUM     0x302
 
@@ -275,5 +274,78 @@
 #define D_PSP_MCAUSE_LD_PAGE_FLT_EXC_MASK        0x00000013
 #define D_PSP_MCAUSE_ST_PAGE_FLT_EXC_MASK        0x00000015
 
+/* User mode CSRs */
+#define D_PSP_USTATUS_NUM         0x000
+#define D_PSP_UIE_NUM             0x004
+#define D_PSP_UTVEC_NUM           0x005
+#define D_PSP_USCRATCH_NUM        0x040
+#define D_PSP_UEPC_NUM            0x041
+#define D_PSP_UCAUSE_NUM          0x042
+#define D_PSP_UTVAL_NUM           0x043
+#define D_PSP_UIP_NUM             0x044
+#define D_PSP_CYCLE_NUM           0xC00
+#define D_PSP_TIME_NUM            0xC01
+#define D_PSP_INSTRET_NUM         0xC02
+#define D_PSP_HPMCOUNTER3_NUM     0xC03
+#define D_PSP_HPMCOUNTER4_NUM     0xC04
+#define D_PSP_HPMCOUNTER5_NUM     0xC05
+#define D_PSP_HPMCOUNTER6_NUM     0xC06
+#define D_PSP_HPMCOUNTER7_NUM     0xC07
+#define D_PSP_HPMCOUNTER8_NUM     0xC08
+#define D_PSP_HPMCOUNTER9_NUM     0xC09
+#define D_PSP_HPMCOUNTER10_NUM    0xC0A
+#define D_PSP_HPMCOUNTER12_NUM    0xC0B
+#define D_PSP_HPMCOUNTER13_NUM    0xC0C
+#define D_PSP_HPMCOUNTER14_NUM    0xC0D
+#define D_PSP_HPMCOUNTER15_NUM    0xC0E
+#define D_PSP_HPMCOUNTER16_NUM    0xC0F
+#define D_PSP_HPMCOUNTER17_NUM    0xC10
+#define D_PSP_HPMCOUNTER18_NUM    0xC11
+#define D_PSP_HPMCOUNTER19_NUM    0xC12
+#define D_PSP_HPMCOUNTER20_NUM    0xC13
+#define D_PSP_HPMCOUNTER21_NUM    0xC14
+#define D_PSP_HPMCOUNTER22_NUM    0xC15
+#define D_PSP_HPMCOUNTER23_NUM    0xC16
+#define D_PSP_HPMCOUNTER24_NUM    0xC17
+#define D_PSP_HPMCOUNTER25_NUM    0xC18
+#define D_PSP_HPMCOUNTER26_NUM    0xC19
+#define D_PSP_HPMCOUNTER27_NUM    0xC20
+#define D_PSP_HPMCOUNTER28_NUM    0xC21
+#define D_PSP_HPMCOUNTER29_NUM    0xC22
+#define D_PSP_HPMCOUNTER30_NUM    0xC23
+#define D_PSP_HPMCOUNTER31_NUM    0xC24
+#if __riscv_xlen == 32
+    #define D_PSP_CYCLEH_NUM           0xC80
+    #define D_PSP_INSTRETH_NUM         0xC82
+    #define D_PSP_HPMCOUNTER3H_NUM     0xC83
+    #define D_PSP_HPMCOUNTER4H_NUM     0xC84
+    #define D_PSP_HPMCOUNTER5H_NUM     0xC85
+    #define D_PSP_HPMCOUNTER6H_NUM     0xC86
+    #define D_PSP_HPMCOUNTER7H_NUM     0xC87
+    #define D_PSP_HPMCOUNTER8H_NUM     0xC88
+    #define D_PSP_HPMCOUNTER9H_NUM     0xC89
+    #define D_PSP_HPMCOUNTER10H_NUM    0xC8A
+    #define D_PSP_HPMCOUNTER11H_NUM    0xC8B
+    #define D_PSP_HPMCOUNTER12H_NUM    0xC8C
+    #define D_PSP_HPMCOUNTER13H_NUM    0xC8D
+    #define D_PSP_HPMCOUNTER14H_NUM    0xC8E
+    #define D_PSP_HPMCOUNTER15H_NUM    0xC8F
+    #define D_PSP_HPMCOUNTER16H_NUM    0xC90
+    #define D_PSP_HPMCOUNTER17H_NUM    0xC91
+    #define D_PSP_HPMCOUNTER18H_NUM    0xC92
+    #define D_PSP_HPMCOUNTER19H_NUM    0xC93
+    #define D_PSP_HPMCOUNTER20H_NUM    0xC94
+    #define D_PSP_HPMCOUNTER21H_NUM    0xC95
+    #define D_PSP_HPMCOUNTER22H_NUM    0xC96
+    #define D_PSP_HPMCOUNTER23H_NUM    0xC97
+    #define D_PSP_HPMCOUNTER24H_NUM    0xC98
+    #define D_PSP_HPMCOUNTER25H_NUM    0xC99
+    #define D_PSP_HPMCOUNTER26H_NUM    0xC9A
+    #define D_PSP_HPMCOUNTER27H_NUM    0xC9B
+    #define D_PSP_HPMCOUNTER28H_NUM    0xC9C
+    #define D_PSP_HPMCOUNTER29H_NUM    0xC9D
+    #define D_PSP_HPMCOUNTER30H_NUM    0xC9E
+    #define D_PSP_HPMCOUNTER31H_NUM    0xC9F
+#endif /* __riscv_xlen == 32 */
 
 #endif /* __PSP_CSRS_H__ */

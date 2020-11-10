@@ -62,7 +62,7 @@
 * @parameter - external interrupt number
 * @parameter - Hart number
 */
-void pspExternalInterruptDelegateToHart(u32_t uiExtIntNumber, u32_t uiHartNumber);
+void pspMachineExternalInterruptDelegateToHart(u32_t uiExtIntNumber, u32_t uiHartNumber);
 
 /*
 * This function checks whether a given external interrupt is pending or not per the current Hart (HW thread)
@@ -71,7 +71,7 @@ void pspExternalInterruptDelegateToHart(u32_t uiExtIntNumber, u32_t uiHartNumber
 * @param uiExtInterrupt = Number of external interrupt
 * @return = pending (1) or not (0)
 */
-u32_t pspExtInterruptIsPendingOnHart(u32_t uiExtInterrupt);
+u32_t pspMachineExternalInterruptIsPendingOnHart(u32_t uiExtInterrupt);
 
 
 #endif /* __PSP_EXT_INTERRUPTS_EH2_H__ */

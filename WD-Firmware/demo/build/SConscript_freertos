@@ -31,6 +31,7 @@ listCFiles=[
    (os.path.join(rtos_base, 'queue.c'), os.path.join(strOutDir, 'queue.o')),
    (os.path.join(rtos_base, 'tasks.c'), os.path.join(strOutDir, 'tasks.o')),
    (os.path.join(rtos_base, 'timers.c'), os.path.join(strOutDir, 'timers.o')),
+   (os.path.join(rtos_base, 'event_groups.c'), os.path.join(strOutDir, 'event_groups.o')),
    #[os.path.join(rtos_base, 'portable', 'MemMang', 'heap_4.c'), os.path.join(strOutDir, 'heap_4.o')],
 ]
 

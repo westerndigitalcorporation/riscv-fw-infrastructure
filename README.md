@@ -159,9 +159,12 @@ We provide several platforms to work with, please follow the instructions for th
     - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
     	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit*** to uSD device (locate it at the uSD root)
     	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
-		- Set the following jumpers:  JP1 - USB/SD pins.   JP2 - connect the 2 pins on 'SD' side
-
+		- Set the following jumpers:  `JP1 - USB/SD pins.   JP2 - connect the 2 pins on 'SD' side`
+		- Slide switch `sw0 to OFF` and `all others to ON`
+        
         ![](prog_mode.png)
+        
+        ![](nexys-a7.png)
 		- At power-on the FPGA bit file is loaded to the FPGA. LED 'Busy' should be ORANGE while flushing is done
 		- Wait for ORANGE led to be off, once off the board is ready to be used
 

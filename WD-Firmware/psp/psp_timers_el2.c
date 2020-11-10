@@ -60,7 +60,7 @@
 * @parameter - udPeriodCycles - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerSetupMachineTimer(u64_t udPeriodCycles)
+D_PSP_TEXT_SECTION void pspMachineTimerSetupTimerCounter(u64_t udPeriodCycles)
 {
   #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
     #error "D_MTIME_ADDRESS or D_MTIMECMP_ADDRESS is not defined"
@@ -85,7 +85,7 @@ D_PSP_TEXT_SECTION void pspTimerSetupMachineTimer(u64_t udPeriodCycles)
 * @parameter - udPeriodCycles - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerSetup64bitTimer(u64_t udPeriodCycles)
+D_PSP_TEXT_SECTION void pspMachineTimerSetup64bitTimer(u64_t udPeriodCycles)
 {
   u32_t uiNow, uiThen;
 
@@ -124,17 +124,17 @@ D_PSP_TEXT_SECTION void pspTimerSetup64bitTimer(u64_t udPeriodCycles)
 * @parameter - uiPeriodCycles   - defines the timer's period in cycles
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles)
+D_PSP_TEXT_SECTION void pspMachineTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles)
 {
   u32_t uiNow, uiThen;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) ||
-		       (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
+           (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
   switch (uiTimer)
   {
     case D_PSP_MACHINE_TIMER:
-      pspTimerSetupMachineTimer(udPeriodCycles);
+      pspMachineTimerSetupTimerCounter(udPeriodCycles);
       break;
     case D_PSP_INTERNAL_TIMER0:
       /* Read Timer0 counter */
@@ -155,7 +155,7 @@ D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriod
       M_PSP_SET_CSR(D_PSP_MITCTL1_NUM, D_PSP_MITCTL_EN_MASK);
       break;
     case D_PSP_INTERNAL_64BIT_TIMER:
-      pspTimerSetup64bitTimer(udPeriodCycles);
+      pspMachineTimerSetup64bitTimer(udPeriodCycles);
       break;
     default:
       break;
@@ -170,13 +170,13 @@ D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriod
 * @return u64_t      - Timer counter value
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
+D_PSP_TEXT_SECTION u64_t pspMachineTimerCounterGet(u32_t uiTimer)
 {
   u64_t udCounter = 0;
   u64_t udCounterTemp = 0;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) ||
-		       (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
+           (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
   switch (uiTimer)
   {
@@ -190,9 +190,9 @@ D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
       udCounter = (u64_t)M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
       break;
     case D_PSP_INTERNAL_64BIT_TIMER:
-	  udCounterTemp = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
-	  udCounter = udCounterTemp << D_PSP_SHIFT_32;
-	  udCounter |= M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
+    udCounterTemp = M_PSP_READ_CSR(D_PSP_MITCNT1_NUM);
+    udCounter = udCounterTemp << D_PSP_SHIFT_32;
+    udCounter |= M_PSP_READ_CSR(D_PSP_MITCNT0_NUM);
       break;
     default:
       break;
@@ -209,13 +209,13 @@ D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION u64_t pspTimeCompareCounterGet(u32_t uiTimer)
+D_PSP_TEXT_SECTION u64_t pspMachineTimerCompareCounterGet(u32_t uiTimer)
 {
   u64_t udCounterCompare = 0;
   u64_t udCounterCompareTemp = 0;
 
   M_PSP_ASSERT((D_PSP_MACHINE_TIMER == uiTimer) || (D_PSP_INTERNAL_TIMER0 == uiTimer) ||
-		       (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
+           (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
   switch (uiTimer)
   {
@@ -246,7 +246,7 @@ D_PSP_TEXT_SECTION u64_t pspTimeCompareCounterGet(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerEnableCountInSleepMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspMachineTimerEnableCountInSleepMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
@@ -273,7 +273,7 @@ D_PSP_TEXT_SECTION void pspTimerEnableCountInSleepMode(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerDisableCountInSleepMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspMachineTimerDisableCountInSleepMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
@@ -300,7 +300,7 @@ D_PSP_TEXT_SECTION void pspTimerDisableCountInSleepMode(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerEnableCountInStallMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspMachineTimerEnableCountInStallMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
@@ -327,7 +327,7 @@ D_PSP_TEXT_SECTION void pspTimerEnableCountInStallMode(u32_t uiTimer)
 * @parameter - uiTimer  - indicates which timer to setup
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerDisableCountInStallMode(u32_t uiTimer)
+D_PSP_TEXT_SECTION void pspMachineTimerDisableCountInStallMode(u32_t uiTimer)
 {
   M_PSP_ASSERT((D_PSP_INTERNAL_TIMER0 == uiTimer) || (D_PSP_INTERNAL_TIMER1 == uiTimer) || (D_PSP_INTERNAL_64BIT_TIMER == uiTimer));
 
@@ -340,8 +340,8 @@ D_PSP_TEXT_SECTION void pspTimerDisableCountInStallMode(u32_t uiTimer)
       M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
       break;
     case D_PSP_INTERNAL_64BIT_TIMER:
-  	    M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
-  	    M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+        M_PSP_CLEAR_CSR(D_PSP_MITCTL0_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
+        M_PSP_CLEAR_CSR(D_PSP_MITCTL1_NUM,D_PSP_MITCTL_PAUSE_EN_MASK);
       break;
     default:
       break;

@@ -69,15 +69,15 @@ u64_t g_uiCsrRead0, g_uiCsrRead1;
 void demoPrepareEventCounters()
 {
   /* Register machine-timer ISR */
-  pspRegisterInterruptHandler(demoTimerIsr, E_MACHINE_TIMER_CAUSE);
+  pspMachineInterruptsRegisterIsr(demoTimerIsr, E_MACHINE_TIMER_CAUSE);
   /* Setting event counter (0) for event "timer-interrupts-taken" (38) */
-  pspPerformanceCounterSet(D_PSP_COUNTER0, D_TIMER_INTERRUPTS_TAKEN);
+  pspMachinePerfCounterSet(D_PSP_COUNTER0, D_TIMER_INTERRUPTS_TAKEN);
   /* Setting event counter (1) for event "branches-taken" (26) */
-  pspPerformanceCounterSet(D_PSP_COUNTER1, D_BRANCHES_TAKEN);
+  pspMachinePerfCounterSet(D_PSP_COUNTER1, D_BRANCHES_TAKEN);
   /* Setting event counter (2) for event "fence.i" (22) */
-  pspPerformanceCounterSet(D_PSP_COUNTER2, D_FENCE_I);
+  pspMachinePerfCounterSet(D_PSP_COUNTER2, D_FENCE_I);
   /* Setting event counter (3) for event "CSR read" (16) */
-  pspPerformanceCounterSet(D_PSP_COUNTER3, D_CSR_READ);
+  pspMachinePerfCounterSet(D_PSP_COUNTER3, D_CSR_READ);
 }
 
 /**
@@ -87,19 +87,19 @@ void demoPrepareEventCounters()
 void demoGetCountersBeforeActivity(void)
 {
   /* Get the time counter (machine timer-counter) */
-  g_uiTimerCounter0 = pspPerformanceCounterGet(D_PSP_TIME_COUNTER);
+  g_uiTimerCounter0 = pspMachinePerfCounterGet(D_PSP_TIME_COUNTER);
   /* Get the cycle counter*/
-  g_uiCycle0 = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
+  g_uiCycle0 = pspMachinePerfCounterGet(D_PSP_CYCLE_COUNTER);
   /* Get the instruction retired counter */
-  g_uiInstRet0 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
+  g_uiInstRet0 = pspMachinePerfCounterGet(D_PSP_INSTRET_COUNTER);
   /* Get the timer-interrupts taken counter */
-  g_uiTimerInt0 = pspPerformanceCounterGet(D_PSP_COUNTER0);
+  g_uiTimerInt0 = pspMachinePerfCounterGet(D_PSP_COUNTER0);
   /* Get the branches taken counter */
-  g_uiBranch0 = pspPerformanceCounterGet(D_PSP_COUNTER1);
+  g_uiBranch0 = pspMachinePerfCounterGet(D_PSP_COUNTER1);
   /* Get the fence.i taken counter */
-  g_uiFenci0 = pspPerformanceCounterGet(D_PSP_COUNTER2);
+  g_uiFenci0 = pspMachinePerfCounterGet(D_PSP_COUNTER2);
   /* Get the csr-read counter */
-  g_uiCsrRead0 = pspPerformanceCounterGet(D_PSP_COUNTER3);
+  g_uiCsrRead0 = pspMachinePerfCounterGet(D_PSP_COUNTER3);
 }
 
 /**
@@ -109,19 +109,19 @@ void demoGetCountersBeforeActivity(void)
 void demoGetCountersAfterActivity(void)
 {
   /* Get the time counter*/
-  g_uiTimerCounter1 = pspPerformanceCounterGet(D_PSP_TIME_COUNTER);
+  g_uiTimerCounter1 = pspMachinePerfCounterGet(D_PSP_TIME_COUNTER);
   /* Get the cycle counter*/
-  g_uiCycle1 = pspPerformanceCounterGet(D_PSP_CYCLE_COUNTER);
+  g_uiCycle1 = pspMachinePerfCounterGet(D_PSP_CYCLE_COUNTER);
   /* Get the instruction retired counter */
-  g_uiInstRet1 = pspPerformanceCounterGet(D_PSP_INSTRET_COUNTER);
+  g_uiInstRet1 = pspMachinePerfCounterGet(D_PSP_INSTRET_COUNTER);
   /* Get the timer-interrupts taken counter */
-  g_uiTimerInt1 = pspPerformanceCounterGet(D_PSP_COUNTER0);
+  g_uiTimerInt1 = pspMachinePerfCounterGet(D_PSP_COUNTER0);
   /* Get the branches taken counter */
-  g_uiBranch1 = pspPerformanceCounterGet(D_PSP_COUNTER1);
+  g_uiBranch1 = pspMachinePerfCounterGet(D_PSP_COUNTER1);
   /* Get the fence.i taken counter */
-  g_uiFenci1 = pspPerformanceCounterGet(D_PSP_COUNTER2);
+  g_uiFenci1 = pspMachinePerfCounterGet(D_PSP_COUNTER2);
   /* Get the csr-read counter */
-  g_uiCsrRead1 = pspPerformanceCounterGet(D_PSP_COUNTER3);
+  g_uiCsrRead1 = pspMachinePerfCounterGet(D_PSP_COUNTER3);
 }
 
 /**
@@ -131,7 +131,7 @@ void demoGetCountersAfterActivity(void)
 void demoTimerIsr(void)
 {
   /* Disable Machine-Timer interrupt */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   /* Increment the number of timer ISR counter */
   g_uiNumberOfTimerInterrupts++;
@@ -140,9 +140,9 @@ void demoTimerIsr(void)
   if(D_NUMBER_OF_TIMER_INTERRUPTS > g_uiNumberOfTimerInterrupts)
   {
     /* Enable timer interrupt */
-    pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+    pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
-    pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(5));
+    pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(5));
   }
 }
 
@@ -174,10 +174,10 @@ void demoPerfMonitorDisableAll(void)
   u32_t uiInterruptsStatus;
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsStatus);
+  pspMachineInterruptsDisable(&uiInterruptsStatus);
 
   /* Disable Performance_monitor counters */
-  pspPerformanceMonitorDisableAll();
+  pspMachinePerfMonitorDisableAll();
 
   /* pre-test preparations */
   demoPrepareEventCounters();
@@ -186,15 +186,15 @@ void demoPerfMonitorDisableAll(void)
   demoGetCountersBeforeActivity();
 
   /* Setup and enable machine-timer interrupt */
-  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(5));
-  pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
-  pspInterruptsEnable();
+  pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(5));
+  pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsEnable();
 
   /* Do something then get the counter values afterwards */
   demoDummyActivityFunction();
 
   /* Disable machine-timer interrupts */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   /* Get counters after the activity */
   demoGetCountersAfterActivity();
@@ -220,7 +220,7 @@ void demoPerfMonitorEnableAll(void)
   u32_t uiTimerCounter, uiCycles, uiInstRet, uiBranches, uiFenci, uiCsrReads ;
 
   /* Disable Performance_monitor counters */
-  pspPerformanceMonitorDisableAll();
+  pspMachinePerfMonitorDisableAll();
 
   /* pre-test preparations */
   demoPrepareEventCounters();
@@ -229,18 +229,18 @@ void demoPerfMonitorEnableAll(void)
   demoGetCountersBeforeActivity();
 
   /* Enable Performance_monitor counters */
-  pspPerformanceMonitorEnableAll();
+  pspMachinePerfMonitorEnableAll();
 
   /* Setup and enable machine-timer interrupt */
-  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(5));
-  pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
-  pspInterruptsEnable();
+  pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(5));
+  pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsEnable();
 
   /* Do something then get the counter values afterwards */
   demoDummyActivityFunction();
 
   /* Disable machine-timer interrupts */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   /* Get counters after the activity */
   demoGetCountersAfterActivity();
@@ -313,7 +313,7 @@ void demoStart(void)
   M_DEMO_START_PRINT();
 
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
   /* Part1 - disable all performance-monitor counters and verify that relevant counters stopped counting */
   demoPerfMonitorDisableAll();

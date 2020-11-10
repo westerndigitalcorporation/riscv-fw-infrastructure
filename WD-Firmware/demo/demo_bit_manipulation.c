@@ -447,7 +447,7 @@ void demoStart(void)
   M_DEMO_START_PRINT();
 
   /* Register interrupt vector */
-  pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+  pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
   /* Run this demo only if target is Whisper. Cannot run on SweRV */
   if (D_PSP_FALSE == demoIsSwervBoard())

@@ -132,13 +132,13 @@
 *                   The instruction-retired, cycles and time counters stay enabled.
 *
 */
-void pspPerformanceMonitorDisableAll(void);
+void pspMachinePerfMonitorDisableAll(void);
 
 /**
 * @brief The function enables all the performance monitors
 *
 */
-void pspPerformanceMonitorEnableAll(void);
+void pspMachinePerfMonitorEnableAll(void);
 
 /**
 * @brief The function pair a counter to an event
@@ -153,7 +153,7 @@ void pspPerformanceMonitorEnableAll(void);
 *
 * @return No return value
 */
-void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent);
+void pspMachinePerfCounterSet(u32_t uiCounter, u32_t uiEvent);
 
 /**
 * @brief The function gets the counter value (64 bit)
@@ -170,6 +170,6 @@ void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent);
 *
 * @return u32_t      – Counter value
 */
-u64_t pspPerformanceCounterGet(u32_t uiCounter);
+u64_t pspMachinePerfCounterGet(u32_t uiCounter);
 
 #endif /* _PSP_PERFORMANCE_MONITOR_H_ */

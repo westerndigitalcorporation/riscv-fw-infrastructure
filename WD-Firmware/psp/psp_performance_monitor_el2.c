@@ -67,7 +67,7 @@
 *                   The instruction-retired, cycles and time counters stay enabled.
 *
 */
-D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
+D_PSP_TEXT_SECTION void pspMachinePerfMonitorDisableAll(void)
 {
   /* In MCOUNTINHIBIT CSR, '1' means counter is disabled */
   M_PSP_SET_CSR(D_PSP_MCOUNTINHIBIT_NUM, D_PSP_CYCLE_COUNTER|D_PSP_INSTRET_COUNTER|D_PSP_COUNTER0|D_PSP_COUNTER1|D_PSP_COUNTER2|D_PSP_COUNTER3);
@@ -77,7 +77,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
 * @brief The function enables all the performance monitors
 *
 */
-D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
+D_PSP_TEXT_SECTION void pspMachinePerfMonitorEnableAll(void)
 {
   /* In MCOUNTINHIBIT CSR, '0' means counter is enabled */
   M_PSP_CLEAR_CSR(D_PSP_MCOUNTINHIBIT_NUM, D_PSP_CYCLE_COUNTER|D_PSP_INSTRET_COUNTER|D_PSP_COUNTER0|D_PSP_COUNTER1|D_PSP_COUNTER2|D_PSP_COUNTER3);
@@ -95,7 +95,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
 *                             D_PSP_COUNTER2
 *                             D_PSP_COUNTER3
 */
-D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableCounter(u32_t uiPerfMonCounter)
+D_PSP_TEXT_SECTION void pspMachinePerfMonitorDisableCounter(u32_t uiPerfMonCounter)
 {
   /* In MCOUNTINHIBIT CSR, '1' means counter is disabled */
   M_PSP_SET_CSR(D_PSP_MCOUNTINHIBIT_NUM, uiPerfMonCounter);
@@ -113,7 +113,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableCounter(u32_t uiPerfMonCount
 *                             D_PSP_COUNTER2
 *                             D_PSP_COUNTER3
 */
-D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableCounter(u32_t uiPerfMonCounter)
+D_PSP_TEXT_SECTION void pspMachinePerfMonitorEnableCounter(u32_t uiPerfMonCounter)
 {
   /* In MCOUNTINHIBIT CSR, '0' means counter is enabled */
   M_PSP_CLEAR_CSR(D_PSP_MCOUNTINHIBIT_NUM, uiPerfMonCounter);
@@ -132,7 +132,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableCounter(u32_t uiPerfMonCounte
 *
 * @return No return value
 */
-D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent)
+D_PSP_TEXT_SECTION void pspMachinePerfCounterSet(u32_t uiCounter, u32_t uiEvent)
 {
   switch (uiCounter)
   {
@@ -169,7 +169,7 @@ D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent)
 *
 * @return u64_t      – Counter value
 */
-D_PSP_TEXT_SECTION u64_t pspPerformanceCounterGet(u32_t uiCounter)
+D_PSP_TEXT_SECTION u64_t pspMachinePerfCounterGet(u32_t uiCounter)
 {
   u64_t uiCounterVal = 0xDEAFBEEFDEAFBEEF;
 
@@ -180,7 +180,7 @@ D_PSP_TEXT_SECTION u64_t pspPerformanceCounterGet(u32_t uiCounter)
       uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MCYCLEH_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_TIME_COUNTER:
-      uiCounterVal = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+      uiCounterVal = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
       break;
     case D_PSP_INSTRET_COUNTER:
       uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);                    /* read low 32 bits */

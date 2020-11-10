@@ -21,9 +21,8 @@ class demo(object):
     self.toolchain     = ""
     self.toolchainPath = ""
     self.strGrpFile    = ""
-    self.strComrvCacheSize = "0"
     self.strLinkFilePrefix = ''
-    
+
     self.public_defs = [
         'D_BARE_METAL',
         'D_TICK_TIME_MS=4',
@@ -38,10 +37,9 @@ class demo(object):
     ]
 
     self.listDemoSpecificLinkerFlags = [
-      '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
     
     self.listDemoSpecificTargets = [
-      'eh1', 'el2'
+      'eh1', 'el2', 'eh2'
     ]
 

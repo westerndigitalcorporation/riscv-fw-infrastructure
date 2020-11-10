@@ -63,14 +63,14 @@ typedef enum pspCorrectableErrorCounters
 * APIs
 */
 /**
-* @brief Set Thershold for a counter of specific correctable-error
+* @brief Set threshold for a counter of specific correctable-error
 *
 * @param -  eCorrectableerrorCounter - one of E_ICACHE_CORR_ERR_COUNTER or E_ICCM_CORR_ERR_COUNTER or E_DCCM_CORR_ERR_COUNTER
 * @param -  uiThreshold - When set,  an interrupt is raised when 2**uiThreshold errors occur
 *           ***Note*** 26 is the largest acceptable value. If a larger value is set, it is treated as 26.
 *
 */
-void pspCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiThreshold);
+void pspMachineCorErrCntSetThreshold(ePspCorrectableErrorCounters_t eCounter, u32_t uiThreshold);
 
 
 #endif /* __PSP_CORR_ERR_CNT_EH1_H__ */

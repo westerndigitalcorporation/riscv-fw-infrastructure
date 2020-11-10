@@ -83,7 +83,7 @@
 *                             D_PSP_COUNTER2
 *                             D_PSP_COUNTER3
 */
-void pspPerformanceMonitorDisableCounter(u32_t uiPerfMonCounter);
+void pspMachinePerfMonitorDisableCounter(u32_t uiPerfMonCounter);
 
 /**
 * @brief The function enable a specific performance monitor counter
@@ -97,6 +97,6 @@ void pspPerformanceMonitorDisableCounter(u32_t uiPerfMonCounter);
 *                             D_PSP_COUNTER2
 *                             D_PSP_COUNTER3
 */
-void pspPerformanceMonitorEnableCounter(u32_t uiPerfMonCounter);
+void pspMachinePerfMonitorEnableCounter(u32_t uiPerfMonCounter);
 
 #endif /* _PSP_PERFORMANCE_MONITOR_EL2_H_ */

@@ -23,12 +23,14 @@ OUTPUT_ARCH( "riscv" )
 
 ENTRY( _start )
 
+__comrv_overlay_storage_size = DEFINED(__comrv_overlay_storage_size) ? __comrv_overlay_storage_size : 0;
+
 MEMORY
 {
   ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
   dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
-  ovl           : ORIGIN = 0xE0000000, LENGTH = 8k
+  ovl           : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
 PHDRS
@@ -47,8 +49,8 @@ PHDRS
 SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 4K;
-  /* __comrv_cache_alignment_size defines the alinment size of the start cache area */
-  __comrv_align_size = __comrv_cache_size != 0 ? __comrv_cache_alignment_size : 0;
+  __comrv_cache_size = DEFINED(__comrv_cache_size) ? __comrv_cache_size : 0;
+  __comrv_cache_alignment_size = DEFINED(__comrv_cache_alignment_size) ? __comrv_cache_alignment_size : 0;
 
   .text.init :
   {
@@ -83,7 +85,7 @@ SECTIONS
   .reserved_ovl : ALIGN(4)
   {
     _OVERLAY_STORAGE_START_ADDRESS_ = .;
-    . = 0x2000;
+    . = LENGTH(ovl);
   } > ram : ram_load
 
   
@@ -107,15 +109,6 @@ SECTIONS
     . += 10; /* fix for linker false error message */
     . = ALIGN(8); 
   } > ram : ram_load
-
-  /* 4 bytes reserved for software interrupt memory control
-     used by whisper only! to trigger sw interrupt 
-     this must be first in ram2 - don't change it's location */
-  SW_INT : ALIGN(4)
-  {
-    _sw_int_mem_ctrl = .;
-    . = 4;
-  }  > ram2 : ram_load
 
   COMRV_DATA_SEC : ALIGN(16)
   {
@@ -167,10 +160,10 @@ SECTIONS
   
   /* this area is used for loading and executing the comrv 
      overlay groups */
-  .overlay_sec ALIGN(__comrv_align_size) :
+  .overlay_sec ALIGN(__comrv_cache_alignment_size) :
   {
     __OVERLAY_CACHE_START__ = . ;
-    . = __comrv_cache_size; 
+    . = . + __comrv_cache_size; 
     __OVERLAY_CACHE_END__ = . ;
   } > ram : ram_load
 
