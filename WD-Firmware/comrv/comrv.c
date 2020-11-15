@@ -46,7 +46,7 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #include "rtosal_defines.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
 #ifdef D_CTI
-#include "cti_api.h"
+   #include "cti_api.h"
 #endif /* D_CTI */
 
 /**
@@ -119,8 +119,8 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
 #define D_COMRV_DEBRUIJN32_SHFT_AMNT                  27
 
 #ifndef D_CTI
-#define M_CTI_SYNC_POINT(x)
-#define M_CTI_MARK_DEFRAG()
+   #define M_CTI_SYNC_POINT(x)
+   #define M_CTI_MARK_DEFRAG()
 #endif /* D_CTI */
 
 /**
@@ -689,9 +689,6 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       stLoadArgs.uiGroupOffset = M_COMRV_GET_GROUP_OFFSET_IN_BYTES(g_stComrvCB.stOverlayCache[ucIndex].unToken);
       pAddress = comrvLoadOvlayGroupHook(&stLoadArgs);
 
-      /* at this point we are sure comrv data is valid - debugger can now collect it */
-      M_COMRV_DEBUGGER_HOOK_SYMBOL();
-
       /* if group wasn't loaded */
       if (M_COMRV_BUILTIN_EXPECT(pAddress == 0,0))
       {
@@ -700,6 +697,9 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
 
       M_COMRV_VERIFY_CRC(pAddress, usOverlayGroupSize-sizeof(u32_t),
                         *((u32_t*)(pAddress + (usOverlayGroupSize-sizeof(u32_t)))));
+
+      /* at this point we are sure comrv data is valid - debugger can now collect it */
+      M_COMRV_DEBUGGER_HOOK_SYMBOL();
 
 #ifdef D_COMRV_RTOS_SUPPORT
 #ifdef D_COMRV_OVL_DATA_SUPPORT

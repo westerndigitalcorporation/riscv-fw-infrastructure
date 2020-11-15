@@ -54,9 +54,9 @@
 * local prototypes
 */
  u32_t msgQueueSend(rtosalMsgQueue_t* pRtosalMsgQueueCb,
-		            const void* pRtosalMsgQueueItem,
+                            const void* pRtosalMsgQueueItem,
                     u32_t uiWaitTimeoutTicks,
-					u32_t uiSendToFront);
+                                        u32_t uiSendToFront);
 
 /**
 * external prototypes

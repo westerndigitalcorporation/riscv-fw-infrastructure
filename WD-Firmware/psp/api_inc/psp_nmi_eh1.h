@@ -67,7 +67,7 @@ typedef void (*pspNmiHandler_t)(void);
  * @parameter - uiNmiVecAddress - address of NMI_VEC register
  * @parameter - fptrNmiSelector - address of NMI initial handler
  */
-void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector);
+void pspMachineNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector);
 
 /**
 * @brief - The function installs an Non-Maskable Interrupt (NMI) service routine
@@ -81,14 +81,14 @@ void pspNmiSetVec(u32_t uiNmiVecAddress, pspNmiHandler_t fptrNmiSelector);
 *
 * @return u32_t                               - previously registered ISR. If NULL then registeration had an error
 */
-pspNmiHandler_t pspNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause);
+pspNmiHandler_t pspMachineNmiRegisterHandler(pspNmiHandler_t fptrNmiHandler, u32_t uiNmiCause);
 
 
 /**
 * @brief - This function is called upon NMI and selects the appropriate handler
 *
 */
-D_PSP_NO_RETURN void pspNmiHandlerSelector(void);
+D_PSP_NO_RETURN void pspMachineNmiHandlerSelector(void);
 
 
 #endif /* __PSP_NMI_EH1_H__ */

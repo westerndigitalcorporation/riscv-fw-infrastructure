@@ -35,14 +35,14 @@
 */
 /* This structure is defined and used INTERNALLY (i.e. it is not exposed in the api) to calculate the overall size of the mutexs-heap.
  * In the mutexs-heap there are two consecutive parts - in the 1'st one there is a series of mutexs (32bit each).
- * In the 2'nd section there is a series of pspMutexMngmng structures. Each such structure indicates (1) whether the associated mutex is 'occupied'
+ * In the 2'nd section there is a series of pspMutexMngmnt structures. Each such structure indicates (1) whether the associated mutex is 'occupied'
  * (i.e. created by the application and is in use) or 'unoccupied' (i.e. destroyed by the application or haven't been created at all)
  * and (2) in case it was created, which hart created the mutex.
  * Note that the mutexs heap is not organized as a series of pspMutexCb_t structures. Instead, first there are the N dwords (32bits) for N mutexs (these are
  * the uiMutexState fields) and then there are N pspMutexMngmnt_t structures (8bits) as management information for N mutexs.
  * So, the overall size of the heap is N * sizeof(pspMutexCb_t)
  */
-typedef struct pspMutexMngmng
+typedef struct pspMutexMngmnt
 {
    u08_t  ucMutexOccupied :1;  /* D_PSP_MUTEX_OCCUIPED / D_PSP_MUTEX_UNOCCUIPED */
    u08_t  ucMutexCreator  :1;  /* Created by: 0 - Hart0 / 1 - Hart1 .  Only the creator is allowed to destroy */
@@ -154,7 +154,7 @@ D_PSP_TEXT_SECTION pspMutex_t* pspMutexCreate(void)
   pspMutexMngmnt_t* pMutexMnmgmnt;              /* Pointer to a mutex management information structure */
   u32_t             uiMutexHeapMngmntAddress;   /* Start address of 'management' section in the mutexs heap */
   u32_t*            pMutexAddress = NULL;       /* Pointer to a mutex that found in the mutexs-heap */
-  u32_t             uiHartId = M_PSP_GET_HART_ID();
+  u32_t             uiHartId = M_PSP_MACHINE_GET_HART_ID();
 
 
   /* Protect the creation of a mutex. Make sure the creation cannot be done simultaneously by multiple harts */
@@ -205,7 +205,7 @@ D_PSP_TEXT_SECTION pspMutex_t* pspMutexDestroy(pspMutex_t* pMutex)
   u32_t             uiMutexHeapMngmntAddress;   /* Start address of 'management' section in the mutexs heap */
   pspMutexMngmnt_t* pMutexMnmgmnt;              /* Pointer to a mutex management information structure */
   u32_t*            pRetMutexAddr = NULL;       /* Pointer to a mutex. Used for return value */
-  u32_t             uiHartId = M_PSP_GET_HART_ID();
+  u32_t             uiHartId = M_PSP_MACHINE_GET_HART_ID();
 
   /* Verify mutex address validity*/
   M_PSP_ASSERT(D_PSP_TRUE == pspIsMutexAddressValid(pMutex));

@@ -81,7 +81,7 @@ static rtosalStackType_t uRxTaskStackBuffer[D_RX_TASK_STACK_SIZE];
 static rtosalStackType_t uTxTaskStackBuffer[D_TX_TASK_STACK_SIZE];
 static s08_t cQueueBuffer[D_MAIN_QUEUE_LENGTH * sizeof(u32_t)];
 static rtosalMsgQueue_t stMsgQueue;
-static rtosalMutex_t stComrvMutex;
+extern rtosalMutex_t stComrvMutex;
 
 /**
 * functions
@@ -125,11 +125,11 @@ void demoComrvRtosCreateTasks(void *pParam)
    comrvInit(&stComrvInitArgs);
 
    /* Disable the machine external & timer interrupts until setup is done. */
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
-   pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+   pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
    /* Enable the Machine-External bit in MIE */
-   pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_EXT);
+   pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_EXT);
 
    /* Create the queue used by the send-msg and receive-msg tasks. */
    res = rtosalMsgQueueCreate(&stMsgQueue, cQueueBuffer, D_MAIN_QUEUE_LENGTH,
@@ -275,44 +275,3 @@ void demoComrvRtosReceiveMsgTask( void *pvParameters )
 
    }
 }
-
-/**
-* enter critical section
-*
-* @param None
-*
-* @return 0 - success, non-zero - failure
-*/
-u32_t comrvEnterCriticalSectionHook(void)
-{
-   if (rtosalGetSchedulerState() != D_RTOSAL_SCHEDULER_NOT_STARTED)
-   {
-      if (rtosalMutexWait(&stComrvMutex, D_RTOSAL_WAIT_FOREVER) != D_RTOSAL_SUCCESS)
-      {
-         return 1;
-      }
-   }
-
-   return 0;
-}
-
-/**
-* exit critical section
-*
-* @param None
-*
-* @return 0 - success, non-zero - failure
-*/
-u32_t comrvExitCriticalSectionHook(void)
-{
-   if (rtosalGetSchedulerState() != D_RTOSAL_SCHEDULER_NOT_STARTED)
-   {
-      if (rtosalMutexRelease(&stComrvMutex) != D_RTOSAL_SUCCESS)
-      {
-         return 1;
-      }
-   }
-
-   return 0;
-}
-

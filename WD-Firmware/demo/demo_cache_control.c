@@ -82,7 +82,7 @@ void demoStart(void)
    M_DEMO_START_PRINT();
 
    /* Register interrupt vector */
-   pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE);
+   pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE);
 
    /* Run this demo only if target is Swerv. Cannot run on Whisper */
    if (D_PSP_TRUE == demoIsSwervBoard())
@@ -90,42 +90,42 @@ void demoStart(void)
       /* clear all mrac bits - disable cache and sideeffect bits */
       for (uiIndex = 0 ; uiIndex < D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS ; uiIndex++)
       {
-        pspCacheControlDisableIcache(uiIndex);
-        pspCacheControlDisableSideEfect(uiIndex);
+        pspMachineCacheControlDisableIcache(uiIndex);
+        pspMachineCacheControlDisableSideEfect(uiIndex);
       }
 
       /* Disable Machine-Timer interrupt so we won't get interrupted
          timer interrupt not needed in this demo */
-      pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+      pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
       /* Activates Core's timer */
-      pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER,  0xFFFFFFFF);
+      pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER,  0xFFFFFFFF);
 
       /* sample the timer value */
-      ulCounterCache_t1 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+      ulCounterCache_t1 = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* we disable (again) the cache just to have the same amount
          of measured instructions */
-      pspCacheControlDisableIcache(D_MAIN_MEM_INDEX);
+      pspMachineCacheControlDisableIcache(D_MAIN_MEM_INDEX);
 
       /* execute some code */
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounterCache_t2 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+      ulCounterCache_t2 = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* sum the result for the "busy loop example " */
       ulCounterCacheOFF = ulCounterCache_t2 - ulCounterCache_t1;
 
       /* enable cache for the main memory so we can measure how much
          time execution takes */
-      pspCacheControlEnableIcache(D_MAIN_MEM_INDEX);
+      pspMachineCacheControlEnableIcache(D_MAIN_MEM_INDEX);
 
       /* execute some code */
       M_DEMO_CACHE_CONTROL_BUSYLOOP_CODE_TO_MEASURE();
 
       /* sample the timer value */
-      ulCounterCache_t2 = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+      ulCounterCache_t2 = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
 
       /* sum the result for the "busy loop example " */
       ulCounterCacheON = ulCounterCache_t2 - ulCounterCacheOFF;   /*OFF was the reference t1 */

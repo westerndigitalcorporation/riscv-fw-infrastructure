@@ -57,7 +57,8 @@ Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                   # SweRV-E
                       'D_TIMER_DURATION_SETUP_ADDRESS=0x80001030',     # Register for duration setup of a timer on SweRVolf FPGA
                       'D_TIMER_ACTIVATION_ADDRESS=0x80001034',         # Register for activation of a timer on SweRVolf FPGA  
                       'D_NMI_VEC_ADDRESSS=0x8000100C',                 # nmi_vec address on SweRVolf FPGA
-                      'D_DCCM_SECTION_START_ADDRESS=0xF0040000']       # Start address of DCCM section 
+                      'D_DCCM_SECTION_START_ADDRESS=0xF0040000',       # Start address of DCCM section 
+                      'D_SW_INT_ADDRESS=0x80003100']                   # sw interrupt
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
 
 

@@ -71,26 +71,26 @@
 *
 * @parameter - memory Id
 */
-void pspCacheControlEnableIcache(u32_t uiMemoryRegionId);
+void pspMachineCacheControlEnableIcache(u32_t uiMemoryRegionId);
 
 /**
 * @brief - Enable side-effect for a given memory-id
 *
 * @parameter - memory Id
 */
-void pspCacheControlEnableSideEfect(u32_t uiMemoryRegionId);
+void pspMachineCacheControlEnableSideEfect(u32_t uiMemoryRegionId);
 
 /* @brief - Disable I-Cache for a given memory-id
 *
 * @parameter - memory Id
 */
-void pspCacheControlDisableIcache(u32_t uiMemoryRegionId);
+void pspMachineCacheControlDisableIcache(u32_t uiMemoryRegionId);
 
 /**
 * @brief - Disable side-effect for a given memory-id
 *
 * @parameter - memory Id
 */
-void pspCacheControlDisableSideEfect(u32_t uiMemoryRegionId);
+void pspMachineCacheControlDisableSideEfect(u32_t uiMemoryRegionId);
 
 #endif /* _PSP_CACHE_CONTROL_H_ */

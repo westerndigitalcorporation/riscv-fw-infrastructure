@@ -62,7 +62,7 @@
  *
  * @parameter - Hart number to delegate the NMI to
  */
-void pspNmiSetDelegation(u32_t uiHartNumber);
+void pspMachineNmiSetDelegation(u32_t uiHartNumber);
 
 /**
  * @brief - clear delegation of pin-asserted NMI for a given Hart (HW thread)
@@ -70,7 +70,7 @@ void pspNmiSetDelegation(u32_t uiHartNumber);
  *
  * @parameter - Hart number to clear NMI delegation from
  */
-void pspNmiClearDelegation(u32_t uiHartNumber);
+void pspMachineNmiClearDelegation(u32_t uiHartNumber);
 
 /**
  * @brief - check whether pin-asserted NMI handling is delegated to the given hart (HW thread) or not
@@ -78,6 +78,6 @@ void pspNmiClearDelegation(u32_t uiHartNumber);
  * @parameter - Hart number
  * @return    - 0/1 to indicate whether the NMI handling is delegated to the given hart-number or not
  */
-u32_t pspIsNmiDelegatedToHart(u32_t uiHartNumber);
+u32_t pspMachineNmiIsDelegatedToHart(u32_t uiHartNumber);
 
 #endif /* __PSP_NMI_EH2_H__ */

@@ -66,7 +66,7 @@
 *                   The instruction-retired, cycles and time counters stay enabled.
 *
 */
-D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
+D_PSP_TEXT_SECTION void pspMachinePerfMonitorDisableAll(void)
 {
   M_PSP_CLEAR_CSR(D_PSP_MGPMC_NUM, D_PSP_MGMPC_MASK);
 }
@@ -75,7 +75,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorDisableAll(void)
 * @brief The function enables all the performance monitors
 *
 */
-D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
+D_PSP_TEXT_SECTION void pspMachinePerfMonitorEnableAll(void)
 {
   M_PSP_SET_CSR(D_PSP_MGPMC_NUM, D_PSP_MGMPC_MASK);
 }
@@ -93,7 +93,7 @@ D_PSP_TEXT_SECTION void pspPerformanceMonitorEnableAll(void)
 *
 * @return No return value
 */
-D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent)
+D_PSP_TEXT_SECTION void pspMachinePerfCounterSet(u32_t uiCounter, u32_t uiEvent)
 {
   switch (uiCounter)
   {
@@ -129,7 +129,7 @@ D_PSP_TEXT_SECTION void pspPerformanceCounterSet(u32_t uiCounter, u32_t uiEvent)
 *
 * @return u64_t      – Counter value
 */
-D_PSP_TEXT_SECTION u64_t pspPerformanceCounterGet(u32_t uiCounter)
+D_PSP_TEXT_SECTION u64_t pspMachinePerfCounterGet(u32_t uiCounter)
 {
   u64_t uiCounterVal = 0xDEAFBEEFDEAFBEEF;
 
@@ -140,7 +140,7 @@ D_PSP_TEXT_SECTION u64_t pspPerformanceCounterGet(u32_t uiCounter)
       uiCounterVal |= (u64_t)M_PSP_READ_CSR(D_PSP_MCYCLEH_NUM) << D_PSP_SHIFT_32; /* read high 32 bits */
       break;
     case D_PSP_TIME_COUNTER:
-      uiCounterVal = pspTimerCounterGet(D_PSP_MACHINE_TIMER);
+      uiCounterVal = pspMachineTimerCounterGet(D_PSP_MACHINE_TIMER);
       break;
     case D_PSP_INSTRET_COUNTER:
       uiCounterVal  = (u64_t)M_PSP_READ_CSR(D_PSP_MINSTRET_NUM);                    /* read low 32 bits */

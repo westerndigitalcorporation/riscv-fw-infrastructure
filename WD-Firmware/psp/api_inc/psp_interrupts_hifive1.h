@@ -70,7 +70,7 @@ typedef enum pspExceptionCause
 } ePspExceptionCause_t;
 
 /* interrupt handler definition */
-typedef void (*pspInterruptHandler_t)(void);
+typedef void (*fptrPspInterruptHandler_t)(void);
 
 /**
 * definitions
@@ -115,7 +115,7 @@ typedef void (*pspInterruptHandler_t)(void);
 * @parameter - interruptCause           - interrupt source
 * @return    - u32_t                    - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
+fptrPspInterruptHandler_t pspMachineInterruptsRegisterIsr(fptrPspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause);
 
 /**
 * @brief - The function installs an exception handler per exception cause
@@ -124,7 +124,7 @@ pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInte
 * @parameter -  exceptionCause           - exception cause
 * @return    -  u32_t                    - previously registered ISR
 */
-pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
+fptrPspInterruptHandler_t pspMachineInterruptsRegisterExcpHandler(fptrPspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause);
 
 /**
 * @brief - Set vector-table address at mtvec CSR
@@ -133,7 +133,7 @@ pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInte
 *
 * @return - none
 */
-void pspInterruptsSetVectorTableAddress(void* pVectTable);
+void pspMachineInterruptsSetVecTableAddress(void* pVectTable);
 
 /**
 * @brief - default empty interrupt handler
@@ -142,7 +142,7 @@ void pspInterruptsSetVectorTableAddress(void* pVectTable);
 *
 * @return - none
 */
-void pspDefaultEmptyIntHandler_isr(void);
+void pspMachineInterruptsDefaultHandler(void);
 
 /**
 * @brief - Disable interrupts and return the current interrupt state in each one of the privileged levels
@@ -151,7 +151,7 @@ void pspDefaultEmptyIntHandler_isr(void);
 *
 * @return - none
 */
-void pspInterruptsDisable(u32_t  *pOutPrevIntState);
+void pspMachineInterruptsDisable(u32_t  *pOutPrevIntState);
 
 /**
 * @brief - Restore the interrupts state in each one of the privileged levels.
@@ -161,7 +161,7 @@ void pspInterruptsDisable(u32_t  *pOutPrevIntState);
 *
 * @return - none
 */
-void pspInterruptsRestore(u32_t uiPrevIntState);
+void pspMachineInterruptsRestore(u32_t uiPrevIntState);
 
 /**
 * @brief - Enable interrupts (in all privilege levels) regardless their previous state
@@ -170,7 +170,7 @@ void pspInterruptsRestore(u32_t uiPrevIntState);
 *
 * @return - none
 */
-void pspInterruptsEnable(void);
+void pspMachineInterruptsEnable(void);
 
 
 /**
@@ -191,7 +191,7 @@ void pspInterruptsEnable(void);
 *
 * @return - none
 */
-void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
+void pspMachineInterruptsDisableIntNumber(u32_t uiInterruptNumber);
 
 /**
 * @brief - Enable specified interrupt when called in MACHINE-LEVEL
@@ -211,7 +211,7 @@ void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
 *
 * @return - none
 */
-void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
+void pspMachineInterruptsEnableIntNumber(u32_t uiInterruptNumber);
 
 /**
 * @brief - Disable specified interrupt when called in USER-LEVEL
@@ -225,7 +225,7 @@ void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber);
 *
 * @return - none
 */
-void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber);
+void pspUserInterruptsDisableIntNumber(u32_t uiInterruptNumber);
 
 /**
 * @brief - Enable specified interrupt when called in USER-LEVEL
@@ -239,7 +239,7 @@ void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber);
 *
 * @return - none
 */
-void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber);
+void pspUserInterruptsEnableIntNumber(u32_t uiInterruptNumber);
 
 
 #endif /* __PSP_INTERRUPTS_HIFIVE1_H__ */

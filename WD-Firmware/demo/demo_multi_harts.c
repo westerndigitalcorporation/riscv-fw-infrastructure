@@ -184,7 +184,7 @@ void demoSpinOnSyncPoint(volatile u32_t* pSyncPoint)
 void demoTimerIsrHart0()
 {
   /* Disable Machine-Timer interrupt */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   g_uiNumberOfTimerInterruptsHart0++;
   demoOutputMsg("HART0 Timer ISR # %d: \n",g_uiNumberOfTimerInterruptsHart0);
@@ -192,10 +192,10 @@ void demoTimerIsrHart0()
   if(D_DEMO_NUMBER_OF_TIMER_INTERRUPTS_HART0 > g_uiNumberOfTimerInterruptsHart0)
   {
     /* Setup Core's timer for another turn */
-    pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
+    pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
 
     /* Enable timer interrupt */
-    pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+    pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
   }
 }
 
@@ -205,7 +205,7 @@ void demoTimerIsrHart0()
 void demoTimerIsrHart1()
 {
   /* Disable Machine-Timer interrupt */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   g_uiNumberOfTimerInterruptsHart1++;
   demoOutputMsg("HART1 Timer ISR # %d: \n",g_uiNumberOfTimerInterruptsHart1);
@@ -213,10 +213,10 @@ void demoTimerIsrHart1()
   if(D_DEMO_NUMBER_OF_TIMER_INTERRUPTS_HART1 > g_uiNumberOfTimerInterruptsHart1)
   {
     /* Setup Core's timer for another turn */
-    pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART1));
+    pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART1));
 
     /* Enable timer interrupt */
-    pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+    pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
   }
 }
 
@@ -228,19 +228,19 @@ void demoTimerIsrHart1()
  */
 void demoMultiHartsAccessSeperateMemory(void)
 {
-  u32_t uiHartId = M_PSP_GET_HART_ID();
+  u32_t uiHartId = M_PSP_MACHINE_GET_HART_ID();
   u32_t uiRes0 = 0, uiRes1 = 0, uiCalculationResult = 0;
 
   if (E_HART0 == uiHartId)
   {
-    pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE_HART0);
+    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART0);
 
     demoInitializeDataStructures(g_uiVecA0, g_uiVecB0, D_DEMO_ARRAY_SIZE);
     uiRes0 = demoMultiplyArrays(g_uiVecA0, g_uiVecB0, D_DEMO_ARRAY_SIZE);
   }
   else /* Current Hart is 1 */
   {
-    pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE_HART1);
+    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART1);
 
     demoInitializeDataStructures(g_uiVecA1, g_uiVecB1, D_DEMO_ARRAY_SIZE);
     uiRes1 = demoMultiplyArrays(g_uiVecA1, g_uiVecB1, D_DEMO_ARRAY_SIZE);
@@ -300,7 +300,7 @@ void demoMultiHartsCasInSharedMemory()
  */
 void demoMultiHartsCriticalSectionAmoMutex()
 {
-  u32_t       uiHartId = M_PSP_GET_HART_ID();
+  u32_t       uiHartId = M_PSP_MACHINE_GET_HART_ID();
   u32_t       uiIterator = 0;
   pspMutex_t* pMutexDestroyed; /* Mutex pointer. Used here to verify correct destroy */
 
@@ -379,33 +379,33 @@ void demoMultiHartsCriticalSectionAmoMutex()
  */
 void demoMultiHartsTimerInterrupts()
 {
-  u32_t uiHartId = M_PSP_GET_HART_ID();
+  u32_t uiHartId = M_PSP_MACHINE_GET_HART_ID();
 
   /* Disable Timer interrupt */
-  pspDisableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsDisableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
 
   switch (uiHartId)
   {
     case E_HART0:
       g_uiNumberOfTimerInterruptsHart0 = 0;
       /* Register timer ISR for Hart0 */
-      pspRegisterInterruptHandler(demoTimerIsrHart0, E_MACHINE_TIMER_CAUSE);
+      pspMachineInterruptsRegisterIsr(demoTimerIsrHart0, E_MACHINE_TIMER_CAUSE);
       break;
     case E_HART1:
       g_uiNumberOfTimerInterruptsHart1 = 0;
       /* Register timer ISR for Hart1 */
-      pspRegisterInterruptHandler(demoTimerIsrHart1, E_MACHINE_TIMER_CAUSE);
+      pspMachineInterruptsRegisterIsr(demoTimerIsrHart1, E_MACHINE_TIMER_CAUSE);
       break;
     default:
       break;
   }
 
   /* Initialize the timer and let it run */
-  pspTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
+  pspMachineTimerCounterSetupAndRun(D_PSP_MACHINE_TIMER, M_DEMO_MSEC_TO_CYCLES(D_DEMO_TIMER_PERIOD_MSEC_HART0));
   /* Enable Timer interrupt */
-  pspEnableInterruptNumberMachineLevel(D_PSP_INTERRUPTS_MACHINE_TIMER);
+  pspMachineInterruptsEnableIntNumber(D_PSP_INTERRUPTS_MACHINE_TIMER);
   /* Enable all interrupts in mstatus CSR */
-  pspInterruptsEnable();
+  pspMachineInterruptsEnable();
 
   while(1)
   {
@@ -455,9 +455,9 @@ void demoStart(void)
     demoInitializeAtomicOperationsItems(uiAddressForAtomics);
 
     /* Setup vector table for Hart0 */
-    pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE_HART0);
+    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART0);
     /* Setup vector table for Hart1 */
-    pspInterruptsSetVectorTableAddress(&M_PSP_VECT_TABLE_HART1);
+    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART1);
   }
 
   /* Demo#1 - Each hart access its own memory */

@@ -43,8 +43,8 @@
 * local prototypes
 */
 /* Default ISRs */
-D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void);
-D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
+D_PSP_TEXT_SECTION void pspMachineInterruptsExcpHandlingSelector(void);
+D_PSP_TEXT_SECTION void pspMachineInterruptsDefaultHandler(void);
 
 /**
 * external prototypes
@@ -62,43 +62,43 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void);
 #endif
 
 /* Exception handlers */
-D_PSP_DATA_SECTION pspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr,
-                       pspDefaultEmptyIntHandler_isr };
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t  g_fptrExceptions_ints[D_PSP_NUM_OF_INTS_EXCEPTIONS] = {
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler,
+                       pspMachineInterruptsDefaultHandler };
 
 /* Exceptions handler pointer */
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspDefaultExceptionIntHandler_isr;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntExceptionIntHandler   = pspMachineInterruptsExcpHandlingSelector;
 
 /* Interrupts handler pointers */
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdSoftIntHandler   = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMSoftIntHandler       = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdTimerIntHandler  = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimerIntHandler      = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntUExternIntHandler     = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntSExternIntHandler     = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMExternIntHandler     = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer0IntHandler     = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrIntMTimer1IntHandler     = pspDefaultEmptyIntHandler_isr;
-D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrCorrErrCntIntHandler     = pspDefaultEmptyIntHandler_isr;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntUSoftIntHandler       = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntSSoftIntHandler       = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntRsrvdSoftIntHandler   = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntMSoftIntHandler       = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntUTimerIntHandler      = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntSTimerIntHandler      = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntRsrvdTimerIntHandler  = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntMTimerIntHandler      = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntUExternIntHandler     = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntSExternIntHandler     = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntRsrvdExternIntHandler = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntMExternIntHandler     = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntMTimer0IntHandler     = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrIntMTimer1IntHandler     = pspMachineInterruptsDefaultHandler;
+D_PSP_DATA_SECTION fptrPspInterruptHandler_t g_fptrCorrErrCntIntHandler     = pspMachineInterruptsDefaultHandler;
 
 /**
 * APIs
@@ -112,16 +112,16 @@ D_PSP_DATA_SECTION pspInterruptHandler_t g_fptrCorrErrCntIntHandler     = pspDef
 *
 * @return u32_t                               - previously registered ISR. If NULL then registeration had an error
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
+D_PSP_TEXT_SECTION fptrPspInterruptHandler_t pspMachineInterruptsRegisterIsr(fptrPspInterruptHandler_t fptrInterruptHandler, u32_t uiInterruptCause)
 {
-   pspInterruptHandler_t fptrFunc;
+   fptrPspInterruptHandler_t fptrFunc;
    u32_t uiInterruptsState;
 
    M_PSP_ASSERT((NULL != fptrInterruptHandler) && (E_LAST_COMMON_CAUSE > uiInterruptCause) &&
             (E_FIRST_EH1_CAUSE < uiInterruptCause) && (E_LAST_EH1_CAUSE > uiInterruptCause));
 
    /* Disable interrupts */
-   pspInterruptsDisable(&uiInterruptsState);
+   pspMachineInterruptsDisable(&uiInterruptsState);
 
    switch (uiInterruptCause)
    {
@@ -191,7 +191,7 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
    }
 
    /* Restore interrupts */
-   pspInterruptsRestore(uiInterruptsState);
+   pspMachineInterruptsRestore(uiInterruptsState);
 
    return fptrFunc;
 }
@@ -204,9 +204,12 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterInterruptHandler(pspInterrup
 *
 * @return u32_t                               - previously registered ISR
 */
-D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause)
+D_PSP_TEXT_SECTION fptrPspInterruptHandler_t pspMachineInterruptsRegisterExcpHandler(fptrPspInterruptHandler_t fptrInterruptHandler, u32_t uiExceptionCause)
 {
-   pspInterruptHandler_t fptrFunc;
+   fptrPspInterruptHandler_t fptrFunc;
+
+   /* Make sure this function is not called outside MACHINE mode */
+   M_PSP_ASSURE_MACHINE_MODE();
 
    M_PSP_ASSERT(fptrInterruptHandler != NULL && uiExceptionCause < E_EXC_LAST_CAUSE);
 
@@ -218,13 +221,13 @@ D_PSP_TEXT_SECTION pspInterruptHandler_t pspRegisterExceptionHandler(pspInterrup
 }
 
 /**
-* @brief - default exception interrupt handler
+* @brief - Exception handling selection function
 *
 * @param none
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspMachineInterruptsExcpHandlingSelector(void)
 {
    /* get the exception cause */
    u32_t uiCause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
@@ -246,7 +249,7 @@ D_PSP_TEXT_SECTION void pspDefaultExceptionIntHandler_isr(void)
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
+D_PSP_TEXT_SECTION void pspMachineInterruptsDefaultHandler(void)
 {
     volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
 
@@ -267,7 +270,7 @@ D_PSP_TEXT_SECTION void pspDefaultEmptyIntHandler_isr(void)
 *
 * @return none
 */
-D_PSP_TEXT_SECTION void pspInterruptsSetVectorTableAddress(void* pVectTable)
+D_PSP_TEXT_SECTION void pspMachineInterruptsSetVecTableAddress(void* pVectTable)
 {
   u32_t uiInterruptsState;
 
@@ -275,12 +278,12 @@ D_PSP_TEXT_SECTION void pspInterruptsSetVectorTableAddress(void* pVectTable)
   M_PSP_ASSERT(NULL != pVectTable)
 
   /* Disable interrupts */
-  pspInterruptsDisable(&uiInterruptsState);
+  pspMachineInterruptsDisable(&uiInterruptsState);
 
   M_PSP_WRITE_CSR(D_PSP_MTVEC_NUM, pVectTable);
 
   /* Restore interrupts */
-  pspInterruptsRestore(uiInterruptsState);
+  pspMachineInterruptsRestore(uiInterruptsState);
 }
 
 /**
@@ -290,7 +293,7 @@ D_PSP_TEXT_SECTION void pspInterruptsSetVectorTableAddress(void* pVectTable)
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspInterruptsDisable(u32_t *pOutPrevIntState)
+D_PSP_TEXT_SECTION void pspMachineInterruptsDisable(u32_t *pOutPrevIntState)
 {
   /* Disable interrupts (all privilege levels). Status of mstatus CSR before the 'disable' is saved in pOutPrevIntState */
   M_PSP_CLEAR_AND_READ_CSR(*pOutPrevIntState, D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK) );
@@ -304,7 +307,7 @@ D_PSP_TEXT_SECTION void pspInterruptsDisable(u32_t *pOutPrevIntState)
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspInterruptsRestore(u32_t uiPrevIntState)
+D_PSP_TEXT_SECTION void pspMachineInterruptsRestore(u32_t uiPrevIntState)
 {
   M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, uiPrevIntState);
 }
@@ -316,7 +319,7 @@ D_PSP_TEXT_SECTION void pspInterruptsRestore(u32_t uiPrevIntState)
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspInterruptsEnable(void)
+D_PSP_TEXT_SECTION void pspMachineInterruptsEnable(void)
 {
   M_PSP_SET_CSR(D_PSP_MSTATUS_NUM, (D_PSP_MSTATUS_UIE_MASK | D_PSP_MSTATUS_SIE_MASK | D_PSP_MSTATUS_MIE_MASK));
 }
@@ -344,7 +347,7 @@ D_PSP_TEXT_SECTION void pspInterruptsEnable(void)
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspMachineInterruptsDisableIntNumber(u32_t uiInterruptNumber)
 {
   M_PSP_CLEAR_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
@@ -372,7 +375,7 @@ D_PSP_TEXT_SECTION void pspDisableInterruptNumberMachineLevel(u32_t uiInterruptN
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspMachineInterruptsEnableIntNumber(u32_t uiInterruptNumber)
 {
   M_PSP_SET_CSR(D_PSP_MIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
@@ -391,7 +394,7 @@ D_PSP_TEXT_SECTION void pspEnableInterruptNumberMachineLevel(u32_t uiInterruptNu
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspUserInterruptsDisableIntNumber(u32_t uiInterruptNumber)
 {
   M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
                (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
@@ -414,7 +417,7 @@ D_PSP_TEXT_SECTION void pspDisableInterruptNumberUserLevel(u32_t uiInterruptNumb
 *
 * @return - none
 */
-D_PSP_TEXT_SECTION void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumber)
+D_PSP_TEXT_SECTION void pspUserInterruptsEnableIntNumber(u32_t uiInterruptNumber)
 {
   M_PSP_ASSERT((D_PSP_INTERRUPTS_USER_SW    == uiInterruptNumber)||
                (D_PSP_INTERRUPTS_USER_TIMER == uiInterruptNumber)||
@@ -422,3 +425,15 @@ D_PSP_TEXT_SECTION void pspEnableInterruptNumberUserLevel(u32_t uiInterruptNumbe
 
   M_PSP_SET_CSR(D_PSP_UIE_NUM, M_PSP_BIT_MASK(uiInterruptNumber));
 }
+
+/**
+* @brief - The function returns the address the handler of a given exception
+*
+* @parameter -  exceptionCause           - exception cause
+* @return    -  fptrInterruptHandler     - function pointer to the exception handler
+*/
+D_PSP_TEXT_SECTION fptrPspInterruptHandler_t pspInterruptsGetExceptionHandler(u32_t uiExceptionCause)
+{
+  return g_fptrExceptions_ints[uiExceptionCause];
+}
+

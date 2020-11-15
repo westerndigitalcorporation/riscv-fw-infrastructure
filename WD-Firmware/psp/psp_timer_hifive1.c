@@ -62,7 +62,7 @@
 * @parameter - udPeriodCycles  - defines the timer's period in cycles 
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles)
+D_PSP_TEXT_SECTION void pspMachineTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriodCycles)
 {
   #if (0 == D_MTIME_ADDRESS) || (0 == D_MTIMECMP_ADDRESS)
     #error "D_MTIME_ADDRESS or D_MTIMECMP_ADDRESS is not defined"
@@ -84,7 +84,7 @@ D_PSP_TEXT_SECTION void pspTimerCounterSetupAndRun(u32_t uiTimer, u64_t udPeriod
 * @return u64_t      - Timer counter value
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
+D_PSP_TEXT_SECTION u64_t pspMachineTimerCounterGet(u32_t uiTimer)
 {
   volatile u64_t *pMtime       = (u64_t*)D_MTIME_ADDRESS;
   return *pMtime;
@@ -98,7 +98,7 @@ D_PSP_TEXT_SECTION u64_t pspTimerCounterGet(u32_t uiTimer)
 * @return u64_t      – Time compare counter value
 *
 ***************************************************************************************************/
-D_PSP_TEXT_SECTION u64_t pspTimeCompareCounterGet(u32_t uiTimer)
+D_PSP_TEXT_SECTION u64_t pspMachineTimerCompareCounterGet(u32_t uiTimer)
 {
   volatile u64_t *pMtimecmp    = (u64_t*)D_MTIMECMP_ADDRESS;
   return *pMtimecmp;

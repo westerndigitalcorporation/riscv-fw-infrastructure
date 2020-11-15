@@ -65,7 +65,7 @@
 *
 * @return none
 */
-void pspPmcHalt(u32_t uiEnableInterrupts);
+void pspMachinePowerMngCtrlHalt(u32_t uiEnableInterrupts);
 #else /* D_EHX1_VER_0_9 - does not contain the 'haltie' feature */
 /**
 * @brief Initiate core halt (i.e., transition to Halted (pmu/fw-halt, C3) state)
@@ -74,7 +74,7 @@ void pspPmcHalt(u32_t uiEnableInterrupts);
 *
 * @return none
 */
-void pspPmcHalt(void);
+void pspMachinePowerMngCtrlHalt(void);
 #endif /* D_EHX1_VER_1_0 or D_EHX1_VER_0_9 */
 
 /**
@@ -84,6 +84,6 @@ void pspPmcHalt(void);
 *
 * @return none
 */
-void pspPmcStall(u32_t uiTicks);
+void pspMachinePowerMngCtrlStall(u32_t uiTicks);
 
 #endif /* __PSP_PMC_EH1_H__ */

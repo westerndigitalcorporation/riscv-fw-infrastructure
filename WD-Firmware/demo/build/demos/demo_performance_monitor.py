@@ -23,9 +23,8 @@ class demo(object):
     self.toolchain     = ""
     self.toolchainPath = ""
     self.strGrpFile    = ""
-    self.strComrvCacheSize = "0"
     self.strLinkFilePrefix = ''
-    
+
     self.public_defs = [
         'D_TICK_TIME_MS=4',
         'D_ISR_STACK_SIZE=400',
@@ -40,8 +39,6 @@ class demo(object):
     ]
 
     self.listDemoSpecificLinkerFlags = [
-        # __comrv_cache_size defines in the the size of ram size to reserve for overlay data and overlay functions execution 
-        '-Wl,--defsym=__comrv_cache_size=' + self.strComrvCacheSize
     ]
     
     self.listDemoSpecificTargets = [

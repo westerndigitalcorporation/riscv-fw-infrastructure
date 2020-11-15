@@ -148,6 +148,8 @@ void demoPlatformInit(void)
 
   /* init Uart for 115200 baud, 8 data bits, 1 stop bit, no parity */
   demoUartInit();
+
+
 }
 
 /**

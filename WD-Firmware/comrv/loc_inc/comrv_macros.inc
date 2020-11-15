@@ -144,10 +144,10 @@
    M_PSP_STORE zero, D_COMRV_STATE_STACK_OFFSET_TMP(tp)
 .endm
 .macro M_COMRV_RESTORE_INTS restoreStatusFromReg
-   M_PSP_RESTORE_MINTERRUPTS \restoreStatusFromReg
+   M_PSP_MACHINE_RESTORE_INTERRUPTS \restoreStatusFromReg
 .endm
 .macro M_COMRV_DISABLE_INTS saveStatusInReg
-   M_PSP_DISABLE_MINTERRUPTS \saveStatusInReg
+   M_PSP_MACHINE_DISABLE_INTERRUPTS \saveStatusInReg
 .endm
 #else
 .macro M_COMRV_SAVE_REGS_AND_STATE state
