@@ -107,7 +107,7 @@ WD-Firmware
     - For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
 
           $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
-
+    
 ### Building for source
 - #### Preparations 
     - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse/eclipse
@@ -119,13 +119,15 @@ WD-Firmware
 &nbsp;
 - #### Build - compile and link 
     - You will need to choose a specific ***demo*** for building a full solution:
-    
+     Note: to run the script you will need `Python`, we support **`Python 2.7`** only
+
             From the eclipse terminal or console:
             $ cd [WD-firmware-root]/WD-Firmware/demo/build
             $ ./config.sh
             
             Then you will be asked to choose a demo.
             For more explanation on adding new demos please read the readme file on ***'/demos'***
+           
             
     - From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
     - Since the building process use SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
