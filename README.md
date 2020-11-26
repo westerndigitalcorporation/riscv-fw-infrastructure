@@ -144,7 +144,7 @@ We provide several platforms to work with, please follow the instructions for th
             
 	- Set the ___udev___ rules to allow the device to be accessed by the plugdev group
 
-            $ sudo cp [WD-firmware-root]/WD-Firmware/board/hifive-1/99-openocd.rules  /etc/udev/rules.d/
+            $ sudo cp [WD-firmware-root]/WD-Firmware/board/hifive1/99-openocd.rules  /etc/udev/rules.d/
             
 	- Add and verify current user to ___plugdev___ group
 
