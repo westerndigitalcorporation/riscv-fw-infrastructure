@@ -100,6 +100,7 @@ hart0_init:
     li t1, 0x55555555
     #write to mrac (region access control) CSR
     csrw 0x7c0, t1
+    fence.i
     # adjust hart0 stack pointer
     la sp, _sp_hart0
 
