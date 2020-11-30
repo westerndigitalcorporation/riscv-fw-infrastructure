@@ -68,19 +68,19 @@
 */
 void bspInitializeGenerationRegister(u32_t uiExtInterruptPolarity)
 {
-  u32_t uiRegisterClear;
+  u08_t ucRegisterClear;
 
   /* For Active-High the initial value of uiRegisterClear is 0 */
   if (D_PSP_EXT_INT_ACTIVE_HIGH == uiExtInterruptPolarity)
   {
-    uiRegisterClear = 0;
+    ucRegisterClear = 0;
   }
   else /*(D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity) */
   {
-    uiRegisterClear = 0x22; /* 00100010 */
+    ucRegisterClear = 0x22; /* 00100010 */
   }
 
-  M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiRegisterClear);
+  M_PSP_WRITE_REGISTER_8(D_BSP_EXT_INTS_GENERATION_REGISTER, ucRegisterClear);
 
   /* Sync the output. Make sure not to progress until the write to external register is done */
   M_PSP_INST_FENCEI();
@@ -96,34 +96,34 @@ void bspInitializeGenerationRegister(u32_t uiExtInterruptPolarity)
 */
 void bspGenerateExtInterrupt(u32_t uiExtInterruptNumber, u32_t uiExtInterruptPolarity, u32_t uiExtInterruptType)
 {
-  u32_t uiExtInterruptBitMap = 0;
+  u08_t ucExtInterruptBitMap = 0;
 
   if (D_BSP_IRQ_3 == uiExtInterruptNumber)
   {
     if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)
     {
-      uiExtInterruptBitMap |= (1 << D_BSP_IRQ3_POLARITY_BIT); /* bit#1:  1 = Active Low, 0 = Active High */
+      ucExtInterruptBitMap |= (1 << D_BSP_IRQ3_POLARITY_BIT); /* bit#1:  1 = Active Low, 0 = Active High */
     }
     if (D_PSP_EXT_INT_EDGE_TRIG_TYPE == uiExtInterruptType)
     {
-      uiExtInterruptBitMap |= (1 << D_BSP_IRQ3_TYPE_BIT);  /* bit#2:  1 = Edge, 0 = Level */
+      ucExtInterruptBitMap |= (1 << D_BSP_IRQ3_TYPE_BIT);  /* bit#2:  1 = Edge, 0 = Level */
     }
-    uiExtInterruptBitMap |= (1 << D_BSP_IRQ3_ACTIVATE_BIT);  /* Set the trigger bit */
+    ucExtInterruptBitMap |= (1 << D_BSP_IRQ3_ACTIVATE_BIT);  /* Set the trigger bit */
   }
   else if (D_BSP_IRQ_4 == uiExtInterruptNumber)
   {
     if (D_PSP_EXT_INT_ACTIVE_LOW == uiExtInterruptPolarity)
     {
-      uiExtInterruptBitMap |= (1 << D_BSP_IRQ4_POLARITY_BIT); /* bit#5:  1 = Active Low, 0 = Active High */
+      ucExtInterruptBitMap |= (1 << D_BSP_IRQ4_POLARITY_BIT); /* bit#5:  1 = Active Low, 0 = Active High */
     }
     if (D_PSP_EXT_INT_EDGE_TRIG_TYPE == uiExtInterruptType)
     {
-      uiExtInterruptBitMap |= (1 << D_BSP_IRQ4_TYPE_BIT);  /* bit#6:  1 = Edge, 0 = Level */
+      ucExtInterruptBitMap |= (1 << D_BSP_IRQ4_TYPE_BIT);  /* bit#6:  1 = Edge, 0 = Level */
     }
-    uiExtInterruptBitMap |= (1 << D_BSP_IRQ4_ACTIVATE_BIT);  /* Set the trigger bit */
+    ucExtInterruptBitMap |= (1 << D_BSP_IRQ4_ACTIVATE_BIT);  /* Set the trigger bit */
   }
 
-  M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiExtInterruptBitMap);
+  M_PSP_WRITE_REGISTER_8(D_BSP_EXT_INTS_GENERATION_REGISTER, ucExtInterruptBitMap);
 
   /* Sync the output. Make sure not to progress until the write to external register is done */
   M_PSP_INST_FENCEI();
@@ -137,18 +137,18 @@ void bspGenerateExtInterrupt(u32_t uiExtInterruptNumber, u32_t uiExtInterruptPol
 */
 void bspClearExtInterrupt(u32_t uiExtInterruptNumber)
 {
-  u32_t uiExtInterruptBitMap = M_PSP_READ_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER);
+  u08_t ucExtInterruptBitMap = M_PSP_READ_REGISTER_8(D_BSP_EXT_INTS_GENERATION_REGISTER);
 
   if (D_BSP_IRQ_3 == uiExtInterruptNumber)
   {
-    uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ3_ACTIVATE_BIT);
+    ucExtInterruptBitMap &= ~(1 << D_BSP_IRQ3_ACTIVATE_BIT);
   }
   else if (D_BSP_IRQ_4 == uiExtInterruptNumber)
   {
-    uiExtInterruptBitMap &= ~(1 << D_BSP_IRQ4_ACTIVATE_BIT);
+    ucExtInterruptBitMap &= ~(1 << D_BSP_IRQ4_ACTIVATE_BIT);
   }
 
-  M_PSP_WRITE_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiExtInterruptBitMap );
+  M_PSP_WRITE_REGISTER_8(D_BSP_EXT_INTS_GENERATION_REGISTER, ucExtInterruptBitMap );
 
   /* Sync the output. Make sure not to progress until the write to external register is done */
   M_PSP_INST_FENCEI();
