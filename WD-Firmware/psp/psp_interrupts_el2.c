@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 /**
-* @file   psp_interrupts_eh1.c
+* @file   psp_interrupts_el2.c
 * @author Nati Rapaport
 * @date   04.05.2020
-* @brief  The file supplies registration API for interrupt and exception service routines on EH1 core.
+* @brief  The file supplies registration API for interrupt and exception service routines on EL2 core.
 *
 */
 
@@ -251,13 +251,14 @@ D_PSP_TEXT_SECTION void pspMachineInterruptsExcpHandlingSelector(void)
 */
 D_PSP_TEXT_SECTION void pspMachineInterruptsDefaultHandler(void)
 {
-    volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalMtval;
+    volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalMscause, uiLocalMtval;
 
-    uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
-    uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
-    uiLocalMtval  = M_PSP_READ_CSR(D_PSP_MTVAL_NUM); /* Relevant for exceptions */
+    uiLocalMepc    = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
+    uiLocalMcause  = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
+    uiLocalMscause = M_PSP_READ_CSR(D_PSP_MSCAUSE_NUM);
+    uiLocalMtval   = M_PSP_READ_CSR(D_PSP_MTVAL_NUM); /* Relevant for exceptions */
 
-    if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalMtval)
+    if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalMscause || 0 == uiLocalMtval)
     {}
 
     M_PSP_EBREAK();
