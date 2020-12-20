@@ -62,10 +62,10 @@
 */
 void versionGetSwervolfVer(swervolfVersion_t *pSwervolfVersion)
 {
-  pSwervolfVersion->ucRev   = M_PSP_READ_REGISTER_32(D_VERSION_REV);
-  pSwervolfVersion->ucMinor = M_PSP_READ_REGISTER_32(D_VERSION_MINOR);
-  pSwervolfVersion->ucMajor = M_PSP_READ_REGISTER_32(D_VERSION_MAJOR);
-  pSwervolfVersion->ucSha   = M_PSP_READ_REGISTER_32(D_VERSION_SHA);
-  pSwervolfVersion->ucDirty = M_PSP_READ_REGISTER_32(D_VERSION_DIRTY);
+  pSwervolfVersion->ucRev   = *(u08_t*)D_VERSION_REV;
+  pSwervolfVersion->ucMajor = *(u08_t*)D_VERSION_MAJOR;
+  pSwervolfVersion->ucMinor = *(u08_t*)D_VERSION_MINOR;
+  pSwervolfVersion->ucDirty = *(u08_t*)D_VERSION_DIRTY;
+  pSwervolfVersion->ucSha   = *(u08_t*)D_VERSION_SHA;
 }
 

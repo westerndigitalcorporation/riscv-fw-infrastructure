@@ -251,13 +251,13 @@ D_PSP_TEXT_SECTION void pspMachineInterruptsExcpHandlingSelector(void)
 */
 D_PSP_TEXT_SECTION void pspMachineInterruptsDefaultHandler(void)
 {
-    volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalmtval;
+    volatile u32_t uiLocalMepc, uiLocalMcause, uiLocalMtval;
 
     uiLocalMepc   = M_PSP_READ_CSR(D_PSP_MEPC_NUM);
     uiLocalMcause = M_PSP_READ_CSR(D_PSP_MCAUSE_NUM);
-    uiLocalmtval =  M_PSP_READ_CSR(D_PSP_MTVAL_NUM); /* Relevant for exceptions */
+    uiLocalMtval  = M_PSP_READ_CSR(D_PSP_MTVAL_NUM); /* Relevant for exceptions */
 
-    if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalmtval)
+    if (0 == uiLocalMepc || 0 == uiLocalMcause || 0 == uiLocalMtval)
     {}
 
     M_PSP_EBREAK();
