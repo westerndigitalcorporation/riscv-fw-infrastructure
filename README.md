@@ -80,6 +80,10 @@ WD-Firmware
 
 ### Additional downloads
 	NOTE: The COMRV demo will work only with the LLVM toolchain, GCC is not supported
+- #### Toolchain binary download links:
+	- GNU  ( [riscv-gnu-toolchain-debian.tar.gz](https://wdc.box.com/s/ye6et53kx7bq7k7zvt6c5dncqqfpa8bs) )
+	- LLVM ( [riscv-llvm-toolchain-debian.tar.gz](https://wdc.box.com/s/pqclwpw6siiitq22lcl4pbmxq8nx2e13) )
+	
 - #### Using GCC Toolchain
 	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
 
@@ -107,7 +111,7 @@ WD-Firmware
     - For RISC-V OpenOCD, you will need the following depended libs: libusb-0.1, libusb-1.0-0-dev, libusb-dev
 
           $ sudo apt-get install libusb-0.1 libusb-1.0-0-dev libusb-dev
-
+    
 ### Building for source
 - #### Preparations 
     - Launch Eclipse MCU - [Eclipse-MCU-root]/eclipse/eclipse
@@ -119,14 +123,16 @@ WD-Firmware
 &nbsp;
 - #### Build - compile and link 
     - You will need to choose a specific ***demo*** for building a full solution:
-    
+
             From the eclipse terminal or console:
             $ cd [WD-firmware-root]/WD-Firmware/demo/build
             $ ./config.sh
             
             Then you will be asked to choose a demo.
             For more explanation on adding new demos please read the readme file on ***'/demos'***
-            
+           
+      **Note**: to run the script you will need `Python`, we support **`Python 2.7`** only      
+      
     - From 'Eclipse MCU' menu bar select '*Project'* -> *'Build All'*. Note that you can select which platform to build for.
     - Since the building process use SCons build system, you can build via console/terminal. Please read the readme on ***’/build’*** 
 
@@ -142,7 +148,7 @@ We provide several platforms to work with, please follow the instructions for th
             
 	- Set the ___udev___ rules to allow the device to be accessed by the plugdev group
 
-            $ sudo cp [WD-firmware-root]/WD-Firmware/board/hifive-1/99-openocd.rules  /etc/udev/rules.d/
+            $ sudo cp [WD-firmware-root]/WD-Firmware/board/hifive1/99-openocd.rules  /etc/udev/rules.d/
             
 	- Add and verify current user to ___plugdev___ group
 

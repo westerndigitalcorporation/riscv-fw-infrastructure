@@ -153,6 +153,10 @@
 #define M_PSP_SET_REGISTER_32(reg, bits)     ((*(volatile u32_t *)(void*)(reg)) |= (bits))  //need to use _Uncached u32_t if we have d$
 #define M_PSP_CLEAR_REGISTER_32(reg, bits)   ((*(volatile u32_t *)(void*)(reg)) &= (~bits)) //need to use _Uncached u32_t if we have d$
 
+#define M_PSP_WRITE_REGISTER_8(reg, value)  ((*(volatile u08_t *)(void*)(reg)) = (value))
+#define M_PSP_READ_REGISTER_8(reg)          ((*(volatile u08_t *)(void*)(reg)))
+#define M_PSP_SET_REGISTER_8(reg, bits)     ((*(volatile u08_t *)(void*)(reg)) |= (bits))
+#define M_PSP_CLEAR_REGISTER_8(reg, bits)   ((*(volatile u08_t *)(void*)(reg)) &= (~bits))
 /*******************************************************/
 /* Get Core-Id . Available in MACHINE mode only */
 #define M_PSP_MACHINE_GET_CORE_ID()    M_PSP_READ_CSR(D_PSP_MHARTID_NUM)

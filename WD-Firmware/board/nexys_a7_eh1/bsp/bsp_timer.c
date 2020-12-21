@@ -81,25 +81,25 @@
 */
 void bspRoutTimer(eTimerRouting_t eTimerRouting)
 {
-  u32_t uiRoutingValue = M_PSP_READ_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER);
+  u08_t ucRoutingValue = M_PSP_READ_REGISTER_8(D_BSP_EXT_INTS_GENERATION_REGISTER);
 
   switch (eTimerRouting)
   {
   case E_TIMER_TO_NMI:
-    uiRoutingValue &= ~((1 << D_BSP_ROUT_TIMER_TO_IRQ3)|(1 << D_BSP_ROUT_TIMER_TO_IRQ4));
+    ucRoutingValue &= ~((1 << D_BSP_ROUT_TIMER_TO_IRQ3)|(1 << D_BSP_ROUT_TIMER_TO_IRQ4));
     break;
   case E_TIMER_TO_IRQ3:
-    uiRoutingValue |= (1 << D_BSP_ROUT_TIMER_TO_IRQ3);
+    ucRoutingValue |= (1 << D_BSP_ROUT_TIMER_TO_IRQ3);
     break;
   case E_TIMER_TO_IRQ4:
-    uiRoutingValue |= (1 << D_BSP_ROUT_TIMER_TO_IRQ4);
+    ucRoutingValue |= (1 << D_BSP_ROUT_TIMER_TO_IRQ4);
     break;
     default:
       break;
   }
 
   /* Set the routing selection */
-  M_PSP_SET_REGISTER_32(D_BSP_EXT_INTS_GENERATION_REGISTER, uiRoutingValue);
+  M_PSP_SET_REGISTER_8(D_BSP_EXT_INTS_GENERATION_REGISTER, ucRoutingValue);
 
   /* Sync the output. Make sure not to progress until the write to external register is done */
   M_PSP_INST_FENCEI();

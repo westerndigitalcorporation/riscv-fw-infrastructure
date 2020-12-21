@@ -208,7 +208,7 @@ void demoOutpuLed(const u08_t ucOnOffMode)
 {
 #ifdef D_SWERV_EH1
   M_PSP_ASSERT(ucOnOffMode>1);
-  M_PSP_WRITE_REGISTER_32(D_LED_BASE_ADDRESS, ucOnOffMode);
+  M_PSP_WRITE_REGISTER_8(D_LED_BASE_ADDRESS, ucOnOffMode);
 #endif
 }
 
