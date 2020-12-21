@@ -24,7 +24,6 @@
 * @brief  implementation of print functionality
 */
 
-
 #include <stdarg.h>
 #include "psp_api.h"
 #include "bsp_mem_map.h"
@@ -72,6 +71,10 @@
 #define D_UART_DLAB_BIT        (0x80)  /* DLAB bit in LCR */
 
 #define M_UART_WR_CH(_CHAR_) (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (0x00) )) = _CHAR_)
+
+
+const char g_UpHexDigits[] = "0123456789ABCDEF";
+const char g_LowHexDigits[] = "0123456789abcdef";
 
 /*---------------------------------------------------*/
 /* static                                            */
@@ -242,14 +245,11 @@ static void outs(  char* lp, params_t *par)
 /* as directed by the padding and positioning flags. */
 /*                                                   */
 /*---------------------------------------------------*/
-
 static void outnum( const int n, const long base, params_t *par)
 {
     char* cp;
     int negative;
     char outbuf[32];
-  const char uphexdigits[] = "0123456789ABCDEF";
-  const char lohexdigits[] = "0123456789abcdef";
   const char *digits;
     unsigned long num;
   int i;
@@ -265,9 +265,9 @@ static void outnum( const int n, const long base, params_t *par)
     }
 
   if (par->upper_hex_digit_flag)
-    digits = uphexdigits;
+    digits = g_UpHexDigits;
   else
-    digits = lohexdigits;
+    digits = g_LowHexDigits;
    
     /* Build number (backwards) in outbuf            */
   cp = outbuf;
