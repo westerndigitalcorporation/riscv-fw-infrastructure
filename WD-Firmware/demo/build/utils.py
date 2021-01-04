@@ -145,9 +145,8 @@ def fnCheckInstalledDependencis(listDependencis):
     for strDependency in listDependencis:
       fnExecuteCommand(STR_LIST_PKGS % strDependency, "dpkg failed executing")
       if STR_NO_INSTALL in open(STR_TMP_FILE).read():
-        print("Error: please install missing library - " + strDependency)
+        print("Warning: please install missing library for using USB driver - " + strDependency)
         fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE)
-        exit(1)
 
     fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE, "Remove temporary file failed")
   else: 
