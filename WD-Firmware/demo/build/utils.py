@@ -142,11 +142,14 @@ def fnCopyOverlaySection(target, source, env):
 # under linux, verify installation dependencies
 def fnCheckInstalledDependencis(listDependencis):
   if platform.uname()[0] == STR_PLATFORM:
-    for strDependency in listDependencis:
-      fnExecuteCommand(STR_LIST_PKGS % strDependency, "dpkg failed executing")
-      if STR_NO_INSTALL in open(STR_TMP_FILE).read():
-        print("Warning: please install missing library for using USB driver - " + strDependency)
-        fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE)
+    try:
+      for strDependency in listDependencis:
+        fnExecuteCommand(STR_LIST_PKGS % strDependency, "dpkg failed executing")
+        if STR_NO_INSTALL in open(STR_TMP_FILE).read():
+          print("Warning: please install missing library for using USB driver - " + strDependency)
+          fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE)
+    except:
+      print("Warning: please install missing library for using USB driver - " + strDependency)
 
     fnExecuteCommand(STR_REMOVE_FILE % STR_TMP_FILE, "Remove temporary file failed")
   else: 
