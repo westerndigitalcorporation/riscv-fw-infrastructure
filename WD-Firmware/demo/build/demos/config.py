@@ -125,25 +125,35 @@ class clsGenerate(object):
     return int(strItem)
 
   def setConfig(self):
-    strConfiguration = STR_CONFIG_HEADER
+
     self.scanDemos()
     self.scanToolchains()
     intItemDemo = self.pickItem(STR_DEMO, self.listDemos)
-    strConfiguration += "\n" + STR_DEMO + self.listDemos[intItemDemo]
-    
-    if self.listDemos[intItemDemo].find(STR_COMRV_DEMO) > -1 or self.listDemos[intItemDemo].find(STR_BITMANIP_DEMO) > -1 or self.listDemos[intItemDemo].find(STR_CTI_DEMO) > -1:
-      intItemTool = self.listToolchain.index(STR_COMRV_TC)
-      print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItemDemo], STR_COMRV_TC)
 
-    else:
+
+    intItemTool = self.fnAutoPickToolchain(intItemDemo)
+    if not intItemTool:
       intItemTool = self.pickItem(STR_TOOLCHAIN, self.listToolchain)
-    strConfiguration += "\n" + STR_TOOLCHAIN + self.listToolchain[intItemTool]
+
 
     print "\nSelected:"
     print "demo      = %s" % self.listDemos[intItemDemo]
     print "toolcahin = %s" % self.listToolchain[intItemTool]
+    self.fnSaveConfigToFile(self.listDemos[intItemDemo], self.listToolchain[intItemTool])
+
+  def fnAutoPickToolchain(self, intItemDemo):
+    intItemTool = None
+    if self.listDemos[intItemDemo].find(STR_COMRV_DEMO) > -1 or self.listDemos[intItemDemo].find(
+            STR_BITMANIP_DEMO) > -1 or self.listDemos[intItemDemo].find(STR_CTI_DEMO) > -1:
+      intItemTool = self.listToolchain.index(STR_COMRV_TC)
+      print "\nAuto select toolchain ---> %s can only work with %s " % (self.listDemos[intItemDemo], STR_COMRV_TC)
+
+    return intItemTool
+
+  def fnSaveConfigToFile(self, strDemo, strToolChain):
     # save the configureation in the configure file in the build folder
-    f  = open(STR_CONFIG_FILE, "w")
+    strConfiguration = "{header}\n{demo}\n{toolchain}".format(header=STR_CONFIG_HEADER, demo=STR_DEMO+strDemo, toolchain=STR_TOOLCHAIN+strToolChain)
+    f = open(STR_CONFIG_FILE, "w")
     f.write(strConfiguration)
     f.close()
 

@@ -437,13 +437,32 @@ void demoStart(void)
 {
   u32_t uiAddressForAtomics;
   static u32_t uiSync = 0;
+  static volatile u32_t uiCounter0 = 0, uiCounter1 = 0;
+  u32_t uiHartId = M_PSP_MACHINE_GET_HART_ID();
 
-  M_DEMO_START_PRINT();
+  /* count number of times we entered this function */
+  if (E_HART0 == uiHartId)
+  {
+    uiCounter0++;
+  }
+  else
+  {
+    uiCounter1++;
+  }
+
+  /* if 2 cores passed this point */
+  if (uiCounter0 == uiCounter1)
+  {
+    M_DEMO_START_PRINT();
+  }
 
   /* Globals initializations could be done once */
   if (0 == uiSync)
   {
     uiSync = 1;
+
+    /* start hart1 */
+    asm volatile ("csrrwi x0, 0x7fc, 3");
 
     /* Initialize PSP mutexs */
     pspMutexInitPspMutexs();
@@ -476,7 +495,21 @@ void demoStart(void)
   demoOutputMsg("---- Part 4 : Timer interrupts over 2 harts ----\n");
   demoMultiHartsTimerInterrupts();
 
-  M_DEMO_END_PRINT();
+  /* count number of times we exit this function */
+  if (E_HART0 == uiHartId)
+  {
+    uiCounter0--;
+  }
+  else
+  {
+    uiCounter1--;
+  }
+
+  /* if 2 cores passed this point */
+  if (uiCounter0 == uiCounter1)
+  {
+    M_DEMO_END_PRINT();
+  }
 }
 
 

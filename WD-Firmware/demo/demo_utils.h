@@ -38,24 +38,24 @@
   #include <stdlib.h>
   #define M_DEMO_START_PRINT()    demoOutputMsg("->> ",4);                  \
                                   demoOutputMsg(__FILE__,strlen(__FILE__)); \
-                                  demoOutputMsg("     start\n",11);
+                                  demoOutputMsg(".... start\n",11);
 
   #define M_DEMO_END_PRINT()      demoOutputMsg("->> ",4);                  \
                                   demoOutputMsg(__FILE__,strlen(__FILE__)); \
-                                  demoOutputMsg("     end\n",11);
+                                  demoOutputMsg(".... end\n",11);
 
   #define M_DEMO_ERR_PRINT()      char cStringValue[10];                     \
                                   itoa(__LINE__,cStringValue, 10);           \
                                   demoOutputMsg("->> ",4);                   \
                                   demoOutputMsg(__FILE__,strlen(__FILE__));  \
-                                  demoOutputMsg("     error -> line",18);    \
+                                  demoOutputMsg(".... error -> line",18);    \
                                   demoOutputMsg(cStringValue,strlen(cStringValue));\
                                   demoOutputMsg("\n",1);
 
 #else
   #define M_DEMO_START_PRINT()    demoOutputMsg("->> '%s' .... start", __FILE__);
-  #define M_DEMO_END_PRINT()      demoOutputMsg("->> '%s' .... ends", __FILE__);
-  #define M_DEMO_ERR_PRINT()      demoOutputMsg("->> %s  ..error -> line %d", __FILE__, __LINE__);
+  #define M_DEMO_END_PRINT()      demoOutputMsg("->> '%s' .... end", __FILE__);
+  #define M_DEMO_ERR_PRINT()      demoOutputMsg("->> %s .... error -> line %d", __FILE__, __LINE__);
 #endif
 
 #define M_DEMO_ENDLESS_LOOP() M_DEMO_ERR_PRINT()       \
