@@ -59,6 +59,7 @@ typedef enum
   E_TEST_ERROR_OVL_CRITICAL_SECTION_FAILED          = (0x1 << 8),
   E_TEST_ERROR_OVL_THREAD_SAFE_READ_BACK_STORE      = (0x1 << 9),
   E_TEST_ERROR_OVL_FAILED                           = (0x1 << 10),
+  E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED          = (0x1 << 11),
 }E_TEST_ERROR;
 
 #endif /* EOF */

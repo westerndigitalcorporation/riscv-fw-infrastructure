@@ -123,6 +123,9 @@ _Pragma("clang diagnostic ignored \"-Winline-asm\"")
    #define M_CTI_MARK_DEFRAG()
 #endif /* D_CTI */
 
+#define D_COMRV_LOAD_DISABLED                         0
+#define D_COMRV_LOAD_ENABLED                          1
+
 /**
 * macros
 */
@@ -348,6 +351,11 @@ D_COMRV_TEXT_SECTION void comrvInit(comrvInitArgs_t* pInitArgs)
    {
       comrvLoadTables();
    }
+
+#ifdef D_COMRV_LOAD_CONFIG_SUPPORT
+   /* load operation is enabled by default */
+   g_stComrvCB.ucLoadEnabled = D_COMRV_LOAD_ENABLED;
+#endif /* D_COMRV_LOAD_CONFIG_SUPPORT */
 }
 
 /**
@@ -685,6 +693,15 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
       M_CTI_SYNC_POINT(D_CTI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC);
       /* the group size in bytes */
       usOverlayGroupSize = M_COMRV_GROUP_SIZE_TO_BYTES(usOverlayGroupSize);
+
+#ifdef D_COMRV_LOAD_CONFIG_SUPPORT
+      /* check if load is disabled */
+      if (M_COMRV_BUILTIN_EXPECT(g_stComrvCB.ucLoadEnabled == D_COMRV_LOAD_DISABLED,0))
+      {
+         M_COMRV_ERROR(stErrArgs, D_COMRV_LOAD_DISABLED_ERR, unToken.uiValue);
+      }
+#endif /* D_COMRV_LOAD_CONFIG_SUPPORT */
+
       /* now we can load the overlay group */
       stLoadArgs.uiSizeInBytes = usOverlayGroupSize;
       stLoadArgs.pDest         = M_COMRV_CALC_CACHE_ADDR_IN_BYTES_FROM_ENTRY(ucIndex);
@@ -1454,42 +1471,78 @@ D_COMRV_TEXT_SECTION void comrvNotifyNotInitialized(void)
 void comrvReset(comrvResetType_t eResetType)
 {
    comrvCacheEntry_t *pCacheEntry;
-   u08_t              ucIndex, ucLoopCount;
+   u08_t              ucPrevIndex;
+   u08_t              ucIndex, ucResetCacheLoopCount, ucResetEvictionCountersLoopCount;
 #ifdef D_COMRV_RTOS_SUPPORT
    u32_t              ret;
 #endif /* D_COMRV_RTOS_SUPPORT */
 
-   /* does the caller wishes to reset tables as well */
-   if (eResetType == E_RESET_TYPE_ALL)
+   switch (eResetType)
    {
-      /* loop all table entries */
-      ucLoopCount = D_COMRV_NUM_OF_CACHE_ENTRIES;
-   }
-   else
-   {
-      /* loop table entries excluding the offset/multi-group entry */
-      ucLoopCount = g_stComrvCB.ucLastCacheEntry;
+      /* caller wishes to reset cache table and eviction counters */
+      case E_RESET_TYPE_LOADED_GROUPS:
+         /* loop table entries excluding the offset/multi-group entry */
+         ucResetCacheLoopCount = g_stComrvCB.ucLastCacheEntry;
+         ucResetEvictionCountersLoopCount = 0;
+         break;
+       /* caller wishes to reset all cache tables (including offset and multigroup) and eviction counters */
+      case E_RESET_TYPE_ALL:
+         /* loop all table entries */
+         ucResetCacheLoopCount = D_COMRV_NUM_OF_CACHE_ENTRIES;
+         ucResetEvictionCountersLoopCount = 0;
+         break;
+      /* only reset eviction counters */
+      case E_RESET_TYPE_LRU_HISTORY:
+         ucResetEvictionCountersLoopCount = g_stComrvCB.ucLastCacheEntry;
+         ucResetCacheLoopCount = 0;
+         break;
+      default:
+         break;
    }
 
    /* enter critical section */
    M_COMRV_ENTER_CRITICAL_SECTION();
 
 #ifdef D_COMRV_EVICTION_LRU
-   /* initialize all cache entries (exclude last cache entry which is
-      reserved for comrv tables) */
-   for (ucIndex = 0 ; ucIndex < ucLoopCount ; ucIndex++)
+
+   /* cache reset */
+   if (ucResetCacheLoopCount)
    {
-      pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
-      /* initially each entry points to the previous and next neighbor cells */
-      pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
-      pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
-      pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
-      pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+      /* initialize all cache entries (exclude last cache entry which is
+         reserved for comrv tables) */
+      for (ucIndex = 0 ; ucIndex < ucResetCacheLoopCount ; ucIndex++)
+      {
+         pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
+         /* initially each entry points to the previous and next neighbor cells */
+         pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex-1;
+         pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex+1;
+         pCacheEntry->unToken.uiValue                = D_COMRV_ENTRY_TOKEN_INIT_VALUE;
+         pCacheEntry->unProperties.ucValue           = D_COMRV_ENTRY_PROPERTIES_INIT_VALUE;
+      }
+      /* set the index of the LRU and MRU */
+      g_stComrvCB.ucLruIndex = 0;
+      g_stComrvCB.ucMruIndex = ucResetCacheLoopCount - 1;
+      pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
    }
-   /* set the index of the LRU and MRU */
-   g_stComrvCB.ucLruIndex = 0;
-   g_stComrvCB.ucMruIndex = ucLoopCount - 1;
-   pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
+   /* reset eviction counters */
+   else if (ucResetEvictionCountersLoopCount)
+   {
+      ucPrevIndex = 0;
+      /* loop stOverlayCache and reset lru list order - loaded groups won't be affected */
+      for (ucIndex = 0 ; ucIndex < ucResetEvictionCountersLoopCount ; ucIndex = pCacheEntry->unLru.stFields.typNextLruIndex)
+      {
+         pCacheEntry = &g_stComrvCB.stOverlayCache[ucIndex];
+         /* reset each entry to point to the previous and next neighbor cells (native in-order) */
+         pCacheEntry->unLru.stFields.typPrevLruIndex = ucIndex;
+         pCacheEntry->unLru.stFields.typNextLruIndex = ucIndex + pCacheEntry->unProperties.stFields.ucSizeInMinGroupSizeUnits;
+         ucPrevIndex = ucIndex;
+      }
+      /* set the index of the LRU and MRU */
+      g_stComrvCB.ucLruIndex = 0;
+      g_stComrvCB.ucMruIndex = ucPrevIndex;
+      g_stComrvCB.stOverlayCache[0].unLru.stFields.typNextLruIndex = D_COMRV_LRU_ITEM;
+      pCacheEntry->unLru.stFields.typNextLruIndex = D_COMRV_MRU_ITEM;
+   }
 
 #elif defined(D_COMRV_EVICTION_LFU)
 #elif defined(D_COMRV_EVICTION_MIX_LRU_LFU)
@@ -1498,3 +1551,29 @@ void comrvReset(comrvResetType_t eResetType)
    /* exit critical section */
    M_COMRV_EXIT_CRITICAL_SECTION();
 }
+
+#ifdef D_COMRV_LOAD_CONFIG_SUPPORT
+/**
+* @brief This function enables/disables the 'load' operation. When 'load'
+*        operation is disabled and an overlay function is invoked and not ,
+*        already loaded, the engine will call the error hook.
+*        By default, load is enabled.
+*
+* @param ucEnable - zero - disable the load operation
+*                   non-zero - enable the load operation
+*
+* @return None
+*/
+void comrvConfigureLoadOperation(u08_t ucEnable)
+{
+   /* the end user requested to enable the 'load' */
+   if (ucEnable)
+   {
+      g_stComrvCB.ucLoadEnabled = D_COMRV_LOAD_ENABLED;
+   }
+   else
+   {
+      g_stComrvCB.ucLoadEnabled = D_COMRV_LOAD_DISABLED;
+   }
+}
+#endif /* D_COMRV_LOAD_CONFIG_SUPPORT */

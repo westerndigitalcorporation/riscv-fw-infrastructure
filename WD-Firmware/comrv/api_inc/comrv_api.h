@@ -65,6 +65,7 @@ void comrvLoadTables(void);
 const comrvCB_t* comrvGetDatabase(void);
 void comrvReset(comrvResetType_t eResetType);
 void comrvInit(comrvInitArgs_t* pInitParams);
+void comrvConfigureLoadOperation(u08_t ucEnable);
 void comrvGetStatus(comrvStatus_t* pComrvStatus);
 D_COMRV_NO_INLINE u32_t comrvInitApplicationStack(void);
 u32_t comrvLockUnlockOverlayGroupByFunction(void* pAddress, comrvLockState_t eLockState);

@@ -174,6 +174,9 @@ typedef struct comrvCB
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
   /* last index of cache entry */
   u08_t             ucLastCacheEntry;
+#ifdef D_COMRV_LOAD_CONFIG_SUPPORT
+  u08_t             ucLoadEnabled;
+#endif /* D_COMRV_LOAD_CONFIG_SUPPORT */
 } comrvCB_t;
 
 /* status structure */
@@ -257,11 +260,13 @@ typedef struct comrvTaskStackRegsVal
 typedef enum comrvResetType
 {
    /* reset cache control block  - reset all loaded groups and eviction values*/
-   E_RESET_TYPE_CACHE = 0,
+   E_RESET_TYPE_LOADED_GROUPS       = 0,
    /* reset cache control block including the 'offset' and 'multi-group' tables
       if this option means the end user must reload these tables using
       comrvLoadTables */
-   E_RESET_TYPE_ALL   = 1
+   E_RESET_TYPE_ALL                 = 1,
+   /* reset eviction counters */
+   E_RESET_TYPE_LRU_HISTORY         = 2,
 }comrvResetType_t;
 
 #endif /* __COMRV_TYPES_H__ */

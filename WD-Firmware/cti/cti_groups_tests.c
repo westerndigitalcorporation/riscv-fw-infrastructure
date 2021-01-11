@@ -114,6 +114,7 @@ E_TEST_ERROR ctiOvlTestLockUnlock(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestGroupingOvlt(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestCriticalSection(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestGroupWithSameSize(S_FW_CB_PTR pCtiFrameWorkCB);
+E_TEST_ERROR ctiOvlTestResetEvictionCounters(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestGroupWithDifferentSize(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestDefragOverlayedFunctions(S_FW_CB_PTR pCtiFrameWorkCB);
 
@@ -145,6 +146,7 @@ const ctiTestFunctionPtr g_pLookupTableCtiTestOvl[E_CB_TEST_OVL_MAX] =
   ctiOvlTestCrcCheck,                  /* E_CB_TEST_OVL_OVL_CRC_CHECK */
   ctiOvlTestCriticalSection,           /* E_CB_TEST_OVL_CRITICAL_SECTION */
   ctiOvlTestThreadSafe,                /* E_CB_TEST_OVL_THREAD_SAFE */
+  ctiOvlTestResetEvictionCounters,     /* E_CB_TEST_OVL_RESET_EVICTION_COUNTERS */
 };
 
 /*
@@ -966,6 +968,180 @@ void ctiSwiIsr(void)
                        D_RTOSAL_OR, &stRtosalEventBits);
 }
 #endif /* D_COMRV_RTOS_SUPPORT */
+
+/**
+* @brief tests the 'reset eviction counters' api
+*
+* @param  None
+*
+* @return None
+*/
+E_TEST_ERROR ctiOvlTestResetEvictionCounters(S_FW_CB_PTR pCtiFrameWorkCB)
+{
+   lru_t tIntex;
+   comrvStatus_t stComrvStatus;
+
+   comrvGetStatus(&stComrvStatus);
+
+   /* fill the cache */
+   ctiTestFuncOverlay120Vect(); /* will be lru 0 */
+   ctiTestFuncOverlay121Vect(); /* will be lru 1 */
+   ctiTestFuncOverlay122Vect(); /* will be lru 2 */
+   ctiTestFuncOverlay123Vect(); /* will be lru 3 */
+   ctiTestFuncOverlay124Vect(); /* and so on ... */
+   ctiTestFuncOverlay125Vect();
+   ctiTestFuncOverlay126Vect();
+   ctiTestFuncOverlay127Vect();
+   ctiTestFuncOverlay128Vect();
+   ctiTestFuncOverlay129Vect();
+   ctiTestFuncOverlay130Vect();
+   ctiTestFuncOverlay131Vect();
+   ctiTestFuncOverlay132Vect();
+   ctiTestFuncOverlay133Vect();
+   ctiTestFuncOverlay134Vect();
+   ctiTestFuncOverlay135Vect();
+   ctiTestFuncOverlay136Vect();
+   ctiTestFuncOverlay137Vect();
+   ctiTestFuncOverlay138Vect();
+   ctiTestFuncOverlay139Vect();
+   ctiTestFuncOverlay140Vect();
+   ctiTestFuncOverlay141Vect();
+   ctiTestFuncOverlay142Vect();
+   ctiTestFuncOverlay143Vect();
+   ctiTestFuncOverlay144Vect();
+   ctiTestFuncOverlay145Vect();
+   ctiTestFuncOverlay146Vect();
+   ctiTestFuncOverlay147Vect();
+   ctiTestFuncOverlay148Vect();
+   ctiTestFuncOverlay149Vect();
+   ctiTestFuncOverlay150Vect();
+   ctiTestFuncOverlay151Vect(); /* will be the mru */
+
+   /* the expected lru is ctiTestFuncOverlay120Vect and mru is ctiTestFuncOverlay130Vect */
+   comrvGetStatus(&stComrvStatus);
+
+   /* verify lru/mru are correct */
+   if (stComrvStatus.pComrvCB->ucLruIndex != 0 &&
+       stComrvStatus.pComrvCB->ucMruIndex != 31)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   /* verify lru list */
+   for (tIntex = stComrvStatus.pComrvCB->ucLruIndex ; tIntex < stComrvStatus.pComrvCB->ucMruIndex ; )
+   {
+      if (stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex != tIntex+1)
+      {
+         ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+      }
+      tIntex = stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex;
+   }
+
+   ctiTestFuncOverlay151Vect(); /* will be lru 0 */
+   ctiTestFuncOverlay150Vect(); /* will be lru 1 */
+   ctiTestFuncOverlay149Vect(); /* will be lru 2 */
+   ctiTestFuncOverlay148Vect(); /* will be lru 3 */
+   ctiTestFuncOverlay147Vect(); /* and so on ... */
+   ctiTestFuncOverlay146Vect();
+   ctiTestFuncOverlay145Vect();
+   ctiTestFuncOverlay144Vect();
+   ctiTestFuncOverlay143Vect();
+   ctiTestFuncOverlay142Vect();
+   ctiTestFuncOverlay141Vect();
+   ctiTestFuncOverlay140Vect();
+   ctiTestFuncOverlay139Vect();
+   ctiTestFuncOverlay138Vect();
+   ctiTestFuncOverlay137Vect();
+   ctiTestFuncOverlay136Vect();
+   ctiTestFuncOverlay135Vect();
+   ctiTestFuncOverlay134Vect();
+   ctiTestFuncOverlay133Vect();
+   ctiTestFuncOverlay132Vect();
+   ctiTestFuncOverlay131Vect();
+   ctiTestFuncOverlay130Vect();
+   ctiTestFuncOverlay129Vect();
+   ctiTestFuncOverlay128Vect();
+   ctiTestFuncOverlay127Vect();
+   ctiTestFuncOverlay126Vect();
+   ctiTestFuncOverlay125Vect();
+   ctiTestFuncOverlay124Vect();
+   ctiTestFuncOverlay123Vect();
+   ctiTestFuncOverlay122Vect();
+   ctiTestFuncOverlay121Vect();
+   ctiTestFuncOverlay120Vect(); /* will be mru */
+
+   /* verify lru/mru are correct */
+   if (stComrvStatus.pComrvCB->ucLruIndex != 31 &&  /* entry 29 is now lru */
+       stComrvStatus.pComrvCB->ucMruIndex != 0)     /* entry 0 is now mru */
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   /* verify lru list */
+   for (tIntex = stComrvStatus.pComrvCB->ucLruIndex ; tIntex > stComrvStatus.pComrvCB->ucMruIndex ; )
+   {
+      if (stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex != tIntex-1)
+      {
+         ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+      }
+      tIntex = stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex;
+   }
+
+   /* reset eviction counters */
+   comrvReset(E_RESET_TYPE_LRU_HISTORY);
+
+   /* verify lru/mru are correct */
+   if (stComrvStatus.pComrvCB->ucLruIndex != 0 && /* entry 0 is now lru */
+       stComrvStatus.pComrvCB->ucMruIndex != 31)  /* entry 29 is now mru */
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   /* clear load counter - verify we don't load any of the functions */
+   g_stCtiOvlFuncsHitCounter.uiComrvLoad = 0;
+
+   /* call the overlay functions */
+   ctiTestFuncOverlay151Vect();
+   ctiTestFuncOverlay150Vect();
+   ctiTestFuncOverlay149Vect();
+   ctiTestFuncOverlay148Vect();
+   ctiTestFuncOverlay147Vect();
+   ctiTestFuncOverlay146Vect();
+   ctiTestFuncOverlay145Vect();
+   ctiTestFuncOverlay144Vect();
+   ctiTestFuncOverlay143Vect();
+   ctiTestFuncOverlay142Vect();
+   ctiTestFuncOverlay141Vect();
+   ctiTestFuncOverlay140Vect();
+   ctiTestFuncOverlay139Vect();
+   ctiTestFuncOverlay138Vect();
+   ctiTestFuncOverlay137Vect();
+   ctiTestFuncOverlay136Vect();
+   ctiTestFuncOverlay135Vect();
+   ctiTestFuncOverlay134Vect();
+   ctiTestFuncOverlay133Vect();
+   ctiTestFuncOverlay132Vect();
+   ctiTestFuncOverlay131Vect();
+   ctiTestFuncOverlay130Vect();
+   ctiTestFuncOverlay129Vect();
+   ctiTestFuncOverlay128Vect();
+   ctiTestFuncOverlay127Vect();
+   ctiTestFuncOverlay126Vect();
+   ctiTestFuncOverlay125Vect();
+   ctiTestFuncOverlay124Vect();
+   ctiTestFuncOverlay123Vect();
+   ctiTestFuncOverlay122Vect();
+   ctiTestFuncOverlay121Vect();
+   ctiTestFuncOverlay120Vect();
+
+   /* we expect 0 hits (0 loads) - all functions should be loaded */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 0)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   return ctiGetErrorBits(pCtiFrameWorkCB);
+}
 
 /**
 * @brief run at GROUP 101 - GROUP size 0x200

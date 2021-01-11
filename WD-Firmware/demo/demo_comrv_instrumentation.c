@@ -46,25 +46,25 @@
    asm volatile ("nop");
 
 #define M_DEMO_10_NOPS()    \
-		M_DEMO_5_NOPS()	    \
-		M_DEMO_5_NOPS()
+      M_DEMO_5_NOPS()	    \
+      M_DEMO_5_NOPS()
 
 #define M_DEMO_50_NOPS()    \
-		M_DEMO_10_NOPS()    \
-		M_DEMO_10_NOPS()    \
-		M_DEMO_10_NOPS()    \
-		M_DEMO_10_NOPS()    \
-		M_DEMO_10_NOPS()
+      M_DEMO_10_NOPS()    \
+      M_DEMO_10_NOPS()    \
+      M_DEMO_10_NOPS()    \
+      M_DEMO_10_NOPS()    \
+      M_DEMO_10_NOPS()
 
 #define M_DEMO_100_NOPS()   \
-		M_DEMO_50_NOPS()    \
-		M_DEMO_50_NOPS()    \
+      M_DEMO_50_NOPS()    \
+      M_DEMO_50_NOPS()    \
 
 #define M_DEMO_260_NOPS()   \
-		M_DEMO_100_NOPS()   \
-		M_DEMO_100_NOPS()   \
-		M_DEMO_50_NOPS()    \
-		M_DEMO_10_NOPS()    \
+      M_DEMO_100_NOPS()   \
+      M_DEMO_100_NOPS()   \
+      M_DEMO_50_NOPS()    \
+      M_DEMO_10_NOPS()    \
 
 /**
 * types
