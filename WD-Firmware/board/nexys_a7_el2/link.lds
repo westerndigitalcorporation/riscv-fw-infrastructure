@@ -29,16 +29,17 @@ MEMORY
 {
   ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
-  dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 64K
+  dccm (wxa!ri) : ORIGIN = 0xf0040000, LENGTH = 32K
   ovl           : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
 PHDRS
 {
-  rom_load PT_LOAD;
-  ram_init PT_LOAD;
-  ram_load PT_LOAD;
-  ovl PT_NULL;
+  rom_load  PT_LOAD;
+  ram_init  PT_LOAD;
+  ram_load  PT_LOAD;
+  dccm_load PT_LOAD;
+  ovl       PT_NULL;
 }
 
 
@@ -88,18 +89,28 @@ SECTIONS
     . = LENGTH(ovl);
   } > ram : ram_load
 
+  /* this area is used for loading and executing the comrv 
+     overlay groups */
+  .overlay_sec ALIGN(__comrv_cache_alignment_size) :
+  {
+    __OVERLAY_CACHE_START__ = . ;
+    . = . + __comrv_cache_size; 
+    __OVERLAY_CACHE_END__ = . ;
+  } > ram : ram_load
+
+  . = ORIGIN(dccm);
   
   .lalign : 
   {
     . = ALIGN(4);
     PROVIDE( _data_lma = . );
-  } > ram : ram_load
+  } > dccm : dccm_load
   
   .dalign :
   {
     . = ALIGN(4);
     PROVIDE( _data = . );
-  } > ram : ram_load
+  } > dccm : dccm_load
   
   
   .data :
@@ -108,17 +119,17 @@ SECTIONS
     *(.gnu.linkonce.d.*)
     . += 10; /* fix for linker false error message */
     . = ALIGN(8); 
-  } > ram : ram_load
+  } > dccm : dccm_load
 
   COMRV_DATA_SEC : ALIGN(16)
   {
   
-  }  > ram2 : ram_load
+  }  > dccm : dccm_load
 
   PSP_DATA_SEC : ALIGN(16)
   {
   
-  }  > ram2 : ram_load
+  }  > dccm : dccm_load
 
   .sdata :
   {
@@ -129,7 +140,7 @@ SECTIONS
     . = ALIGN(8);
     *(.srodata .srodata.*)
    . = ALIGN(8);
-  } > ram : ram_load
+  } > dccm : dccm_load
 
 
   
@@ -146,7 +157,7 @@ SECTIONS
     *(.scommon)
     *(.bss)
     . = ALIGN(8);
-  } >ram : ram_load
+  } > dccm : dccm_load
 
   _end = .;
 
@@ -155,18 +166,9 @@ SECTIONS
     _heap_end = .;
     . = . + __stack_size;
     _sp = .;
-  } > ram : ram_load
+  } > dccm : dccm_load
   
   
-  /* this area is used for loading and executing the comrv 
-     overlay groups */
-  .overlay_sec ALIGN(__comrv_cache_alignment_size) :
-  {
-    __OVERLAY_CACHE_START__ = . ;
-    . = . + __comrv_cache_size; 
-    __OVERLAY_CACHE_END__ = . ;
-  } > ram : ram_load
-
   /* this is the location of all comrv overlay groups.
      after linking, we'll use objcopy utility and copy
      it to the .reserved_ovl section. we do this
