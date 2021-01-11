@@ -386,10 +386,12 @@ D_COMRV_TEXT_SECTION void* comrvGetAddressFromToken(void* pReturnAddress)
    comrvOverlayToken_t*   pMultigroup = (comrvOverlayToken_t*)pOverlayMultiGroupTokensTable;
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
 #ifdef D_COMRV_RTOS_SUPPORT
-#ifndef D_COMRV_MULTI_GROUP_SUPPORT
-   u32_t                  uiTemp;
-#endif /* D_COMRV_MULTI_GROUP_SUPPORT */
+   #ifndef D_COMRV_MULTI_GROUP_SUPPORT
+      u32_t                  uiTemp;
+   #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
    u32_t                  ret;
+   u32_t                  uiPrevIntState;
+#elif defined(D_COMRV_FW_INSTRUMENTATION)
    u32_t                  uiPrevIntState;
 #endif /* D_COMRV_RTOS_SUPPORT */
    comrvCacheEntry_t stCacheEntry;
