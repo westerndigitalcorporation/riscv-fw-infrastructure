@@ -36,7 +36,7 @@
 <stringAttribute key="org.eclipse.debug.core.ATTR_GDBSERVER_PORT" value="7000"/>
 <stringAttribute key="org.eclipse.debug.core.ATTR_PRERUN_CMDS" value=""/>
 <booleanAttribute key="org.eclipse.debug.core.ATTR_SKIP_DOWNLOAD_TO_TARGET" value="true"/>
-<stringAttribute key="org.eclipse.debug.core.ATTR_TARGET_PATH" value=""/>
+<stringAttribute key="org.eclipse.debug.core.ATTR_TARGET_PATH" value="/media/oshinaar/spare2/riscv/wdc_repo_root/bitbucket/riscv-fw-infrastructure/WD-Firmware/demo/build/output/eh2.elf"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/WD-Firmware"/>
 </listAttribute>
