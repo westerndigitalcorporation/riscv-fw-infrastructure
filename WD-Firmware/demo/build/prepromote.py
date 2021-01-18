@@ -32,6 +32,8 @@ INT_PLATFORM_NAME_INDEX = 1
 INT_TARGET_NAME_INDEX = 2
 INT_DEMO_NAME_INDEX = 3
 INT_RESULT_INDEX = 4
+INT_CSV_FILE_ARG_INDEX = 0
+INT_DEMO_LIST_ARG_INDEX = 1
 
 STR_PASSED = "passed"
 STR_FAILED = "failed"
@@ -55,6 +57,7 @@ if not os.path.isdir(STR_CI_FOLDER):
     os.mkdir(STR_CI_FOLDER)
 
 STR_PTS_OUTFILE = os.path.join(STR_CI_FOLDER, "pts.txt")
+STR_DEMOS_FOLDER = os.path.join(STR_WS_FOLDER, "demo/build/demos")
 
 STR_BUILD_CMD = "scons target=%s"
 STR_CLEAN_CMD = "%s -c" % STR_BUILD_CMD
@@ -84,8 +87,9 @@ strTty = ""
 
 class clsData(object):
 
-    def __init__(self):
+    def __init__(self, strDemosList):
         self.dictResults = {}
+        self.fnParseUserDemosList(strDemosList)
         dictJSONConfig = self.fnGetJsonFile()
         for key, val in dictJSONConfig.iteritems():
             setattr(self, key, val)
@@ -107,6 +111,28 @@ class clsData(object):
         else:
             return objData
 
+    def fnParseUserDemosList(self, strUserDemosList):
+        if strUserDemosList != None:
+            strUserDemosList = re.findall(r"[\w']+", strUserDemosList)
+            listExistingDemos = []
+            # build a list of all existing demos
+            for strFilename in os.listdir(STR_DEMOS_FOLDER):
+                if strFilename.startswith("demo") and strFilename.endswith(".py"):
+                      listExistingDemos.append(strFilename)
+            # remove from the list all demos the end user wishes to execute
+            listExistingDemosDuplicated = listExistingDemos[:]
+            for strDemoName in strUserDemosList:
+                for strName in listExistingDemosDuplicated:
+                    if strDemoName in strName:
+                        listExistingDemos.pop(listExistingDemos.index(strName))
+            # the list now contains all demos that don't need to be executed - 
+            # rename them so they won't be included
+            for strDemoName in listExistingDemos:
+                strFileName = os.path.join(STR_DEMOS_FOLDER, strDemoName)
+                res = os.system("mv %s %s-" % (strFileName, strFileName))
+                if res != 0:
+                    log.error("filed to rename demos")
+                    exit(1)
 
 '''
 class clsReadPts(object):
@@ -555,7 +581,7 @@ class clsPrepromote(object):
             row = row + demosDict[listDemoResult[INT_DEMO_NAME_INDEX]]
             col = platformDict[listDemoResult[INT_TARGET_NAME_INDEX]+'-'+listDemoResult[INT_PLATFORM_NAME_INDEX]]
             csvTable[row][col] = listDemoResult[INT_RESULT_INDEX]
-            csvTable[row][7] = listDemoResult[INT_TOOLCHAIN_INDEX]
+            csvTable[row][len(platformsList)] = listDemoResult[INT_TOOLCHAIN_INDEX]
         for strDemo in sorted(listDemos):
             csvTable[demosDict[strDemo]][0] = strDemo
             csvTable[demosDict[strDemo]+intNumOfCol][0] = strDemo
@@ -613,19 +639,24 @@ def fnParseArguments():
     if len(sys.argv) > 1:
         parser = argparse.ArgumentParser()
         parser.add_argument('--exp', dest='csv', help='expected results (csv file)', default=None, type=file)
+        parser.add_argument('--listdemo', dest='listdemo', help='comma seperated list to execute', default=None, type=str)
         args = parser.parse_args()
-        listArgs.append(args.csv)
+        listArgs.append(args.csv)      # INT_CSV_FILE_ARG_INDEX
+        listArgs.append(args.listdemo) # INT_DEMO_LIST_ARG_INDEX
     else:
-        listArgs.append(None)
+        listArgs.append(None) # INT_CSV_FILE_ARG_INDEX
+        listArgs.append(None) # INT_DEMO_LIST_ARG_INDEX
+    log.info("python arguments:")
+    log.info(listArgs)
     return listArgs
 
 if __name__ == "__main__":
     log.info("Prepromote starting .... ")
     listArgs = fnParseArguments()
-    objData = clsData()
+    objData = clsData(listArgs[INT_DEMO_LIST_ARG_INDEX])
     objPrepromote = clsPrepromote()
     objPrepromote.fnRunAll()
-    objPrepromote.fnPrintResults(listArgs[0])
+    objPrepromote.fnPrintResults(listArgs[INT_CSV_FILE_ARG_INDEX])
     log.info("Prepromote End .... ")
     if listArgs[0] != None:
         listArgs[0].close();
