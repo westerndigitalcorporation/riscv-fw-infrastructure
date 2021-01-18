@@ -519,6 +519,10 @@ void demoStart(void)
   /* Run this demo only if target is Swerv. Cannot run on Whisper */
   if (D_PSP_TRUE == demoIsSwervBoard())
   {
+#ifdef D_SWERV_EH2
+    /* Initialize PSP mutexs */
+    pspMutexInitPspMutexs();
+#endif
     /************************/
     /* Part1 - Sleep tests  */
     /************************/

@@ -24,12 +24,12 @@ OUTPUT_ARCH( "riscv" )
 ENTRY( _start )
 
 __comrv_overlay_storage_size = DEFINED(__comrv_overlay_storage_size) ? __comrv_overlay_storage_size : 0;
-
+_dccm_start_address_ = DEFINED(_dccm_start_address_) ? _dccm_start_address_ : 0xF0080000;
 MEMORY
 {
   ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
-  dccm (wxa!ri) : ORIGIN = 0xf0080000, LENGTH = 64K
+  dccm (wxa!ri) : ORIGIN = _dccm_start_address_, LENGTH = 64K
   ovl           : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
