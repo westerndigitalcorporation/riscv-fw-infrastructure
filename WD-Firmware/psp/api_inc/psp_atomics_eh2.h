@@ -32,8 +32,12 @@
 * definitions
 */
 /* Address of DCCM area that PSP is use for safe handling of multi-harts functionalities */
-#ifdef D_DCCM_SECTION_START_ADDRESS
-    #define D_PSP_DCCM_SECTION_ADDRESS  D_DCCM_SECTION_START_ADDRESS
+#if defined(D_DCCM_SECTION_START_ADDRESS) && defined(D_NUM_OF_PSP_INTERN_MUTEXES)
+  #define D_PSP_INTERNAL_MUTEXES_START_ADDR  D_DCCM_SECTION_START_ADDRESS
+  #define D_PSP_NUM_OF_INTERNAL_MUTEXES      D_NUM_OF_PSP_INTERN_MUTEXES
+  #define D_PSP_DCCM_SECTION                 1 /* Indication that D_PSP_DCCM_SECTION is defined */
+#else
+  #error  "Definitions of DCCM start-address and mutexes are missing"
 #endif
 
 /**
@@ -52,7 +56,7 @@
 * macros
 */
 /* Atomic operations macros */
-#ifdef D_PSP_DCCM_SECTION_ADDRESS
+#ifdef D_PSP_DCCM_SECTION
   #define M_PSP_ATOMIC_COMPARE_AND_SET(pAddress, uiExpectedValue, uiDesiredValue)   pspAtomicsCompareAndSet(pAddress, uiExpectedValue, uiDesiredValue);
   #define M_PSP_ATOMIC_ENTER_CRITICAL_SECTION(pAddress)                             pspAtomicsEnterCriticalSection(pAddress);
   #define M_PSP_ATOMIC_EXIT_CRITICAL_SECTION(pAddress)                              pspAtomicsExitCriticalSection(pAddress);
