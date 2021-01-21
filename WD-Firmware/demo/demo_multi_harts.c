@@ -233,15 +233,11 @@ void demoMultiHartsAccessSeperateMemory(void)
 
   if (E_HART0 == uiHartId)
   {
-    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART0);
-
     demoInitializeDataStructures(g_uiVecA0, g_uiVecB0, D_DEMO_ARRAY_SIZE);
     uiRes0 = demoMultiplyArrays(g_uiVecA0, g_uiVecB0, D_DEMO_ARRAY_SIZE);
   }
   else /* Current Hart is 1 */
   {
-    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART1);
-
     demoInitializeDataStructures(g_uiVecA1, g_uiVecB1, D_DEMO_ARRAY_SIZE);
     uiRes1 = demoMultiplyArrays(g_uiVecA1, g_uiVecB1, D_DEMO_ARRAY_SIZE);
   }
@@ -443,10 +439,14 @@ void demoStart(void)
   /* count number of times we entered this function */
   if (E_HART0 == uiHartId)
   {
+    /* Setup vector table for Hart0 */
+    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART0);
     uiCounter0++;
   }
   else
   {
+    /* Setup vector table for Hart1 */
+    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART1);
     uiCounter1++;
   }
 
@@ -461,9 +461,6 @@ void demoStart(void)
   {
     uiSync = 1;
 
-    /* start hart1 */
-    asm volatile ("csrrwi x0, 0x7fc, 3");
-
     /* Initialize PSP mutexs */
     pspMutexInitPspMutexs();
 
@@ -473,10 +470,8 @@ void demoStart(void)
     /* Initialize the parameters for atomic operations in the demo */
     demoInitializeAtomicOperationsItems(uiAddressForAtomics);
 
-    /* Setup vector table for Hart0 */
-    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART0);
-    /* Setup vector table for Hart1 */
-    pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART1);
+    /* start hart1 */
+    asm volatile ("csrrwi x0, 0x7fc, 3");
   }
 
   /* Demo#1 - Each hart access its own memory */
