@@ -49,8 +49,7 @@
 #define D_DEMO_SYNC_POINT_2_LOC               2
 #define D_DEMO_SYNC_POINT_3_LOC               3
 #define D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC  4
-#define D_DEMO_MUTEX_LOC                      5
-#define D_DEMO_NUMBER_OF_COMMON_POINTS        (D_DEMO_MUTEX_LOC+1)  /* 6 common points */
+#define D_DEMO_NUMBER_OF_COMMON_POINTS        (D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC+1)  /* 5 common points */
 
 /**
 * macros
@@ -87,8 +86,9 @@ volatile u32_t g_uiNumberOfTimerInterruptsHart1;
 /* Array of integers for atomic-operations (sync-points and a mutex) to be used in this demo */
 u32_t g_uiAtomicOperationVars[D_DEMO_NUMBER_OF_COMMON_POINTS];
 
-/* Global pointer to a mutex, created and used in this demo */
-pspMutex_t* g_pMutex;
+/* Area for mutex for usage in this demo (size = 1 mutex) */
+pspMutexCb_t g_MutexArea[D_DEMO_NUMBER_OF_MUTEXES_IN_HEAP];
+pspMutexCb_t* g_pMutex = NULL;
 
 /**
 * APIs
@@ -104,7 +104,7 @@ void demoInitializeAtomicOperationsItems(void)
   pspMemsetBytes((void*)g_uiAtomicOperationVars, 0, D_DEMO_NUMBER_OF_COMMON_POINTS*sizeof(u32_t));
 
   /* Initialize the heap of the mutexs */
-  pspMutexHeapInit((pspMutex_t*)&(g_uiAtomicOperationVars[D_DEMO_MUTEX_LOC]) ,D_DEMO_NUMBER_OF_MUTEXES_IN_HEAP);
+  pspMutexHeapInit((pspMutexCb_t*)g_MutexArea ,D_DEMO_NUMBER_OF_MUTEXES_IN_HEAP);
 }
 
 /**
@@ -287,7 +287,6 @@ void demoMultiHartsCriticalSectionAmoMutex()
 {
   u32_t       uiHartId = M_PSP_MACHINE_GET_HART_ID();
   u32_t       uiIterator = 0;
-  pspMutex_t* pMutexDestroyed; /* Mutex pointer. Used here to verify correct destroy */
 
   if(E_HART0 == uiHartId)
   {
@@ -345,9 +344,7 @@ void demoMultiHartsCriticalSectionAmoMutex()
     } /* for loop */
 
     /* No need for the mutex anymore - can be destroyed */
-    pMutexDestroyed = pspMutexDestroy(g_pMutex);
-    /* NULL returned value indicates that mutex-destroy has been succeeded */
-    if (pMutexDestroyed != NULL)
+    if (NULL != pspMutexDestroy(g_pMutex))     /* NULL returned value indicates that mutex-destroy has been succeeded */
     {
       /* Mutex destroy has been failed */
       M_DEMO_ERR_PRINT();
