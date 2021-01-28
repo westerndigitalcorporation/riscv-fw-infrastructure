@@ -85,8 +85,23 @@
          }
     },
     "nexys_a7_eh2" : {
-      "interface": [ "whisper" ],
+      "interface": [ "openocd", "whisper" ],
       "interface_descriptor": {
+         "openocd" : {
+            "execute"       : "./openocd -f {WS}/board/nexys_a7_eh2/swervolf_nexys_eh2_debug.cfg",
+            "flush"         : "./openocd -c \"set BITFILE swervolf_eh2.bit\" -f swervolf_nexys_program.cfg",
+            "llvm"          : "source {WS}demo/build/toolchain/comrv/ovlymgr.py",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "target remote:3333", 
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mtval" ]
+         },
          "whisper" : {
             "execute"       : "{WS}board/whisper/whisper --target={WS}demo/build/output/eh2.elf --gdb --gdb-tcp-port=7000 7001 --startpc=0x0 --configfile={WS}board/whisper/whisper_eh2.json --alarm=100 --consoleio=0x80002000 --counters --softinterrupt=0x80003100",
             "flush"         : "",
