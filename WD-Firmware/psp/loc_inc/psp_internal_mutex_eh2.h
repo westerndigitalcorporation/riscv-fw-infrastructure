@@ -45,7 +45,7 @@ typedef enum pspInternalMutex
 /**
 * definitions
 */
-
+#define D_PSP_SIZE_OF_INTERNAL_MUTEX   4  /* Size of internal PSP mutex is 4 bytes (32bits) */
 /**
 * local prototypes
 */
@@ -57,10 +57,11 @@ typedef enum pspInternalMutex
 /**
 * macros
 */
-#define M_PSP_END_OF_PSP_AREA_IN_DCCM()             (D_PSP_INTERNAL_MUTEXES_START_ADDR + (D_PSP_NUM_OF_INTERNAL_MUTEXES*D_PSP_SIZE_OF_MUTEX));
+/* PSP area in DCCM is the area that occupied for PSP internal mutexes */
+#define M_PSP_END_OF_PSP_AREA_IN_DCCM()             (D_PSP_INTERNAL_MUTEXES_START_ADDR + (D_PSP_NUM_OF_INTERNAL_MUTEXES*D_PSP_SIZE_OF_INTERNAL_MUTEX));
 
-#define M_PSP_INTERNAL_MUTEX_LOCK(internal_mutex)    M_PSP_ATOMIC_ENTER_CRITICAL_SECTION((volatile u32_t*)(D_PSP_INTERNAL_MUTEXES_START_ADDR + (internal_mutex*D_PSP_SIZE_OF_MUTEX)));
-#define M_PSP_INTERNAL_MUTEX_UNLOCK(internal_mutex)  M_PSP_ATOMIC_EXIT_CRITICAL_SECTION((volatile u32_t*)(D_PSP_INTERNAL_MUTEXES_START_ADDR + (internal_mutex*D_PSP_SIZE_OF_MUTEX)));
+#define M_PSP_INTERNAL_MUTEX_LOCK(internal_mutex)    M_PSP_ATOMIC_ENTER_CRITICAL_SECTION((volatile u32_t*)(D_PSP_INTERNAL_MUTEXES_START_ADDR + (internal_mutex*D_PSP_SIZE_OF_INTERNAL_MUTEX)));
+#define M_PSP_INTERNAL_MUTEX_UNLOCK(internal_mutex)  M_PSP_ATOMIC_EXIT_CRITICAL_SECTION((volatile u32_t*)(D_PSP_INTERNAL_MUTEXES_START_ADDR + (internal_mutex*D_PSP_SIZE_OF_INTERNAL_MUTEX)));
 
 /**
 * global variables

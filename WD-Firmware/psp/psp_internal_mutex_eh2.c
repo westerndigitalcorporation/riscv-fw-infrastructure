@@ -58,10 +58,11 @@
 
 /**
 * @brief - Initialize (zero) the internal PSP mutexs. Used by PSP for multi-harts safe functionality
+*          Note that the size of PSP internal mutex is 32bit (while the mutex for users is 64bits)
 *
 */
 D_PSP_TEXT_SECTION void pspInternalMutexInit(void)
 {
   /* Set all mutexs used internally by PSP to "Unlocked" state */
-  pspMemsetBytes((void*)D_PSP_INTERNAL_MUTEXES_START_ADDR, D_PSP_MUTEX_UNLOCKED, sizeof(pspMutex_t)*D_PSP_NUM_OF_INTERNAL_MUTEXES);
+  pspMemsetBytes((void*)D_PSP_INTERNAL_MUTEXES_START_ADDR, D_PSP_MUTEX_UNLOCKED, sizeof(u32_t)*D_PSP_NUM_OF_INTERNAL_MUTEXES);
 }
