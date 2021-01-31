@@ -13,6 +13,7 @@ import signal
 import csv
 import argparse
 import Queue
+import traceback
 from subprocess import check_output
 from copy import deepcopy
 import multiprocessing
@@ -380,21 +381,21 @@ class clsListenerFactory(object):
 
 class clsGdb(object):
 
-    def __init__(self, dictConfig, sessionNumber):
+    def __init__(self, dictConfig, sessionNumber, strTimeStamp):
         try:
             self.strLocation = "{WS}/demo/build/toolchain/bin".format(WS=STR_WS_FOLDER)
             self.strCMD = os.path.join(self.strLocation, "riscv64-unknown-elf-gdb")
             self.objProcess = object
             self.dictConfig = dictConfig
             self.strSessionNumber = str(sessionNumber)
+            self.strLog = os.path.join(STR_CI_FOLDER, "%s_%s_gdb_%s.log" % (strTimeStamp, self.dictConfig["board"],self.strSessionNumber))
         except Exception as e:
             log.debug("exception clsGdb __init__")
             raise e
 
     def fnStart(self):
         try:
-            strLog = os.path.join(STR_CI_FOLDER, "%s_gdb_%s.log" % (self.dictConfig["board"],self.strSessionNumber))
-            raw_logfile = open(strLog, "wb")
+            raw_logfile = open(self.strLog, "wb")
             strCommand = "%s %s -x %s" % (self.strCMD, self.dictConfig["elf"], self.fnCreateGdbCommandFile())
             self.objProcess = subprocess.Popen(shlex.split(strCommand), stdin=subprocess.PIPE, stdout=raw_logfile,
                                                stderr=raw_logfile, shell=False, cwd=self.dictConfig["board_wd"])
@@ -440,9 +441,9 @@ class clsPlatform(object):
         try:
             self.dictConfig = dictConfig
             self.objProcess = object
-            strTimestamp = str(time.time())
-            log.info(strTimestamp)
-            self.strLog = os.path.join(STR_CI_FOLDER, "%s_%s.log" % (strTimestamp, self.dictConfig["board"]))
+            self.strTimestamp = str(time.time())
+            log.info(self.strTimestamp)
+            self.strLog = os.path.join(STR_CI_FOLDER, "%s_%s.log" % (self.strTimestamp, self.dictConfig["board"]))
             self.objGdb = []
             self.listenerObj = None
             self.queue = clsExceptionQueue()
@@ -463,7 +464,7 @@ class clsPlatform(object):
             self.fnStart()
             for i in range(gdbSessions):
                 time.sleep(2)
-                self.objGdb.append(clsGdb(self.dictConfig, i+1))
+                self.objGdb.append(clsGdb(self.dictConfig, i+1, self.strTimestamp))
                 self.objGdb[i].fnStart()
             intAccumulatedRuntime = 0
             log.debug("clsPlatform fnRun(): while True: enter")
@@ -530,11 +531,12 @@ class clsPlatform(object):
         for i in range(len(self.objGdb)):
             self.objGdb[i].fnTerminateProcess()
         self.listenerObj.fnWaitForCompletion(boolForceTermination)
+        self.objGdb = []
 
 
 class clsPrepromote(object):
 
-    def __init__(self):
+    def __init__(self, fileExpCsv):
         try:
             self.objConfig = object
             self.strBuildFolder = ""
@@ -551,6 +553,8 @@ class clsPrepromote(object):
             self.boolDemosFail = False
             self.listDemoFailedResults = []
             self.platformObj = None
+            self.fileExpectedResultsCsv = fileExpCsv
+            self.strExpectedHeaderLine = self.fnGetListOfTargetsToRun()
         except Exception as e:
             log.debug("exception clsPrepromote __init__")
             raise e
@@ -622,6 +626,11 @@ class clsPrepromote(object):
             log.debug("exception clsPrepromote fnSetDemos")
             raise e
 
+    def fnGetListOfTargetsToRun(self):
+        if self.fileExpectedResultsCsv != None:
+            return next(csv.reader(self.fileExpectedResultsCsv))
+        return []
+
     def fnRunAll(self):
         try:
             for strDemo in sorted(self.dictDemos):
@@ -637,16 +646,25 @@ class clsPrepromote(object):
                         listBoards = self.fnGetDemoBoards(strTarget)
                         for strBoard in listBoards:
                             strConfig = strBoard
+                            boolBuildFlag = False
                             dictConfig = objData.configuration[strBoard]
-                            # build failed
-                            if self.fnBuild(strDemo, strTarget) != 0:
-                                log.error("-----------------------------------")
-                                log.error("Failed to build %s for %s" % (strDemo, strTarget))
-                                log.error("-----------------------------------")
-                                for interface in dictConfig["interface"]:
-                                    self.fnLogResults(strToolChain, interface, strTarget, strDemo, STR_FAILED)
-                                continue
                             for interface in dictConfig["interface"]:
+                                strName = "%s-%s" % (strTarget, interface)
+                                if self.strExpectedHeaderLine and strName not in self.strExpectedHeaderLine:
+                                    log.info("skipping %s" % strName)
+                                    continue
+                                # build only once
+                                if boolBuildFlag == False:
+                                    boolBuildFlag = True
+                                    # build failed
+                                    if self.fnBuild(strDemo, strTarget) != 0:
+                                        log.error("-----------------------------------")
+                                        log.error("Failed to build %s for %s" % (strDemo, strTarget))
+                                        log.error("-----------------------------------")
+                                        for intf in dictConfig["interface"]:
+                                            self.fnLogResults(strToolChain, intf, strTarget, strDemo, STR_FAILED)
+                                        #no need to continue to other interfaces since build failes
+                                        break
                                 interfaceDescriptorDict = dictConfig["interface_descriptor"]
                                 interfaceDictConfig = interfaceDescriptorDict[interface]
                                 interfaceDictConfig["name"] = strConfig
@@ -749,7 +767,7 @@ class clsPrepromote(object):
             log.debug("exception clsPrepromote fnRun")
             raise e
 
-    def fnPrintResults(self, fileExpectedResultsCsv):
+    def fnPrintResults(self):
         try:
             platformsList = []
             #build list of platforms
@@ -791,10 +809,10 @@ class clsPrepromote(object):
                 csvFileHandle.write(','.join(row))
                 csvFileHandle.write("\n")
 
-            if fileExpectedResultsCsv:
+            if self.fileExpectedResultsCsv:
                 csvFileHandle.seek(0, 0)
-                self.boolDemosFail = not self.fnCompareCsvFiles(fileExpectedResultsCsv, csvFileHandle)
-                fileExpectedResultsCsv.close()
+                self.boolDemosFail = not self.fnCompareCsvFiles(self.fileExpectedResultsCsv, csvFileHandle)
+                self.fileExpectedResultsCsv.close()
 
             csvFileHandle.close()
 
@@ -823,18 +841,14 @@ class clsPrepromote(object):
     def fnCompareCsvFiles(self, fileBaseCsv, fileNewCsv):
         try:
             boolComparePass = True
-            boolLogHeaderLine = False
-            strHeaderLine = None
+            # skip new csv header
+            strNewCsvFileLine = next(csv.reader(fileNewCsv))
             strLineNewCsvFileLines = iter(csv.reader(fileNewCsv))
             strLineBaseCsvFileLines = iter(csv.reader(fileBaseCsv))
             for strBaseCsvFileLine, strNewCsvFileLine in zip(strLineBaseCsvFileLines, strLineNewCsvFileLines):
-                if strHeaderLine == None:
-                    strHeaderLine = strBaseCsvFileLine
                 if strNewCsvFileLine != strBaseCsvFileLine:
-                    if boolLogHeaderLine == False:
-                        boolLogHeaderLine == True
-                        boolComparePass = False
-                        log.info("          %s" % strHeaderLine)
+                    boolComparePass = False
+                    log.info("          %s" % self.strExpectedHeaderLine)
                     log.info("Expected: %s" % strBaseCsvFileLine)
                     log.info("Recieved: %s\n" % strNewCsvFileLine)
         except Exception as e:
@@ -870,15 +884,16 @@ if __name__ == "__main__":
         log.info("Prepromote starting .... ")
         listArgs = fnParseArguments()
         objData = clsData(listArgs[INT_DEMO_LIST_ARG_INDEX])
-        objPrepromote = clsPrepromote()
+        objPrepromote = clsPrepromote(listArgs[INT_CSV_FILE_ARG_INDEX])
         objPrepromote.fnRunAll()
-        objPrepromote.fnPrintResults(listArgs[INT_CSV_FILE_ARG_INDEX])
+        objPrepromote.fnPrintResults()
         log.info("Prepromote End .... ")
         if listArgs[0] != None:
             listArgs[0].close();
     except Exception as e:
         log.error("Prepromote exception:")
         log.error(e)
+        log.error(traceback.print_exc())
         objPrepromote.fnExit()
     if objPrepromote.boolDemosFail == True:
         exit(1)
