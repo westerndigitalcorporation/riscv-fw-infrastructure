@@ -159,7 +159,7 @@ SECTIONS
   {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
-    *(.bss)
+    *(.bss .bss.*) 
     . = ALIGN(8);
   } > dccm : dccm_load
 
