@@ -167,6 +167,7 @@ def fnSetOutputFileNames(prefix = ""):
 
 # set toolchain path
 def fnSetToolchainPath(strTCName, env):
+    env['TOOLCHAIN_NAME'] = strTCName
     if strTCName == STR_TC_LLVM:
        env['RISCV_LLVM_TC_PATH'] = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_TC_LLVM)
        # check if the TC folder exist
