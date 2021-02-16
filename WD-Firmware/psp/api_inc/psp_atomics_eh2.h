@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -32,11 +32,7 @@
 * definitions
 */
 /* Address of DCCM area that PSP is use for safe handling of multi-harts functionalities */
-#if defined(D_DCCM_SECTION_START_ADDRESS) && defined(D_NUM_OF_PSP_INTERN_MUTEXES)
-  #define D_PSP_INTERNAL_MUTEXES_START_ADDR  D_DCCM_SECTION_START_ADDRESS
-  #define D_PSP_NUM_OF_INTERNAL_MUTEXES      D_NUM_OF_PSP_INTERN_MUTEXES
-  #define D_PSP_DCCM_SECTION                 1 /* Indication that D_PSP_DCCM_SECTION is defined */
-#else
+#ifndef D_DCCM_SECTION_START_ADDRESS
   #error  "Definitions of DCCM start-address and mutexes are missing"
 #endif
 
@@ -56,7 +52,8 @@
 * macros
 */
 /* Atomic operations macros */
-#ifdef D_PSP_DCCM_SECTION
+#ifdef D_DCCM_SECTION_START_ADDRESS
+  /* You can operate atomic commands only on variables in the DCCM. If DCCM is not defined, then these macros are empty */
   #define M_PSP_ATOMIC_COMPARE_AND_SET(pAddress, uiExpectedValue, uiDesiredValue)   pspAtomicsCompareAndSet(pAddress, uiExpectedValue, uiDesiredValue);
   #define M_PSP_ATOMIC_ENTER_CRITICAL_SECTION(pAddress)                             pspAtomicsEnterCriticalSection(pAddress);
   #define M_PSP_ATOMIC_EXIT_CRITICAL_SECTION(pAddress)                              pspAtomicsExitCriticalSection(pAddress);
@@ -70,7 +67,6 @@
   #define M_PSP_ATOMIC_AMO_MIN_UNSIGINED(pAddress, uiValueToCompare)                pspAtomicsAmoMinUnsigned(pAddress, uiValueToCompare);
   #define M_PSP_ATOMIC_AMO_MAX_UNSIGNED(pAddress, uiValueToCompare)                 pspAtomicsAmoMaxUnsigned(pAddress, uiValueToCompare);
 #else
-  /* You can operate atomic commands only on variables in the DCCM. If DCCM is not defined, then these macros are empty */
   #define M_PSP_ATOMIC_COMPARE_AND_SET(pAddress, uiExpectedValue, uiDesiredValue)
   #define M_PSP_ATOMIC_ENTER_CRITICAL_SECTION(pAddress)
   #define M_PSP_ATOMIC_EXIT_CRITICAL_SECTION(pAddress)
@@ -92,13 +88,6 @@
 /**
 * APIs
 */
-
-/**
-* @brief - Returns the start address in the DCCM that can be used for atomic operations
-*
-* @return - address in the DCCM area, free for usage
-*/
-u32_t pspAtomicsGetAddressForAtomicOperations(void);
 
 /**
 * @brief - compare and set a value in the memory using atomic commands

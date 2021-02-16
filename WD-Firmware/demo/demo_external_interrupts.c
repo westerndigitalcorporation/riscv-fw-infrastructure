@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -221,7 +221,7 @@ u08_t demoCheckInterruptStatusInISR(void)
  * at the end of the ISR (in the other cores, where 'fast-interrupt' mode is not in use all that is done by the trap code)
  *
  */
-#ifdef D_SWERV_EH2
+#ifdef D_SWERV_FAST_INT
 D_PSP_INTERRUPT void demoExtIntTest_1_2_3_4_5_ISR(void)
 #else
 void demoExtIntTest_1_2_3_4_5_ISR(void)
@@ -253,7 +253,7 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
  * at the end of the ISR (in the other cores, where 'fast-interrupt' mode is not in use all that is done by the trap code)
  *
  */
-#ifdef D_SWERV_EH2
+#ifdef D_SWERV_FAST_INT
 D_PSP_INTERRUPT void demoExtIntTest_6_ISR(void)
 #else
 void demoExtIntTest_6_ISR(void)

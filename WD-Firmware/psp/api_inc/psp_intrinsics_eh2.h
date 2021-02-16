@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@
 */
 
 /* You can operate atomic commands only on variables in the DCCM. Do not define the atomic operation intrinsics if DCCM does not exist in the system */
-#ifdef D_PSP_DCCM_SECTION
+#ifdef D_DCCM_SECTION_START_ADDRESS
   /* SweRV EH2 takes the most conservative approach to atomic and implements .aq znd .rl semantics with all atomic instructions. So we could afford using __ATOMIC_RELAXED */ 
   #define PSP_ATOMIC_SWAP(pAddress, value)  __atomic_exchange_n(pAddress, value, __ATOMIC_RELAXED); 
   #define PSP_ATOMIC_ADD(pAddress, value)   __atomic_add_fetch(pAddress, value, __ATOMIC_RELAXED);

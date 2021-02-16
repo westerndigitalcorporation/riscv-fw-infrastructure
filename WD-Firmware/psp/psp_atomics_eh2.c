@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -55,18 +55,6 @@
 /**
 * APIs
 */
-
-/**
-* @brief - Returns the start address in the DCCM that can be used for atomic operations
-*
-* @return - address in the DCCM area, free for usage
-*/
-D_PSP_TEXT_SECTION u32_t pspAtomicsGetAddressForAtomicOperations(void)
-{
-  u32_t uiDccmAddress = M_PSP_END_OF_PSP_AREA_IN_DCCM();
-
-  return (uiDccmAddress);
-}
 
 /**
 * @brief - compare and set a value in the memory using atomic commands

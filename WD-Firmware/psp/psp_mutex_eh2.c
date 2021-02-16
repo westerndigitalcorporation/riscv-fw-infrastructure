@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ D_PSP_TEXT_SECTION void pspMutexHeapInit(pspMutexCb_t* pMutexHeapAddress, u32_t 
   M_PSP_ASSERT((NULL != pMutexHeapAddress) && (0 != uiNumOfmutexs)) ;
 
   /* Protect the mutex-heap initialization. Make sure it cannot be done simultaneously by multiple harts */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
 
   /* Initialize (== zero) the mutexs heap */
   pspMemsetBytes(pMutexHeapAddress, 0, uiNumOfmutexs * D_PSP_SIZE_OF_MUTEX_CB);
@@ -119,7 +119,7 @@ D_PSP_TEXT_SECTION void pspMutexHeapInit(pspMutexCb_t* pMutexHeapAddress, u32_t 
   g_uiAppNumberOfMutexs    = uiNumOfmutexs;
 
   /* Remove the protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
 }
 
 /**
@@ -138,7 +138,7 @@ D_PSP_TEXT_SECTION pspMutexCb_t* pspMutexCreate(void)
   u32_t             uiHartId = M_PSP_MACHINE_GET_HART_ID();
 
   /* Protect the creation of a mutex. Make sure the creation cannot be done simultaneously by multiple harts */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
 
   /* Search for an unoccupied mutex in the mutexs heap */
   for(uiMutexIndex = 0; uiMutexIndex < g_uiAppNumberOfMutexs; uiMutexIndex++)
@@ -159,7 +159,7 @@ D_PSP_TEXT_SECTION pspMutexCb_t* pspMutexCreate(void)
   }
 
   /* Remove the protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
 
   /* Return the address of the mutex. NULL == there's no available mutex in the mutexs-heap */
   return (pRetMutex);
@@ -181,7 +181,7 @@ D_PSP_TEXT_SECTION pspMutexCb_t* pspMutexDestroy(pspMutexCb_t* pMutex)
   M_PSP_ASSERT(D_PSP_TRUE == pspIsMutexAddressValid(pMutex));
 
   /* Protect the mutex destroy. Make sure the destroy cannot be done simultaneously by multiple harts */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
 
   /* Only the hart that created this mutex can also destroy it */
   if (uiHartId == pMutex->uiMutexCreator)
@@ -198,7 +198,7 @@ D_PSP_TEXT_SECTION pspMutexCb_t* pspMutexDestroy(pspMutexCb_t* pMutex)
   }
 
   /* Remove the protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_MUTEX_HEAP_MNG);
 
   return (pRetMutexAddr);
 }

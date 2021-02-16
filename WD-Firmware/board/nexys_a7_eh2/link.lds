@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
- * Copyright 2019 Western Digital Corporation or its affiliates.
+ * Copyright 2019-2021 Western Digital Corporation or its affiliates.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,12 @@ ENTRY( _start )
 
 __comrv_overlay_storage_size  = DEFINED(__comrv_overlay_storage_size) ? __comrv_overlay_storage_size : 0;
 _dccm_start_address_          = DEFINED(_dccm_start_address_) ? _dccm_start_address_ : 0;
-_mutexes_area_size_           = DEFINED(_mutexes_area_size_) ? _mutexes_area_size_ : 0;
 
 MEMORY
 {
   ram  (wxa!ri)           : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri)           : ORIGIN = 0x04000000, LENGTH = 64M
-  intern_mutexes (wxa!ri) : ORIGIN = _dccm_start_address_, LENGTH = _mutexes_area_size_  /* Mutexes are located at the very beginning of DCCM memory */ 
-  dccm (wxa!ri)           : ORIGIN = (_dccm_start_address_ + _mutexes_area_size_), LENGTH = (64K - _mutexes_area_size_)
+  dccm (wxa!ri)           : ORIGIN = (_dccm_start_address_), LENGTH = (64K)
   ovl                     : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
@@ -125,6 +123,12 @@ SECTIONS
     . = ALIGN(8); 
   } > dccm : dccm_load
 
+  PSP_INTERNAL_MUTEX_SEC : ALIGN(16)
+  {
+    *(.psp_internal_mutexes)
+    . = ALIGN(4);
+  } > dccm : dccm_load
+  
   COMRV_DATA_SEC : ALIGN(16)
   {
   
