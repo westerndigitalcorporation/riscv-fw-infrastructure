@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -45,8 +45,7 @@ typedef enum pspInternalMutex
 /**
 * definitions
 */
-#define D_PSP_NUM_OF_INTERNAL_MUTEXS  E_MUTEX_INTERNAL_LAST
-
+#define D_PSP_SIZE_OF_INTERNAL_MUTEX   4  /* Size of internal PSP mutex is 4 bytes (32bits) */
 /**
 * local prototypes
 */
@@ -58,10 +57,6 @@ typedef enum pspInternalMutex
 /**
 * macros
 */
-#define M_PSP_END_OF_PSP_AREA_IN_DCCM()             (D_PSP_DCCM_SECTION_ADDRESS + D_PSP_NUM_OF_INTERNAL_MUTEXS*sizeof(D_PSP_SIZE_OF_MUTEX));
-
-#define M_PSP_INTERNAL_MUTEX_LOCK(internal_mutex)    M_PSP_ATOMIC_ENTER_CRITICAL_SECTION((volatile u32_t*)(D_PSP_DCCM_SECTION_ADDRESS + (internal_mutex*sizeof(pspMutex_t))));
-#define M_PSP_INTERNAL_MUTEX_UNLOCK(internal_mutex)  M_PSP_ATOMIC_EXIT_CRITICAL_SECTION((volatile u32_t*)(D_PSP_DCCM_SECTION_ADDRESS + (internal_mutex*sizeof(pspMutex_t))));
 
 /**
 * global variables
@@ -76,5 +71,21 @@ typedef enum pspInternalMutex
 *
 */
 void pspInternalMutexInit(void);
+
+/**
+* @brief - Lock an internal-PSP mutex
+*
+* @parameter - mutex number
+*
+*/
+void pspInternalMutexLock(u32_t uiMutexNumber);
+
+/**
+* @brief - Unlock an internal-PSP mutex
+*
+* @parameter - mutex number
+*
+*/
+void pspInternalMutexUnlock(u32_t uiMutexNumber);
 
 #endif /* __PSP_INTERNAL_MUTEX_EH2_H__ */

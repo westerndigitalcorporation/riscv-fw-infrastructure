@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -31,10 +31,6 @@
 /**
 * definitions
 */
-/* Address of DCCM area that PSP is use for safe handling of multi-harts functionalities */
-#ifdef D_DCCM_SECTION_START_ADDRESS
-    #define D_PSP_DCCM_SECTION_ADDRESS  D_DCCM_SECTION_START_ADDRESS
-#endif
 
 /**
 * types
@@ -52,34 +48,18 @@
 * macros
 */
 /* Atomic operations macros */
-#ifdef D_PSP_DCCM_SECTION_ADDRESS
-  #define M_PSP_ATOMIC_COMPARE_AND_SET(pAddress, uiExpectedValue, uiDesiredValue)   pspAtomicsCompareAndSet(pAddress, uiExpectedValue, uiDesiredValue);
-  #define M_PSP_ATOMIC_ENTER_CRITICAL_SECTION(pAddress)                             pspAtomicsEnterCriticalSection(pAddress);
-  #define M_PSP_ATOMIC_EXIT_CRITICAL_SECTION(pAddress)                              pspAtomicsExitCriticalSection(pAddress);
-  #define M_PSP_ATOMIC_AMO_SWAP(pAddress, uiValueToSwap)                            pspAtomicsAmoSwap(pAddress, uiValueToSwap);
-  #define M_PSP_ATOMIC_AMO_ADD(pAddress, uiValueToAdd)                              pspAtomicsAmoAdd(pAddress, uiValueToAdd);
-  #define M_PSP_ATOMIC_AMO_AND(pAddress, uiValueToAndWith)                          pspAtomicsAmoAnd(pAddress, uiValueToAndWith);
-  #define M_PSP_ATOMIC_AMO_OR(pAddress, uiValueToOrWith)                            pspAtomicsAmoOr(pAddress, uiValueToOrWith);
-  #define M_PSP_ATOMIC_AMO_XOR(pAddress, uiValueToXorWith)                          pspAtomicsAmoXor(pAddress, uiValueToXorWith);
-  #define M_PSP_ATOMIC_AMO_MIN(pAddress, uiValueToCompare)                          pspAtomicsAmoMin(pAddress, uiValueToCompare);
-  #define M_PSP_ATOMIC_AMO_MAX(pAddress, uiValueToCompare)                          pspAtomicsAmoMax(pAddress, uiValueToCompare);
-  #define M_PSP_ATOMIC_AMO_MIN_UNSIGINED(pAddress, uiValueToCompare)                pspAtomicsAmoMinUnsigned(pAddress, uiValueToCompare);
-  #define M_PSP_ATOMIC_AMO_MAX_UNSIGNED(pAddress, uiValueToCompare)                 pspAtomicsAmoMaxUnsigned(pAddress, uiValueToCompare);
-#else
-  /* You can operate atomic commands only on variables in the DCCM. If DCCM is not defined, then these macros are empty */
-  #define M_PSP_ATOMIC_COMPARE_AND_SET(pAddress, uiExpectedValue, uiDesiredValue)
-  #define M_PSP_ATOMIC_ENTER_CRITICAL_SECTION(pAddress)
-  #define M_PSP_ATOMIC_EXIT_CRITICAL_SECTION(pAddress)
-  #define M_PSP_ATOMIC_AMO_SWAP(pAddress, uiValueToSwap)
-  #define M_PSP_ATOMIC_AMO_ADD(pAddress, uiValueToAdd)
-  #define M_PSP_ATOMIC_AMO_AND(pAddress, uiValueToAndWith)
-  #define M_PSP_ATOMIC_AMO_OR(pAddress, uiValueToOrWith)
-  #define M_PSP_ATOMIC_AMO_XOR(pAddress, uiValueToXorWith)
-  #define M_PSP_ATOMIC_AMO_MIN(pAddress, uiValueToCompare)
-  #define M_PSP_ATOMIC_AMO_MAX(pAddress, uiValueToCompare)
-  #define M_PSP_ATOMIC_AMO_MIN_UNSIGINED(pAddress, uiValueToCompare)
-  #define M_PSP_ATOMIC_AMO_MAX_UNSIGNED(pAddress, uiValueToCompare)
-#endif
+#define M_PSP_ATOMIC_COMPARE_AND_SET(pAddress, uiExpectedValue, uiDesiredValue)   pspAtomicsCompareAndSet(pAddress, uiExpectedValue, uiDesiredValue);
+#define M_PSP_ATOMIC_ENTER_CRITICAL_SECTION(pAddress)                             pspAtomicsEnterCriticalSection(pAddress);
+#define M_PSP_ATOMIC_EXIT_CRITICAL_SECTION(pAddress)                              pspAtomicsExitCriticalSection(pAddress);
+#define M_PSP_ATOMIC_AMO_SWAP(pAddress, uiValueToSwap)                            pspAtomicsAmoSwap(pAddress, uiValueToSwap);
+#define M_PSP_ATOMIC_AMO_ADD(pAddress, uiValueToAdd)                              pspAtomicsAmoAdd(pAddress, uiValueToAdd);
+#define M_PSP_ATOMIC_AMO_AND(pAddress, uiValueToAndWith)                          pspAtomicsAmoAnd(pAddress, uiValueToAndWith);
+#define M_PSP_ATOMIC_AMO_OR(pAddress, uiValueToOrWith)                            pspAtomicsAmoOr(pAddress, uiValueToOrWith);
+#define M_PSP_ATOMIC_AMO_XOR(pAddress, uiValueToXorWith)                          pspAtomicsAmoXor(pAddress, uiValueToXorWith);
+#define M_PSP_ATOMIC_AMO_MIN(pAddress, uiValueToCompare)                          pspAtomicsAmoMin(pAddress, uiValueToCompare);
+#define M_PSP_ATOMIC_AMO_MAX(pAddress, uiValueToCompare)                          pspAtomicsAmoMax(pAddress, uiValueToCompare);
+#define M_PSP_ATOMIC_AMO_MIN_UNSIGINED(pAddress, uiValueToCompare)                pspAtomicsAmoMinUnsigned(pAddress, uiValueToCompare);
+#define M_PSP_ATOMIC_AMO_MAX_UNSIGNED(pAddress, uiValueToCompare)                 pspAtomicsAmoMaxUnsigned(pAddress, uiValueToCompare);
 
 /**
 * global variables
@@ -90,13 +70,6 @@
 */
 
 /**
-* @brief - Returns the start address in the DCCM that can be used for atomic operations
-*
-* @return - address in the DCCM area, free for usage
-*/
-u32_t pspAtomicsGetAddressForAtomicOperations(void);
-
-/**
 * @brief - compare and set a value in the memory using atomic commands
 *
 * @parameter - address in the memory to compare and set the value there
@@ -105,21 +78,21 @@ u32_t pspAtomicsGetAddressForAtomicOperations(void);
 *
 * @return    - 0 - success. Otherwise - failure
 */
-D_PSP_NO_INLINE u32_t pspAtomicsCompareAndSet(volatile u32_t* pAddress, u32_t uiExpectedValue, u32_t uiDesiredValue);
+D_PSP_NO_INLINE u32_t pspAtomicsCompareAndSet(u32_t* pAddress, u32_t uiExpectedValue, u32_t uiDesiredValue);
 
 /**
 * @brief - spin-lock on a parameter in a given memory address
 *
 * @parameter - (a0) address in the memory with the parameter to check
 */
-D_PSP_NO_INLINE void pspAtomicsEnterCriticalSection(volatile u32_t* pAddress);
+D_PSP_NO_INLINE void pspAtomicsEnterCriticalSection(u32_t* pAddress);
 
 /**
 * @brief - release the lock by parameter in a given memory address using atomic command
 *
 * @parameter - (a0) address in the memory with the parameter to set
 */
-D_PSP_NO_INLINE void pspAtomicsExitCriticalSection(volatile u32_t* pAddress);
+D_PSP_NO_INLINE void pspAtomicsExitCriticalSection(u32_t* pAddress);
 
 /**
 * @brief - AMO (Atomic Memory Operation) Swap command

@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -49,8 +49,7 @@
 #define D_DEMO_SYNC_POINT_2_LOC               2
 #define D_DEMO_SYNC_POINT_3_LOC               3
 #define D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC  4
-#define D_DEMO_MUTEX_LOC                      5
-#define D_DEMO_NUMBER_OF_COMMON_POINTS        D_DEMO_MUTEX_LOC+1  /* 6 common points */
+#define D_DEMO_NUMBER_OF_COMMON_POINTS        (D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC+1)  /* 5 common points */
 
 /**
 * macros
@@ -84,38 +83,28 @@ u32_t g_uiVecB1[D_DEMO_ARRAY_SIZE];
 volatile u32_t g_uiNumberOfTimerInterruptsHart0;
 volatile u32_t g_uiNumberOfTimerInterruptsHart1;
 
-/* Array of pointers to DCCM area for atomic operations usage in this demo */
-u32_t* g_uiAtomicOperationVars[D_DEMO_NUMBER_OF_COMMON_POINTS];
+/* Array of integers for atomic-operations (sync-points and a mutex) to be used in this demo */
+u32_t g_uiAtomicOperationVars[D_DEMO_NUMBER_OF_COMMON_POINTS];
 
-/* Global pointer to a mutex, created and used in this demo */
-pspMutex_t* g_pMutex;
+/* Area for mutex for usage in this demo (size = 1 mutex) */
+pspMutexCb_t g_MutexArea[D_DEMO_NUMBER_OF_MUTEXES_IN_HEAP];
+pspMutexCb_t* g_pMutex = NULL;
 
 /**
 * APIs
 */
 
 /**
- * @brief - Locate and initialize the global parameters in this demo that handled by atomic operations
- *          - locate them in DCCM (After area that assigned for PSP usage)
- *          - set them an initialized value (0)
+ * @brief - Initialize the global parameters to be used for atomic-operations in this demo - sync-points and a mutex
  *
- * @parameter - start address in DCCM where demo can use for its own atomic operations
  */
-void demoInitializeAtomicOperationsItems(u32_t uiStartAddressForAtomicOpsItems)
+void demoInitializeAtomicOperationsItems(void)
 {
-  /* Set a series of pointers in g_uiAtomicOperationVars. Each pointer points to an address in DCCM for atomic operations usage in this demo */
-  g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_0_LOC]              = (u32_t*)uiStartAddressForAtomicOpsItems;
-  g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_1_LOC]              = (u32_t*)(uiStartAddressForAtomicOpsItems+sizeof(u32_t));
-  g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_2_LOC]              = (u32_t*)(uiStartAddressForAtomicOpsItems+(sizeof(u32_t)*2));
-  g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_3_LOC]              = (u32_t*)(uiStartAddressForAtomicOpsItems+(sizeof(u32_t)*3));
-  g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC] = (u32_t*)(uiStartAddressForAtomicOpsItems+(sizeof(u32_t)*4));
-  g_uiAtomicOperationVars[D_DEMO_MUTEX_LOC]                     = (u32_t*)(uiStartAddressForAtomicOpsItems+(sizeof(u32_t)*5));
-
-  /* Initialize (zero) the common points in the DCCM area */
-  pspMemsetBytes((void*)uiStartAddressForAtomicOpsItems, 0, D_DEMO_NUMBER_OF_COMMON_POINTS*sizeof(u32_t));
+  /* Initialize (zero) the common sync points */
+  pspMemsetBytes((void*)g_uiAtomicOperationVars, 0, D_DEMO_NUMBER_OF_COMMON_POINTS*sizeof(u32_t));
 
   /* Initialize the heap of the mutexs */
-  pspMutexHeapInit(g_uiAtomicOperationVars[D_DEMO_MUTEX_LOC] ,D_DEMO_NUMBER_OF_MUTEXES_IN_HEAP);
+  pspMutexHeapInit((pspMutexCb_t*)g_MutexArea ,D_DEMO_NUMBER_OF_MUTEXES_IN_HEAP);
 }
 
 /**
@@ -165,14 +154,14 @@ u32_t demoMultiplyArrays(u32_t *pArray1, u32_t *pArray2, u32_t uiArraySize)
  */
 void demoSpinOnSyncPoint(volatile u32_t* pSyncPoint)
 {
-  volatile u32_t uiCommonParameter, uiCompareAndSetResult;
+  u32_t uiCommonParameter, uiCompareAndSetResult;
 
   /* Each hart spins here until the synchronization point value reach the expected value */
   do
   {
     uiCommonParameter = *pSyncPoint;
     /* Each hart increments the synchronization point number once */
-    uiCompareAndSetResult = M_PSP_ATOMIC_COMPARE_AND_SET(pSyncPoint, uiCommonParameter, uiCommonParameter+1);
+    uiCompareAndSetResult = M_PSP_ATOMIC_COMPARE_AND_SET((u32_t*)pSyncPoint, uiCommonParameter, uiCommonParameter+1);
   } while (uiCompareAndSetResult != 0);
   /* Each hart spins here until synchronization point number = 2 ==> which means both harts arrived here */
   while(D_DEMO_NUMBER_OF_HARTS > *pSyncPoint){};
@@ -257,30 +246,30 @@ void demoMultiHartsAccessSeperateMemory(void)
  */
 void demoMultiHartsCasInSharedMemory()
 {
-  u32_t volatile uiCommonParameter;
-  u32_t volatile uiCompareAndSetResult;
+  u32_t uiCommonParameter;
+  u32_t uiCompareAndSetResult;
   u32_t uiIterator;
 
   /* Synchronization point between 2 harts, to make sure both harts start this part simultaneously */
-  demoSpinOnSyncPoint(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_0_LOC]);
+  demoSpinOnSyncPoint((u32_t*)&(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_0_LOC]));
 
   /* Each hart iterates and accumulate a common global number */
   for (uiIterator = 0; uiIterator < D_DEMO_NUM_ITERATIONS; uiIterator++)
   {
     do
     {
-      uiCommonParameter = *(g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC]);
-      uiCompareAndSetResult = M_PSP_ATOMIC_COMPARE_AND_SET(g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC], uiCommonParameter, uiCommonParameter+1);
+      uiCommonParameter = g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC];
+      uiCompareAndSetResult = M_PSP_ATOMIC_COMPARE_AND_SET(&(g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC]), uiCommonParameter, uiCommonParameter+1);
     } while (uiCompareAndSetResult != 0);
   }
 
   /* Synchronization point between 2 harts, Check the results after both harts finished their iterations */
-  demoSpinOnSyncPoint(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_1_LOC]);
+  demoSpinOnSyncPoint((u32_t*)&(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_1_LOC]));
 
   /* Upon completion of Part2 - check if succeeded */
   /* The global accumulated number should be exactly twice than the loop iterator, as both harts ran the same
    * loop and accumulated the global accumulated counter */
-  if((uiIterator*2) != *(g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC]))
+  if((uiIterator*2) != g_uiAtomicOperationVars[D_DEMO_COMMON_ACCUMULATED_NUMBER_LOC])
   {
     M_DEMO_ERR_PRINT();
     M_PSP_EBREAK();
@@ -298,7 +287,6 @@ void demoMultiHartsCriticalSectionAmoMutex()
 {
   u32_t       uiHartId = M_PSP_MACHINE_GET_HART_ID();
   u32_t       uiIterator = 0;
-  pspMutex_t* pMutexDestroyed; /* Mutex pointer. Used here to verify correct destroy */
 
   if(E_HART0 == uiHartId)
   {
@@ -311,7 +299,7 @@ void demoMultiHartsCriticalSectionAmoMutex()
   }
 
   /* Synchronization point between 2 harts. Make sure both harts starts the demo-function only after initializations are done and the mutex is created */
-  demoSpinOnSyncPoint(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_2_LOC]);
+  demoSpinOnSyncPoint((u32_t*)&(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_2_LOC]));
 
   /* Spin-lock on critical section entrance */
   pspMutexAtomicLock(g_pMutex);
@@ -339,7 +327,7 @@ void demoMultiHartsCriticalSectionAmoMutex()
   pspMutexAtomicUnlock(g_pMutex);
 
   /* Synchronization point between 2 harts, to make sure that the results check is done after both harts completed the previous part */
-  demoSpinOnSyncPoint(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_3_LOC]);
+  demoSpinOnSyncPoint((u32_t*)&(g_uiAtomicOperationVars[D_DEMO_SYNC_POINT_3_LOC]));
 
   /* Verify correct values. No need to do it twice, so let hart0 to do it */
   if (E_HART0 == uiHartId)
@@ -356,9 +344,7 @@ void demoMultiHartsCriticalSectionAmoMutex()
     } /* for loop */
 
     /* No need for the mutex anymore - can be destroyed */
-    pMutexDestroyed = pspMutexDestroy(g_pMutex);
-    /* NULL returned value indicates that mutex-destroy has been succeeded */
-    if (pMutexDestroyed != NULL)
+    if (NULL != pspMutexDestroy(g_pMutex))     /* NULL returned value indicates that mutex-destroy has been succeeded */
     {
       /* Mutex destroy has been failed */
       M_DEMO_ERR_PRINT();
@@ -431,9 +417,7 @@ void demoMultiHartsTimerInterrupts()
  */
 void demoStart(void)
 {
-  u32_t uiAddressForAtomics;
-  static u32_t uiSync = 0;
-  static volatile u32_t uiCounter0 = 0, uiCounter1 = 0;
+  static u32_t uiCounter0 = 0, uiCounter1 = 0;
   u32_t uiHartId = M_PSP_MACHINE_GET_HART_ID();
 
   /* count number of times we entered this function */
@@ -442,6 +426,15 @@ void demoStart(void)
     /* Setup vector table for Hart0 */
     pspMachineInterruptsSetVecTableAddress(&M_PSP_VECT_TABLE_HART0);
     uiCounter0++;
+
+    /* Initialize PSP internal mutexs */
+    pspMutexInitPspMutexs();
+
+    /* Initialize the parameters for atomic operations in the demo */
+    demoInitializeAtomicOperationsItems();
+
+    /* start hart1 */
+    asm volatile ("csrrwi x0, 0x7fc, 3");
   }
   else
   {
@@ -454,24 +447,6 @@ void demoStart(void)
   if (uiCounter0 == uiCounter1)
   {
     M_DEMO_START_PRINT();
-  }
-
-  /* Globals initializations could be done once */
-  if (0 == uiSync)
-  {
-    uiSync = 1;
-
-    /* Initialize PSP mutexs */
-    pspMutexInitPspMutexs();
-
-    /* Get the start address that the demo can use for its own atomic operations */
-    uiAddressForAtomics = pspAtomicsGetAddressForAtomicOperations();
-
-    /* Initialize the parameters for atomic operations in the demo */
-    demoInitializeAtomicOperationsItems(uiAddressForAtomics);
-
-    /* start hart1 */
-    asm volatile ("csrrwi x0, 0x7fc, 3");
   }
 
   /* Demo#1 - Each hart access its own memory */

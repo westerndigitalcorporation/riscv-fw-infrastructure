@@ -32,7 +32,6 @@
 /**
 * definitions
 */
-#define D_PSP_SIZE_OF_MUTEX     sizeof(pspMutex_t)
 #define D_PSP_MUTEX_OCCUIPED    1 /* 'occupied' means- the mutex is used by the application (can 'lock' and 'free' it) */
 #define D_PSP_MUTEX_UNOCCUIPED  0 /* 'unoccupied' means- the mutex is not used by the application (cannot 'lock' or 'free' it) */
 #define D_PSP_MUTEX_LOCKED      1
@@ -41,7 +40,12 @@
 /**
 * types
 */
-typedef u32_t pspMutex_t;
+typedef struct pspMutexControlBlock
+{
+   u32_t  uiMutexState;        /* D_PSP_MUTEX_LOCKED / D_PSP_MUTEX_UNLOCKED */
+   u32_t  uiMutexOccupied :1;  /* D_PSP_MUTEX_OCCUIPED / D_PSP_MUTEX_UNOCCUIPED */
+   u32_t  uiMutexCreator  :1;  /* Created by: 0 - Hart0 / 1 - Hart1 .  Only the creator is allowed to destroy */
+} pspMutexCb_t;
 
 /**
 * local prototypes
@@ -76,7 +80,7 @@ void pspMutexInitPspMutexs(void);
 * @parameter - Number of mutexs in the heap
 *
 */
-void pspMutexHeapInit(pspMutex_t* pMutexHeapAddress, u32_t uiNumOfMutexs);
+void pspMutexHeapInit(pspMutexCb_t* pMutexHeapAddress, u32_t uiNumOfMutexs);
 
 /**
 * @brief - Create a mutex in the mutexs-heap.
@@ -85,7 +89,7 @@ void pspMutexHeapInit(pspMutex_t* pMutexHeapAddress, u32_t uiNumOfMutexs);
 *
 * @return - Address of the created mutex. In case of failure return NULL.
 */
-pspMutex_t* pspMutexCreate(void);
+pspMutexCb_t* pspMutexCreate(void);
 
 /**
 * @brief - Destroy (remove the 'occupied' mark) a mutex in the mutexs-heap
@@ -94,7 +98,7 @@ pspMutex_t* pspMutexCreate(void);
 *
 * @return    - Address of the destroyed mutex. In case of failure return NULL.
 */
-pspMutex_t* pspMutexDestroy(pspMutex_t* pMutex);
+pspMutexCb_t* pspMutexDestroy(pspMutexCb_t* pMutex);
 
 /**
 * @brief - Lock a mutex using atomic commands. 
@@ -102,7 +106,7 @@ pspMutex_t* pspMutexDestroy(pspMutex_t* pMutex);
 * @parameter - pointer to the mutex to lock
 * 
 */
-void pspMutexAtomicLock(pspMutex_t* pMutex);
+void pspMutexAtomicLock(pspMutexCb_t* pMutex);
 
 /**
 * @brief - Free a mutex using atomic commands. 
@@ -110,7 +114,7 @@ void pspMutexAtomicLock(pspMutex_t* pMutex);
 * @parameter - pointer to the mutex to free
 * 
 */
-void pspMutexAtomicUnlock(pspMutex_t* pMutex);
+void pspMutexAtomicUnlock(pspMutexCb_t* pMutex);
 
 
 #endif /* __PSP_MUTEX_EH2_H__ */

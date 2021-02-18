@@ -3,7 +3,7 @@
 ![N|Solid](http://riscv.net/wp-content/uploads/2015/01/riscv-logo-retina.png)
 
 # WD RISC-V Firmware Package 
-This repostority is WD RISC-V Firmware package, holds:
+This repository is WD RISC-V Firmware package, holds:
 
   - WD-Firmware
   - GCC 10.2.0 Toolchain for RISC-V
@@ -12,8 +12,8 @@ This repostority is WD RISC-V Firmware package, holds:
 
 
 # Getting the sources
-  This repostority use LFS.
-  If you dont have git LFS installed, please do the following steps (based on Debian/Ubuntu):
+  This repository use LFS.
+  If you don't have git LFS installed, please do the following steps (based on Debian/Ubuntu):
   
     $ curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
     $ sudo apt-get install git-lfs
@@ -49,7 +49,7 @@ The FW-Infra was verified with VMWare player v. 15 hosting Debian 9.6.
 
 #### Current Platform and Core support:
 - **HiFive1** 
-- **SweRVolf** - running on *Nexys-A7 FPGA* EH1, EL2 with full SoC ( [LINK to source](https://github.com/chipsalliance/Cores-SweRVolf) )
+- **SweRVolf** - running on *Nexys-A7 FPGA* EH1, EH2 and EL2 with full SoC ( [LINK to source](https://github.com/chipsalliance/Cores-SweRVolf) )
 - **Whisper**  - ISS tool running EH1,EH2,EL2 ( [LINK to source](https://github.com/chipsalliance/SweRV-ISS) )
 
 
@@ -59,7 +59,7 @@ WD-Firmware
      ├── board                                <-- supported boards
           ├── hifive-1                        
           ├── nexys_a7_eh1 (support for SweRV eh1, running on SweRVolf)
-          ├── nexys_a7_eh2 (upcoming...)
+          ├── nexys_a7_eh2 (support for SweRV eh2)
           ├── nexys_a7_el2 (Support for SweRV el2, running on SweRVolf)
           ├── whisper (SweRV ISS Support for SweRV eh1, eh2, el2)
      ├── common                               <-- common source
@@ -159,11 +159,15 @@ We provide several platforms to work with, please follow the instructions for th
 &nbsp;
 - #### Setting up Nexys-A7 for SweRV - SweRVolf 
 
-    SweRVolf is an fpga create by Olof Kindgren under CHIPS-Alliance
+    ***EH1 and EL2*** SweRVolf are fpga files create by Olof Kindgren under CHIPS-Alliance
     If you wish to know more please use this link: [Cores-SweRVolf](https://github.com/chipsalliance/Cores-SweRVolf)
-    
-    - ***FPGA image file loading***: for loading the FPGA bit file, do the following steps:
-    	- Copy the FPGA bit file /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit*** to uSD device (locate it at the uSD root)
+
+    ***For the FPGA bit file loading, do the following steps:***
+    - ***FPGA image file loading***: using uSD device
+    	- Copy the FPGA bit file to a uSD device from the following path:
+      	  1. For SweRV eh1: /WD-Firmware/board/nexys_a7_eh1/***eh1_reference_design.bit***
+    	  2. For SweRV eh2: /WD-Firmware/board/nexys_a7_eh2/***swervolf_eh2.bit***
+    	  3. For SweRV el2: /WD-Firmware/board/nexys_a7_el2/***swervolf_el2.bit***
     	- Connect the uSD to the Nexys-A7 board (uSD slot is on board's bottom)
 		- Set the following jumpers:  `JP1 - USB/SD pins.   JP2 - connect the 2 pins on 'SD' side`
 		- Slide switch `sw0 to OFF` and `all others to ON`
@@ -176,12 +180,15 @@ We provide several platforms to work with, please follow the instructions for th
 
     - ***FPGA image file loading***: using eclipse MCU:
     	- From eclipse IDE menu bar open the External Tools Configurations: *'Run'* -> *'External Tools'* -> *'External Tools Configurations...'*
-    	- Under the *Program* list, select nexys_a7_eh1_flush and press the *Run* button
+    	- Under the *Program* list, select:
+    	  1. For SweRV eh1: ***nexys_a7_eh1_flush*** and press the *Run* button
+    	  2. For SweRV eh2: ***nexys_a7_eh2_flush*** and press the *Run* button
+    	  3. For SweRV el2: ***nexys_a7_el2_flush*** and press the *Run* button
     	- The eclipse IDE Console will display *shutdown command invoked* upon completion
 
 &nbsp;
 
-- #### Setting up ISS (works as simulator for EH1)
+- #### Setting up ISS (works as simulator for SweRV EH1, EH2 and EL2)
     
     There is nothing to set for SweRV ISS, just select debugger luncher (following next)..
 &nbsp; 
@@ -192,12 +199,18 @@ We provide several platforms to work with, please follow the instructions for th
         ```javascript
         - hifive1                              <-- HiFive Eval board
         - nexys_a7_eh1_swerolf                 <-- Nexys A7 digilent FPGA board running SweRV EH1 
+                                                   with full System on chip support. 
+                                                   From chipsalliance/Cores-SweRVolf
         - nexys_a7_el2_swerolf                 <-- Nexys A7 digilent FPGA board running SweRV EL2 
                                                    with full System on chip support. 
                                                    From chipsalliance/Cores-SweRVolf
-        - whisper_eh1_connect_and_debug        <-- SweRV ISS simulator for EH1
-        - whisper_eh2_connect_and_debug        <-- SweRV ISS simulator for RH2
-        - whisper_el2_connect_and_debug        <-- SweRV ISS simulator for EL2
+        - nexys_a7_eh2_swerolf                 <-- Nexys A7 digilent FPGA board running SweRV EH2 
+                                                   with full System on chip support. 
+        - whisper_eh1_connect_and_debug        <-- ISS simulator for SweRV EH1
+        - whisper_eh2_connect_and_debug        <-- ISS simulator for SweRV EH2
+        - whisper_el2_connect_and_debug        <-- ISS simulator for SweRV EL2
+        - whisper_eh2_connect_and debug_multi_hart <-- same as whisper_eh2_connect_and_debug BUT with 2 HW 
+                                                       threads (HARTs) running simultaneously
         ```
 
 ### Adding new source modules
@@ -223,4 +236,3 @@ This repo is always under work, following are notes and status for items that is
     - All EH2 demos are working only on Whisper, no fpga
     - Currently, Software-Interrupts are not supported in EL2 fpga. Until it will be supported, you can use Whisper for this demo.
     - Bitmanip is supported only on LLVM.
-

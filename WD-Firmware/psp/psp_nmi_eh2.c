@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -209,13 +209,13 @@ D_PSP_TEXT_SECTION void pspMachineNmiSetDelegation(u32_t uiHartNumber)
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
 
   /* Delegate NMI handling to the given Hart number */
   M_PSP_SET_CSR(D_PSP_MNMIPDEL_NUM, 1<<uiHartNumber);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
 }
 
 /**
@@ -230,13 +230,13 @@ D_PSP_TEXT_SECTION void pspMachineNmiClearDelegation(u32_t uiHartNumber)
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
 
   /* Clear delegation of NMI handling from the given Hart number */
   M_PSP_CLEAR_CSR(D_PSP_MNMIPDEL_NUM, 1<<uiHartNumber);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_NMI_DELEGATION);
 }
 
 /**

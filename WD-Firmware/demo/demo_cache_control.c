@@ -87,6 +87,11 @@ void demoStart(void)
    /* Run this demo only if target is Swerv. Cannot run on Whisper */
    if (D_PSP_TRUE == demoIsSwervBoard())
    {
+#ifdef D_SWERV_EH2
+      /* Initialize PSP mutexs */
+      pspMutexInitPspMutexs();
+#endif
+
       /* clear all mrac bits - disable cache and sideeffect bits */
       for (uiIndex = 0 ; uiIndex < D_CACHE_CONTROL_MAX_NUMBER_OF_REGIONS ; uiIndex++)
       {

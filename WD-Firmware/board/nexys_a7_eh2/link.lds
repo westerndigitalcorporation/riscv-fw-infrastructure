@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
- * Copyright 2019 Western Digital Corporation or its affiliates.
+ * Copyright 2019-2021 Western Digital Corporation or its affiliates.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,17 @@ MEMORY
 {
   ram  (wxa!ri) : ORIGIN = 0x00000000, LENGTH = 64M
   ram2 (wxa!ri) : ORIGIN = 0x04000000, LENGTH = 64M
+  dccm (wxa!ri) : ORIGIN = 0xf0080000, LENGTH = 64K
   ovl           : ORIGIN = 0xE0000000, LENGTH = __comrv_overlay_storage_size
 }
 
 PHDRS
 {
-  rom_load PT_LOAD;
-  ram_init PT_LOAD;
-  ram_load PT_LOAD;
-  ovl PT_NULL;
+  rom_load  PT_LOAD;
+  ram_init  PT_LOAD;
+  ram_load  PT_LOAD;
+  dccm_load PT_LOAD;
+  ovl       PT_NULL;
 }
 
 
@@ -51,22 +53,30 @@ SECTIONS
   __hart_stack_size = 4K;
   __comrv_cache_size = DEFINED(__comrv_cache_size) ? __comrv_cache_size : 0;
   __comrv_cache_alignment_size = DEFINED(__comrv_cache_alignment_size) ? __comrv_cache_alignment_size : 0;
-  
+
   .text.init :
   {
     *(.text.init)
     . = ALIGN(8);
   } > ram : ram_load
-  
+
   .text :
   {
     *(.text.unlikely .text.unlikely.*)
     *(.text.startup .text.startup.*)
     *(.text .text.*)
+    *(COMRV_TEXT_SEC)
+    *(COMRV_TEXT_ASM)
     *(.gnu.linkonce.t.*)
     . = ALIGN(4);
   } >ram : ram_load
-  
+
+  PSP_TEXT_SEC :
+  {
+    *(.psp_code_section)
+    . = ALIGN(4);
+  }  > ram : ram_load
+
   .rodata :
   {
     *(.rdata)
@@ -75,7 +85,7 @@ SECTIONS
     KEEP(*(COMRV_RODATA_SEC))
     . = ALIGN(4);
   } > ram : ram_load
-  
+
   /* this is a placeholder for comrv overlay groups.
      after linking, we'll use objcopy utility and change the
      address of .ovlgrpdata to this address */ 
@@ -83,78 +93,6 @@ SECTIONS
   {
     _OVERLAY_STORAGE_START_ADDRESS_ = .;
     . = LENGTH(ovl);
-  } > ram : ram_load
-
-  
-  .lalign : 
-  {
-    . = ALIGN(4);
-    PROVIDE( _data_lma = . );
-  } > ram : ram_load
-  
-  .dalign :
-  {
-    . = ALIGN(4);
-    PROVIDE( _data = . );
-  } > ram : ram_load
-  
-  
-  .data :
-  {
-    *(.data .data.*)
-    *(.gnu.linkonce.d.*)
-    . += 10; /* fix for linker false error message */
-    . = ALIGN(8); 
-  } > ram : ram_load
-
-  COMRV_DATA_SEC : ALIGN(16)
-  {
-  
-  }  > ram2 : ram_load
-  
-  PSP_DATA_SEC : ALIGN(16)
-  {
-  
-  }  > ram2 : ram_load
-  
-  .sdata :
-  {
-    . = ALIGN(8);
-    __global_pointer$ = . + 0x800;
-    *(.sdata .sdata.*)
-    *(.gnu.linkonce.s.*)
-    . = ALIGN(8);
-    *(.srodata .srodata.*)
-   . = ALIGN(8);
-  } > ram : ram_load
-  
-  . = ALIGN(4);
-  PROVIDE( _edata = . );
-  PROVIDE( edata = . );
-  PROVIDE( _fbss = . );
-  PROVIDE( __bss_start = . );
-  
-  .bss :
-  {
-    *(.sbss .sbss.* .gnu.linkonce.sb.*)
-    *(.scommon)
-    *(.bss .bss.*) 
-    . = ALIGN(8);
-  } >ram : ram_load
-  
-  _end = .;
-  
-  .stack_hart0 :
-  {
-    . = __hart_stack_size; 
-    _sp_hart0 = .;
-  } > ram : ram_load
-  
-  .stack_hart1 :
-  {
-    . = _sp_hart0;
-    . = __hart_stack_size;
-    _sp_hart1 = .;
   } > ram : ram_load
 
   /* this area is used for loading and executing the comrv 
@@ -166,6 +104,89 @@ SECTIONS
     __OVERLAY_CACHE_END__ = . ;
   } > ram : ram_load
 
+  . = ORIGIN(dccm);
+  
+  .lalign : 
+  {
+    . = ALIGN(4);
+    PROVIDE( _data_lma = . );
+  } > dccm : dccm_load
+  
+  .dalign :
+  {
+    . = ALIGN(4);
+    PROVIDE( _data = . );
+  } > dccm : dccm_load
+  
+  
+  .data :
+  {
+    *(.data .data.*)
+    *(.gnu.linkonce.d.*)
+    . += 10; /* fix for linker false error message */
+    . = ALIGN(8); 
+  } > dccm : dccm_load
+
+  PSP_INTERNAL_MUTEX_SEC : ALIGN(16)
+  {
+    *(.psp_internal_mutexes)
+    . = ALIGN(4);
+  } > dccm : dccm_load
+  
+  COMRV_DATA_SEC : ALIGN(16)
+  {
+  
+  }  > dccm : dccm_load
+
+  PSP_DATA_SEC : ALIGN(16)
+  {
+    *(.psp_data_section)
+    . = ALIGN(4);
+  }  > dccm : dccm_load
+
+  .sdata :
+  {
+    . = ALIGN(8);
+    __global_pointer$ = . + 0x800;
+    *(.sdata .sdata.*)
+    *(.gnu.linkonce.s.*)
+    . = ALIGN(8);
+    *(.srodata .srodata.*)
+   . = ALIGN(8);
+  } > dccm : dccm_load
+
+
+  
+  . = ALIGN(4);
+  PROVIDE( _edata = . );
+  PROVIDE( edata = . );
+
+  PROVIDE( _fbss = . );
+  PROVIDE( __bss_start = . );
+  
+  .bss :
+  {
+    *(.sbss .sbss.* .gnu.linkonce.sb.*)
+    *(.scommon)
+    *(.bss .bss.*) 
+    . = ALIGN(8);
+  } > dccm : dccm_load
+
+  _end = .;
+  
+  .stack_hart0 :
+  {
+    . = __hart_stack_size; 
+    _sp_hart0 = .;
+  } > dccm : dccm_load
+  
+  .stack_hart1 :
+  {
+    . = _sp_hart0;
+    . = __hart_stack_size;
+    _sp_hart1 = .;
+  }> dccm : dccm_load
+  
   /* this is the location of all comrv overlay groups.
      after linking, we'll use objcopy utility and copy
      it to the .reserved_ovl section. we do this

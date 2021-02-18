@@ -170,12 +170,12 @@ void uartInit(void)
 /*----------------------------------------------------*/
 typedef struct params_s 
 {
-    int len;
-    long num1;
-    long num2;
-    char pad_character;
-    int do_padding;
-    int left_flag;
+  int len;
+  long num1;
+  long num2;
+  char pad_character;
+  int do_padding;
+  int left_flag;
   int upper_hex_digit_flag; //added hexdigit uppercase [A-F]
   int maxium_length; // max_length
 } params_t;
