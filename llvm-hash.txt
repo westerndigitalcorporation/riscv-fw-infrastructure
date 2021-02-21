@@ -1,44 +1,6 @@
+Date: 07/02/2021
 llvm-project
 	url=https://github.com/westerndigitalcorporation/llvm-project.git
 	branch=comrv
 	hash=12812e526cdbbe08e992d5c4bd01e5b2f1bfa656
 
-	riscv-gnu-toolchain
-		url=https://github.com/westerndigitalcorporation/riscv-gnu-toolchain.git
-		branch=gcc-10-WA-comrv
-		hash=3ea0af099726e3e991038445bbc3633994af3b2b
-
-		riscv-binutils
-			url=https://github.com/westerndigitalcorporation/binutils-gdb.git
-			branch=heads/comrv-devel
-			hash=23a8c708d1ff144187fd5976fa19754ba11f1030
-		riscv-gcc
-			url=https://github.com/gcc-mirror/gcc.git
-			branch=releases/gcc-10.2.0
-			hash=ee5c3db6c5b2c3332912fb4c9cfa2864569ebd9a
-		riscv-glibc
-			url=https://sourceware.org/git/glibc.git
-			branch=glibc-2.32
-			hash=3de512be7ea6053255afed6154db9ee31d4e557a
-		riscv-dejagnu
-			url=https://git.savannah.gnu.org/git/dejagnu.git
-			branch=dejagnu-1.6.2-release
-			hash=4b1aeb8672be74417f1b5f6a5683a0cf9071b39b
-		riscv-newlib
-			url=https://github.com/westerndigitalcorporation/newlib.git
-			branch=heads/master
-			hash=c2d6e6f7f6e4cee5db023fa299d5c39d348805ca
-		riscv-gdb
-			url=https://github.com/westerndigitalcorporation/binutils-gdb.git
-			branch=heads/comrv-devel
-			hash=23a8c708d1ff144187fd5976fa19754ba11f1030
-		qemu
-			url=https://git.qemu.org/git/qemu.git
-			branch=v4.0.0-1854-g57dfc2c4d5
-			hash=57dfc2c4d51e770ed3f617e5d1456d1e2bacf3f0
-		libexpat
-			url=https://github.com/libexpat/libexpat.git
-			branch=R_2_2_9-110-g990e3d07
-			hash=990e3d07eaa127007f9d304a9b4c6ffadc61b1fe
-             
-  

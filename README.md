@@ -81,8 +81,8 @@ WD-Firmware
 ### Additional downloads
 	NOTE: The COMRV demo will work only with the LLVM toolchain, GCC is not supported
 - #### Toolchain binary download links:
-	- GNU  ( [riscv-gnu-toolchain-debian.tar.gz](https://wdc.box.com/s/yah1vncrsv7iebcsq2a80wv2wfpyn0s7) )
-	- LLVM ( [riscv-llvm-toolchain-debian.tar.gz](https://wdc.box.com/s/0e6xw3c4kr8tzpmktjh9ksv55b1rd9us) )
+	- GNU  ( [GNU release folders](https://wdc.box.com/s/lfam8pwhghwshkmjf1yc542ghzfbyn7y) )
+	- LLVM ( [LLVM release folders](https://wdc.box.com/s/v562eei6d01bhzqcc4si76z1vq0w4ibu) )
 	
 - #### Using GCC Toolchain
 	- From the repo root folder unzip riscv-gnu-toolchain-debian.tar.gz to the ***WD-Firmware/demo/build/toolchain*** directory
