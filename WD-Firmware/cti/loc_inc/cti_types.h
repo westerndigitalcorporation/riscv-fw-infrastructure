@@ -74,6 +74,7 @@ typedef enum
    E_CB_TEST_OVL_OVL_CRC_CHECK                  = 0x7,
    E_CB_TEST_OVL_CRITICAL_SECTION               = 0x8,
    E_CB_TEST_OVL_THREAD_SAFE                    = 0x9,
+   E_CB_TEST_OVL_RESET_EVICTION_COUNTERS        = 0xA,
    E_CB_TEST_OVL_NONE,
    E_CB_TEST_OVL_MAX = E_CB_TEST_OVL_NONE
 }E_CB_TEST_OVL;

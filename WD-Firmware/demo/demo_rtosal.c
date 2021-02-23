@@ -92,6 +92,7 @@ meaning the send task should always find the queue empty. */
 #define D_TX_TASK_STACK_SIZE  450
 #define D_SEM_TASK_STACK_SIZE 450
 
+#define D_DEMO_NUM_OF_LOOPS   4
 /**
 * macros
 */
@@ -370,8 +371,8 @@ static void demoRtosalReceiveMsgTask( void *pParameters )
     demoOutputMsg("Received %d: ",uiReceivedValue);
 #endif
 
-    /* for automation demo, after 50 "received" the demo is done*/
-    if (uiReceivedValue >= 50)
+    /* for automation demo, after D_DEMO_NUM_OF_LOOPS "received" the demo is done*/
+    if (uiReceivedValue >= D_DEMO_NUM_OF_LOOPS)
     {
       M_DEMO_END_PRINT();
     }

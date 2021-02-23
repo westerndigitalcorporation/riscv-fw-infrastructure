@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -107,6 +107,8 @@ comrvInstrumentationArgs_t g_stInstArgs;
 #define OVL_OverlayFunc3 _OVERLAY_
 #define OVL_OverlayFunc4 _OVERLAY_
 
+#define D_DEMO_DISABLE_LOAD 0
+
 D_PSP_NO_INLINE void NonOverlayFunc(void);
 void OVL_OverlayFunc0 OverlayFunc0(void);
 void OVL_OverlayFunc1 OverlayFunc1(void);
@@ -133,6 +135,7 @@ typedef void (*funcPtr)(void);
 /**
 * external prototypes
 */
+extern void demoComrvSetErrorHandler(void* fptrAddress);
 
 /**
 * global variables
@@ -147,6 +150,28 @@ volatile u32_t gOverlayFunc2 = 0;
 /**
 * functions
 */
+u32_t demoNewErrorHook(const comrvErrorArgs_t* pErrorArgs)
+{
+   /* make sure we got the load disabled error */
+   if (pErrorArgs->uiErrorNum == D_COMRV_LOAD_DISABLED_ERR)
+   {
+      M_DEMO_END_PRINT();
+   }
+   /* make sure we got the invoke disabled error */
+   else if (pErrorArgs->uiErrorNum == D_COMRV_INVOKED_WHILE_DISABLED)
+   {
+      /* we can continue executing the demo */
+      return 0;
+   }
+   else
+   {
+      M_DEMO_ERR_PRINT();
+   }
+
+   /* we can't continue from this point */
+   while(1);
+}
+
 void _OVERLAY_ OvlTestFunc4K(void)
 {
    M_DEMO_1K_NOPS();
@@ -215,13 +240,6 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=OverlayFunc3(1,2,3,4,5,6,7,8,9);
 }
 
-#ifdef D_COMRV_CONTROL_SUPPORT
-/* override comrv implementation */
-void comrvEntryDisable(void)
-{
-}
-#endif /* D_COMRV_CONTROL_SUPPORT */
-
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs;
@@ -238,12 +256,16 @@ void demoStart(void)
    comrvInit(&stComrvInitArgs);
 
 #ifdef D_COMRV_CONTROL_SUPPORT
+   /* register a new error handler so we can catch the next expected error */
+   demoComrvSetErrorHandler(demoNewErrorHook);
    /* check the disable API */
    comrvDisable();
    /* try to call an overlay function */
    OverlayFunc0();
    /* enable comrv */
    comrvEnable();
+   /* clear registered error handler - use the default */
+   demoComrvSetErrorHandler(NULL);
 #endif /* D_COMRV_CONTROL_SUPPORT */
 
    /* demonstrate function pointer usage */
@@ -271,7 +293,7 @@ void demoStart(void)
    OverlayFunc4();
 
    /* reset comrv, keep the 'offset' and 'multi-group' tables loaded */
-   comrvReset(E_RESET_TYPE_CACHE);
+   comrvReset(E_RESET_TYPE_LOADED_GROUPS);
 
    /* call 4K overlay - will fill the cache */
    OvlTestFunc4K();
@@ -279,6 +301,23 @@ void demoStart(void)
    /* load small function, following cache being full */
    OvlTestFunc_14_();
 
-   M_DEMO_END_PRINT();
+#ifdef D_COMRV_LOAD_CONFIG_SUPPORT
+   /* note: this section must always be executed last in the demo
+      as it marks demo completion in the comrv error hook */
+
+   /* disable 'load' operation */
+   comrvConfigureLoadOperation(D_DEMO_DISABLE_LOAD);
+
+   /* Call an already loaded function while load operation is disabled
+      we expect the call to be valid */
+   OvlTestFunc_14_();
+
+   /* register a new error handler so we can catch the next expected error */
+   demoComrvSetErrorHandler(demoNewErrorHook);
+
+   /* now call a function that isn't loaded - this should fail and
+     comrv engine shall call the error handler hook function */
+   OverlayFunc0();
+#endif /* D_COMRV_LOAD_CONFIG_SUPPORT */
 }
 

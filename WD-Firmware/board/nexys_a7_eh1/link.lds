@@ -1,6 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
- * Copyright 2019 Western Digital Corporation or its affiliates.
+ * Copyright 2019-2021 Western Digital Corporation or its affiliates.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,11 @@ SECTIONS
     . = ALIGN(4);
   } >ram : ram_load
 
+  PSP_TEXT_SEC :
+  {
+    *(.psp_code_section)
+    . = ALIGN(4);
+  }  > ram : ram_load
 
   .rodata :
   {
@@ -117,7 +122,8 @@ SECTIONS
 
   PSP_DATA_SEC : ALIGN(16)
   {
-  
+    *(.psp_data_section)
+    . = ALIGN(4);
   }  > ram2 : ram_load
 
   .sdata :
@@ -144,7 +150,7 @@ SECTIONS
   {
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
-    *(.bss)
+    *(.bss .bss.*) 
     . = ALIGN(8);
   } >ram : ram_load
 

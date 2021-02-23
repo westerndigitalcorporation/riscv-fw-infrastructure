@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -31,6 +31,9 @@
 /**
 * definitions
 */
+#define D_INTERNAL_MUTEX_SECTION __attribute__((section(".psp_internal_mutexes")))
+
+#define D_PSP_NUM_OF_INTERNAL_MUTEXES      5
 
 /**
 * types
@@ -51,17 +54,44 @@
 /**
 * global variables
 */
-
+D_INTERNAL_MUTEX_SECTION u32_t g_uiInternalPspMutex[D_PSP_NUM_OF_INTERNAL_MUTEXES];
 /**
 * APIs
 */
 
 /**
 * @brief - Initialize (zero) the internal PSP mutexs. Used by PSP for multi-harts safe functionality
+*          Note that the size of PSP internal mutex is 32bit (while the mutex for users is 64bits)
 *
 */
 D_PSP_TEXT_SECTION void pspInternalMutexInit(void)
 {
   /* Set all mutexs used internally by PSP to "Unlocked" state */
-  pspMemsetBytes((void*)D_PSP_DCCM_SECTION_ADDRESS, D_PSP_MUTEX_UNLOCKED, D_PSP_NUM_OF_INTERNAL_MUTEXS);
+  pspMemsetBytes((void*)g_uiInternalPspMutex, D_PSP_MUTEX_UNLOCKED, sizeof(u32_t)*D_PSP_NUM_OF_INTERNAL_MUTEXES);
+}
+
+/**
+* @brief - Lock an internal-PSP mutex
+*
+* @parameter - mutex number
+*
+*/
+void pspInternalMutexLock(u32_t uiMutexNumber)
+{
+  M_PSP_ASSERT(D_PSP_NUM_OF_INTERNAL_MUTEXES > uiMutexNumber);
+
+  pspAtomicsEnterCriticalSection((u32_t*)&g_uiInternalPspMutex[uiMutexNumber]);
+}
+
+/**
+* @brief - Unlock an internal-PSP mutex
+*
+* @parameter - mutex number
+*
+*/
+void pspInternalMutexUnlock(u32_t uiMutexNumber)
+{
+  M_PSP_ASSERT(D_PSP_NUM_OF_INTERNAL_MUTEXES > uiMutexNumber);
+
+  pspAtomicsExitCriticalSection((u32_t*)&g_uiInternalPspMutex[uiMutexNumber]);
 }

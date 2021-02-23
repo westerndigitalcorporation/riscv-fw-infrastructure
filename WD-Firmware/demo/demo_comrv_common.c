@@ -26,6 +26,8 @@
 #include "rtosal_time_api.h"
 #include "rtosal_mutex_api.h"
 #endif /* D_COMRV_RTOS_SUPPORT */
+#include "demo_platform_al.h"
+#include "demo_utils.h"
 
 /**
 * definitions
@@ -42,7 +44,7 @@ extern void* _OVERLAY_STORAGE_START_ADDRESS_;
 /**
 * types
 */
-
+typedef u32_t (*DemoExternalErrorHook_t)(const comrvErrorArgs_t* pErrorArgs);
 
 /**
 * local prototypes
@@ -59,6 +61,7 @@ extern u32_t xcrc32(const u08_t *pBuf, s32_t siLen, u32_t uiInit);
 #ifdef D_COMRV_FW_INSTRUMENTATION
 comrvInstrumentationArgs_t g_stInstArgs;
 #endif /* D_COMRV_FW_INSTRUMENTATION */
+DemoExternalErrorHook_t fptrDemoExternalErrorHook = NULL;
 
 #ifdef D_COMRV_RTOS_SUPPORT
 rtosalMutex_t stComrvMutex;
@@ -133,8 +136,16 @@ void comrvErrorHook(const comrvErrorArgs_t* pErrorArgs)
 {
    comrvStatus_t stComrvStatus;
    comrvGetStatus(&stComrvStatus);
-   /* we can't continue so loop forever */
-   M_PSP_EBREAK();
+   /* if external error handler was set */
+   if (fptrDemoExternalErrorHook == NULL)
+   {
+      /* we can't continue so loop forever */
+      M_DEMO_ENDLESS_LOOP();
+   }
+   else
+   {
+      fptrDemoExternalErrorHook(pErrorArgs);
+   }
 }
 
 /**
@@ -167,6 +178,11 @@ void comrvInvalidateDataCacheHook(const void* pAddress, u32_t uiNumSizeInBytes)
 {
    (void)pAddress;
    (void)uiNumSizeInBytes;
+}
+
+void demoComrvSetErrorHandler(void* fptrAddress)
+{
+   fptrDemoExternalErrorHook = fptrAddress;
 }
 
 #ifdef D_COMRV_RTOS_SUPPORT

@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -39,6 +39,11 @@
 #define D_COMRV_TEXT_SECTION     __attribute__((section("COMRV_TEXT_SEC")))
 #define D_COMRV_DATA_SECTION     __attribute__((section("COMRV_DATA_SEC")))
 #define D_COMRV_RODATA_SECTION   __attribute__((section("COMRV_RODATA_SEC")))
+#ifdef D_COMRV_CODE_SIZE_SUPPORT
+#define D_COMRV_NO_CHANGE_IN_FLOW_TEXT_SECTION     __attribute__((section("COMRV_TEXT_NO_CHANGE_IN_FLOW_SEC")))
+#else
+#define D_COMRV_NO_CHANGE_IN_FLOW_TEXT_SECTION
+#endif /* D_COMRV_CODE_SIZE_SUPPORT */
 
 #ifdef D_COMRV_ERROR_NOTIFICATIONS
    #define M_COMRV_ERROR(stError,errorNum,token)   stError.uiErrorNum = errorNum; \

@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -33,15 +33,15 @@
 /**
 * definitions
 */
-
-#define D_PSP_NO_INLINE                                __attribute__((noinline))
-#define D_PSP_ALWAYS_INLINE                            D_PSP_INLINE __attribute__((always_inline))
-#define D_PSP_ALIGNED(x)                               __attribute__ ((aligned(x)))
-#define D_PSP_WEAK                                     __attribute__(( weak ))
-#define D_PSP_TEXT_SECTION                             __attribute__((section("PSP_TEXT_SEC")))
-#define D_PSP_DATA_SECTION                             __attribute__((section("PSP_DATA_SEC")))
-#define D_PSP_NO_RETURN                                __attribute__((noreturn))
-#define D_PSP_USED                                     __attribute__((used))
+#define D_PSP_INTERRUPT        __attribute__((interrupt))
+#define D_PSP_NO_INLINE        __attribute__((noinline))
+#define D_PSP_ALWAYS_INLINE    D_PSP_INLINE __attribute__((always_inline))
+#define D_PSP_ALIGNED(x)       __attribute__ ((aligned(x)))
+#define D_PSP_WEAK             __attribute__(( weak ))
+#define D_PSP_TEXT_SECTION     __attribute__((section(".psp_code_section")))
+#define D_PSP_DATA_SECTION     __attribute__((section(".psp_data_section")))
+#define D_PSP_NO_RETURN        __attribute__((noreturn))
+#define D_PSP_USED             __attribute__((used))
 
 #define D_PSP_CREATE_ATTR(name, val)                   __attribute__((section(#name),aligned(val)))
 #define D_PSP_GENERAL_DATA_SECTION(name, align_avl)    D_PSP_CREATE_ATTR( (#name), align_avl )

@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ D_PSP_TEXT_SECTION void pspMachineCorErrCntSetThreshold(ePspCorrectableErrorCoun
   M_PSP_ASSERT(D_PSP_CORR_ERR_MAX_THRESHOLD >= uiThreshold);
 
   /* As these CSRs are common to all harts, make sure that they will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_CORR_ERR_COUNTERS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_CORR_ERR_COUNTERS);
 
   uiCsrValueToSet = (uiThreshold << D_PSP_CORR_ERR_THRESH_SHIFT);
 
@@ -96,5 +96,5 @@ D_PSP_TEXT_SECTION void pspMachineCorErrCntSetThreshold(ePspCorrectableErrorCoun
   }
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_CORR_ERR_COUNTERS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_CORR_ERR_COUNTERS);
 }

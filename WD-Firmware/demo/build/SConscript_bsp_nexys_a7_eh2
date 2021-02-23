@@ -1,6 +1,6 @@
 '''
  SPDX-License-Identifier: Apache-2.0
- Copyright 2019 Western Digital Corporation or its affiliates.
+ Copyright 2019-2021 Western Digital Corporation or its affiliates.
  
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -42,29 +42,28 @@ listCCompilerDirectivs = [] + Env['C_FLAGS']
 listAsimCompilerDirectivs = [] + Env['A_FLAGS']
 
 # compilation defines (-D_)
-Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                   # SweRV-EH1 definition is common to SweRV EH2 also         
-                      'D_SWERV_EL2',                                   # SweRV-EL2 definition is common to SweRV EH2 also
-                      'D_SWERV_EH2',                                   # SweRV-EH2
-                      'D_NUMBER_OF_HARTS=2',                           # 2 HW threads in EH2 core 
-                      'D_MTIME_ADDRESS=0x80001020',                    # MTIME address
-                      'D_MTIMECMP_ADDRESS=0x80001028',                 # MTIMECMP address
-                      'D_CLOCK_RATE=50000000',                         # Clock rate = 50Mhz   
-                      'D_PIC_BASE_ADDRESS=0xf00c0000',                 # PIC base address
-                      'D_PIC_NUM_OF_EXT_INTERRUPTS=256',               # Number of external interrupts = 256
-                      'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0',           # First external interrupt = 0
-                      'D_EXT_INTERRUPT_LAST_SOURCE_USED=255',          # Last external interrupt =  255
-                      'D_EXT_INTS_GENERATION_REG_ADDRESS=0x8000100B',  # Register for settup and generation of external interrupts on SweRVolf FPGA
-                      'D_TIMER_DURATION_SETUP_ADDRESS=0x80001030',     # Register for duration setup of a timer on SweRVolf FPGA
-                      'D_TIMER_ACTIVATION_ADDRESS=0x80001034',         # Register for activation of a timer on SweRVolf FPGA  
-                      'D_NMI_VEC_ADDRESSS=0x8000100C',                 # nmi_vec address on SweRVolf FPGA
-                      'D_DCCM_SECTION_START_ADDRESS=0xF0040000',       # Start address of DCCM section 
-                      'D_SW_INT_ADDRESS=0x80003100']                   # sw interrupt
+Env['PUBLIC_DEF'] += ['D_SWERV_EH1',                                                  # SweRV-EH1 definition is common to SweRV EH2 also         
+                      'D_SWERV_EL2',                                                  # SweRV-EL2 definition is common to SweRV EH2 also
+                      'D_SWERV_EH2',                                                  # SweRV-EH2
+                      'D_SWERV_FAST_INT',                                             # Fast-interrupt mode is supported in SweRV EH2
+                      'D_NUMBER_OF_HARTS=2',                                          # 2 HW threads in EH2 core 
+                      'D_MTIME_ADDRESS=0x80001020',                                   # MTIME address
+                      'D_MTIMECMP_ADDRESS=0x80001028',                                # MTIMECMP address
+                      'D_CLOCK_RATE=50000000',                                        # Clock rate = 50Mhz   
+                      'D_PIC_BASE_ADDRESS=0xf0100000',                                # PIC base address
+                      'D_PIC_NUM_OF_EXT_INTERRUPTS=256',                              # Number of external interrupts = 256
+                      'D_EXT_INTERRUPT_FIRST_SOURCE_USED=0',                          # First external interrupt = 0
+                      'D_EXT_INTERRUPT_LAST_SOURCE_USED=255',                         # Last external interrupt =  255
+                      'D_EXT_INTS_GENERATION_REG_ADDRESS=0x8000100B',                 # Registers to setup and generate external interrupts on SweRVolf FPGA
+                      'D_TIMER_DURATION_SETUP_ADDRESS=0x80001030',                    # Register for duration setup of a timer on SweRVolf FPGA
+                      'D_TIMER_ACTIVATION_ADDRESS=0x80001034',                        # Register for activation of a timer on SweRVolf FPGA  
+                      'D_NMI_VEC_ADDRESSS=0x8000100C',                                # nmi_vec address on SweRVolf FPGA
+                      'D_SW_INT_ADDRESS=0x80003100']                                  # sw interrupt
 listCompilationDefines  = [ ] + Env['PUBLIC_DEF']
-
 
 # include paths
 Env['PUBLIC_INC'] += [os.path.join(Env['ROOT_DIR'], 'board', 'nexys_a7_eh2', 'bsp')]
-             
+
 # privte includes
 listIncPaths = [] + Env['PUBLIC_INC']
 

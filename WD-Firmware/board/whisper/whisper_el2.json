@@ -80,7 +80,7 @@
    ],
    "load_error_rollback" : "1",
    "dccm" : {
-      "size" : "0x4000",
+      "size" : "0x8000",
       "region" : "0xf",
       "offset" : "0x40000"
    },

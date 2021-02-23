@@ -45,6 +45,7 @@ class demo(object):
         'D_COMRV_ENABLE_MIN_NUM_OF_MULTI_GROUP_SUPPORT',
         'D_COMRV_ENABLE_CONTROL_SUPPORT',
         'D_COMRV_ENABLE_CRC_SUPPORT',
+        'D_COMRV_ENABLE_OVL_DATA_SUPPORT',
     ]
 
     self.listSconscripts = [

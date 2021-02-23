@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -57,18 +57,6 @@
 */
 
 /**
-* @brief - Returns the start address in the DCCM that can be used for atomic operations
-*
-* @return - address in the DCCM area, free for usage
-*/
-D_PSP_TEXT_SECTION u32_t pspAtomicsGetAddressForAtomicOperations(void)
-{
-  u32_t uiDccmAddress = M_PSP_END_OF_PSP_AREA_IN_DCCM();
-
-  return (uiDccmAddress);
-}
-
-/**
 * @brief - compare and set a value in the memory using atomic commands
 *
 * @parameter - address in the memory to compare and set the value there
@@ -77,7 +65,7 @@ D_PSP_TEXT_SECTION u32_t pspAtomicsGetAddressForAtomicOperations(void)
 *
 * @return    - 0 - success. Otherwise - failure
 */
-D_PSP_NO_INLINE D_PSP_TEXT_SECTION u32_t pspAtomicsCompareAndSet(volatile u32_t* pAddress, u32_t uiExpectedValue, u32_t uiDesiredValue)
+D_PSP_NO_INLINE D_PSP_TEXT_SECTION u32_t pspAtomicsCompareAndSet(u32_t* pAddress, u32_t uiExpectedValue, u32_t uiDesiredValue)
 {
   M_PSP_ASSERT(NULL != pAddress);
 
@@ -95,7 +83,7 @@ D_PSP_NO_INLINE D_PSP_TEXT_SECTION u32_t pspAtomicsCompareAndSet(volatile u32_t*
 *
 * @parameter - (a0) address in the memory with the parameter to check
 */
-D_PSP_NO_INLINE D_PSP_TEXT_SECTION void pspAtomicsEnterCriticalSection(volatile u32_t* pAddress)
+D_PSP_NO_INLINE D_PSP_TEXT_SECTION void pspAtomicsEnterCriticalSection(u32_t* pAddress)
 {
   M_PSP_ASSERT(NULL != pAddress);
 
@@ -113,7 +101,7 @@ D_PSP_NO_INLINE D_PSP_TEXT_SECTION void pspAtomicsEnterCriticalSection(volatile 
 *
 * @parameter - (a0) address in the memory with the parameter to set
 */
-D_PSP_NO_INLINE D_PSP_TEXT_SECTION void pspAtomicsExitCriticalSection(volatile u32_t* pAddress)
+D_PSP_NO_INLINE D_PSP_TEXT_SECTION void pspAtomicsExitCriticalSection(u32_t* pAddress)
 {
   M_PSP_ASSERT(NULL != pAddress);
 

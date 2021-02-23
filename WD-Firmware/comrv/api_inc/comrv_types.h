@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -106,21 +106,26 @@ typedef union comrvOverlayToken
 typedef struct comrvPropertiesFields
 {
   /* entry is locked by the end user - can't be evicted */
-  u08_t ucEvictLock:1;
+  u16_t usEvictLock:1;
   /* entry is overlay data */
-  u08_t ucData:1;
+  u16_t usData:1;
   /* loaded group size in D_COMRV_OVL_GROUP_SIZE_MIN granularity */
-  u08_t ucSizeInMinGroupSizeUnits:4;
+  u16_t usSizeInMinGroupSizeUnits:4;
   /* entry lock - memory can't be moved until overlay is loaded & CRC'ed
      or entry is overlay data so can't be moved until user released it */
-  u08_t ucEntryLock:1;
-  u08_t ucReserved:1;
+  u16_t usEntryLock:1;
+  u16_t usReserved1:1;
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+  u16_t usRefCount:8;
+#else
+  u16_t usReserved8:8;
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
 } comrvPropertiesFields_t;
 
 /* cache entry */
 typedef union comrvEntryProperties
 {
-  u08_t                   ucValue;
+  u16_t                   usValue;
   comrvPropertiesFields_t stFields;
 } comrvEntryProperties_t;
 
@@ -174,6 +179,9 @@ typedef struct comrvCB
 #endif /* D_COMRV_MULTI_GROUP_SUPPORT */
   /* last index of cache entry */
   u08_t             ucLastCacheEntry;
+#ifdef D_COMRV_LOAD_CONFIG_SUPPORT
+  u08_t             ucLoadEnabled;
+#endif /* D_COMRV_LOAD_CONFIG_SUPPORT */
 } comrvCB_t;
 
 /* status structure */
@@ -257,11 +265,13 @@ typedef struct comrvTaskStackRegsVal
 typedef enum comrvResetType
 {
    /* reset cache control block  - reset all loaded groups and eviction values*/
-   E_RESET_TYPE_CACHE = 0,
+   E_RESET_TYPE_LOADED_GROUPS       = 0,
    /* reset cache control block including the 'offset' and 'multi-group' tables
       if this option means the end user must reload these tables using
       comrvLoadTables */
-   E_RESET_TYPE_ALL   = 1
+   E_RESET_TYPE_ALL                 = 1,
+   /* reset eviction counters */
+   E_RESET_TYPE_LRU_HISTORY         = 2,
 }comrvResetType_t;
 
 #endif /* __COMRV_TYPES_H__ */

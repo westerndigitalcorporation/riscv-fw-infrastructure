@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -59,6 +59,9 @@ typedef enum
   E_TEST_ERROR_OVL_CRITICAL_SECTION_FAILED          = (0x1 << 8),
   E_TEST_ERROR_OVL_THREAD_SAFE_READ_BACK_STORE      = (0x1 << 9),
   E_TEST_ERROR_OVL_FAILED                           = (0x1 << 10),
+  E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED          = (0x1 << 11),
+  E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED              = (0x1 << 12),
+  E_TEST_ERROR_OVL_SAME_OVERLAY_FAILED              = (0x1 << 13),
 }E_TEST_ERROR;
 
 #endif /* EOF */

@@ -1,0 +1,154 @@
+{
+  "strings": {
+    "demo_end" : ""
+  },
+  "gdb": {
+    "command": "riscv64-unknown-elf-gdb",
+    "commands": "",
+    "location": "{WS}/demo/build/toolchain/bin"
+  },
+  "interface": {
+    "OpenOcd": "",
+    "working_directory": "",
+    "command": "",
+    "args": ""
+  },
+  "configuration": {
+    "nexys_a7_eh1" : {
+      "interface": [ "openocd", "whisper" ],
+      "interface_descriptor": {
+         "openocd" : {
+            "execute"       : "./openocd -f {WS}/board/nexys_a7_eh1/swervolf_nexys_eh1_debug.cfg",
+            "flush"         : "./openocd -c \"set BITFILE swervolf_eh1.bit\" -f swervolf_nexys_program.cfg",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "source {WS}demo/build/toolchain/llvm/gcc/share/gdb/python/gdb/ovlymgr.py",
+                                "target remote:3333", 
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mtval" ]
+         },
+         "whisper" : {
+            "execute"       : "{WS}board/whisper/whisper --target={WS}demo/build/output/eh1.elf --gdb --gdb-tcp-port=7000 --startpc=0x0 --configfile={WS}board/whisper/whisper_eh1.json --alarm=100 --consoleio=0x80002000 --counters",
+            "flush"         : "",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "target remote localhost:7000",
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mtval" ]
+            }
+         }
+    },
+    "nexys_a7_el2" : {
+      "interface": [ "openocd", "whisper" ],
+      "interface_descriptor": {
+         "openocd" : {
+            "execute"       : "./openocd -f {WS}/board/nexys_a7_el2/swervolf_nexys_el2_debug.cfg",
+            "flush"         : "./openocd -c \"set BITFILE swervolf_el2.bit\" -f swervolf_nexys_program.cfg",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "source {WS}demo/build/toolchain/llvm/gcc/share/gdb/python/gdb/ovlymgr.py",
+                                "target remote:3333", 
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mscause",
+                                "p/x $mtval" ]
+         },
+         "whisper" : {
+            "execute"       : "{WS}board/whisper/whisper --target={WS}demo/build/output/el2.elf --gdb --gdb-tcp-port=7000 --startpc=0x0 --configfile={WS}board/whisper/whisper_el2.json --alarm=100 --consoleio=0x80002000 --counters --softinterrupt=0x80003100",
+            "flush"         : "",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "target remote localhost:7000",
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mscause",
+                                "p/x $mtval" ]
+            }
+         }
+    },
+    "nexys_a7_eh2" : {
+      "interface": [ "openocd", "whisper" ],
+      "interface_descriptor": {
+         "openocd" : {
+            "execute"       : "./openocd -f {WS}/board/nexys_a7_eh2/swervolf_nexys_eh2_debug.cfg",
+            "flush"         : "./openocd -c \"set BITFILE swervolf_eh2.bit\" -f swervolf_nexys_program.cfg",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "source {WS}demo/build/toolchain/llvm/gcc/share/gdb/python/gdb/ovlymgr.py",
+                                "target remote:3333", 
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mscause",
+                                "p/x $mtval" ]
+         },
+         "whisper" : {
+            "execute"       : "{WS}board/whisper/whisper --target={WS}demo/build/output/eh2.elf --gdb --gdb-tcp-port=7000 7001 --startpc=0x0 --configfile={WS}board/whisper/whisper_eh2.json --alarm=100 --consoleio=0x80002000 --counters --softinterrupt=0x80003100",
+            "flush"         : "",
+            "gdb_instances" : "2",
+            "gdb_cmds_1"    : [ "target remote localhost:7000",
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mscause",
+                                "p/x $mtval" ],
+            "gdb_cmds_2"    : [ "target remote localhost:7001",
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mscause",
+                                "p/x $mtval" ]
+            }
+         }
+    },
+    "hifive1" : {
+      "interface": [ "openocd" ],
+      "interface_descriptor": {
+         "openocd" : {
+            "execute"       : "./openocd -f {WS}/board/hifive1/wd-freedom-e300-hifive1.cfg",
+            "flush"         : "",
+            "gdb_instances" : "1",
+            "gdb_cmds_1"    : [ "source {WS}demo/build/toolchain/llvm/gcc/share/gdb/python/gdb/ovlymgr.py",
+                                "target remote:3333", 
+                                "set mem inaccessible-by-default off",
+                                "set remotetimeout 250",
+                                "set arch riscv:rv32",
+                                "load",
+                                "c",
+                                "p/x $mepc",
+                                "p/x $mcause",
+                                "p/x $mtval" ]
+         }
+      }
+    }
+ }
+}

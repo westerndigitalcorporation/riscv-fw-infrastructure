@@ -49,6 +49,12 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
 
+  PSP_TEXT_SEC :
+  {
+    *(.psp_code_section)
+    . = ALIGN(4);
+  } >flash AT>flash :flash
+
   .rodata         :
   {
     *(.rdata)
@@ -157,8 +163,9 @@ SECTIONS
 
   PSP_DATA_SEC : 
   {
- 
-  } >ram AT>flash :ram_init
+    *(.psp_data_section)
+    . = ALIGN(4);
+ } >ram AT>flash :ram_init
   
   . = ALIGN(4);
   PROVIDE( _edata = . );
