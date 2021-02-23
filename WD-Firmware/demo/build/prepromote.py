@@ -36,6 +36,7 @@ INT_DEMO_NAME_INDEX = 3
 INT_RESULT_INDEX = 4
 INT_CSV_FILE_ARG_INDEX = 0
 INT_DEMO_LIST_ARG_INDEX = 1
+INT_MAX_END_COUNT = 5
 
 STR_PASSED = "passed"
 STR_FAILED = "failed"
@@ -269,6 +270,7 @@ class clsListener(object):
     def fnStartListening(self, strListenerIndex, listenerHandle):
         # listener list to hold the data
         listData = []
+        intCountDemoEnd = 0
         data = None
         exceptionSaved = None
         self.NumOfListeners += 1
@@ -305,15 +307,18 @@ class clsListener(object):
                      self.boolListenerDone = True
                      #log.debug(listData)
                      log.info("%s demo end" % strListenerIndex)
-                 # we still have other USB capturing 'end' from old running test on h51 which is still running
-                 elif self.strConnectedListenerIndex != "" and self.strConnectedListenerIndex != strListenerIndex and (STR_TEST_ENDED in data or STR_TEST_ERROR in data):
-                     listData = []
-                     break
                  # listener got aborted
                  elif STR_LISTENER_ABORTED in data:
                      # mark we are done
                      self.boolListenerDone = True
                      log.info("%s demo aborted" % strListenerIndex)
+                 # other listener is waiting for a demo to complete/timeout while this listener is capturing '...end' from older demo
+                 elif STR_TEST_ENDED in data or STR_TEST_ERROR in data:
+                     intCountDemoEnd += 1
+                     if intCountDemoEnd > INT_MAX_END_COUNT:
+                        listData = []
+                        # we can stop capturing '...end' or '...error'
+                        break
             # log the captured data if got any and if were asked to be stored
             if self.boolStoreResults and len(listData) > 0:
                 log.debug("clsListener fnStartListening save to file")
