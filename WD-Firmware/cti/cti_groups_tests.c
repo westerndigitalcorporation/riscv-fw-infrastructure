@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@
 #define D_CTI_OVERLAY_TABLE_ENTRIES      (3)
 #define D_CTI_NUM_OF_LOOPS               13
 #define D_CTI_SUM_OF_ARGS                6
+#define D_CTI_DATA_OVL_ARR_SIZE          10
 
 /* generate ovl dummy function to fill the ovelay area */
 #define M_CTI_FUNCTIONS_GENERATOR \
@@ -132,6 +133,9 @@ stCtiFuncsHitCounter g_stCtiOvlFuncsHitCounter;
 void* G_pProgramCounterAddress;
 #ifdef D_COMRV_RTOS_SUPPORT
    extern rtosalEventGroup_t stRtosalEventGroupCb;
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   _DATA_OVERLAY_ const u32_t uiSomeOverlayData[D_CTI_DATA_OVL_ARR_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
 #endif /* D_COMRV_RTOS_SUPPORT */
 
 const ctiTestFunctionPtr g_pLookupTableCtiTestOvl[E_CB_TEST_OVL_MAX] =
@@ -809,6 +813,10 @@ E_TEST_ERROR ctiOvlTestCrcCheck(S_FW_CB_PTR pCtiFrameWorkCB)
 E_TEST_ERROR ctiOvlTestThreadSafe(S_FW_CB_PTR pCtiFrameWorkCB)
 {
 #ifdef D_COMRV_RTOS_SUPPORT
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   u32_t *pDataOverlay, uiIndex;
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+
    /* register software interrupt handler */
    pspMachineInterruptsRegisterIsr(ctiSwiIsr, E_MACHINE_SOFTWARE_CAUSE);
 
@@ -856,6 +864,53 @@ E_TEST_ERROR ctiOvlTestThreadSafe(S_FW_CB_PTR pCtiFrameWorkCB)
    {
       ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_THREAD_SAFE_READ_BACK_STORE);
    }
+
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   /* update sync point */
+   pCtiFrameWorkCB->uiTestSyncPoint = D_CTI_TASK_SYNC_DATA_OVERLAY;
+
+   /* load data overlay */
+   pDataOverlay = (u32_t*)comrvDataOverlayAllocation(uiSomeOverlayData);
+
+   /* we expect no load - cleared by the high priority task */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 0)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED);
+   }
+
+   /* verify the read data content - even if the higher priority task filled cache */
+   for (uiIndex = 0 ; uiIndex < D_CTI_DATA_OVL_ARR_SIZE ; uiIndex++)
+   {
+      if (pDataOverlay[uiIndex] != uiIndex)
+      {
+         ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED);
+         break;
+      }
+   }
+
+   /* second reference to the data overlay */
+   pDataOverlay = (u32_t*)comrvDataOverlayAllocation(uiSomeOverlayData);
+
+   /* we still expect no additional load as overlay data already loaded */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 0)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED);
+   }
+
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+
+   /* update sync point */
+   pCtiFrameWorkCB->uiTestSyncPoint = D_CTI_TASK_SYNC_SAME_OVERLAY;
+
+   /* the 2 tasks call the same function */
+   ctiTestFuncOverlay120Vect();
+
+   /* we expect 1 load - the high priority task waited for the low priority task to complete the load */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 1)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_SAME_OVERLAY_FAILED);
+   }
+
 #endif /* D_COMRV_RTOS_SUPPORT */
 
    return ctiGetErrorBits(pCtiFrameWorkCB);
@@ -892,8 +947,8 @@ void ctiTaskBTest(void)
       /* call overlay func */
       ctiTestFuncOverlay110Vect();
 
-      /* we expect total 3 loads */
-      if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 3)
+      /* we expect total 4 loads */
+      if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 4)
       {
          /* sync point 3 */
          rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_BEFORE_EXIT_CRITICAL_SEC,
@@ -902,8 +957,8 @@ void ctiTaskBTest(void)
          /* call overlay func */
          ctiTestFuncOverlay111Vect();
 
-         /* we expect total of 5 loads */
-         if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 5)
+         /* we expect total of 6 loads */
+         if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 6)
          {
             /* sync point 4 */
             rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC,
@@ -912,8 +967,8 @@ void ctiTaskBTest(void)
             /* call overlay func */
             ctiTestFuncOverlay112Vect();
 
-            /* we expect total of 7 loads */
-            if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 7)
+            /* we expect total of 8 loads */
+            if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 8)
             {
                /* sync point 5 */
                rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_AFTER_SEARCH_LOAD,
@@ -926,6 +981,25 @@ void ctiTaskBTest(void)
 
                /* clear load counter */
                g_stCtiOvlFuncsHitCounter.uiComrvLoad = 0;
+
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+               /* sync point 6 */
+               rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_DATA_OVERLAY,
+                     &stRtosalEventBits, D_RTOSAL_OR_CLEAR, D_RTOSAL_WAIT_FOREVER);
+
+               /* fill the resident area - data overlay won't be evicted */
+               M_CTI_FUNCTIONS_GENERATOR
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+
+               /* clear load counter */
+               g_stCtiOvlFuncsHitCounter.uiComrvLoad = 0;
+
+               /* sync point 7 */
+               rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_SAME_OVERLAY,
+                     &stRtosalEventBits, D_RTOSAL_OR_CLEAR, D_RTOSAL_WAIT_FOREVER);
+
+               /* the 2 tasks call the same function */
+               ctiTestFuncOverlay120Vect();
             }
             else
             {

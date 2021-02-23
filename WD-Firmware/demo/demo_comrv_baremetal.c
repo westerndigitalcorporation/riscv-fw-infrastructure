@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -157,6 +157,12 @@ u32_t demoNewErrorHook(const comrvErrorArgs_t* pErrorArgs)
    {
       M_DEMO_END_PRINT();
    }
+   /* make sure we got the invoke disabled error */
+   else if (pErrorArgs->uiErrorNum == D_COMRV_INVOKED_WHILE_DISABLED)
+   {
+      /* we can continue executing the demo */
+      return 0;
+   }
    else
    {
       M_DEMO_ERR_PRINT();
@@ -234,13 +240,6 @@ void OVL_OverlayFunc0 OverlayFunc0(void)
    gOverlayFunc0+=OverlayFunc3(1,2,3,4,5,6,7,8,9);
 }
 
-#ifdef D_COMRV_CONTROL_SUPPORT
-/* override comrv implementation */
-void comrvEntryDisable(void)
-{
-}
-#endif /* D_COMRV_CONTROL_SUPPORT */
-
 void demoStart(void)
 {
    comrvInitArgs_t stComrvInitArgs;
@@ -257,12 +256,16 @@ void demoStart(void)
    comrvInit(&stComrvInitArgs);
 
 #ifdef D_COMRV_CONTROL_SUPPORT
+   /* register a new error handler so we can catch the next expected error */
+   demoComrvSetErrorHandler(demoNewErrorHook);
    /* check the disable API */
    comrvDisable();
    /* try to call an overlay function */
    OverlayFunc0();
    /* enable comrv */
    comrvEnable();
+   /* clear registered error handler - use the default */
+   demoComrvSetErrorHandler(NULL);
 #endif /* D_COMRV_CONTROL_SUPPORT */
 
    /* demonstrate function pointer usage */

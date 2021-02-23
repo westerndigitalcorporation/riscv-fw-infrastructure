@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 /**
-* @file   comrv_asm_macros.h
+* @file   comrv_macros.inc
 * @author Ronen Haen
 * @date   02.10.2019
 * @brief  The defines COM-RV assembly macros
@@ -120,12 +120,16 @@
    M_COMRV_SAVE_SAVED_REGS      tp
    /* save comrv state */
    M_COMRV_SAVE_RTOS_STATE_REGS tp, \state
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   /* clear a0 - NULL arg for comrvGetAddressFromToken */
+   mv a0,zero
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
    /* re-enable ints */
    M_COMRV_RESTORE_INTS         t1
 .endm
    /* this macro is the same as M_COMRV_SAVE_REGS_AND_STATE
       but w/o saving the 'saved' and regs */
-  .macro M_COMRV_SAVE_STATE state
+.macro M_COMRV_SAVE_STATE state
    /* disable ints before saving */
    M_COMRV_DISABLE_INTS         t1
    /* save comrv state */
@@ -153,6 +157,10 @@
 .macro M_COMRV_SAVE_REGS_AND_STATE state
    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE
    M_COMRV_SAVE_ARGS_REGS    sp
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   /* clear a0 - NULL arg for comrvGetAddressFromToken */
+   mv a0,zero
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
 .endm
 .macro M_COMRV_SAVE_STATE state
    M_PSP_ADDI  sp, sp, -D_COMRV_STACK_FRAME_SIZE

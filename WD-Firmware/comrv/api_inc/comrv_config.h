@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -152,4 +152,14 @@
    #define D_COMRV_LOAD_CONFIG_SUPPORT
 #endif /* D_COMRV_ENABLE_LOAD_CONFIG_SUPPORT */
 
+
+#ifdef D_COMRV_ENABLE_OVL_DATA_SUPPORT
+   #define D_COMRV_OVL_DATA_SUPPORT
+#endif /* D_COMRV_ENABLE_LOAD_CONFIG_SUPPORT */
+
+#ifdef D_COMRV_ENABLE_CODE_SIZE
+   #define D_COMRV_CODE_SIZE_SUPPORT
+#endif /* D_COMRV_ENABLE_CODE_SIZE */
+
 #endif /* __COMRV_CONFIG_H__ */
+

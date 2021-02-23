@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -63,12 +63,14 @@ void comrvEnable(void);
 void comrvDisable(void);
 void comrvLoadTables(void);
 const comrvCB_t* comrvGetDatabase(void);
+void comrvDataOverlayRelease(const void* pToken);
 void comrvReset(comrvResetType_t eResetType);
 void comrvInit(comrvInitArgs_t* pInitParams);
 void comrvConfigureLoadOperation(u08_t ucEnable);
 void comrvGetStatus(comrvStatus_t* pComrvStatus);
 D_COMRV_NO_INLINE u32_t comrvInitApplicationStack(void);
-u32_t comrvLockUnlockOverlayGroupByFunction(void* pAddress, comrvLockState_t eLockState);
+const void* comrvDataOverlayAllocation(const void* pToken);
+u32_t comrvLockUnlockOverlayGroupByFunction(const void* pAddress, comrvLockState_t eLockState);
 #ifdef D_COMRV_RTOS_SUPPORT
    u32_t* comrvSaveContextSwitch(volatile u32_t* pMepc, volatile u32_t* pRegisterT3,
                                comrvTaskStackRegsVal_t** pComrvTaskStackRegs);

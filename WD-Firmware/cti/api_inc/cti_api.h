@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -42,6 +42,10 @@
 #define D_CTI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC     (8)
 /* comrv engine after search and load flow */
 #define D_CTI_TASK_SYNC_AFTER_SEARCH_LOAD           (16)
+/* data overlay sync point */
+#define D_CTI_TASK_SYNC_DATA_OVERLAY                (32)
+/*same overlay sync point */
+#define D_CTI_TASK_SYNC_SAME_OVERLAY                (64)
 
 /*
  * MACROS
