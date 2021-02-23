@@ -138,7 +138,7 @@ hart0_init:
     li a1, 0
 
     # activate hart1
-    csrrwi x0, 0x7fc, 3
+    /*csrrwi x0, 0x7fc, 3*/
     # jump to main
     call main
     

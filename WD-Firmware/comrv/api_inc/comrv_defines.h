@@ -1,6 +1,6 @@
 /* 
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 * 
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@
 /**
 * definitions
 */
-// TODO: ronen - use psp defines
 #define D_COMRV_INLINE     D_PSP_ALWAYS_INLINE
 #define D_COMRV_NO_INLINE  D_PSP_NO_INLINE
 #define _OVERLAY_          __attribute__((overlaycall))
+#define _DATA_OVERLAY_     __attribute__((overlaydata))
 
 #define D_COMRV_NUM_OF_CACHE_ENTRIES      (D_COMRV_OVL_CACHE_SIZE_IN_BYTES/D_COMRV_OVL_GROUP_SIZE_MIN)
 
@@ -93,7 +93,8 @@
 #define D_COMRV_EXIT_CRITICAL_SECTION_ERR    10
 #define D_COMRV_INTERNAL_ERR                 11
 #define D_COMRV_NOT_INITIALIZED_ERR          12
-
+#define D_COMRV_LOAD_DISABLED_ERR            13
+#define D_COMRV_DATA_OVL_MAX_COUNT           14
 
 /* comrv defines */
 #define D_COMRV_INSTRUMENTATION_BASE_IND     0xFC

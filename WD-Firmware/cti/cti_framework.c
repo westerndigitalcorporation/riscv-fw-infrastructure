@@ -140,7 +140,7 @@ void ctiMain()
    {
       ctiMainOvlMuxTask(0);
       /* Re init comrv cache control block - excluding offset/multi-group entry */
-      comrvReset(E_RESET_TYPE_CACHE);
+      comrvReset(E_RESET_TYPE_LOADED_GROUPS);
    }
 }
 

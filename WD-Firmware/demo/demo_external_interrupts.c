@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -214,8 +214,18 @@ u08_t demoCheckInterruptStatusInISR(void)
  * In addition, this ISR clears the interrupt at its source (BSP api)
  *
  * Tests 1,2,3,4 and 5 does different things each. However all of them use this ISR.
+ *
+ * NOTE: In EH2 the ISR function should be defined with 'interrupt' attribute because EH2 works in 'fast-interrupt'
+ * mode, meaning that upon external-interrupt the PC arrives directly to the ISR rather than to the trap.
+ * Setting the 'interrupt' attribute here causes the compiler to do the prologue & epilogue of interrupt and also calls 'mret'
+ * at the end of the ISR (in the other cores, where 'fast-interrupt' mode is not in use all that is done by the trap code)
+ *
  */
+#ifdef D_SWERV_FAST_INT
+D_PSP_INTERRUPT void demoExtIntTest_1_2_3_4_5_ISR(void)
+#else
 void demoExtIntTest_1_2_3_4_5_ISR(void)
+#endif
 {
   u08_t ucIntSourceId;
 
@@ -237,8 +247,17 @@ void demoExtIntTest_1_2_3_4_5_ISR(void)
  *
  * In addition, this ISR clears the interrupt at the gateway
  *
+ * NOTE: In EH2 the ISR function should be defined with 'interrupt' attribute because EH2 works in 'fast-interrupt'
+ * mode, meaning that upon external-interrupt the PC arrives directly to the ISR rather than to the trap.
+ * Setting the 'interrupt' attribute here causes the compiler to do the prologue & epilogue of interrupt and also calls 'mret'
+ * at the end of the ISR (in the other cores, where 'fast-interrupt' mode is not in use all that is done by the trap code)
+ *
  */
+#ifdef D_SWERV_FAST_INT
+D_PSP_INTERRUPT void demoExtIntTest_6_ISR(void)
+#else
 void demoExtIntTest_6_ISR(void)
+#endif
 {
   u08_t ucIntSourceId;
 
@@ -561,6 +580,11 @@ void demoStart(void)
   /* Run this demo only if target is Swerv. Cannot run on Whisper */
   if (D_PSP_TRUE == demoIsSwervBoard())
   {
+#ifdef D_SWERV_EH2
+    /* Initialize PSP mutexs */
+    pspMutexInitPspMutexs();
+#endif
+
     /* Demo #1 - Global disable external interrupts */
     demoExtIntsTest1GlobalDisabled();
 

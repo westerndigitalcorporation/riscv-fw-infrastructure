@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -97,8 +97,17 @@ volatile u32_t g_uiTestWayPoints;
 /**
  * @brief - External interrupt ISR
  *
- */
+* NOTE: In EH2 the ISR function should be defined with 'interrupt' attribute because EH2 works in 'fast-interrupt'
+* mode, meaning that upon external-interrupt the PC arrives directly to the ISR rather than to the trap.
+* Setting the 'interrupt' attribute here causes the compiler to do the prologue & epilogue of interrupt and also calls 'mret'
+* at the end of the ISR (in the other cores, where 'fast-interrupt' mode is not in use all that is done by the trap code)
+*
+*/
+#ifdef D_SWERV_FAST_INT
+D_PSP_INTERRUPT void demoExternalInterruptIsr(void)
+#else
 void demoExternalInterruptIsr(void)
+#endif
 {
     /* Stop the generation of the specific external interrupt */
     bspClearExtInterrupt(D_DEMO_IRQ);
@@ -519,6 +528,10 @@ void demoStart(void)
   /* Run this demo only if target is Swerv. Cannot run on Whisper */
   if (D_PSP_TRUE == demoIsSwervBoard())
   {
+#ifdef D_SWERV_EH2
+    /* Initialize PSP mutexs */
+    pspMutexInitPspMutexs();
+#endif
     /************************/
     /* Part1 - Sleep tests  */
     /************************/

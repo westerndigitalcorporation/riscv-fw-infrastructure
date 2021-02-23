@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptDisableNumber(u32_t uiIntNum)
   M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiIntNum)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiIntNum))
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -167,7 +167,7 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptDisableNumber(u32_t uiIntNum)
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*
@@ -184,7 +184,7 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptEnableNumber(u32_t uiIntNum)
   M_PSP_ASSERT((PSP_EXT_INTERRUPT_FIRST_SOURCE_USED <= uiIntNum)  && (PSP_EXT_INTERRUPT_LAST_SOURCE_USED >= uiIntNum))
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -196,7 +196,7 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptEnableNumber(u32_t uiIntNum)
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*
@@ -214,7 +214,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPriority(u32_t uiIntNum, u32_t 
   M_PSP_ASSERT(D_PSP_EXT_INT_PRIORITY_15 >= uiPriority);
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -226,7 +226,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPriority(u32_t uiIntNum, u32_t 
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*
@@ -316,7 +316,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetType(u32_t uiIntNum, u32_t uiIn
   M_PSP_ASSERT((D_PSP_EXT_INT_LEVEL_TRIG_TYPE == uiIntType) || (D_PSP_EXT_INT_EDGE_TRIG_TYPE == uiIntType));
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -328,7 +328,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetType(u32_t uiIntNum, u32_t uiIn
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 
@@ -347,7 +347,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPolarity(u32_t uiIntNum, u32_t 
   M_PSP_ASSERT((D_PSP_EXT_INT_ACTIVE_HIGH == uiPolarity) || (D_PSP_EXT_INT_ACTIVE_LOW == uiPolarity));
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -359,7 +359,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPolarity(u32_t uiIntNum, u32_t 
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*
@@ -372,7 +372,7 @@ D_PSP_TEXT_SECTION void  pspMachineExtInterruptClearPendingInt(u32_t uiIntNum)
   u32_t uiInterruptsState;
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -384,7 +384,7 @@ D_PSP_TEXT_SECTION void  pspMachineExtInterruptClearPendingInt(u32_t uiIntNum)
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*
@@ -401,7 +401,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPriorityOrder(u32_t uiPriorityO
   M_PSP_ASSERT((D_PSP_EXT_INT_STANDARD_PRIORITY == uiPriorityOrder) || (D_PSP_EXT_INT_REVERSED_PRIORITY == uiPriorityOrder));
 
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -413,7 +413,7 @@ D_PSP_TEXT_SECTION void pspMachineExtInterruptSetPriorityOrder(u32_t uiPriorityO
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*
@@ -482,7 +482,7 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptDelegateToHart(u32_t uiExtInt
   M_PSP_ASSERT(E_LAST_HART > uiHartNumber);
   
   /* As this CSR is common to all harts, make sure that it will not be accessed simultaneously by more than single hart */
-  M_PSP_INTERNAL_MUTEX_LOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexLock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 
   /* Disable interrupts */
   pspMachineInterruptsDisable(&uiInterruptsState);
@@ -494,7 +494,7 @@ D_PSP_TEXT_SECTION void pspMachineExternalInterruptDelegateToHart(u32_t uiExtInt
   pspMachineInterruptsRestore(uiInterruptsState);
 
   /* Remove the multi-harts access protection */
-  M_PSP_INTERNAL_MUTEX_UNLOCK(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
+  pspInternalMutexUnlock(E_MUTEX_INTERNAL_FOR_EXT_INTERRUPTS);
 }
 
 /*

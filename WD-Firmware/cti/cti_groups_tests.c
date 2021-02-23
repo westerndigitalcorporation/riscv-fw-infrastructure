@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2020 Western Digital Corporation or its affiliates.
+* Copyright 2020-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@
 #define D_CTI_OVERLAY_TABLE_ENTRIES      (3)
 #define D_CTI_NUM_OF_LOOPS               13
 #define D_CTI_SUM_OF_ARGS                6
+#define D_CTI_DATA_OVL_ARR_SIZE          10
 
 /* generate ovl dummy function to fill the ovelay area */
 #define M_CTI_FUNCTIONS_GENERATOR \
@@ -114,6 +115,7 @@ E_TEST_ERROR ctiOvlTestLockUnlock(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestGroupingOvlt(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestCriticalSection(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestGroupWithSameSize(S_FW_CB_PTR pCtiFrameWorkCB);
+E_TEST_ERROR ctiOvlTestResetEvictionCounters(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestGroupWithDifferentSize(S_FW_CB_PTR pCtiFrameWorkCB);
 E_TEST_ERROR ctiOvlTestDefragOverlayedFunctions(S_FW_CB_PTR pCtiFrameWorkCB);
 
@@ -131,6 +133,9 @@ stCtiFuncsHitCounter g_stCtiOvlFuncsHitCounter;
 void* G_pProgramCounterAddress;
 #ifdef D_COMRV_RTOS_SUPPORT
    extern rtosalEventGroup_t stRtosalEventGroupCb;
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   _DATA_OVERLAY_ const u32_t uiSomeOverlayData[D_CTI_DATA_OVL_ARR_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
 #endif /* D_COMRV_RTOS_SUPPORT */
 
 const ctiTestFunctionPtr g_pLookupTableCtiTestOvl[E_CB_TEST_OVL_MAX] =
@@ -145,6 +150,7 @@ const ctiTestFunctionPtr g_pLookupTableCtiTestOvl[E_CB_TEST_OVL_MAX] =
   ctiOvlTestCrcCheck,                  /* E_CB_TEST_OVL_OVL_CRC_CHECK */
   ctiOvlTestCriticalSection,           /* E_CB_TEST_OVL_CRITICAL_SECTION */
   ctiOvlTestThreadSafe,                /* E_CB_TEST_OVL_THREAD_SAFE */
+  ctiOvlTestResetEvictionCounters,     /* E_CB_TEST_OVL_RESET_EVICTION_COUNTERS */
 };
 
 /*
@@ -807,6 +813,10 @@ E_TEST_ERROR ctiOvlTestCrcCheck(S_FW_CB_PTR pCtiFrameWorkCB)
 E_TEST_ERROR ctiOvlTestThreadSafe(S_FW_CB_PTR pCtiFrameWorkCB)
 {
 #ifdef D_COMRV_RTOS_SUPPORT
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   u32_t *pDataOverlay, uiIndex;
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+
    /* register software interrupt handler */
    pspMachineInterruptsRegisterIsr(ctiSwiIsr, E_MACHINE_SOFTWARE_CAUSE);
 
@@ -854,6 +864,53 @@ E_TEST_ERROR ctiOvlTestThreadSafe(S_FW_CB_PTR pCtiFrameWorkCB)
    {
       ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_THREAD_SAFE_READ_BACK_STORE);
    }
+
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+   /* update sync point */
+   pCtiFrameWorkCB->uiTestSyncPoint = D_CTI_TASK_SYNC_DATA_OVERLAY;
+
+   /* load data overlay */
+   pDataOverlay = (u32_t*)comrvDataOverlayAllocation(uiSomeOverlayData);
+
+   /* we expect no load - cleared by the high priority task */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 0)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED);
+   }
+
+   /* verify the read data content - even if the higher priority task filled cache */
+   for (uiIndex = 0 ; uiIndex < D_CTI_DATA_OVL_ARR_SIZE ; uiIndex++)
+   {
+      if (pDataOverlay[uiIndex] != uiIndex)
+      {
+         ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED);
+         break;
+      }
+   }
+
+   /* second reference to the data overlay */
+   pDataOverlay = (u32_t*)comrvDataOverlayAllocation(uiSomeOverlayData);
+
+   /* we still expect no additional load as overlay data already loaded */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 0)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_DATA_OVERLAY_FAILED);
+   }
+
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+
+   /* update sync point */
+   pCtiFrameWorkCB->uiTestSyncPoint = D_CTI_TASK_SYNC_SAME_OVERLAY;
+
+   /* the 2 tasks call the same function */
+   ctiTestFuncOverlay120Vect();
+
+   /* we expect 1 load - the high priority task waited for the low priority task to complete the load */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 1)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_SAME_OVERLAY_FAILED);
+   }
+
 #endif /* D_COMRV_RTOS_SUPPORT */
 
    return ctiGetErrorBits(pCtiFrameWorkCB);
@@ -890,8 +947,8 @@ void ctiTaskBTest(void)
       /* call overlay func */
       ctiTestFuncOverlay110Vect();
 
-      /* we expect total 3 loads */
-      if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 3)
+      /* we expect total 4 loads */
+      if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 4)
       {
          /* sync point 3 */
          rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_BEFORE_EXIT_CRITICAL_SEC,
@@ -900,8 +957,8 @@ void ctiTaskBTest(void)
          /* call overlay func */
          ctiTestFuncOverlay111Vect();
 
-         /* we expect total of 5 loads */
-         if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 5)
+         /* we expect total of 6 loads */
+         if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 6)
          {
             /* sync point 4 */
             rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_AFTER_EXIT_CRITICAL_SEC,
@@ -910,8 +967,8 @@ void ctiTaskBTest(void)
             /* call overlay func */
             ctiTestFuncOverlay112Vect();
 
-            /* we expect total of 7 loads */
-            if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 7)
+            /* we expect total of 8 loads */
+            if (g_stCtiOvlFuncsHitCounter.uiComrvLoad == 8)
             {
                /* sync point 5 */
                rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_AFTER_SEARCH_LOAD,
@@ -924,6 +981,25 @@ void ctiTaskBTest(void)
 
                /* clear load counter */
                g_stCtiOvlFuncsHitCounter.uiComrvLoad = 0;
+
+#ifdef D_COMRV_OVL_DATA_SUPPORT
+               /* sync point 6 */
+               rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_DATA_OVERLAY,
+                     &stRtosalEventBits, D_RTOSAL_OR_CLEAR, D_RTOSAL_WAIT_FOREVER);
+
+               /* fill the resident area - data overlay won't be evicted */
+               M_CTI_FUNCTIONS_GENERATOR
+#endif /* D_COMRV_OVL_DATA_SUPPORT */
+
+               /* clear load counter */
+               g_stCtiOvlFuncsHitCounter.uiComrvLoad = 0;
+
+               /* sync point 7 */
+               rtosalEventGroupGet(&stRtosalEventGroupCb, D_CTI_TASK_SYNC_SAME_OVERLAY,
+                     &stRtosalEventBits, D_RTOSAL_OR_CLEAR, D_RTOSAL_WAIT_FOREVER);
+
+               /* the 2 tasks call the same function */
+               ctiTestFuncOverlay120Vect();
             }
             else
             {
@@ -966,6 +1042,180 @@ void ctiSwiIsr(void)
                        D_RTOSAL_OR, &stRtosalEventBits);
 }
 #endif /* D_COMRV_RTOS_SUPPORT */
+
+/**
+* @brief tests the 'reset eviction counters' api
+*
+* @param  None
+*
+* @return None
+*/
+E_TEST_ERROR ctiOvlTestResetEvictionCounters(S_FW_CB_PTR pCtiFrameWorkCB)
+{
+   lru_t tIntex;
+   comrvStatus_t stComrvStatus;
+
+   comrvGetStatus(&stComrvStatus);
+
+   /* fill the cache */
+   ctiTestFuncOverlay120Vect(); /* will be lru 0 */
+   ctiTestFuncOverlay121Vect(); /* will be lru 1 */
+   ctiTestFuncOverlay122Vect(); /* will be lru 2 */
+   ctiTestFuncOverlay123Vect(); /* will be lru 3 */
+   ctiTestFuncOverlay124Vect(); /* and so on ... */
+   ctiTestFuncOverlay125Vect();
+   ctiTestFuncOverlay126Vect();
+   ctiTestFuncOverlay127Vect();
+   ctiTestFuncOverlay128Vect();
+   ctiTestFuncOverlay129Vect();
+   ctiTestFuncOverlay130Vect();
+   ctiTestFuncOverlay131Vect();
+   ctiTestFuncOverlay132Vect();
+   ctiTestFuncOverlay133Vect();
+   ctiTestFuncOverlay134Vect();
+   ctiTestFuncOverlay135Vect();
+   ctiTestFuncOverlay136Vect();
+   ctiTestFuncOverlay137Vect();
+   ctiTestFuncOverlay138Vect();
+   ctiTestFuncOverlay139Vect();
+   ctiTestFuncOverlay140Vect();
+   ctiTestFuncOverlay141Vect();
+   ctiTestFuncOverlay142Vect();
+   ctiTestFuncOverlay143Vect();
+   ctiTestFuncOverlay144Vect();
+   ctiTestFuncOverlay145Vect();
+   ctiTestFuncOverlay146Vect();
+   ctiTestFuncOverlay147Vect();
+   ctiTestFuncOverlay148Vect();
+   ctiTestFuncOverlay149Vect();
+   ctiTestFuncOverlay150Vect();
+   ctiTestFuncOverlay151Vect(); /* will be the mru */
+
+   /* the expected lru is ctiTestFuncOverlay120Vect and mru is ctiTestFuncOverlay130Vect */
+   comrvGetStatus(&stComrvStatus);
+
+   /* verify lru/mru are correct */
+   if (stComrvStatus.pComrvCB->ucLruIndex != 0 &&
+       stComrvStatus.pComrvCB->ucMruIndex != 31)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   /* verify lru list */
+   for (tIntex = stComrvStatus.pComrvCB->ucLruIndex ; tIntex < stComrvStatus.pComrvCB->ucMruIndex ; )
+   {
+      if (stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex != tIntex+1)
+      {
+         ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+      }
+      tIntex = stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex;
+   }
+
+   ctiTestFuncOverlay151Vect(); /* will be lru 0 */
+   ctiTestFuncOverlay150Vect(); /* will be lru 1 */
+   ctiTestFuncOverlay149Vect(); /* will be lru 2 */
+   ctiTestFuncOverlay148Vect(); /* will be lru 3 */
+   ctiTestFuncOverlay147Vect(); /* and so on ... */
+   ctiTestFuncOverlay146Vect();
+   ctiTestFuncOverlay145Vect();
+   ctiTestFuncOverlay144Vect();
+   ctiTestFuncOverlay143Vect();
+   ctiTestFuncOverlay142Vect();
+   ctiTestFuncOverlay141Vect();
+   ctiTestFuncOverlay140Vect();
+   ctiTestFuncOverlay139Vect();
+   ctiTestFuncOverlay138Vect();
+   ctiTestFuncOverlay137Vect();
+   ctiTestFuncOverlay136Vect();
+   ctiTestFuncOverlay135Vect();
+   ctiTestFuncOverlay134Vect();
+   ctiTestFuncOverlay133Vect();
+   ctiTestFuncOverlay132Vect();
+   ctiTestFuncOverlay131Vect();
+   ctiTestFuncOverlay130Vect();
+   ctiTestFuncOverlay129Vect();
+   ctiTestFuncOverlay128Vect();
+   ctiTestFuncOverlay127Vect();
+   ctiTestFuncOverlay126Vect();
+   ctiTestFuncOverlay125Vect();
+   ctiTestFuncOverlay124Vect();
+   ctiTestFuncOverlay123Vect();
+   ctiTestFuncOverlay122Vect();
+   ctiTestFuncOverlay121Vect();
+   ctiTestFuncOverlay120Vect(); /* will be mru */
+
+   /* verify lru/mru are correct */
+   if (stComrvStatus.pComrvCB->ucLruIndex != 31 &&  /* entry 29 is now lru */
+       stComrvStatus.pComrvCB->ucMruIndex != 0)     /* entry 0 is now mru */
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   /* verify lru list */
+   for (tIntex = stComrvStatus.pComrvCB->ucLruIndex ; tIntex > stComrvStatus.pComrvCB->ucMruIndex ; )
+   {
+      if (stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex != tIntex-1)
+      {
+         ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+      }
+      tIntex = stComrvStatus.pComrvCB->stOverlayCache[tIntex].unLru.stFields.typNextLruIndex;
+   }
+
+   /* reset eviction counters */
+   comrvReset(E_RESET_TYPE_LRU_HISTORY);
+
+   /* verify lru/mru are correct */
+   if (stComrvStatus.pComrvCB->ucLruIndex != 0 && /* entry 0 is now lru */
+       stComrvStatus.pComrvCB->ucMruIndex != 31)  /* entry 29 is now mru */
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   /* clear load counter - verify we don't load any of the functions */
+   g_stCtiOvlFuncsHitCounter.uiComrvLoad = 0;
+
+   /* call the overlay functions */
+   ctiTestFuncOverlay151Vect();
+   ctiTestFuncOverlay150Vect();
+   ctiTestFuncOverlay149Vect();
+   ctiTestFuncOverlay148Vect();
+   ctiTestFuncOverlay147Vect();
+   ctiTestFuncOverlay146Vect();
+   ctiTestFuncOverlay145Vect();
+   ctiTestFuncOverlay144Vect();
+   ctiTestFuncOverlay143Vect();
+   ctiTestFuncOverlay142Vect();
+   ctiTestFuncOverlay141Vect();
+   ctiTestFuncOverlay140Vect();
+   ctiTestFuncOverlay139Vect();
+   ctiTestFuncOverlay138Vect();
+   ctiTestFuncOverlay137Vect();
+   ctiTestFuncOverlay136Vect();
+   ctiTestFuncOverlay135Vect();
+   ctiTestFuncOverlay134Vect();
+   ctiTestFuncOverlay133Vect();
+   ctiTestFuncOverlay132Vect();
+   ctiTestFuncOverlay131Vect();
+   ctiTestFuncOverlay130Vect();
+   ctiTestFuncOverlay129Vect();
+   ctiTestFuncOverlay128Vect();
+   ctiTestFuncOverlay127Vect();
+   ctiTestFuncOverlay126Vect();
+   ctiTestFuncOverlay125Vect();
+   ctiTestFuncOverlay124Vect();
+   ctiTestFuncOverlay123Vect();
+   ctiTestFuncOverlay122Vect();
+   ctiTestFuncOverlay121Vect();
+   ctiTestFuncOverlay120Vect();
+
+   /* we expect 0 hits (0 loads) - all functions should be loaded */
+   if (g_stCtiOvlFuncsHitCounter.uiComrvLoad != 0)
+   {
+      ctiSetErrorBit(pCtiFrameWorkCB, E_TEST_ERROR_OVL_RESET_EVICT_CNTR_FAILED);
+   }
+
+   return ctiGetErrorBits(pCtiFrameWorkCB);
+}
 
 /**
 * @brief run at GROUP 101 - GROUP size 0x200

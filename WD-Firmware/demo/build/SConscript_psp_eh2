@@ -35,14 +35,9 @@ listCFiles=[
    (os.path.join('psp', 'psp_corr_err_cnt_eh2.c'), os.path.join(strOutDir, 'psp_corr_err_cnt_eh2.o')),
    (os.path.join('psp', 'psp_mutex_eh2.c'), os.path.join(strOutDir, 'psp_mutex_eh2.o')),
    (os.path.join('psp', 'psp_cache_control_eh2.c'), os.path.join(strOutDir, 'psp_cache_control_eh2.o')),
-]
-
-# Only if D_DCCM_SECTION_START_ADDRESS is defined in the system - build the PSP atomic commands modules
-if utils.fnGetDefine('D_DCCM_SECTION_START_ADDRESS' ,Env['PUBLIC_DEF']):
-  listCFiles += [
-     (os.path.join('psp', 'psp_atomics_eh2.c'), os.path.join(strOutDir, 'psp_atomics_eh2.o')),
-     (os.path.join('psp', 'psp_internal_mutex_eh2.c'), os.path.join(strOutDir, 'psp_internal_mutex_eh2.o')),
-]   
+   (os.path.join('psp', 'psp_atomics_eh2.c'), os.path.join(strOutDir, 'psp_atomics_eh2.o')),
+   (os.path.join('psp', 'psp_internal_mutex_eh2.c'), os.path.join(strOutDir, 'psp_internal_mutex_eh2.o'))
+   ]   
 
 # Assembly language source and out files in list of tupples
 # (sourcefile.S, outputfile.o)

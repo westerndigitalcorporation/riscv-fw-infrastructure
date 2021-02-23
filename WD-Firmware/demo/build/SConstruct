@@ -185,3 +185,4 @@ AddPostAction(objBundle, Action(utils.fnProduceDump))
 #if downloadFlag != '0':
 #  Env.Download(source=objBundle)
 
+#print Env.Dump()

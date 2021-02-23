@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -301,12 +301,6 @@ comrv_pre_ret_to_asm_engine:
 /* NOTE: no additional lable shall be placed below this line
    as it may break the COMRV RTOS support */
 
-#ifdef D_COMRV_CONTROL_SUPPORT
-/* for testing purpose, we use the .weak so we won't get stuck
-   this also allows the end user to reimplement comrvEntryDisable
-   diffrently */
-.weak comrvEntryDisable
-#endif /* D_COMRV_CONTROL_SUPPORT */
 /* we get here if the end user disabled comrv and tried
    calling/loading overlay function/data */
 comrvEntryDisable:

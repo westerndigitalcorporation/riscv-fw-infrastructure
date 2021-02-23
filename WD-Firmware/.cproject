@@ -555,10 +555,10 @@
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
-		<configuration configurationName="freertos">
+		<configuration configurationName="eh2">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
-		<configuration configurationName="eh2">
+		<configuration configurationName="freertos">
 			<resource resourceType="PROJECT" workspacePath="/WD-Firmware"/>
 		</configuration>
 		<configuration configurationName="eh1">
