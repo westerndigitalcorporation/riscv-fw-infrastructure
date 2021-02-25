@@ -7,7 +7,7 @@
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_ON_FORK" value="false"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEV" value="/dev/ttyS0"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.DEV_SPEED" value="115200"/>
-<stringAttribute key="org.eclipse.cdt.dsf.gdb.GDB_INIT" value="${workspace_loc:/WD-Firmware/demo/build/toolchain/llvm/gcc/share/gdb/python/gdb/ovlymgr.py}"/>
+<stringAttribute key="org.eclipse.cdt.dsf.gdb.GDB_INIT" value="${workspace_loc:/WD-Firmware/demo/build/toolchain/bin/ovlymgr.py}"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.HOST" value="localhost"/>
 <booleanAttribute key="org.eclipse.cdt.dsf.gdb.NON_STOP" value="false"/>
 <stringAttribute key="org.eclipse.cdt.dsf.gdb.PORT" value="7000"/>

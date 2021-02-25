@@ -203,10 +203,32 @@ def fnSetToolchainPath(strTCName, env):
 
     # setting up a bin folder for the debugger
     strBinFolder = os.path.join(env['UTILS_BASE_DIR'], STR_BIN_FOLDER)
-    linkGDBFolder(strBinFolder)
+    linkGDBFolder(strBinFolder, env)
+
+# add the ovlmgr.py to bin folder for the GDB to use it from there
+def linkOVLMGR(strBinFolder, strGDBFolder, env):
+    strOvlFile = "ovlymgr.py"
+    strLinkFile = os.path.join(strGDBFolder, strOvlFile) 
+    
+    if env['TOOLCHAIN_NAME'] == STR_TC_GCC:
+        # create an empty ovlmgr.py in bin
+        strCmd = "touch %s" % strLinkFile
+        fnExecuteCommand(strCmd, "Create an empty ovlmgr.py")
+    
+    elif env['TOOLCHAIN_NAME'] == STR_TC_LLVM:
+        #link the ovlmgr.py from llvm toolchain
+        #strOvlMgrFile = os.path.join(env['UTILS_BASE_DIR'], "share", "gdb", "python","gdb", strOvlFile)
+        strOvlMgrFile = os.path.join(env['UTILS_BASE_DIR'], "..", "..", "comrv", strOvlFile)
+        strCmd = "ln -s %s %s" % (strOvlMgrFile, strLinkFile)
+        fnExecuteCommand(strCmd, "Create ovlmgr.py link")
+    
+    else:
+        # other toolchains
+        # will keep it here for future use will take no effect
+        pass
 
 # add a bin folder for the GDB to run from it
-def linkGDBFolder(strBinFolder):
+def linkGDBFolder(strBinFolder, env):
     strGDBFolder = os.path.join(os.getcwd(), STR_TOOLCHAIN, STR_BIN_FOLDER)
 
     # delete previously linked binaries as toolchain may have been changed
@@ -224,7 +246,7 @@ def linkGDBFolder(strBinFolder):
 
         strCmd = "ln -s %s %s" % (os.path.join(strBinFolder, strFile), os.path.join(strGDBFolder, strLinkFile))
         fnExecuteCommand(strCmd, "Creating symbolic link folder at: %s" % strGDBFolder)
-
+    linkOVLMGR(strBinFolder, strGDBFolder,env)
 
 # get toolchain specific comiler/linker flags
 def fnGetToolchainSpecificFlags(strTCName, env):
