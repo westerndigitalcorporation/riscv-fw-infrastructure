@@ -12,6 +12,7 @@ cti,n/a,n/a,n/a,n/a,n/a,n/a,n/a,n/a
 cti_rtosal,n/a,n/a,n/a,n/a,n/a,n/a,n/a,n/a
 external_interrupts,passed,passed,passed,passed,passed,passed,n/a,gcc
 freertos,passed,passed,passed,passed,passed,passed,passed,gcc
+getchar,passed,passed,passed,passed,passed,passed,n/a,gcc
 multi_harts,failed,passed,n/a,n/a,n/a,n/a,n/a,gcc
 nmi,passed,passed,passed,passed,passed,passed,n/a,gcc
 performance_monitor,passed,passed,passed,passed,passed,passed,n/a,gcc
@@ -31,6 +32,7 @@ cti,passed,passed,passed,passed,passed,passed,n/a,llvm
 cti_rtosal,passed,passed,passed,passed,n/a,n/a,n/a,llvm
 external_interrupts,passed,passed,passed,passed,passed,passed,n/a,llvm
 freertos,passed,passed,passed,passed,passed,passed,passed,llvm
+getchar,passed,passed,passed,passed,passed,passed,n/a,llvm
 multi_harts,failed,passed,n/a,n/a,n/a,n/a,n/a,llvm
 nmi,passed,passed,passed,passed,passed,passed,n/a,llvm
 performance_monitor,passed,passed,passed,passed,passed,passed,n/a,llvm
