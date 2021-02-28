@@ -236,3 +236,10 @@ This repo is always under work, following are notes and status for items that is
     - All EH2 demos are working only on Whisper, no fpga
     - Currently, Software-Interrupts are not supported in EL2 fpga. Until it will be supported, you can use Whisper for this demo.
     - Bitmanip is supported only on LLVM.
+    
+- #### 28-Feb-2021
+    - All EH2 demos are working including FPGA support
+    - Supporting SMP debugging for EH2
+    - Support ComRV data overlay
+    - EL2 includes dccm 
+    - Added getchar() demo
