@@ -1,6 +1,6 @@
 '''
  SPDX-License-Identifier: Apache-2.0
- Copyright 2019 Western Digital Corporation or its affiliates.
+ Copyright 2019-2021 Western Digital Corporation or its affiliates.
  
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ utils.fnCreateFolder(strOutDir)
 # C language source and out files in list of tupples
 # (sourcefile.c, outputfile.o)
 listCFiles = [
-   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_printf.c'), os.path.join(strOutDir, 'printf.o')),
-   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_version.c'), os.path.join(strOutDir, 'version.o')),
-   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_external_interrupts.c'), os.path.join(strOutDir, 'external_interrupts.o')),
-   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_timer.c'), os.path.join(strOutDir, 'timer.o')),
+   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_printf.c'), os.path.join(strOutDir, 'bsp_printf.o')),
+   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_version.c'), os.path.join(strOutDir, 'bsp_version.o')),
+   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_external_interrupts.c'), os.path.join(strOutDir, 'bsp_external_interrupts.o')),
+   (os.path.join('board', 'nexys_a7_el2', 'bsp', 'bsp_timer.c'), os.path.join(strOutDir, 'bsp_timer.o')),
 ]
 
 

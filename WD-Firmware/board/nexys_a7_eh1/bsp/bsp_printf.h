@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 /**
 * @author Ofer Shinaar
 * @date   24.02.2020
+* @modified 25.02.2021 (By Ofer Shinaar)
 * @brief  header file for printf
 */
 
@@ -27,6 +28,7 @@
 
 u32_t  printfNexys(const char * cFormat, ... );
 void   uartInit(void);
+u08_t  uartGetchar(void);
 void   printfSetUartStatus(u08_t ucStatus);
 u08_t  printfGetUartStatus(void);
 
