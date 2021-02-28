@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2019 Western Digital Corporation or its affiliates.
+// Copyright 2019-2021 Western Digital Corporation or its affiliates.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 /**
 * @author Ofer Shinaar
 * @date   05.07.2020
+* @modified 25.02.2021 (By Ofer Shinaar)
 * @brief  implementation of print functionality
 */
 
@@ -61,7 +62,8 @@
 #define D_UART_LCR_1_STB       (0x00)  /* 1 stop bit */
 #define D_UART_LCR_PDIS        (0x00)  /* parity disable */
 
-#define D_UART_LSR_THRE_BIT    (0x20)
+#define D_UART_LSR_THRE_BIT    (0x20)  /* transmit holding register empty */
+#define D_UART_LSR_RXRDY_BIT   (0x01)  /* receiver data available */
 #define D_UART_FCR_FIFO_BIT    (0x01)  /* enable XMIT and RCVR FIFO */
 #define D_UART_FCR_RCVRCLR_BIT (0x02)  /* clear RCVR FIFO */
 #define D_UART_FCR_XMITCLR_BIT (0x04)  /* clear XMIT FIFO */
@@ -71,6 +73,7 @@
 #define D_UART_DLAB_BIT        (0x80)  /* DLAB bit in LCR */
 
 #define M_UART_WR_CH(_CHAR_) (*((volatile unsigned int*)(D_UART_BASE_ADDRESS + (0x00) )) = _CHAR_)
+#define M_UART_RD_CH()       (*((volatile unsigned int*)(void*)(D_UART_BASE_ADDRESS + (0x00) )) )
 
 
 const char g_UpHexDigits[] = "0123456789ABCDEF";
@@ -135,6 +138,22 @@ int printUartPutchar(char ch)
   return 0;
 }
 
+
+/**
+* The function get chars in UART 16550
+*
+* @param
+*
+* @return char string pointer
+*/
+u08_t uartGetchar(void)
+{
+  /* Check if receiver data available */
+  while((M_UART_RD_REG_LSR() & D_UART_LSR_RXRDY_BIT) == 0);
+  /* read char 32bit */
+  return (u08_t)M_UART_RD_CH();
+}
+
 /**
 * The function put chars in UART 16550
 *
@@ -170,12 +189,12 @@ void uartInit(void)
 /*----------------------------------------------------*/
 typedef struct params_s 
 {
-    int len;
-    long num1;
-    long num2;
-    char pad_character;
-    int do_padding;
-    int left_flag;
+  int len;
+  long num1;
+  long num2;
+  char pad_character;
+  int do_padding;
+  int left_flag;
   int upper_hex_digit_flag; //added hexdigit uppercase [A-F]
   int maxium_length; // max_length
 } params_t;
@@ -477,5 +496,6 @@ u32_t printfNexys( const char * cFormat, ... )
 
   return uiRes;
 }
+
 
 
