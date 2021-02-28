@@ -1,6 +1,6 @@
 /*
 * SPDX-License-Identifier: Apache-2.0
-* Copyright 2019 Western Digital Corporation or its affiliates.
+* Copyright 2019-2021 Western Digital Corporation or its affiliates.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -117,6 +117,7 @@ void demoUartInit(void)
   printfNexys("\t EL2 = 16 ");
   printfNexys("\t EH2 = 17 ");
   printfNexys("Running demo on core %d...", M_PSP_READ_CSR(D_PSP_MARCHID_NUM));
+  printfNexys("Machine Implementation ID (MIMPID) = %d ", M_PSP_READ_CSR(D_PSP_MIMPID_NUM));
   printfNexys("------------------------------------------");
   printfNexys("SweRVolf version %d.%d%d (SHA %08x) (dirty %d)",
                    stSwervolfVersion.ucMajor,
